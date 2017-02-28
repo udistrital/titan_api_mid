@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
-	"titan_api_mid/models"
+	"github.com/udistrital/titan_api_mid/models"
 	"strconv"
-	"titan_api_mid/golog"
+	"github.com/udistrital/titan_api_mid/golog"
 	"fmt"
 
 )

@@ -8,7 +8,7 @@
 package routers
 
 import (
-	"titan_api_mid/controllers"
+	"github.com/udistrital/titan_api_mid/controllers"
 
 	"github.com/astaxie/beego"
 )

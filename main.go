@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "titan_api_mid/routers"
+	_ "github.com/udistrital/titan_api_mid/routers"
   "github.com/astaxie/beego/plugins/cors"
 	"github.com/astaxie/beego"
 )

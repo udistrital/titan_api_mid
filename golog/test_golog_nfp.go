@@ -3,7 +3,7 @@ package golog
 import (
 	"fmt"
 	"strconv"
-	"titan_api_mid/models"
+	"github.com/udistrital/titan_api_mid/models"
 
 	. "github.com/mndrix/golog"
 )

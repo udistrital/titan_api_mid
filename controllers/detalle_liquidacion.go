@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"titan_api_mid/models"
+	"github.com/udistrital/titan_api_mid/models"
 
 	"github.com/astaxie/beego"
 )

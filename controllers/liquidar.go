@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-	"titan_api_mid/models"
+	"github.com/udistrital/titan_api_mid/models"
 
 	"github.com/astaxie/beego"
 )

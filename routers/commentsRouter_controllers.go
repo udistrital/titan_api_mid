@@ -6,39 +6,25 @@ import (
 
 func init() {
 
-	beego.GlobalControllerRouter["titan_api_mid/controllers:PreliquidacionController"] = append(beego.GlobalControllerRouter["titan_api_mid/controllers:PreliquidacionController"],
+	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"],
 		beego.ControllerComments{
-			Method:           "Preliquidar",
-			Router:           `/`,
+			Method: "Preliquidar",
+			Router: `/`,
 			AllowHTTPMethods: []string{"post"},
-			Params:           nil})
+			Params: nil})
 
-	beego.GlobalControllerRouter["titan_api_mid/controllers:DetalleLiquidacionController"] = append(beego.GlobalControllerRouter["titan_api_mid/controllers:DetalleLiquidacionController"],
+	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionFpController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionFpController"],
 		beego.ControllerComments{
-			Method:           "InsertarDetallePreliquidacion",
-			Router:           `/`,
+			Method: "Preliquidar",
+			Router: `/`,
 			AllowHTTPMethods: []string{"post"},
-			Params:           nil})
+			Params: nil})
 
-	beego.GlobalControllerRouter["titan_api_mid/controllers:LiquidarController"] = append(beego.GlobalControllerRouter["titan_api_mid/controllers:LiquidarController"],
+	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionHcController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionHcController"],
 		beego.ControllerComments{
-			Method:           "Liquidar",
-			Router:           `/`,
+			Method: "Preliquidar",
+			Router: `/`,
 			AllowHTTPMethods: []string{"post"},
-			Params:           nil})
-
-	beego.GlobalControllerRouter["titan_api_mid/controllers:PreliquidacionFpController"] = append(beego.GlobalControllerRouter["titan_api_mid/controllers:PreliquidacionFpController"],
-		beego.ControllerComments{
-			Method:           "Preliquidar",
-			Router:           `/`,
-			AllowHTTPMethods: []string{"post"},
-			Params:           nil})
-
-	beego.GlobalControllerRouter["titan_api_mid/controllers:PreliquidacionHcController"] = append(beego.GlobalControllerRouter["titan_api_mid/controllers:PreliquidacionHcController"],
-		beego.ControllerComments{
-			Method:           "Preliquidar",
-			Router:           `/`,
-			AllowHTTPMethods: []string{"post"},
-			Params:           nil})
+			Params: nil})
 
 }
