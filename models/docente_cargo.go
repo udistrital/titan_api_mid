@@ -9,6 +9,7 @@ type DocenteCargo struct {
 	FechaFin          time.Time `orm:"column(emp_hasta);type(date);null"`
 	Puntos            float64   `orm:"column(puntos)"`
 	Regimen           string    `orm:"column(regimen)"`
+	Cargo             string    `orm:"column(cargo)"`
 }
 
 type Puntos struct {
