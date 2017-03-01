@@ -34,7 +34,6 @@ func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.D
 	} else {
 		regimen_numero = "2"
 	}
-	fmt.Println("ASFDGASDSASSSSFS0FSSDF")
 	fmt.Println(informacion_cargo[0])
 	fmt.Println(regimen_numero + " " + " " + puntos + " " + asignacion_basica_string + " " + cargo)
 	//falta arreglar el periodo para que sea congruente con los valores provenientes de la bd liquidar(R,P,V,T,C,L)
@@ -58,7 +57,7 @@ func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.D
 	}
 
 	//condicional para saber si debe aplicarse la bonificacion por servicios
-	if fechaInicio.Month() == fechaActual.Month() {
+	if if fechaInicio.Month() == fechaActual.Month() && regimen == "2" {
 		bonificacion := m.ProveAll("bonificacionServicios(" + salario + ",S).")
 		for _, solution := range bonificacion {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("S")), 64)
