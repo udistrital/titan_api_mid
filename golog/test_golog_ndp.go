@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-	models "titan_api_mid/models"
+	models "github.com/udistrital/titan_api_mid/models"
 
 	. "github.com/mndrix/golog"
 )
