@@ -57,7 +57,7 @@ func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.D
 	}
 
 	//condicional para saber si debe aplicarse la bonificacion por servicios
-	if if fechaInicio.Month() == fechaActual.Month() && regimen == "2" {
+	if fechaInicio.Month() == fechaActual.Month() && regimen == "2" {
 		bonificacion := m.ProveAll("bonificacionServicios(" + salario + ",S).")
 		for _, solution := range bonificacion {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("S")), 64)
