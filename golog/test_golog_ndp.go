@@ -22,6 +22,8 @@ func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.D
 	fechaInicio := informacion_cargo[0].FechaInicio
 	fechaActual := time.Now().Local()
 	asignacion_basica_string := strconv.Itoa(informacion_cargo[0].Asignacion_basica)
+	fmt.Println("consultar reglas")
+	fmt.Println(reglas)
 	m := NewMachine().Consult(reglas)
 	//liquidar(R,P,V,T,L).
 	if informacion_cargo[0].Cargo == "DC" {
@@ -36,6 +38,14 @@ func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.D
 	}
 	fmt.Println(informacion_cargo[0])
 	fmt.Println(regimen_numero + " " + " " + puntos + " " + asignacion_basica_string + " " + cargo)
+
+	novedades_devengo := m.ProveAll("novedades_devengos(X).")
+	for _, solution := range novedades_devengo {
+		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("X")), 64)
+		total_devengado = total_devengado + Valor
+
+		}
+
 	//falta arreglar el periodo para que sea congruente con los valores provenientes de la bd liquidar(R,P,V,T,C,L)
 	valor_salario := m.ProveAll("liquidar(" + regimen_numero + "," + puntos + "," + asignacion_basica_string + ", 1," + cargo + ",L ).")
 	for _, solution := range valor_salario {

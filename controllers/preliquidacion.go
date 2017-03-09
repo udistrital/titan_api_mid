@@ -132,6 +132,10 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 		if v != nil {
 
 			for i := 0; i < len(v); i++ {
+				if (v[i].Concepto.Naturaleza == "devengo"){
+					reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
+				}
+				
 				reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
 			}
 

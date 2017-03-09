@@ -34,6 +34,14 @@ func CargarReglasFP(reglas string, idProveedor int, informacion_cargo []models.F
 	reglas = reglas + "salario_base(" + asignacion_basica_string + ")."
 	reglas = reglas + "tipo_nomina(" + tipoNomina_string + ")."
 	m := NewMachine().Consult(reglas)
+
+	novedades_devengo := m.ProveAll("novedades_devengos(X).")
+	for _, solution := range novedades_devengo {
+		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("X")), 64)
+		total_devengado = total_devengado + Valor
+
+		}
+		
 	valor_salario := m.ProveAll("sb(" + asignacion_basica_string + "," + tipoNomina_string + "," + dias_a_liquidar + ",V).")
 	for _, solution := range valor_salario {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
@@ -215,6 +223,19 @@ func CargarReglasFP(reglas string, idProveedor int, informacion_cargo []models.F
 
 		}
 	}
+
+	temp_conceptos := models.ConceptosResumen{Nombre: "ibc",
+		Valor: fmt.Sprintf("%.0f", total_devengado),
+	}
+	codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+
+	for _, cod := range codigo {
+		temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+	}
+	lista_descuentos = append(lista_descuentos, temp_conceptos)
+	temp.Conceptos = &lista_descuentos
+	resultado = append(resultado, temp)
+
 	idProveedorString := strconv.Itoa(idProveedor)
 	novedades := m.ProveAll("info_concepto(" + idProveedorString + ",T,2017,N,R).")
 

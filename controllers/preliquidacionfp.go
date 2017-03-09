@@ -39,7 +39,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo", "POST", &informacion_cargo, &filtrodatos); err == nil {
 			dias_laborados := CalcularDias(informacion_cargo[0].FechaInicio, informacion_cargo[0].FechaFin)
-			esAnual := esAnual(informacion_cargo[0].FechaInicio)
+			esAnual := esAnual(datos.Preliquidacion.Fecha, informacion_cargo[0].FechaInicio)
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 			reglas = reglasinyectadas + reglasbase
 			//fmt.Println("reglas: ",reglas)
@@ -89,14 +89,32 @@ func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados flo
 
 }
 
-func esAnual(FechaInicio time.Time) (flag int) {
+func esAnual(FechaPreliq time.Time, FechaIngreso time.Time) (flag int) {
 	//Si es uno, es el momento de pagar bonificacion por servicios.
 	var esAnual int
-	if FechaInicio.Month() == time.Now().Month() {
+
+	if FechaPreliq.Month() == FechaIngreso.Month() {
+
 		esAnual = 1
 	} else {
 		esAnual = 0
 	}
 
 	return esAnual
+}
+
+
+func tipoNomina(tipoNomina string)(tipo string){
+	if tipoNomina == "151"  {
+		tipo = "0"
+	}
+
+	if tipoNomina == "152" {
+		tipo = "1"
+	}
+
+	if tipoNomina == "30" {
+		tipo = "2"
+	}
+	 return tipo
 }
