@@ -8,7 +8,7 @@ import (
 	. "github.com/mndrix/golog"
 )
 
-func CargarReglasFP(reglas string, idProveedor int, informacion_cargo []models.FuncionarioCargo, dias_laborados float64, periodo string, esAnual int, porcentajePT int) (rest []models.Respuesta) {
+func CargarReglasFP(reglas string, idProveedor int, informacion_cargo []models.FuncionarioCargo, dias_laborados float64, periodo string, esAnual int, porcentajePT int, tipoNomina string) (rest []models.Respuesta) {
 
 	var resultado []models.Respuesta
 	temp := models.Respuesta{}
@@ -21,16 +21,18 @@ func CargarReglasFP(reglas string, idProveedor int, informacion_cargo []models.F
 
 	var total_devengado float64
 	var dias_a_liquidar string
-	var tipoNomina_string string = "1"
-	var tipoNomina int = 1
+	var tipoNomina_string string
 
-	if tipoNomina == 0 || tipoNomina == 1 {
+	tipoNomina_string = tipoNomina
+
+	if tipoNomina_string  == "0" || tipoNomina_string  == "1" {
 		dias_a_liquidar = "15"
 
 	} else {
 		dias_a_liquidar = "30"
 
 	}
+
 	reglas = reglas + "salario_base(" + asignacion_basica_string + ")."
 	reglas = reglas + "tipo_nomina(" + tipoNomina_string + ")."
 	m := NewMachine().Consult(reglas)
@@ -41,7 +43,7 @@ func CargarReglasFP(reglas string, idProveedor int, informacion_cargo []models.F
 		total_devengado = total_devengado + Valor
 
 		}
-		
+
 	valor_salario := m.ProveAll("sb(" + asignacion_basica_string + "," + tipoNomina_string + "," + dias_a_liquidar + ",V).")
 	for _, solution := range valor_salario {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
@@ -204,7 +206,7 @@ func CargarReglasFP(reglas string, idProveedor int, informacion_cargo []models.F
 
 	}
 
-	if tipoNomina == 1 || tipoNomina == 2 {
+	if tipoNomina_string == "1" || tipoNomina_string == "2" {
 
 		valor_fondo_solidaridad := m.ProveAll("fondo_solidaridad_fun(" + asignacion_basica_string + ",2017,V).")
 		for _, solution := range valor_fondo_solidaridad {

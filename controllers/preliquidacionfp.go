@@ -29,9 +29,12 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 	var idDetaPre interface{}
 	var resumen_preliqu []models.Respuesta
 	var porcentajePT int
+	var tipoNom string;
+
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 		var informacion_cargo []models.FuncionarioCargo
 		filtrodatos := models.FuncionarioCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
+		tipoNom = tipoNomina(datos.Preliquidacion.Tipo)
 
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_primatec", "POST", &porcentajePT, datos.PersonasPreLiquidacion[i].IdPersona); err != nil {
 			porcentajePT = 0
@@ -43,7 +46,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 			reglas = reglasinyectadas + reglasbase
 			//fmt.Println("reglas: ",reglas)
-			temp := golog.CargarReglasFP(reglas, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT)
+			temp := golog.CargarReglasFP(reglas, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
