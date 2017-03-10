@@ -18,6 +18,7 @@ type PreliquidaciondpController struct {
 func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
 	var resumen_preliqu []models.Respuesta
 	var idDetaPre interface{}
+	var tipoNom string;
 	//var puntos []models.Docente_puntos
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
@@ -26,6 +27,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 		var reglasinyectadas string
 		var reglas string
 		filtrodatos := models.DocenteCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
+		tipoNom = tipoNomina(datos.Preliquidacion.Tipo)
 		//fmt.Println("reglas: ", reglasbase)
 		//consulta que envie ID de proveedor en datos y retorne el salario, para que sea enviado a CargarReglas
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/docente_cargo", "POST", &informacion_cargo, &filtrodatos); err == nil {
@@ -39,7 +41,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 				tiempo_contrato := CalcularDias(informacion_cargo[0].FechaInicio, time.Now())
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 				reglas = reglasinyectadas + reglasbase
-				temp := golog.CargarReglasDP(datos.PersonasPreLiquidacion[i].IdPersona, reglas, informacion_cargo, tiempo_contrato, datos.Preliquidacion.Nomina.Periodo, puntos, regimen)
+				temp := golog.CargarReglasDP(datos.PersonasPreLiquidacion[i].IdPersona, reglas, informacion_cargo, tiempo_contrato, datos.Preliquidacion.Nomina.Periodo, puntos, regimen,tipoNom)
 				resultado := temp[len(temp)-1]
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
 				resumen_preliqu = append(resumen_preliqu, resultado)
@@ -83,6 +85,7 @@ func consumir_puntos(cedula int) (res string) {
 	puntos_retorno := strconv.FormatFloat(puntos.Puntos_salariales, 'f', 6, 64)
 	return puntos_retorno
 }
+
 
 /*
 func aes_256(cedula string) (res string) {
