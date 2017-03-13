@@ -9,7 +9,7 @@ import (
 	. "github.com/mndrix/golog"
 )
 
-func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.DocenteCargo, dias_trabajados float64, periodo string, puntos string, regimen string,tipoNomina string) (rest []models.Respuesta) {
+func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.DocenteCargo, dias_trabajados float64, periodo string, puntos float64, regimen string,tipoNomina string) (rest []models.Respuesta) {
 	var resultado []models.Respuesta
 	temp := models.Respuesta{}
 	var lista_descuentos []models.ConceptosResumen
@@ -22,6 +22,7 @@ func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.D
 	fechaInicio := informacion_cargo[0].FechaInicio
 	fechaActual := time.Now().Local()
 	asignacion_basica_string := strconv.Itoa(informacion_cargo[0].Asignacion_basica)
+	puntos_string := strconv.Itoa(int(puntos))
 
 	var tipoNomina_string string
 	tipoNomina_string = tipoNomina
@@ -39,7 +40,7 @@ func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.D
 		regimen_numero = "2"
 	}
 	fmt.Println(informacion_cargo[0])
-	fmt.Println(regimen_numero + " " + " " + puntos + " " + asignacion_basica_string + " " + cargo)
+	fmt.Println(regimen_numero + " " + " " + puntos_string + " " + asignacion_basica_string + " " + cargo)
 
 	novedades_devengo := m.ProveAll("novedades_devengos(X).")
 	for _, solution := range novedades_devengo {
@@ -50,7 +51,7 @@ func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.D
 
 
 	//falta arreglar el periodo para que sea congruente con los valores provenientes de la bd liquidar(R,P,V,T,C,L)
-	valor_salario := m.ProveAll("liquidar(" + regimen_numero + "," + puntos + "," + asignacion_basica_string + ", "+tipoNomina_string+"," + cargo + ",L ).")
+	valor_salario := m.ProveAll("liquidar(" + regimen_numero + "," + puntos_string + "," + asignacion_basica_string + ", "+tipoNomina_string+"," + cargo + ",L ).")
 	for _, solution := range valor_salario {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("L")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: "salarioBase",

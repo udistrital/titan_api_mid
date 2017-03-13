@@ -6,8 +6,11 @@ import (
 	"time"
 	"github.com/udistrital/titan_api_mid/golog"
 	"github.com/udistrital/titan_api_mid/models"
-
+   "net/http"
+	 "net/url"
+	 "io/ioutil"
 	"github.com/astaxie/beego"
+	"encoding/json"
 )
 
 // operations for Preliquidaciondp
@@ -19,7 +22,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 	var resumen_preliqu []models.Respuesta
 	var idDetaPre interface{}
 	var tipoNom string;
-	//var puntos []models.Docente_puntos
+	var puntos float64
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 		var informacion_cargo []models.DocenteCargo
@@ -28,16 +31,17 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 		var reglas string
 		filtrodatos := models.DocenteCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
 		tipoNom = tipoNomina(datos.Preliquidacion.Tipo)
+
 		//fmt.Println("reglas: ", reglasbase)
 		//consulta que envie ID de proveedor en datos y retorne el salario, para que sea enviado a CargarReglas
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/docente_cargo", "POST", &informacion_cargo, &filtrodatos); err == nil {
 
 			num_contrato := datos.PersonasPreLiquidacion[i].NumeroContrato
 			if err2 := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/docente_cargo/consultarCedulaDocente", "POST", &cedula, &num_contrato); err == nil {
-				puntos := strconv.FormatFloat(informacion_cargo[0].Puntos, 'f', 6, 64)
+
 				fmt.Println(informacion_cargo[0])
 				regimen := informacion_cargo[0].Regimen
-				//puntos := consumir_puntos(cedula)
+				puntos = consumir_puntos(cedula)
 				tiempo_contrato := CalcularDias(informacion_cargo[0].FechaInicio, time.Now())
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 				reglas = reglasinyectadas + reglasbase
@@ -68,48 +72,32 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 	return resumen_preliqu
 }
 
-func consumir_puntos(cedula int) (res string) {
-	var docente_puntos models.Docente_puntos
-	var puntos models.Puntos
-	docente_puntos.Id = 408
-	//docente_puntos.Documento = "79708124"
-	docente_puntos.Puntos = 10
-	ruta := ""
-	fmt.Println(ruta)
-	if err := getJson("http://10.20.0.127/kyron/index.php?data="+ruta, &puntos); err == nil {
-		fmt.Println(puntos.Puntos_salariales)
-		fmt.Println(puntos.Puntos_bonificacion)
-	} else {
-		fmt.Println(err)
-	}
-	puntos_retorno := strconv.FormatFloat(puntos.Puntos_salariales, 'f', 6, 64)
-	return puntos_retorno
-}
+func consumir_puntos(cedula int) (res float64) {
 
-
-/*
-func aes_256(cedula string) (res string) {
-	key := []byte("")
-	data := "pagina=estadoDeCuentaCondor&bloqueNombre=estadoDeCuentaCondor&bloqueGrupo=reportes&docente=" + cedula + "&expiracion=1483946906&procesarAjax=true&action=query&format=json"
-	plaintext := []byte(data)
-	block, err := aes.NewCipher(key)
+	var puntos float64
+	resp, err := http.PostForm("http://10.20.0.127/kyron/index.php?pagina=estadoDeCuentaCondor&bloqueNombre=estadoDeCuentaCondor&bloqueGrupo=reportes&procesarAjax=true&action=query&format=jwt", url.Values{"usuario": {"usuarioToken"}, "clave": {"YjgzNDQ1NDcyNDQ3ZTBjNDUwNzZiZjc4YjU4MmEyYjYyZjQ0MjZkODBjM2ZlMWZlMGEyMjNiOTI4"}})
 	if err != nil {
-		panic(err)
+		fmt.Println("Error")
+		}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	token := string(body[:])
+	docente_cedula := strconv.Itoa(cedula)
+	//docente_cedula := strconv.Itoa(cedula)
+	resp, err = http.Get("http://10.20.0.127/kyron/index.php?data=" + token + "&docente=" + docente_cedula)
+	if err != nil {
+		fmt.Println("Error2")
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+
+	puntos_kyron := string(body[:])
+	byt := []byte(puntos_kyron)
+	var puntos_retorno models.Docente_puntos
+	if err := json.Unmarshal(byt, &puntos_retorno); err == nil {
+			puntos = puntos_retorno.Puntos_salariales
 	}
 
-	// The IV needs to be unique, but not secure. Therefore it's common to
-	// include it at the beginning of the ciphertext.
-	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
-	iv := ciphertext[:aes.BlockSize]
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		panic(err)
-	}
-
-	stream := cipher.NewCFBEncrypter(block, iv)
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
-
-	// convert to base64
-	return b64.URLEncoding.EncodeToString(ciphertext)
+	return puntos
 }
-
-*/
