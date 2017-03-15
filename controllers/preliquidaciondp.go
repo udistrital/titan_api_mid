@@ -75,7 +75,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 func consumir_puntos(cedula int) (res float64) {
 
 	var puntos float64
-	resp, err := http.PostForm("http://10.20.0.127/kyron/index.php?pagina=estadoDeCuentaCondor&bloqueNombre=estadoDeCuentaCondor&bloqueGrupo=reportes&procesarAjax=true&action=query&format=jwt", url.Values{"usuario": {"usuarioToken"}, "clave": {"YjgzNDQ1NDcyNDQ3ZTBjNDUwNzZiZjc4YjU4MmEyYjYyZjQ0MjZkODBjM2ZlMWZlMGEyMjNiOTI4"}})
+	resp, err := http.PostForm("http://"+beego.AppConfig.String("UrlKyron")+"/kyron/index.php?pagina=estadoDeCuentaCondor&bloqueNombre=estadoDeCuentaCondor&bloqueGrupo=reportes&procesarAjax=true&action=query&format=jwt", url.Values{"usuario": {beego.AppConfig.String("UsuarioKyron")}, "clave": {beego.AppConfig.String("Clave")}})
 	if err != nil {
 		fmt.Println("Error al consumir puntos")
 		}
@@ -85,7 +85,7 @@ func consumir_puntos(cedula int) (res float64) {
 	token := string(body[:])
 	docente_cedula := strconv.Itoa(cedula)
 	//docente_cedula := strconv.Itoa(cedula)
-	resp, err = http.Get("http://10.20.0.127/kyron/index.php?data=" + token + "&docente=" + docente_cedula)
+	resp, err = http.Get("http://"+beego.AppConfig.String("UrlKyron")+"/kyron/index.php?data=" + token + "&docente=" + docente_cedula)
 	if err != nil {
 		fmt.Println("Error2 al consumir Puntos_salariales")
 	}
