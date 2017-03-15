@@ -39,7 +39,7 @@ func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.D
 	} else {
 		regimen_numero = "2"
 	}
-	fmt.Println(informacion_cargo[0])
+	
 	fmt.Println(regimen_numero + " " + " " + puntos_string + " " + asignacion_basica_string + " " + cargo)
 
 	novedades_devengo := m.ProveAll("novedades_devengos(X).")
@@ -48,7 +48,8 @@ func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.D
 		total_devengado = total_devengado + Valor
 
 		}
-
+		fmt.Println("Total devengado")
+		fmt.Println(total_devengado)
 
 	//falta arreglar el periodo para que sea congruente con los valores provenientes de la bd liquidar(R,P,V,T,C,L)
 	valor_salario := m.ProveAll("liquidar(" + regimen_numero + "," + puntos_string + "," + asignacion_basica_string + ", "+tipoNomina_string+"," + cargo + ",L ).")

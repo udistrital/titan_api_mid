@@ -77,7 +77,7 @@ func consumir_puntos(cedula int) (res float64) {
 	var puntos float64
 	resp, err := http.PostForm("http://10.20.0.127/kyron/index.php?pagina=estadoDeCuentaCondor&bloqueNombre=estadoDeCuentaCondor&bloqueGrupo=reportes&procesarAjax=true&action=query&format=jwt", url.Values{"usuario": {"usuarioToken"}, "clave": {"YjgzNDQ1NDcyNDQ3ZTBjNDUwNzZiZjc4YjU4MmEyYjYyZjQ0MjZkODBjM2ZlMWZlMGEyMjNiOTI4"}})
 	if err != nil {
-		fmt.Println("Error")
+		fmt.Println("Error al consumir puntos")
 		}
 
 	defer resp.Body.Close()
@@ -87,7 +87,7 @@ func consumir_puntos(cedula int) (res float64) {
 	//docente_cedula := strconv.Itoa(cedula)
 	resp, err = http.Get("http://10.20.0.127/kyron/index.php?data=" + token + "&docente=" + docente_cedula)
 	if err != nil {
-		fmt.Println("Error2")
+		fmt.Println("Error2 al consumir Puntos_salariales")
 	}
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)

@@ -10,7 +10,6 @@ import (
 
 func CargarReglasCT(reglas string, periodo string) (rest []models.Respuesta) {
 	//******QUITAR ARREGLO, DEJAR UNA SOLA VARIABLE PARA LAS REGLAS ******
-
 	m := NewMachine().Consult(reglas)
 
 	var resultado []models.Respuesta
@@ -46,7 +45,7 @@ func CargarReglasCT(reglas string, periodo string) (rest []models.Respuesta) {
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteIca",
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
-
+		
 		codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 
 		for _, cod := range codigo {
