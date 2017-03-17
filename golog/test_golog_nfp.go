@@ -52,9 +52,20 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 		dias_novedad := validarNovedades(fechaPreliquidacion, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
 		if dias_novedad == 0 {
 			fmt.Println("Novedad vencida")
-		}else {
-					dias_a_liquidar = strconv.Itoa(int(dias_novedad))
+			}else {
+				dias_a_liquidar = strconv.Itoa(int(dias_novedad))
 			}
+
+			temp_conceptos := models.ConceptosResumen{Nombre: "licencia",
+				Valor: fmt.Sprintf("%.0f", 0),
+			}
+			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+			for _, cod := range codigo {
+				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			}
+			lista_descuentos = append(lista_descuentos, temp_conceptos)
+			temp.Conceptos = &lista_descuentos
+			resultado = append(resultado, temp)
 		}
 
 	novedades_devengo := m.ProveAll("novedades_devengos(X).")
@@ -148,7 +159,6 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 	}
 
 	if porcentajePT != 0 {
-		fmt.Println("asdasdasdsad")
 
 		valor_prima_tecnica := m.ProveAll("prima_tecnica(" + asignacion_basica_string + "," + dias_a_liquidar + "," + tipoNomina_string + "," + porcentaje_PT_string + ",V).")
 		for _, solution := range valor_prima_tecnica {
