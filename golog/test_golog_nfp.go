@@ -6,9 +6,11 @@ import (
 	"github.com/udistrital/titan_api_mid/models"
 
 	. "github.com/mndrix/golog"
+
+	"time"
 )
 
-func CargarReglasFP(reglas string, idProveedor int, informacion_cargo []models.FuncionarioCargo, dias_laborados float64, periodo string, esAnual int, porcentajePT int, tipoNomina string) (rest []models.Respuesta) {
+func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor int, informacion_cargo []models.FuncionarioCargo, dias_laborados float64, periodo string, esAnual int, porcentajePT int, tipoNomina string) (rest []models.Respuesta) {
 
 	var resultado []models.Respuesta
 	temp := models.Respuesta{}
@@ -23,6 +25,7 @@ func CargarReglasFP(reglas string, idProveedor int, informacion_cargo []models.F
 	var dias_a_liquidar string
 	var tipoNomina_string string
 
+
 	tipoNomina_string = tipoNomina
 
 	if tipoNomina_string  == "0" || tipoNomina_string  == "1" {
@@ -30,12 +33,29 @@ func CargarReglasFP(reglas string, idProveedor int, informacion_cargo []models.F
 
 	} else {
 		dias_a_liquidar = "30"
-
 	}
+
 
 	reglas = reglas + "salario_base(" + asignacion_basica_string + ")."
 	reglas = reglas + "tipo_nomina(" + tipoNomina_string + ")."
 	m := NewMachine().Consult(reglas)
+
+	novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
+	for _, solution := range novedades_seg_social {
+		AnoDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
+		MesDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
+		DiaDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("D")), 64)
+		AnoHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("AA")), 64)
+		MesHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
+		DiaHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
+
+		dias_novedad := validarNovedades(fechaPreliquidacion, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
+		if dias_novedad == 0 {
+			fmt.Println("Novedad vencida")
+		}else {
+					dias_a_liquidar = strconv.Itoa(int(dias_novedad))
+			}
+		}
 
 	novedades_devengo := m.ProveAll("novedades_devengos(X).")
 	for _, solution := range novedades_devengo {
@@ -257,4 +277,105 @@ func CargarReglasFP(reglas string, idProveedor int, informacion_cargo []models.F
 		resultado = append(resultado, temp)
 	}
 	return resultado
+}
+
+
+func validarNovedades(FechaPreliq time.Time, AnoDesde float64, MesDesde float64, DiaDesde float64, AnoHasta float64, MesHasta float64, DiaHasta float64) (dias_liquidar float64) {
+	var FechaDesde time.Time
+	var FechaHasta time.Time
+	var FechaControl time.Time
+	var periodo_liquidacion float64
+
+	FechaDesde = time.Date(int(AnoDesde), time.Month(int(MesDesde)), int(DiaDesde), 0, 0, 0, 0, time.UTC)
+	FechaHasta = time.Date(int(AnoHasta), time.Month(int(MesHasta)), int(DiaHasta), 0, 0, 0, 0, time.UTC)
+	fmt.Println("fechas")
+	fmt.Println(FechaDesde)
+	fmt.Println(FechaHasta)
+	fmt.Println(FechaPreliq)
+	if FechaDesde.Month() == FechaPreliq.Month() && FechaDesde.Year() == FechaPreliq.Year() {
+		FechaControl = time.Date(FechaPreliq.Year(), FechaPreliq.Month(), 30, 0, 0, 0, 0, time.UTC)
+		periodo_liquidacion = CalcularDias(FechaDesde, FechaControl) + 1
+
+		fmt.Println("Prueba")
+		fmt.Println(periodo_liquidacion)
+	} else if FechaHasta.Month() == FechaPreliq.Month() && FechaHasta.Year() == FechaPreliq.Year() {
+		FechaControl = time.Date(FechaPreliq.Year(), FechaPreliq.Month(), 1, 0, 0, 0, 0, time.UTC)
+		periodo_liquidacion = CalcularDias(FechaControl, FechaHasta) + 1
+		fmt.Println("Prueba2")
+		fmt.Println(periodo_liquidacion)
+	} else if FechaHasta.Month() == FechaDesde.Month() && FechaHasta.Year() == FechaDesde.Year() {
+		periodo_liquidacion = CalcularDias(FechaDesde, FechaHasta) + 1
+		fmt.Println("Prueba3")
+		fmt.Println(periodo_liquidacion)
+	} else{
+		periodo_liquidacion = 0;
+		fmt.Println("Prueba4")
+		fmt.Println(periodo_liquidacion)
+	}
+
+	return periodo_liquidacion
+
+}
+
+func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados float64) {
+	var a, m, d int
+	var meses_contrato float64
+	var dias_contrato float64
+	if FechaFin.IsZero() {
+		var FechaFin2 time.Time
+		FechaFin2 = time.Now()
+		a, m, d = diff(FechaInicio, FechaFin2)
+		meses_contrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
+		dias_contrato = meses_contrato * 30
+
+	} else {
+		a, m, d = diff(FechaInicio, FechaFin)
+		meses_contrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
+		dias_contrato = meses_contrato * 30
+
+	}
+
+	return dias_contrato
+
+}
+
+func diff(a, b time.Time) (year, month, day int) {
+    if a.Location() != b.Location() {
+        b = b.In(a.Location())
+    }
+    if a.After(b) {
+        a, b = b, a
+    }
+		 oneDay := time.Hour * 5
+		 a = a.Add(oneDay)
+		 b = b.Add(oneDay)
+    y1, M1, d1 := a.Date()
+    y2, M2, d2 := b.Date()
+
+
+
+    year = int(y2 - y1)
+    month = int(M2 - M1)
+    day = int(d2 - d1)
+
+
+    // Normalize negative values
+		/*if day < 0{
+			day = 0
+		}
+		if month < 0 {
+        month = 0
+    }*/
+    if day < 0 {
+        // days in month:
+        t := time.Date(y1, M1, 32, 0, 0, 0, 0, time.UTC)
+        day += 32 - t.Day()
+        month--
+    }
+    if month < 0 {
+        month += 12
+        year--
+    }
+
+    return
 }
