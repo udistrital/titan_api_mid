@@ -38,35 +38,47 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 	reglas = reglas + "salario_base(" + asignacion_basica_string + ")."
 	reglas = reglas + "tipo_nomina(" + tipoNomina_string + ")."
+
 	m := NewMachine().Consult(reglas)
 
+
+
 	novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
+
 	for _, solution := range novedades_seg_social {
-		AnoDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
-		MesDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
-		DiaDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("D")), 64)
-		AnoHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("AA")), 64)
-		MesHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
-		DiaHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
 
-		dias_novedad := validarNovedades(fechaPreliquidacion, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
-		if dias_novedad == 0 {
-			fmt.Println("Novedad vencida")
-			}else {
-				dias_a_liquidar = strconv.Itoa(int(dias_novedad))
-			}
+		novedad := fmt.Sprintf("%s", solution.ByName_("N"))
+		AnoDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
+		MesDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
+		DiaDesde,_:= strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("D")), 64)
+		AnoHasta,_:= strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("AA")), 64)
+		MesHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
+		DiaHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
 
-			temp_conceptos := models.ConceptosResumen{Nombre: "licencia",
-				Valor: fmt.Sprintf("%.0f", 0),
-			}
-			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
-			for _, cod := range codigo {
-				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-			}
-			lista_descuentos = append(lista_descuentos, temp_conceptos)
-			temp.Conceptos = &lista_descuentos
-			resultado = append(resultado, temp)
+		afectacion_seg_social := m.ProveAll("afectacion_seguridad(X).")
+		for _, solution := range afectacion_seg_social {
+			fmt.Println("dias a liquidar")
+			fmt.Println(solution)
+			dias_novedad := CalcularDiasNovedades(fechaPreliquidacion, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
+			dias_a_liquidar = strconv.Itoa(int(30 - dias_novedad))
+			fmt.Println(dias_a_liquidar)
+
+				temp_conceptos := models.ConceptosResumen{Nombre: novedad,
+					Valor: fmt.Sprintf("%.0f", 0),
+				}
+				codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+				for _, cod := range codigo {
+					temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+				}
+				lista_descuentos = append(lista_descuentos, temp_conceptos)
+				temp.Conceptos = &lista_descuentos
+				resultado = append(resultado, temp)
+
 		}
+
+
+		}
+
 
 	novedades_devengo := m.ProveAll("novedades_devengos(X).")
 	for _, solution := range novedades_devengo {
@@ -290,7 +302,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 }
 
 
-func validarNovedades(FechaPreliq time.Time, AnoDesde float64, MesDesde float64, DiaDesde float64, AnoHasta float64, MesHasta float64, DiaHasta float64) (dias_liquidar float64) {
+func CalcularDiasNovedades(FechaPreliq time.Time, AnoDesde float64, MesDesde float64, DiaDesde float64, AnoHasta float64, MesHasta float64, DiaHasta float64) (dias_liquidar float64) {
 	var FechaDesde time.Time
 	var FechaHasta time.Time
 	var FechaControl time.Time
@@ -298,29 +310,15 @@ func validarNovedades(FechaPreliq time.Time, AnoDesde float64, MesDesde float64,
 
 	FechaDesde = time.Date(int(AnoDesde), time.Month(int(MesDesde)), int(DiaDesde), 0, 0, 0, 0, time.UTC)
 	FechaHasta = time.Date(int(AnoHasta), time.Month(int(MesHasta)), int(DiaHasta), 0, 0, 0, 0, time.UTC)
-	fmt.Println("fechas")
-	fmt.Println(FechaDesde)
-	fmt.Println(FechaHasta)
-	fmt.Println(FechaPreliq)
+
 	if FechaDesde.Month() == FechaPreliq.Month() && FechaDesde.Year() == FechaPreliq.Year() {
 		FechaControl = time.Date(FechaPreliq.Year(), FechaPreliq.Month(), 30, 0, 0, 0, 0, time.UTC)
 		periodo_liquidacion = CalcularDias(FechaDesde, FechaControl) + 1
-
-		fmt.Println("Prueba")
-		fmt.Println(periodo_liquidacion)
 	} else if FechaHasta.Month() == FechaPreliq.Month() && FechaHasta.Year() == FechaPreliq.Year() {
 		FechaControl = time.Date(FechaPreliq.Year(), FechaPreliq.Month(), 1, 0, 0, 0, 0, time.UTC)
 		periodo_liquidacion = CalcularDias(FechaControl, FechaHasta) + 1
-		fmt.Println("Prueba2")
-		fmt.Println(periodo_liquidacion)
 	} else if FechaHasta.Month() == FechaDesde.Month() && FechaHasta.Year() == FechaDesde.Year() {
 		periodo_liquidacion = CalcularDias(FechaDesde, FechaHasta) + 1
-		fmt.Println("Prueba3")
-		fmt.Println(periodo_liquidacion)
-	} else{
-		periodo_liquidacion = 0;
-		fmt.Println("Prueba4")
-		fmt.Println(periodo_liquidacion)
 	}
 
 	return periodo_liquidacion

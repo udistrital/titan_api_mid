@@ -36,6 +36,7 @@ func getJson(url string, target interface{}) error {
 
 	return json.NewDecoder(r.Body).Decode(target)
 }
+
 func diff(a, b time.Time) (year, month, day int) {
     if a.Location() != b.Location() {
         b = b.In(a.Location())

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"github.com/udistrital/titan_api_mid/models"
-
+	"time"
 	"github.com/astaxie/beego"
 )
 
@@ -123,17 +123,28 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 		if v != nil {
 
 			for i := 0; i < len(v); i++ {
-				if (v[i].Concepto.Naturaleza == "devengo"){
-					reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
-				}
 
-				if (v[i].Concepto.Naturaleza == "seguridad_social"){
-					year, month, day := v[i].FechaDesde.Date()
-					year2, month2, day2 := v[i].FechaHasta.Date()
-					reglas = reglas + "seg_social("+v[i].Concepto.NombreConcepto+","+strconv.Itoa(year)+","+strconv.Itoa(int(month))+","+strconv.Itoa(day + 1)+","+strconv.Itoa(year2)+","+strconv.Itoa(int(month2))+","+strconv.Itoa(day2 + 1)+")." + "\n"
-				}
+				esActiva := validarNovedades(datos_preliqu.Preliquidacion.Fecha, v[i].FechaDesde, v[i].FechaHasta)
+				fmt.Println("es activa")
+				fmt.Println(esActiva)
 
-				reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
+				if esActiva == 1 {
+					if (v[i].Concepto.Naturaleza == "devengo"){
+						reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
+					}
+
+					if (v[i].Concepto.Naturaleza == "seguridad_social"){
+
+						reglas = reglas + "seguridad_social("+v[i].Concepto.NombreConcepto+")." + "\n"
+						year, month, day := v[i].FechaDesde.Date()
+						year2, month2, day2 := v[i].FechaHasta.Date()
+						reglas = reglas + "seg_social("+v[i].Concepto.NombreConcepto+","+strconv.Itoa(year)+","+strconv.Itoa(int(month))+","+strconv.Itoa(day + 1)+","+strconv.Itoa(year2)+","+strconv.Itoa(int(month2))+","+strconv.Itoa(day2 + 1)+")." + "\n"
+						}
+
+
+         }
+
+				 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
 			}
 
 		}
@@ -142,5 +153,25 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 	fmt.Println("novedad: ", reglas)
 	//------------------------------------------------------------------------------
 	return reglas
+
+}
+
+func validarNovedades(FechaPreliq time.Time, FechaDesde time.Time, FechaHasta time.Time) (flag int) {
+
+	if FechaDesde.Month() == FechaPreliq.Month() && FechaDesde.Year() == FechaPreliq.Year() {
+		flag = 1
+
+	} else if FechaHasta.Month() == FechaPreliq.Month() && FechaHasta.Year() == FechaPreliq.Year() {
+		flag = 1
+
+	} else if FechaHasta.Month() == FechaDesde.Month() && FechaHasta.Year() == FechaDesde.Year() {
+		flag = 1
+
+	} else{
+		flag = 0
+
+	}
+
+	return flag
 
 }
