@@ -90,7 +90,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -111,6 +111,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
 
 		}
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -130,6 +131,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
 
 		}
 
@@ -152,6 +154,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 			for _, cod := range codigo {
 				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+				temp_conceptos.DiasLiquidados = dias_a_liquidar
 			}
 
 			lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -175,6 +178,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 			for _, cod := range codigo {
 				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+				temp_conceptos.DiasLiquidados = dias_a_liquidar
 			}
 
 			lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -194,6 +198,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
 
 		}
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -214,6 +219,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
 		}
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
 		temp.Conceptos = &lista_descuentos
@@ -231,6 +237,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
 		}
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
 		temp.Conceptos = &lista_descuentos
@@ -250,6 +257,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 			for _, cod := range codigo {
 				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+				temp_conceptos.DiasLiquidados = dias_a_liquidar
 			}
 			lista_descuentos = append(lista_descuentos, temp_conceptos)
 			temp.Conceptos = &lista_descuentos
@@ -265,6 +273,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 	for _, cod := range codigo {
 		temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+		temp_conceptos.DiasLiquidados = dias_a_liquidar
 	}
 	lista_descuentos = append(lista_descuentos, temp_conceptos)
 	temp.Conceptos = &lista_descuentos
@@ -282,6 +291,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 		codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
