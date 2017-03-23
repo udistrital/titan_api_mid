@@ -38,7 +38,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 	reglas = reglas + "salario_base(" + asignacion_basica_string + ")."
 	reglas = reglas + "tipo_nomina(" + tipoNomina_string + ")."
-
+	fmt.Println(reglas)
 	m := NewMachine().Consult(reglas)
 
 
@@ -48,7 +48,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 	for _, solution := range novedades_seg_social {
 
 
-
+		novedad := fmt.Sprintf("%s", solution.ByName_("N"))
 		AnoDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
 		MesDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
 		DiaDesde,_:= strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("D")), 64)
@@ -56,14 +56,14 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 		MesHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
 		DiaHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
 
-		afectacion_seg_social := m.ProveAll("afectacion_seguridad(X).")
+		afectacion_seg_social := m.ProveAll("afectacion_seguridad("+novedad+").")
 		for _, solution := range afectacion_seg_social {
 
-			fmt.Println("dias a liquidar")
-			fmt.Println(solution)
-			dias_novedad := CalcularDiasNovedades(fechaPreliquidacion, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
-			dias_a_liquidar = strconv.Itoa(int(30 - dias_novedad))
-			fmt.Println(dias_a_liquidar)
+				fmt.Println(solution)
+				fmt.Println("aca")
+				dias_novedad := CalcularDiasNovedades(fechaPreliquidacion, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
+				dias_a_liquidar = strconv.Itoa(int(30 - dias_novedad))
+				fmt.Println(dias_a_liquidar)
 
 		}
 

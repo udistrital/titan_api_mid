@@ -63,7 +63,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 			}
 
 		}
-
+		reglasinyectadas = "";
 	}
 
 	return resumen_preliqu

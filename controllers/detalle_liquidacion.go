@@ -36,7 +36,7 @@ func (c *DetalleLiquidacionController) InsertarDetallePreliquidacion() {
 			idPreliquidacionString = strconv.Itoa(IdPreliquidacion)
 			if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=0&query=Preliquidacion:"+idPreliquidacionString+",Persona:"+idPersonaString+"", &d); err == nil {
 				for i := 0; i < len(d); i++ {
-					detalleliquidacion := models.DetalleLiquidacion{Id: d[i].Id, ValorCalculado: d[i].ValorCalculado, EstadoConcepto: "P", Liquidacion: &models.Liquidacion{Id: IdPreliquidacion}, Persona: d[i].Persona, Concepto: &models.Concepto{Id: d[i].Concepto.Id}, NumeroContrato: &models.ContratoGeneral{Id: d[i].NumeroContrato.Id}}
+					detalleliquidacion := models.DetalleLiquidacion{Id: d[i].Id, ValorCalculado: d[i].ValorCalculado, EstadoConcepto: "P", Liquidacion: &models.Liquidacion{Id: IdPreliquidacion}, Persona: d[i].Persona, Concepto: &models.Concepto{Id: d[i].Concepto.Id}, NumeroContrato: &models.ContratoGeneral{Id: d[i].NumeroContrato.Id}, DiasLiquidados: d[i].DiasLiquidados}
 					if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_liquidacion", "POST", &idDetaLiq, &detalleliquidacion); err == nil {
 					} else {
 						beego.Debug("error1: ", err)

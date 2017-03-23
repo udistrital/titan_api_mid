@@ -118,7 +118,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 	//consulta de la(s) novedades que pueda tener la persona para la pre-liquidacion
 	var v []models.ConceptoPorPersona
 
-	reglas = "" //inicializacion de la variable donde se inyectaran las novedades como reglas
+	reglas = ""//inicializacion de la variable donde se inyectaran las novedades como reglas
 	if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_por_persona/novedades_activas/"+strconv.Itoa(id_persona), "POST", &v, &datos_preliqu.Preliquidacion); err == nil {
 		if v != nil {
 
@@ -135,7 +135,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 
 					if (v[i].Concepto.Naturaleza == "seguridad_social"){
 
-						reglas = reglas + "seguridad_social("+v[i].Concepto.NombreConcepto+")." + "\n"
+
 						year, month, day := v[i].FechaDesde.Date()
 						year2, month2, day2 := v[i].FechaHasta.Date()
 						reglas = reglas + "seg_social("+v[i].Concepto.NombreConcepto+","+strconv.Itoa(year)+","+strconv.Itoa(int(month))+","+strconv.Itoa(day + 1)+","+strconv.Itoa(year2)+","+strconv.Itoa(int(month2))+","+strconv.Itoa(day2 + 1)+")." + "\n"
@@ -153,6 +153,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 	fmt.Println("novedad: ", reglas)
 	//------------------------------------------------------------------------------
 	return reglas
+
 
 }
 
