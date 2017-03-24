@@ -135,7 +135,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 
 					if (v[i].Concepto.Naturaleza == "seguridad_social"){
 
-
+						fmt.Println("asdf")
 						year, month, day := v[i].FechaDesde.Date()
 						year2, month2, day2 := v[i].FechaHasta.Date()
 						reglas = reglas + "seg_social("+v[i].Concepto.NombreConcepto+","+strconv.Itoa(year)+","+strconv.Itoa(int(month))+","+strconv.Itoa(day + 1)+","+strconv.Itoa(year2)+","+strconv.Itoa(int(month2))+","+strconv.Itoa(day2 + 1)+")." + "\n"
