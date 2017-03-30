@@ -3,7 +3,10 @@ import (
 
 	"time"
 	"fmt"
-
+	"io"
+	"os"
+	"strings"
+	
 )
 
 func CalcularDiasNovedades(FechaPreliq time.Time, AnoDesde float64, MesDesde float64, DiaDesde float64, AnoHasta float64, MesHasta float64, DiaHasta float64) (dias_liquidar float64) {
@@ -91,4 +94,18 @@ func diff(a, b time.Time) (year, month, day int) {
     }
 
     return
+}
+func WriteStringToFile(filepath, s string) error {
+	fo, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer fo.Close()
+
+	_, err = io.Copy(fo, strings.NewReader(s))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
