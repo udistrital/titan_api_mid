@@ -30,7 +30,7 @@ func file2lines(filePath string) []string {
 func processString(reglas []string)(reglas_t string){
   var reglas_temp string = ""
   for i:= 0 ; i < len(reglas) ; i++ {
-    reglas_temp = reglas_temp + reglas[i]
+    reglas_temp = reglas_temp + reglas[i] + "\n"
   }
 
   return reglas_temp

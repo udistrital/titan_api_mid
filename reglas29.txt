@@ -654,4 +654,3 @@ salud_fun(TD,P,V):- \+(seg_social(comision_estudio,_,_,_,_,_,_)) -> porcentaje_s
 afectacion_seguridad(licencia_norem).
 seg_social(prueba,1,1,1,1,1,1).
 salario_base(4114674).tipo_nomina(2).
-salario_base(4114674).tipo_nomina(2).

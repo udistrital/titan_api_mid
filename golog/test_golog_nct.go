@@ -10,6 +10,10 @@ import (
 
 func CargarReglasCT(reglas string, periodo string) (rest []models.Respuesta) {
 	//******QUITAR ARREGLO, DEJAR UNA SOLA VARIABLE PARA LAS REGLAS ******
+
+	if err := WriteStringToFile("reglascontratistas.txt", reglas); err != nil {
+      panic(err)
+  }
 	m := NewMachine().Consult(reglas)
 
 	var resultado []models.Respuesta
@@ -36,6 +40,7 @@ func CargarReglasCT(reglas string, periodo string) (rest []models.Respuesta) {
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
 	}
 
+
 	//DESCUENTOS
 	//Reteica
 
@@ -45,7 +50,7 @@ func CargarReglasCT(reglas string, periodo string) (rest []models.Respuesta) {
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteIca",
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
-		
+
 		codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 
 		for _, cod := range codigo {
@@ -60,7 +65,7 @@ func CargarReglasCT(reglas string, periodo string) (rest []models.Respuesta) {
 	}
 
 	//Estampila UD
-
+	fmt.Println("asdasdasdasdasdsadasd")
 	descuento_estampilla := m.ProveAll("calcular_estampilla("+salarioBase_string+", "+periodo+", R).")
 
 	for _, solution := range descuento_estampilla {
@@ -132,7 +137,8 @@ func CargarReglasCT(reglas string, periodo string) (rest []models.Respuesta) {
 	}
 
 	//NO TOCAR
-	novedades := m.ProveAll("info_concepto(" + temp.Nombre_Cont + ",T," + periodo + ",N,R).")
+
+		novedades := m.ProveAll("info_concepto(" + temp.Nombre_Cont + ",T," + periodo + ",N,R).")
 
 	for _, solution := range novedades {
 
@@ -150,7 +156,7 @@ func CargarReglasCT(reglas string, periodo string) (rest []models.Respuesta) {
 	temp.Conceptos = &lista_descuentos
 
 	resultado = append(resultado, temp)
-	//  }
+
 
 	return resultado
 

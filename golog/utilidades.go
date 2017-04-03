@@ -2,11 +2,11 @@ package golog
 import (
 
 	"time"
-	"fmt"
+
 	"io"
 	"os"
 	"strings"
-	
+
 )
 
 func CalcularDiasNovedades(FechaPreliq time.Time, AnoDesde float64, MesDesde float64, DiaDesde float64, AnoHasta float64, MesHasta float64, DiaHasta float64) (dias_liquidar float64) {
@@ -27,8 +27,7 @@ func CalcularDiasNovedades(FechaPreliq time.Time, AnoDesde float64, MesDesde flo
 	} else if FechaHasta.Month() == FechaDesde.Month() && FechaHasta.Year() == FechaDesde.Year() {
 		periodo_liquidacion = CalcularDias(FechaDesde, FechaHasta) + 1
 	}
-	fmt.Println("dias novedadesssss")
-	fmt.Println(periodo_liquidacion)
+
 	return periodo_liquidacion
 
 }

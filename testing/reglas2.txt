@@ -1,7 +1,16 @@
-concepto(29,descuento, porcentaje, nombreRegla269, 1, 2017). 
-concepto(29,descuento, porcentaje, nombreRegla231, 3, 2017). 
-seg_social(licencia_norem,2017,3,15,2017,4,10).
-concepto(29,seguridad_social, porcentaje, licencia_norem, 0, 2017). 
+concepto(2,descuento, porcentaje, nombreRegla29, 1, 2017). 
+concepto(2,descuento, porcentaje, nombreRegla269, 1, 2017). 
+concepto(2,descuento, porcentaje, nombreRegla231, 3, 2017). 
+concepto(2,descuento, fijo, nombreRegla247, 37849, 2017). 
+concepto(2,descuento, fijo, nombreRegla2259, 93163, 2017). 
+concepto(2,descuento, fijo, nombreRegla243, 101211, 2017). 
+concepto(2,descuento, fijo, nombreRegla266, 103883, 2017). 
+concepto(2,descuento, fijo, nombreRegla2303, 211922, 2017). 
+concepto(2,descuento, fijo, nombreRegla266, 403750, 2017). 
+devengo(233628,subsidioFa).
+concepto(2,devengo, fijo, subsidioFa, 233628, 2017). 
+seg_social(comision_norem,2017,3,15,2017,4,10).
+concepto(2,seguridad_social, porcentaje, comision_norem, 0, 2017). 
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
@@ -653,5 +662,5 @@ afectacion_seguridad(comision_norem).
 salud_fun(TD,P,V):- \+(seg_social(comision_estudio,_,_,_,_,_,_)) -> porcentaje_salud(P,1,PF), V is (TD * PF rnd 0).
 afectacion_seguridad(licencia_norem).
 seg_social(prueba,1,1,1,1,1,1).
-salario_base(4114674).tipo_nomina(2).
-salario_base(4114674).tipo_nomina(2).
+salario_base(2193636).tipo_nomina(2).
+salario_base(2193636).tipo_nomina(2).

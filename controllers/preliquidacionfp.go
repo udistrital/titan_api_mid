@@ -6,7 +6,7 @@ import (
 	"github.com/udistrital/titan_api_mid/models"
 
 	"github.com/astaxie/beego"
-	//  "fmt"
+  "fmt"
 	"time"
 )
 
@@ -46,6 +46,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 			reglas = reglasinyectadas + reglasbase
 			//fmt.Println("reglas: ",reglas)
+			fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
 			temp := golog.CargarReglasFP(datos.Preliquidacion.Fecha, reglas, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
 
 			resultado := temp[len(temp)-1]

@@ -15,10 +15,11 @@ var total_devengado_no_novedad float64
 var total_devengado_novedad float64
 var dias_a_liquidar string
 var dias_novedad_string string
+var nombre_archivo string
 
 func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor int, informacion_cargo []models.FuncionarioCargo, dias_laborados float64, periodo string, esAnual int, porcentajePT int, tipoNomina string) (rest []models.Respuesta) {
 
-	fmt.Println("prueba test")
+
 	var resultado []models.Respuesta
 	var lista_descuentos []models.ConceptosResumen
 
@@ -37,10 +38,10 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 		dias_a_liquidar = "30"
 	}
 
-
+  nombre_archivo = "reglas" + strconv.Itoa(idProveedor) + ".txt"
 	reglas = reglas + "salario_base(" + asignacion_basica_string + ")."
 	reglas = reglas + "tipo_nomina(" + tipoNomina_string + ")."
-	if err := WriteStringToFile("reglas.txt", reglas); err != nil {
+	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
       panic(err)
   }
 	m := NewMachine().Consult(reglas)
@@ -73,8 +74,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		lista_descuentos,total_devengado_no_novedad = CalcularConceptos(m, dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoNomina_string,esAnual, porcentajePT, idProveedor)
 		resultado = GuardarConceptos(lista_descuentos)
-		fmt.Println("resultado")
-		fmt.Println(resultado)
+
 		return resultado;
 
 

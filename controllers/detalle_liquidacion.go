@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
+
 	"strconv"
 	"github.com/udistrital/titan_api_mid/models"
 
@@ -19,7 +19,7 @@ func (c *DetalleLiquidacionController) URLMapping() {
 }
 
 func (c *DetalleLiquidacionController) InsertarDetallePreliquidacion() {
-	fmt.Println("detalle")
+
 	var v []int
 	var tam int
 	var IdPreliquidacion int

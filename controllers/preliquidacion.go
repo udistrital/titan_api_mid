@@ -29,6 +29,8 @@ func (c *PreliquidacionController) URLMapping() {
 func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+
+		
 		//carga de reglas desde el ruler
 		reglasbase := CargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
 
@@ -125,8 +127,6 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 			for i := 0; i < len(v); i++ {
 
 				esActiva := validarNovedades(datos_preliqu.Preliquidacion.Fecha, v[i].FechaDesde, v[i].FechaHasta)
-				fmt.Println("es activa")
-				fmt.Println(esActiva)
 
 				if esActiva == 1 {
 					if (v[i].Concepto.Naturaleza == "devengo"){
@@ -135,7 +135,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 
 					if (v[i].Concepto.Naturaleza == "seguridad_social"){
 
-						fmt.Println("asdf")
+
 						year, month, day := v[i].FechaDesde.Date()
 						year2, month2, day2 := v[i].FechaHasta.Date()
 						reglas = reglas + "seg_social("+v[i].Concepto.NombreConcepto+","+strconv.Itoa(year)+","+strconv.Itoa(int(month))+","+strconv.Itoa(day + 1)+","+strconv.Itoa(year2)+","+strconv.Itoa(int(month2))+","+strconv.Itoa(day2 + 1)+")." + "\n"
@@ -150,7 +150,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 		}
 
 	}
-	fmt.Println("novedad: ", reglas)
+
 	//------------------------------------------------------------------------------
 	return reglas
 
