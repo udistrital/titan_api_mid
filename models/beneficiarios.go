@@ -5,13 +5,14 @@ import(
 )
 
 
-type Beneficiario struct {
+type Beneficiarios struct {
 	Id                    int                    `orm:"column(id);pk"`
 	InformacionPensionado int                    `orm:"column(informacion_pensionado);null"`
-	InformacionProveedor  *InformacionProveedor  `orm:"column(informacion_proveedor);rel(fk)"`
+	InformacionProveedor  int  `orm:"column(informacion_proveedor);"`
 	FechaNacBeneficiario  time.Time              `orm:"column(fecha_nac_beneficiario);type(date);null"`
 	Tutor                 int                    `orm:"column(tutor);null"`
 	SubFamiliar           string                 `orm:"column(sub_familiar);null"`
-	CategoriaBeneficiario *CategoriaBeneficiario `orm:"column(categoria_beneficiario);rel(fk)"`
-	SubEstudios           string                 `orm:"column(sub_estudios);null"`
+	CategoriaBeneficiario int `orm:"column(categoria_beneficiario);"`
+	SubEstudios           string                 `orm:"column(aux_estudio);null"`
+	Estado								string									`orm:"column(estado);null"`
 }

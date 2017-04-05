@@ -649,14 +649,15 @@ conceptos_ibc(nombreRegla1257).
 salud_fun(TD,P,V):- \+(seg_social(comision_estudio,_,_,_,_,_,_)) -> porcentaje_salud(P,1,PF), V is (TD * PF rnd 0).
 afectacion_seguridad(licencia_norem).
 seg_social(prueba,1,1,1,1,1,1).
-concepto_ibc(priTec).
+conceptos_ibc(nombreRegla158).
+conceptos_ibc(nombreRegla1252).
+novedades_devengos(X):- devengo(V,N), conceptos_ibc(N), X is V.
+conceptos_ibc(nombreRegla17).
 concepto_ibc(salarioBase).
 concepto_ibc(gastosRep).
 concepto_ibc(bonServ).
-calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
 concepto_ibc(primaAnt).
-novedades_devengos(X):- devengo(V,N), concepto_ibc(N), X is V.
-conceptos_ibc(nombreRegla17).
-conceptos_ibc(nombreRegla158).
-conceptos_ibc(nombreRegla1252).
+conceptos_ibc(subsidioFa).
+calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
+concepto_ibc(priTec).
 salario_base(4114674).tipo_nomina(2).

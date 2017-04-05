@@ -3,7 +3,10 @@ package models
 
 type Sustituto struct {
 	Id                              int           `orm:"column(id);pk"`
-	ParentescoInformacionPensionado int           `orm:"column(parentesco_informacion_pensionado)"`
-	BeneficiarioSustituto           *Beneficiario `orm:"column(beneficiario_sustituto);rel(fk)"`
+	Proveedor											int								`orm:"column(informacion_proveedor)"`
+	Beneficiario           				int `orm:"column(beneficiario)"`
+	Porcentaje										int					`orm:"column(porcentaje)"`
 	Estado                          string        `orm:"column(estado);null"`
+	NumeroContrato								string						`orm:"column(numero_contrato);null"`
+	Tutor	 												int								`orm:"column(tutor)"`
 }
