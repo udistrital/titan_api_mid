@@ -1,7 +1,10 @@
-concepto(29,descuento, porcentaje, nombreRegla269, 1, 2017). 
-concepto(29,descuento, porcentaje, nombreRegla231, 3, 2017). 
-seg_social(licencia_norem,2017,3,15,2017,4,10).
-concepto(29,seguridad_social, porcentaje, licencia_norem, 0, 2017). 
+concepto(148,descuento, porcentaje, nombreRegla29, 1, 2017). 
+concepto(148,descuento, porcentaje, nombreRegla269, 1, 2017). 
+concepto(148,descuento, porcentaje, nombreRegla231, 3, 2017). 
+concepto(148,descuento, fijo, nombreRegla2303, 637922, 2017). 
+concepto(148,descuento, fijo, nombreRegla266, 750000, 2017). 
+devengo(77876,subsidioFa).
+concepto(148,devengo, fijo, subsidioFa, 77876, 2017). 
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
@@ -655,8 +658,9 @@ concepto_ibc(gastosRep).
 concepto_ibc(bonServ).
 calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
 concepto_ibc(primaAnt).
-novedades_devengos(X):- devengo(V,N), concepto_ibc(N), X is V.
 conceptos_ibc(nombreRegla17).
 conceptos_ibc(nombreRegla158).
 conceptos_ibc(nombreRegla1252).
-salario_base(4114674).tipo_nomina(2).
+conceptos_ibc(subsidioFa).
+novedades_devengos(X):- devengo(V,N), conceptos_ibc(N), X is V.
+salario_base(2412285).tipo_nomina(2).

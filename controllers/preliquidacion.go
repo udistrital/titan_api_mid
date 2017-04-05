@@ -30,7 +30,7 @@ func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
-		
+
 		//carga de reglas desde el ruler
 		reglasbase := CargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
 
@@ -129,20 +129,17 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 				esActiva := validarNovedades(datos_preliqu.Preliquidacion.Fecha, v[i].FechaDesde, v[i].FechaHasta)
 
 				if esActiva == 1 {
-					if (v[i].Concepto.Naturaleza == "devengo"){
-						reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
-					}
-
 					if (v[i].Concepto.Naturaleza == "seguridad_social"){
-
-
 						year, month, day := v[i].FechaDesde.Date()
 						year2, month2, day2 := v[i].FechaHasta.Date()
 						reglas = reglas + "seg_social("+v[i].Concepto.NombreConcepto+","+strconv.Itoa(year)+","+strconv.Itoa(int(month))+","+strconv.Itoa(day + 1)+","+strconv.Itoa(year2)+","+strconv.Itoa(int(month2))+","+strconv.Itoa(day2 + 1)+")." + "\n"
 						}
-
-
          }
+
+				 if (v[i].Concepto.Naturaleza == "devengo"){
+					 reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
+
+				 }
 
 				 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
 			}
