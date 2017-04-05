@@ -8,10 +8,13 @@ import (
 	models "github.com/udistrital/titan_api_mid/models"
 )
 
-func CargarReglasCT(reglas string, periodo string) (rest []models.Respuesta) {
-	//******QUITAR ARREGLO, DEJAR UNA SOLA VARIABLE PARA LAS REGLAS ******
 
-	if err := WriteStringToFile("reglascontratistas.txt", reglas); err != nil {
+
+func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []models.Respuesta) {
+	//******QUITAR ARREGLO, DEJAR UNA SOLA VARIABLE PARA LAS REGLAS ******
+  var nombre_archivo string
+	nombre_archivo = "reglas" + strconv.Itoa(idProveedor) + ".txt"
+	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
       panic(err)
   }
 	m := NewMachine().Consult(reglas)

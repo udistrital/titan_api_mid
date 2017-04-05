@@ -17,53 +17,21 @@ func TestFuncionarios(t *testing.T) {
     var conceptos *[]models.ConceptosResumen
     var nombre_archivo string
 
-    var ejemplo_json string
-    ejemplo_json = `[
-  {
+   var funcionarios_a_probar []string
+    var funcionarios string
 
-    "InformacionCargo":[{
-        "Id": 35,
-        "Asignacion_basica": 4114674,
-        "FechaInicio": "1995-01-24T19:00:00-05:00"
-     }],
-    "Reglas":"reglitas",
-    "FechaPreliquidacion": "2017-03-09T19:00:00-05:00",
-    "Valor_correcto_salario": "1920180",
-    "IdProveedor": 29,
-    "Dias_laborados": 7980,
-    "Periodo": "2017",
-    "EsAnual": 0,
-    "PorcentajePT" : 40,
-    "TipoNomina": "2"
 
- },
- {
+    funcionarios_a_probar =  file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/json_funcionarios.txt")
+    funcionarios = processString(funcionarios_a_probar)
 
-    "InformacionCargo":[{
-        "Id": 95,
-        "Asignacion_basica": 2193636,
-        "FechaInicio": "1995-04-20T19:00:00-05:00"
-     }],
-    "Reglas":"reglitas",
-    "FechaPreliquidacion": "2017-03-09T19:00:00-05:00",
-    "Valor_correcto_salario": "1023698",
-    "IdProveedor": 2,
-    "Dias_laborados": 6462,
-    "Periodo": "2017",
-    "EsAnual": 0,
-    "PorcentajePT" : 0,
-    "TipoNomina": "2"
-
- }
-]
-`
-    b := []byte(ejemplo_json)
+    b := []byte(funcionarios)
 
     var arreglo_funcionarios []models.FuncionarioInfoPruebas
     err := json.Unmarshal(b, &arreglo_funcionarios)
+    fmt.Println(err)
 
     if err == nil {
-
+      fmt.Println(arreglo_funcionarios)
        fmt.Println("Inicio test funcionarios")
        for x:=0; x < len(arreglo_funcionarios) ; x++ {
         nombre_archivo = "reglas"
@@ -77,7 +45,7 @@ func TestFuncionarios(t *testing.T) {
              if(i == 0){
                if descuentos.Valor != arreglo_funcionarios[x].Valor_correcto_salario {
                  fmt.Print("Test funcionarios: ")
-                  t.Errorf("Los datos son incorrectos, se obtuvo: ", descuentos.Valor, "y era: ", arreglo_funcionarios[x].Valor_correcto_salario)
+                  t.Errorf("Los datos son incorrectos, se obtuvo: "+descuentos.Valor+" y era: "+arreglo_funcionarios[x].Valor_correcto_salario)
                }
              }
 
@@ -90,27 +58,50 @@ func TestFuncionarios(t *testing.T) {
 
   }
 
-/*
+
   func TestContratistas(e *testing.T) {
+
+
     var resultado []models.Respuesta
-    var reglas_arreglo []string
-    var reglas string
+    var reglas []string
     var conceptos *[]models.ConceptosResumen
+    var nombre_archivo string
 
-    reglas_arreglo = file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/reglascontratistas.txt")
-    reglas = processString(reglas_arreglo)
-    fmt.Println("Inicio test contratistas")
+   var contratistas_a_probar []string
+    var contratistas string
 
-      resultado = golog.CargarReglasCT(reglas,"2016")
-      conceptos = resultado[0].Conceptos
-      for i, descuentos := range *conceptos {
-          if(i == 0){
-            if descuentos.Valor != "689455" {
-               e.Errorf("El valor es incorrecto, se obtuvo:"+descuentos.Valor+" se deseaba:689455")
-            }
-          }
 
-        }
+    contratistas_a_probar =  file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/json_contratistas.txt")
+    contratistas = processString(contratistas_a_probar)
+
+    b := []byte(contratistas)
+
+    var arreglo_contratistas []models.ContratistasInfoPruebas
+    err := json.Unmarshal(b, &arreglo_contratistas)
+    fmt.Println(err)
+
+    if err == nil {
+      fmt.Println(arreglo_contratistas)
+       fmt.Println("Inicio test contratistas")
+       for x:=0; x < len(arreglo_contratistas) ; x++ {
+         nombre_archivo = "reglas"
+         nombre_archivo = nombre_archivo + strconv.Itoa(arreglo_contratistas[x].IdProveedor) +".txt"
+         reglas = file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/"+nombre_archivo+"")
+         arreglo_contratistas[x].Reglas = processString(reglas)
+         resultado = golog.CargarReglasCT(arreglo_contratistas[x].IdProveedor, arreglo_contratistas[x].Reglas, arreglo_contratistas[x].Periodo)
+         conceptos = resultado[0].Conceptos
+         for i, descuentos := range *conceptos {
+             if(i == 0){
+               if descuentos.Valor != arreglo_contratistas[x].Valor_correcto_salario {
+                 fmt.Print("Test funcionarios: ")
+                  e.Errorf("Los datos son incorrectos, se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_salario)
+               }
+             }
+
+           }
+
+
+       }
+    }
 
   }
-*/

@@ -42,7 +42,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 		filtrodatos = "NumeroContrato.Id:" + (datos.PersonasPreLiquidacion[i].NumeroContrato) + ",Vigencia:" + datos.Preliquidacion.Nomina.Periodo
-		
+
 		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio?limit=1&query="+filtrodatos, &datos_contrato); err == nil && datos_contrato != nil {
 
 			FechaInicioContrato = time.Date(datos_contrato[0].FechaInicio.Year(), datos_contrato[0].FechaInicio.Month(), datos_contrato[0].FechaInicio.Day()+1, 0, 0, 0, 0, time.UTC)
@@ -76,7 +76,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 			reglas = reglasinyectadas + reglasbase
 			//fmt.Println("Reglas: ", reglasbase)
-			temp := golog.CargarReglasCT(reglas, datos.Preliquidacion.Nomina.Periodo)
+			temp := golog.CargarReglasCT(datos.PersonasPreLiquidacion[i].IdPersona, reglas, datos.Preliquidacion.Nomina.Periodo)
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = datos_contrato[0].NumeroContrato.Contratista.NumDocumento

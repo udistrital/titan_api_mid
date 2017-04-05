@@ -1,0 +1,42 @@
+[
+  {
+
+    "InformacionCargo":[{
+        "Id": 35,
+        "Asignacion_basica": 4114674,
+        "FechaInicio": "1995-01-24T19:00:00-05:00"
+     }],
+    "Reglas":"reglitas",
+    "FechaPreliquidacion": "2017-03-09T19:00:00-05:00",
+    "Valor_correcto_salario": "1920180",
+    "IdProveedor": 29,
+    "Dias_laborados": 7980,
+    "Periodo": "2017",
+    "EsAnual": 0,
+    "PorcentajePT" : 40,
+    "TipoNomina": "2"
+
+ },
+ {
+
+    "InformacionCargo":[{
+        "Id": 95,
+        "Asignacion_basica": 2193636,
+        "FechaInicio": "1995-04-20T19:00:00-05:00"
+     }],
+    "Reglas":"reglitas",
+    "FechaPreliquidacion": "2017-03-09T19:00:00-05:00",
+    "Valor_correcto_salario": "1023698",
+    "IdProveedor": 2,
+    "Dias_laborados": 6462,
+    "Periodo": "2017",
+    "EsAnual": 0,
+    "PorcentajePT" : 0,
+    "TipoNomina": "2"
+
+ }
+]
+
+
+
+

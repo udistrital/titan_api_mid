@@ -1,0 +1,19 @@
+[
+  {
+    "IdProveedor": 2439,
+    "Reglas":"reglitas",
+    "Periodo": "2016",
+    "Valor_correcto_salario": "827347"
+   },
+{
+    "IdProveedor": 2437,
+    "Reglas":"reglitas",
+    "Periodo": "2016",
+    "Valor_correcto_salario": "896293"
+   }
+]
+
+
+
+
+
