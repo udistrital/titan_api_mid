@@ -165,7 +165,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 					Valor: fmt.Sprintf("%.0f", Valor),
 				}
 
-				reglas = reglas + "sumar_ibc(bonServ),"+strconv.Itoa(int(Valor))+")."
+				reglas = reglas + "sumar_ibc(bonServ,"+strconv.Itoa(int(Valor))+")."
 				codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 
 				for _, cod := range codigo {
@@ -222,7 +222,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 		}
 
 		CalcularIBC(reglas)
-		
+
 
 		total_devengado_string := strconv.Itoa(int(ibc))
 
