@@ -31,6 +31,7 @@ func (c *PreliquidacionpeController) Preliquidar(datos *models.DatosPreliquidaci
 
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
+
 		filtrodatos := models.InformacionPensionado{Id: datos.PersonasPreLiquidacion[i].IdPersona}
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/informacion_pensionado", "POST", &pensionados, &filtrodatos); err == nil {
 
