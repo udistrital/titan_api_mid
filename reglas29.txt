@@ -555,7 +555,6 @@ porcentaje_pension(2016,1, 0.04).
 porcentaje_pension(2016,2, 0.125).
 salud_ud(TD,P,V) :- porcentaje_salud(P,2,PF), V is (TD * PF rnd 0).
 total_salud(TD,P,V) :- salud_fun(TD,P,SF), salud_ud(TD,P,SU), V is SF + SU.
-pension_fun(TD,P,V):- porcentaje_pension(P,1,PF), V is (TD * PF rnd 0).
 pension_ud(TD,P,V) :- porcentaje_pension(P,2,PF), V is (TD * PF rnd 0).
 porcentaje_fondo(TD,SM,PF) :- LI is 16 * SM, LS is 17 * SM, (TD @>= LI, TD @< LS  -> PF is 0.012).
 prima_tecnica(S,DL,M,P,V) :- periodo_primatec(M), X is P/ 100, V is ((S*X) * (DL/30) rnd 0).
@@ -567,7 +566,6 @@ porcentaje_ps(2016,2, 0.03).
 fondo_solidaridad_fun(TD,P,V) :- salario_minimo(P,SM),porcentaje_fondo(TD, SM, PF), (V is PF * TD rnd 0).
 salario_minimo(2017, 737717).
 info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
-prima_ant(S,DL,M,P,DLA,V) :- periodo_liq_primaant(M), dias_pa(DLA,DP), porcentaje_pa(P,DP,PA), V is ((S * PA) rnd 0).
 prima_secretarial(S,P,C,M,DT,V) :- secretario(C), periodo_liq_primsec(M), (DT @> 0, DT @=< 360 -> Z is 1 ; DT @>= 361, DT @=< 1080 -> Z is 2 ; DT @>= 1081, DT @=< 2880 -> Z is 3; DT @>= 2881, DT @=< 5400 -> Z is 4; DT @>5401 -> Z is 5; Z is 1), porcentaje_ps(P,Z,A), V is (S*A rnd 0).
 concepto(prueba, devengo, porcentaje, salud,0.5 , 2016).
 periodo_sb(2).
@@ -591,7 +589,6 @@ periodo_liq_bonserv(3).
 periodo_liq_bonserv(1).
 periodo_liq_primaant(4).
 periodo_liq_primsec(2).
-periodo_liq_primsec(3).
 periodo_liq_primsec(4).
 secretario(105).
 secretario(110).
@@ -604,6 +601,7 @@ porcentaje_gr(2016,265, 0.50).
 info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(salario_base(V),valor_pago(V, F), R is F * (Z/100))).
 valor_pago(S,V):- tipo_nomina(0), V is ((15/30)*S rnd 0).
 valor_pago(S,V):- tipo_nomina(2), V is ((30/30)*S rnd 0).
+prima_ant(S,DL,M,P,DLA,V) :- periodo_liq_primaant(M), dias_pa(DLA,DP), porcentaje_pa(P,DP,PA), V is ((S * PA) * (DL/30) rnd 0).
 bon_ser(S,DL,M,P,DLA,C,V) :- periodo_liq_bonserv(M), \+(gr(S,DL,M,P,C,GR)) -> GR is 0, prima_ant(S,DL,M,P,DLA,PA), V is ((S + GR + PA) * 0.35 rnd 0).
 periodo_primatec(0).
 valor_pago(S,V):- tipo_nomina(1), V is ((15/30)*S rnd 0).
@@ -646,9 +644,9 @@ afectacion_seguridad(comision_norem).
 conceptos_ibc(nombreRegla1253).
 conceptos_ibc(nombreRegla1254).
 conceptos_ibc(nombreRegla1257).
-salud_fun(TD,P,V):- \+(seg_social(comision_estudio,_,_,_,_,_,_)) -> porcentaje_salud(P,1,PF), V is (TD * PF rnd 0).
 afectacion_seguridad(licencia_norem).
 seg_social(prueba,1,1,1,1,1,1).
+salud_fun(TD,P,M,V):- \+(seg_social(comision_estudio,_,_,_,_,_,_)) -> periodo_liq_salud(M),porcentaje_salud(P,1,PF), V is (TD * PF rnd 0).
 conceptos_ibc(nombreRegla158).
 conceptos_ibc(nombreRegla1252).
 novedades_devengos(X):- devengo(V,N), conceptos_ibc(N), X is V.
@@ -660,4 +658,9 @@ concepto_ibc(primaAnt).
 conceptos_ibc(subsidioFa).
 calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
 concepto_ibc(priTec).
+periodo_liq_salud(1).
+periodo_liq_salud(2).
+periodo_liq_pension(1).
+periodo_liq_pension(2).
+pension_fun(TD,P,M,V):- periodo_liq_pension(M),porcentaje_pension(P,1,PF), V is (TD * PF rnd 0).
 salario_base(4114674).tipo_nomina(2).

@@ -558,7 +558,6 @@ porcentaje_pension(2016,1, 0.04).
 porcentaje_pension(2016,2, 0.125).
 salud_ud(TD,P,V) :- porcentaje_salud(P,2,PF), V is (TD * PF rnd 0).
 total_salud(TD,P,V) :- salud_fun(TD,P,SF), salud_ud(TD,P,SU), V is SF + SU.
-pension_fun(TD,P,V):- porcentaje_pension(P,1,PF), V is (TD * PF rnd 0).
 pension_ud(TD,P,V) :- porcentaje_pension(P,2,PF), V is (TD * PF rnd 0).
 porcentaje_fondo(TD,SM,PF) :- LI is 16 * SM, LS is 17 * SM, (TD @>= LI, TD @< LS  -> PF is 0.012).
 prima_tecnica(S,DL,M,P,V) :- periodo_primatec(M), X is P/ 100, V is ((S*X) * (DL/30) rnd 0).
@@ -648,9 +647,9 @@ afectacion_seguridad(comision_norem).
 conceptos_ibc(nombreRegla1253).
 conceptos_ibc(nombreRegla1254).
 conceptos_ibc(nombreRegla1257).
-salud_fun(TD,P,V):- \+(seg_social(comision_estudio,_,_,_,_,_,_)) -> porcentaje_salud(P,1,PF), V is (TD * PF rnd 0).
 afectacion_seguridad(licencia_norem).
 seg_social(prueba,1,1,1,1,1,1).
+salud_fun(TD,P,M,V):- \+(seg_social(comision_estudio,_,_,_,_,_,_)) -> periodo_liq_salud(M),porcentaje_salud(P,1,PF), V is (TD * PF rnd 0).
 conceptos_ibc(nombreRegla158).
 conceptos_ibc(nombreRegla1252).
 novedades_devengos(X):- devengo(V,N), conceptos_ibc(N), X is V.
@@ -662,4 +661,9 @@ concepto_ibc(primaAnt).
 conceptos_ibc(subsidioFa).
 calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
 concepto_ibc(priTec).
+periodo_liq_salud(1).
+periodo_liq_salud(2).
+periodo_liq_pension(1).
+periodo_liq_pension(2).
+pension_fun(TD,P,M,V):- periodo_liq_pension(M),porcentaje_pension(P,1,PF), V is (TD * PF rnd 0).
 salario_base(2345274).tipo_nomina(2).

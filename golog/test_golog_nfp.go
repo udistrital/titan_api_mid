@@ -19,6 +19,7 @@ var dias_novedad_string string
 var nombre_archivo string
 var ibc float64
 var dias_liquidar_prima_semestral  string
+var total_calculos []models.ConceptosResumen
 
 func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor int, informacion_cargo []models.FuncionarioCargo, dias_laborados float64, periodo string, esAnual int, porcentajePT int, tipoNomina string) (rest []models.Respuesta) {
 
@@ -26,6 +27,8 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 	var resultado []models.Respuesta
 	var lista_descuentos []models.ConceptosResumen
 	var lista_descuentos_semestral []models.ConceptosResumen
+	var lista_novedades []models.ConceptosResumen
+
 
 	asignacion_basica_string := strconv.Itoa(informacion_cargo[0].Asignacion_basica)
 	id_cargo_string := strconv.Itoa(informacion_cargo[0].Id)
@@ -51,6 +54,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 	m := NewMachine().Consult(reglas)
 
+	//-- NOVEDADES DE SEGURIDAD SOCIAL --
 	novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
 
 	for _, solution := range novedades_seg_social {
@@ -76,38 +80,37 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		}
 
-		//nomina especial
+		//-------------------
+
+		// -- PRIMA SEMESTRAL --
 
 		if(int(fechaPreliquidacion.Month()) == 6){
-
-			fmt.Println("nomina especial")
 			if(dias_laborados >= 360) {
 				dias_liquidar_prima_semestral = "37"
-				fmt.Println("más de un año ",dias_liquidar_prima_semestral )
 			}else{
 				if(dias_laborados < 90){
 					dias_liquidar_prima_semestral = "0"
-					fmt.Println("menos de tres meses",dias_liquidar_prima_semestral )
 				}else{
 					dias_liquidar_prima_semestral  = strconv.Itoa(int((dias_laborados * 46 ) / 360))
-					fmt.Println("más de tres meses pero menos de un año ",dias_liquidar_prima_semestral )
 				}
 			}
-			fmt.Println("dias laborados")
-			fmt.Println(dias_laborados)
+
 			lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptos(m, reglas,dias_liquidar_prima_semestral,asignacion_basica_string,id_cargo_string,dias_laborados_string, "3",esAnual, porcentajePT, idProveedor)
-			fmt.Println(lista_descuentos_semestral)
+			total_calculos = append (total_calculos, lista_descuentos_semestral...)
+			ibc = 0
 			}
 
-
-			//con dias laborados calcular tiempos para días de liquidar y llamar a CalcularCOnceptos
+		//--------------------------------
 
 
 		lista_descuentos,total_devengado_no_novedad = CalcularConceptos(m, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoNomina_string,esAnual, porcentajePT, idProveedor)
 		ibc = 0
-		resultado = GuardarConceptos(lista_descuentos)
+		lista_novedades = ManejarNovedades(reglas,idProveedor)
+		total_calculos = append(total_calculos, lista_descuentos...)
+		total_calculos = append(total_calculos, lista_novedades...)
+		resultado = GuardarConceptos(total_calculos)
+		total_calculos = []models.ConceptosResumen{}
 		return resultado;
-
 
 	}
 
@@ -255,7 +258,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		total_devengado_string := strconv.Itoa(int(ibc))
 
-		valor_salud := m.ProveAll("salud_fun(" + total_devengado_string + ",2016,V).")
+		valor_salud := m.ProveAll("salud_fun(" + total_devengado_string + ",2016,"+tipoNomina_string+",V).")
 		for _, solution := range valor_salud {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 			temp_conceptos := models.ConceptosResumen{Nombre: "salud",
@@ -272,7 +275,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		}
 
-		valor_pension := m.ProveAll("pension_fun(" + total_devengado_string + ",2016,V).")
+		valor_pension := m.ProveAll("pension_fun(" + total_devengado_string + ",2016,"+tipoNomina_string+",V).")
 		for _, solution := range valor_pension {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 			temp_conceptos := models.ConceptosResumen{Nombre: "pension",
@@ -309,24 +312,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 			}
 		}
 
-		idProveedorString := strconv.Itoa(idProveedor)
-		novedades := m.ProveAll("info_concepto(" + idProveedorString + ",T,2017,N,R).")
 
-		for _, solution := range novedades {
-
-			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
-			temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
-				Valor: fmt.Sprintf("%.0f", Valor),
-			}
-			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
-			for _, cod := range codigo {
-				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-				temp_conceptos.DiasLiquidados = dias_a_liquidar
-			}
-
-			lista_descuentos = append(lista_descuentos, temp_conceptos)
-
-		}
 
 		return lista_descuentos, ibc
 }
@@ -366,6 +352,34 @@ func CalcularIBC(reglas string){
 	for _, solution := range valor_ibc {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 		ibc = ibc + Valor
+
 		}
+}
+
+func ManejarNovedades(reglas string, idProveedor int) (rest []models.ConceptosResumen){
+	var lista_novedades []models.ConceptosResumen
+
+	f := NewMachine().Consult(reglas)
+
+	idProveedorString := strconv.Itoa(idProveedor)
+	novedades := f.ProveAll("info_concepto(" + idProveedorString + ",T,2017,N,R).")
+
+	for _, solution := range novedades {
+
+		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
+		temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
+			Valor: fmt.Sprintf("%.0f", Valor),
+		}
+		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		for _, cod := range codigo {
+			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
+		}
+
+		lista_novedades = append(lista_novedades, temp_conceptos)
+
+	}
+
+	return lista_novedades
 
 }
