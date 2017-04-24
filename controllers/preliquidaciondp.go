@@ -35,11 +35,12 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 		//fmt.Println("reglas: ", reglasbase)
 		//consulta que envie ID de proveedor en datos y retorne el salario, para que sea enviado a CargarReglas
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/docente_cargo", "POST", &informacion_cargo, &filtrodatos); err == nil {
+			fmt.Println("infocargo")
 			fmt.Println(informacion_cargo)
 			num_contrato := datos.PersonasPreLiquidacion[i].NumeroContrato
 			if err2 := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/docente_cargo/consultarCedulaDocente", "POST", &cedula, &num_contrato); err == nil {
 
-				
+
 				regimen := informacion_cargo[0].Regimen
 				puntos = consumir_puntos(cedula)
 				tiempo_contrato := CalcularDias(informacion_cargo[0].FechaInicio, time.Now())

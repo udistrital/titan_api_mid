@@ -12,17 +12,20 @@ import (
 
 
 var total_devengado_no_novedad float64
+var total_devengado_no_novedad_semestral float64
 var total_devengado_novedad float64
 var dias_a_liquidar string
 var dias_novedad_string string
 var nombre_archivo string
 var ibc float64
+var dias_liquidar_prima_semestral  string
 
 func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor int, informacion_cargo []models.FuncionarioCargo, dias_laborados float64, periodo string, esAnual int, porcentajePT int, tipoNomina string) (rest []models.Respuesta) {
 
 
 	var resultado []models.Respuesta
 	var lista_descuentos []models.ConceptosResumen
+	var lista_descuentos_semestral []models.ConceptosResumen
 
 	asignacion_basica_string := strconv.Itoa(informacion_cargo[0].Asignacion_basica)
 	id_cargo_string := strconv.Itoa(informacion_cargo[0].Id)
@@ -72,6 +75,32 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 		}
 
 		}
+
+		//nomina especial
+
+		if(int(fechaPreliquidacion.Month()) == 6){
+
+			fmt.Println("nomina especial")
+			if(dias_laborados >= 360) {
+				dias_liquidar_prima_semestral = "37"
+				fmt.Println("más de un año ",dias_liquidar_prima_semestral )
+			}else{
+				if(dias_laborados < 90){
+					dias_liquidar_prima_semestral = "0"
+					fmt.Println("menos de tres meses",dias_liquidar_prima_semestral )
+				}else{
+					dias_liquidar_prima_semestral  = strconv.Itoa(int((dias_laborados * 46 ) / 360))
+					fmt.Println("más de tres meses pero menos de un año ",dias_liquidar_prima_semestral )
+				}
+			}
+			fmt.Println("dias laborados")
+			fmt.Println(dias_laborados)
+			lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptos(m, reglas,dias_liquidar_prima_semestral,asignacion_basica_string,id_cargo_string,dias_laborados_string, "3",esAnual, porcentajePT, idProveedor)
+			fmt.Println(lista_descuentos_semestral)
+			}
+
+
+			//con dias laborados calcular tiempos para días de liquidar y llamar a CalcularCOnceptos
 
 
 		lista_descuentos,total_devengado_no_novedad = CalcularConceptos(m, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoNomina_string,esAnual, porcentajePT, idProveedor)

@@ -1,12 +1,9 @@
-concepto(2,descuento, porcentaje, nombreRegla29, 1, 2017). 
-concepto(2,descuento, porcentaje, nombreRegla269, 1, 2017). 
-concepto(2,descuento, porcentaje, nombreRegla231, 3, 2017). 
-concepto(2,descuento, fijo, nombreRegla2259, 93163, 2017). 
-concepto(2,descuento, fijo, nombreRegla243, 101211, 2017). 
-concepto(2,descuento, fijo, nombreRegla266, 103883, 2017). 
-concepto(2,descuento, fijo, nombreRegla2303, 211922, 2017). 
-concepto(2,devengo, fijo, subsidioFa, 233628, 2017). 
-concepto(2,seguridad_social, porcentaje, comision_norem, 0, 2017). 
+concepto(2304,descuento, porcentaje, nombreRegla269, 1, 2017). 
+concepto(2304,descuento, porcentaje, nombreRegla231, 3, 2017). 
+concepto(2304,descuento, fijo, nombreRegla214, 27679, 2017). 
+concepto(2304,descuento, fijo, nombreRegla214, 55357, 2017). 
+concepto(2304,descuento, fijo, nombreRegla214, 55357, 2017). 
+concepto(2304,devengo, fijo, subsidioFa, 77876, 2017). 
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
@@ -573,7 +570,6 @@ porcentaje_ps(2016,2, 0.03).
 fondo_solidaridad_fun(TD,P,V) :- salario_minimo(P,SM),porcentaje_fondo(TD, SM, PF), (V is PF * TD rnd 0).
 salario_minimo(2017, 737717).
 info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
-prima_ant(S,DL,M,P,DLA,V) :- periodo_liq_primaant(M), dias_pa(DLA,DP), porcentaje_pa(P,DP,PA), V is ((S * PA) rnd 0).
 prima_secretarial(S,P,C,M,DT,V) :- secretario(C), periodo_liq_primsec(M), (DT @> 0, DT @=< 360 -> Z is 1 ; DT @>= 361, DT @=< 1080 -> Z is 2 ; DT @>= 1081, DT @=< 2880 -> Z is 3; DT @>= 2881, DT @=< 5400 -> Z is 4; DT @>5401 -> Z is 5; Z is 1), porcentaje_ps(P,Z,A), V is (S*A rnd 0).
 concepto(prueba, devengo, porcentaje, salud,0.5 , 2016).
 periodo_sb(2).
@@ -597,7 +593,6 @@ periodo_liq_bonserv(3).
 periodo_liq_bonserv(1).
 periodo_liq_primaant(4).
 periodo_liq_primsec(2).
-periodo_liq_primsec(3).
 periodo_liq_primsec(4).
 secretario(105).
 secretario(110).
@@ -610,6 +605,7 @@ porcentaje_gr(2016,265, 0.50).
 info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(salario_base(V),valor_pago(V, F), R is F * (Z/100))).
 valor_pago(S,V):- tipo_nomina(0), V is ((15/30)*S rnd 0).
 valor_pago(S,V):- tipo_nomina(2), V is ((30/30)*S rnd 0).
+prima_ant(S,DL,M,P,DLA,V) :- periodo_liq_primaant(M), dias_pa(DLA,DP), porcentaje_pa(P,DP,PA), V is ((S * PA) * (DL/30) rnd 0).
 bon_ser(S,DL,M,P,DLA,C,V) :- periodo_liq_bonserv(M), \+(gr(S,DL,M,P,C,GR)) -> GR is 0, prima_ant(S,DL,M,P,DLA,PA), V is ((S + GR + PA) * 0.35 rnd 0).
 periodo_primatec(0).
 valor_pago(S,V):- tipo_nomina(1), V is ((15/30)*S rnd 0).
@@ -666,4 +662,4 @@ concepto_ibc(primaAnt).
 conceptos_ibc(subsidioFa).
 calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
 concepto_ibc(priTec).
-salario_base(2193636).tipo_nomina(2).
+salario_base(2345274).tipo_nomina(2).

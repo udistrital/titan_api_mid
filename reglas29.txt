@@ -1,6 +1,5 @@
 concepto(29,descuento, porcentaje, nombreRegla269, 1, 2017). 
 concepto(29,descuento, porcentaje, nombreRegla231, 3, 2017). 
-seg_social(licencia_norem,2017,3,15,2017,4,10).
 concepto(29,seguridad_social, porcentaje, licencia_norem, 0, 2017). 
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(primaNavidad,1261).
@@ -63,7 +62,6 @@ codigo_concepto(nombreRegla114,114).
 codigo_concepto(nombreRegla115,115).
 codigo_concepto(nombreRegla117,117).
 codigo_concepto(nombreRegla118,118).
-codigo_concepto(nombreRegla119,119).
 codigo_concepto(nombreRegla120,120).
 codigo_concepto(nombreRegla121,121).
 codigo_concepto(nombreRegla122,122).
@@ -122,7 +120,6 @@ codigo_concepto(nombreRegla1202,1202).
 codigo_concepto(nombreRegla1203,1203).
 codigo_concepto(nombreRegla1112,1112).
 codigo_concepto(nombreRegla1114,1114).
-codigo_concepto(nombreRegla1105,1105).
 codigo_concepto(nombreRegla1204,1204).
 codigo_concepto(nombreRegla1206,1206).
 codigo_concepto(nombreRegla1215,1215).
@@ -468,7 +465,6 @@ codigo_concepto(nombreRegla233,233).
 codigo_concepto(nombreRegla2307,2307).
 codigo_concepto(nombreRegla2308,2308).
 codigo_concepto(gastosRep,12).
-codigo_concepto(nombreRegla14,14).
 codigo_concepto(nombreRegla16,16).
 codigo_concepto(nombreRegla17,17).
 codigo_concepto(nombreRegla18,18).
@@ -522,6 +518,10 @@ codigo_concepto(comision_estudio,2325).
 codigo_concepto(comision_norem,2326).
 codigo_concepto(ibc_liquidado,2322).
 codigo_concepto(ibc_novedad,2327).
+codigo_concepto(pensionadoPension,14).
+codigo_concepto(subLibros,119).
+codigo_concepto(subFamiliar,1105).
+codigo_concepto(persona_exterior,2328).
 total_pension(TD,P,V) :- pension_fun(TD,P,PF), pension_ud(TD,P,PU), V is PF + PU.
 porcentaje_fondo(TD,SM,PF) :- LI is 4 * SM, (TD @< LI -> PF is 0).
 porcentaje_fondo(TD,SM,PF) :- LI is 4 * SM, LS is 16 * SM, (TD @>= LI, TD @< LS  -> PF is 0.01).

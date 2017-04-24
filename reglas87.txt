@@ -1,12 +1,9 @@
-concepto(2,descuento, porcentaje, nombreRegla29, 1, 2017). 
-concepto(2,descuento, porcentaje, nombreRegla269, 1, 2017). 
-concepto(2,descuento, porcentaje, nombreRegla231, 3, 2017). 
-concepto(2,descuento, fijo, nombreRegla2259, 93163, 2017). 
-concepto(2,descuento, fijo, nombreRegla243, 101211, 2017). 
-concepto(2,descuento, fijo, nombreRegla266, 103883, 2017). 
-concepto(2,descuento, fijo, nombreRegla2303, 211922, 2017). 
-concepto(2,devengo, fijo, subsidioFa, 233628, 2017). 
-concepto(2,seguridad_social, porcentaje, comision_norem, 0, 2017). 
+concepto(87,descuento, porcentaje, nombreRegla29, 1, 2017). 
+concepto(87,descuento, porcentaje, nombreRegla269, 1, 2017). 
+concepto(87,descuento, porcentaje, nombreRegla231, 3, 2017). 
+concepto(87,descuento, fijo, nombreRegla2258, 76634, 2017). 
+concepto(87,descuento, fijo, nombreRegla286, 76753, 2017). 
+concepto(87,descuento, fijo, nombreRegla212, 135877, 2017). 
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
@@ -666,4 +663,4 @@ concepto_ibc(primaAnt).
 conceptos_ibc(subsidioFa).
 calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
 concepto_ibc(priTec).
-salario_base(2193636).tipo_nomina(2).
+salario_base(2220128).tipo_nomina(2).

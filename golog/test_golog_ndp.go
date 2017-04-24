@@ -35,11 +35,13 @@ func CargarReglasDP(idProveedor int, reglas string, informacion_cargo []models.D
 		cargo = "2"
 	}
 	if regimen == "N" {
+		fmt.Println("Nuevo")
 		regimen_numero = "1"
 	} else {
+		fmt.Println("antiguo")
 		regimen_numero = "2"
 	}
-	
+
 	fmt.Println(regimen_numero + " " + " " + puntos_string + " " + asignacion_basica_string + " " + cargo)
 
 	novedades_devengo := m.ProveAll("novedades_devengos(X).")
