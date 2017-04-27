@@ -127,11 +127,13 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 			for i := 0; i < len(v); i++ {
 
 				esActiva := validarNovedades_segSocial(datos_preliqu.Preliquidacion.Fecha, v[i].FechaDesde, v[i].FechaHasta)
-
+					fmt.Println(datos_preliqu.Preliquidacion.Fecha, v[i].FechaDesde, v[i].FechaHasta)
 				if esActiva == 1 {
+
 					if (v[i].Concepto.Naturaleza == "seguridad_social"){
 						year, month, day := v[i].FechaDesde.Date()
 						year2, month2, day2 := v[i].FechaHasta.Date()
+						
 						reglas = reglas + "seg_social("+v[i].Concepto.NombreConcepto+","+strconv.Itoa(year)+","+strconv.Itoa(int(month))+","+strconv.Itoa(day + 1)+","+strconv.Itoa(year2)+","+strconv.Itoa(int(month2))+","+strconv.Itoa(day2 + 1)+")." + "\n"
 						}
          }

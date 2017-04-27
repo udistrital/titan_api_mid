@@ -10,4 +10,5 @@ type DetallePreliquidacion struct {
 	Concepto       *Concepto `orm:"column(concepto);rel(fk)"`
 	NumeroContrato *ContratoGeneral `orm:"column(numero_contrato);rel(fk)"`
 	DiasLiquidados string       `orm:"column(dias_liquidados)"`
+	TipoPreliquidacion string   `orm:"column(tipo_preliquidacion)"`
 }

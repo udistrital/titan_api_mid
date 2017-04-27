@@ -1,9 +1,7 @@
-concepto(26,descuento, porcentaje, nombreRegla269, 1, 2017). 
-concepto(26,descuento, porcentaje, nombreRegla231, 3, 2017). 
-concepto(26,descuento, fijo, nombreRegla266, 137215, 2017). 
-concepto(26,descuento, fijo, nombreRegla2266, 640761, 2017). 
-concepto(26,descuento, fijo, nombreRegla266, 865000, 2017). 
-concepto(26,descuento, fijo, nombreRegla266, 865000, 2017). 
+concepto(147,descuento, fijo, nombreRegla214, 28572, 2017). 
+concepto(147,descuento, fijo, nombreRegla214, 57136, 2017). 
+concepto(147,descuento, fijo, nombreRegla214, 57136, 2017). 
+concepto(147,descuento, fijo, nombreRegla2212, 723624, 2017). 
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
@@ -524,10 +522,7 @@ codigo_concepto(ibc_novedad,2327).
 codigo_concepto(pensionadoPension,14).
 codigo_concepto(subLibros,119).
 codigo_concepto(subFamiliar,1105).
-codigo_concepto(incapacidad_laboral,2329).
-codigo_concepto(incapacidad_general,2330).
-codigo_concepto(exterior_sin_familia,2331).
-codigo_concepto(exterior_familia,2328).
+codigo_concepto(persona_exterior,2328).
 total_pension(TD,P,V) :- pension_fun(TD,P,PF), pension_ud(TD,P,PU), V is PF + PU.
 porcentaje_fondo(TD,SM,PF) :- LI is 4 * SM, (TD @< LI -> PF is 0).
 porcentaje_fondo(TD,SM,PF) :- LI is 4 * SM, LS is 16 * SM, (TD @>= LI, TD @< LS  -> PF is 0.01).
@@ -600,6 +595,7 @@ secretario(105).
 secretario(110).
 bon_ser(S,DL,M,P,DLA,C,V) :- periodo_liq_bonserv(M),gr(S,DL,M,P,C,GR), prima_ant(S,DL,M,P,DLA,PA), V is ((S + GR + PA) * 0.35 rnd 0).
 periodo_primatec(1).
+periodo_primatec(2).
 periodo_primatec(3).
 periodo_primatec(4).
 porcentaje_gr(2016,265, 0.50).
@@ -607,7 +603,6 @@ info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(salario_base
 valor_pago(S,V):- tipo_nomina(0), V is ((15/30)*S rnd 0).
 valor_pago(S,V):- tipo_nomina(2), V is ((30/30)*S rnd 0).
 prima_ant(S,DL,M,P,DLA,V) :- periodo_liq_primaant(M), dias_pa(DLA,DP), porcentaje_pa(P,DP,PA), V is ((S * PA) * (DL/30) rnd 0).
-periodo_primatec(2).
 bon_ser(S,DL,M,P,DLA,C,V) :- periodo_liq_bonserv(M), \+(gr(S,DL,M,P,C,GR)) -> GR is 0, prima_ant(S,DL,M,P,DLA,PA), V is ((S + GR + PA) * 0.35 rnd 0).
 periodo_primatec(0).
 valor_pago(S,V):- tipo_nomina(1), V is ((15/30)*S rnd 0).
@@ -669,5 +664,4 @@ periodo_liq_salud(2).
 periodo_liq_pension(1).
 periodo_liq_pension(2).
 pension_fun(TD,P,M,V):- periodo_liq_pension(M),porcentaje_pension(P,1,PF), V is (TD * PF rnd 0).
-afectacion_seguridad(exterior_familia).
-salario_base(4672560).tipo_nomina(2).
+salario_base(3656671).tipo_nomina(2).
