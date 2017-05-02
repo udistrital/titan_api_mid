@@ -2,8 +2,6 @@ concepto(26,descuento, porcentaje, nombreRegla269, 1, 2017).
 concepto(26,descuento, porcentaje, nombreRegla231, 3, 2017). 
 concepto(26,descuento, fijo, nombreRegla266, 137215, 2017). 
 concepto(26,descuento, fijo, nombreRegla2266, 640761, 2017). 
-concepto(26,descuento, fijo, nombreRegla266, 865000, 2017). 
-concepto(26,descuento, fijo, nombreRegla266, 865000, 2017). 
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
@@ -578,8 +576,6 @@ periodo_sb(2).
 periodo_sb(0).
 periodo_sb(3).
 periodo_sb(1).
-periodo_sb(4).
-periodo_liq_gastosrep(4).
 sb(S,N,DL,V):-  periodo_sb(N), V is ((DL/30)*S rnd 0).
 periodo_liq_gastosrep(1).
 periodo_liq_gastosrep(2).
@@ -593,21 +589,22 @@ periodo_liq_primsec(1).
 secretario(84).
 periodo_liq_bonserv(3).
 periodo_liq_bonserv(1).
-periodo_liq_primaant(4).
 periodo_liq_primsec(2).
-periodo_liq_primsec(4).
 secretario(105).
 secretario(110).
 bon_ser(S,DL,M,P,DLA,C,V) :- periodo_liq_bonserv(M),gr(S,DL,M,P,C,GR), prima_ant(S,DL,M,P,DLA,PA), V is ((S + GR + PA) * 0.35 rnd 0).
 periodo_primatec(1).
 periodo_primatec(3).
-periodo_primatec(4).
 porcentaje_gr(2016,265, 0.50).
 info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(salario_base(V),valor_pago(V, F), R is F * (Z/100))).
 valor_pago(S,V):- tipo_nomina(0), V is ((15/30)*S rnd 0).
 valor_pago(S,V):- tipo_nomina(2), V is ((30/30)*S rnd 0).
 prima_ant(S,DL,M,P,DLA,V) :- periodo_liq_primaant(M), dias_pa(DLA,DP), porcentaje_pa(P,DP,PA), V is ((S * PA) * (DL/30) rnd 0).
 periodo_primatec(2).
+periodo_liq_gastosrep(4).
+periodo_liq_primaant(4).
+periodo_sb(4).
+periodo_primatec(6).
 bon_ser(S,DL,M,P,DLA,C,V) :- periodo_liq_bonserv(M), \+(gr(S,DL,M,P,C,GR)) -> GR is 0, prima_ant(S,DL,M,P,DLA,PA), V is ((S + GR + PA) * 0.35 rnd 0).
 periodo_primatec(0).
 valor_pago(S,V):- tipo_nomina(1), V is ((15/30)*S rnd 0).
@@ -670,4 +667,15 @@ periodo_liq_pension(1).
 periodo_liq_pension(2).
 pension_fun(TD,P,M,V):- periodo_liq_pension(M),porcentaje_pension(P,1,PF), V is (TD * PF rnd 0).
 afectacion_seguridad(exterior_familia).
+dias_liq_ps(DL,V):-(DL@>=360 -> V is 37; DL < 90 -> V is 0; V is ((DL*46) / 360 rnd 0)). 
+dias_liq_dic(FP,4,15).
+dias_liq_dic(FP,5,21).
+dias_liq_dic(FP,6,30).
+periodo_primatec(5).
+periodo_liq_gastosrep(5).
+periodo_liq_gastosrep(6).
+periodo_liq_primaant(5).
+periodo_liq_primaant(6).
+periodo_sb(5).
+periodo_sb(6).
 salario_base(4672560).tipo_nomina(2).

@@ -103,14 +103,15 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		if(int(fechaPreliquidacion.Month()) == 12){
 			dias_liq_dic := m.ProveAll("dias_liq_dic(FP,TLIQ,D).")
-
+			dias_a_liquidar = "9"
 			for _, solution := range dias_liq_dic{
 					tipoLiq := fmt.Sprintf("%s", solution.ByName_("TLIQ"))
 					dias_liquidacion_diciembre := fmt.Sprintf("%s", solution.ByName_("D"))
-					fmt.Println(tipoLiq)
-					fmt.Println(dias_liquidacion_diciembre)
 					lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptos(m, reglas,dias_liquidacion_diciembre,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoLiq,esAnual, porcentajePT, idProveedor)
 					total_calculos = append (total_calculos, lista_descuentos_semestral...)
+					doceavas := CalcularDoceavas(reglas,tipoPreliquidacion_string)
+					fmt.Println(doceavas)
+					total_calculos = append (total_calculos, doceavas...)
 					ibc = 0
 
 			}
@@ -412,4 +413,31 @@ func ManejarNovedades(reglas string, idProveedor int, tipoPreliquidacion string)
 
 	return lista_novedades
 
+}
+
+func CalcularDoceavas(reglas string,tipoPreliquidacion_string string) (rest []models.ConceptosResumen){
+
+	var lista_doceavas []models.ConceptosResumen
+
+	f := NewMachine().Consult(reglas)
+ 	doc_bonServ := f.ProveAll("doceava(N,V).")
+	for _, solution := range doc_bonServ {
+		fmt.Println("hola ho")
+		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
+		temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
+			Valor: fmt.Sprintf("%.0f", Valor),
+		}
+
+		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		for _, cod := range codigo {
+			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
+		}
+
+		lista_doceavas = append(lista_doceavas, temp_conceptos)
+
+	}
+
+	return lista_doceavas
 }

@@ -38,6 +38,7 @@ func (c *PreliquidacionController) Preliquidar() {
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HC" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HC-SALARIOS" {
 			var n *PreliquidacionHcController
 			resumen := n.Preliquidar(&v, reglasbase)
+
 			c.Data["json"] = resumen
 			c.ServeJSON()
 
@@ -46,6 +47,8 @@ func (c *PreliquidacionController) Preliquidar() {
 
 			var n *PreliquidacionFpController
 			resumen := n.Preliquidar(&v, reglasbase)
+			fmt.Println("resuuumen")
+			fmt.Println(resumen)
 			c.Data["json"] = resumen
 			c.ServeJSON()
 
@@ -133,7 +136,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 					if (v[i].Concepto.Naturaleza == "seguridad_social"){
 						year, month, day := v[i].FechaDesde.Date()
 						year2, month2, day2 := v[i].FechaHasta.Date()
-						
+
 						reglas = reglas + "seg_social("+v[i].Concepto.NombreConcepto+","+strconv.Itoa(year)+","+strconv.Itoa(int(month))+","+strconv.Itoa(day + 1)+","+strconv.Itoa(year2)+","+strconv.Itoa(int(month2))+","+strconv.Itoa(day2 + 1)+")." + "\n"
 						}
          }

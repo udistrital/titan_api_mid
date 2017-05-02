@@ -42,9 +42,10 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo", "POST", &informacion_cargo, &filtrodatos); err == nil {
 			dias_laborados := CalcularDias(informacion_cargo[0].FechaInicio, informacion_cargo[0].FechaFin)
+			reglasNominasEspeciales := crearHechosNominasEspeciales(datos.Preliquidacion.Fecha)
 			esAnual := esAnual(datos.Preliquidacion.Fecha, informacion_cargo[0].FechaInicio)
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
-			reglas = reglasinyectadas + reglasbase
+			reglas = reglasinyectadas + reglasbase + reglasNominasEspeciales
 
 			fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
 			temp := golog.CargarReglasFP(datos.Preliquidacion.Fecha, reglas, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
@@ -121,4 +122,17 @@ func tipoNomina(tipoNomina string)(tipo string){
 		tipo = "2"
 	}
 	 return tipo
+}
+
+func crearHechosNominasEspeciales(FechaPreliquidacion time.Time) (reglaNueva string){
+	if(int(FechaPreliquidacion.Month()) == 12){
+
+		//hacer consulta de conceptos con codigo 129,139,1195 que se le hayan pagado a la persona en el presente año y se crea este hecho
+		reglaNueva := "bonificacion_servicio(bonServ,1540945)."
+
+		return reglaNueva
+
+	}else{
+		return ""
+	}
 }
