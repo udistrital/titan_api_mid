@@ -115,6 +115,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 			}
 
+			fmt.Println(total_calculos)
 			//lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptos(m, reglas,dias_liquidar_prima_semestral,asignacion_basica_string,id_cargo_string,dias_laborados_string, "3",esAnual, porcentajePT, idProveedor)
 			//total_calculos = append (total_calculos, lista_descuentos_semestral...)
 			//ibc = 0
