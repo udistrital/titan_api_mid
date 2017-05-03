@@ -2,11 +2,14 @@ package golog
 import (
 
 	"time"
-
+	"github.com/udistrital/titan_api_mid/models"
 	"io"
 	"os"
 	"strings"
-
+	"strconv"
+	"github.com/astaxie/beego"
+	"encoding/json"
+	"net/http"
 )
 
 func CalcularDiasNovedades(FechaPreliq time.Time, AnoDesde float64, MesDesde float64, DiaDesde float64, AnoHasta float64, MesHasta float64, DiaHasta float64) (dias_liquidar float64) {
@@ -107,4 +110,39 @@ func WriteStringToFile(filepath, s string) error {
 	}
 
 	return nil
+}
+
+func ConsultarValoresPrimasEspeciales(fechaPreliquidacion time.Time, idPersona int, codigo_concepto string, periodo string ) (valor_con int64){
+
+	periodo_nomina := periodo
+	mes_preliquidacion := int(fechaPreliquidacion.Month())
+	var valor_concepto []models.DetalleLiquidacion
+	var valor int64
+	var id_persona_string string = strconv.Itoa(idPersona)
+
+	if(mes_preliquidacion == 12){
+
+		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_liquidacion?limit=-1&query=Liquidacion.Nomina.Periodo:"+periodo_nomina+",Concepto.Id:"+codigo_concepto+",Persona:"+id_persona_string+"", &valor_concepto); err == nil {
+			for _, solution := range valor_concepto {
+		 	valor = valor + solution.ValorCalculado
+
+		 }
+		}
+
+		//nuevaRegla = "bonificacion_servicio(bonServ,1540945)."
+		//hacer consulta de conceptos con codigo 129,139,1195 que se le hayan pagado a la persona en el presente año y se crea este hecho
+		return valor
+	}else{
+		return 0
+	}
+}
+
+func getJson(url string, target interface{}) error {
+	r, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+
+	return json.NewDecoder(r.Body).Decode(target)
 }
