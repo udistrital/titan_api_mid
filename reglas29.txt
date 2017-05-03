@@ -680,4 +680,9 @@ periodo_primatec(4).
 doceava(N,V):-bonificacion_servicio(N,X), V is (X/12 rnd 0).
 concepto_bon_serv_dic(129).
 concepto_bon_serv_dic(1195).
+concepto_bon_serv_dic(139).
+concepto_bon_serv_ps(129).
+concepto_bon_serv_ps(1195).
+doceava_ps(N,D,V):- bonificacion_servicio_ps(N,X), V is ((X/12) * (D/30) rnd 0).
+concepto_bon_serv_ps(139).
 salario_base(4114674).tipo_nomina(2).
