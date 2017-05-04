@@ -94,10 +94,10 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 					dias_liquidar_prima_semestral = fmt.Sprintf("%s", solution.ByName_("V"))
 			}
 
-			doceavas := CalcularDoceavas(reglas,tipoPreliquidacion_string, idProveedor, periodo, fechaPreliquidacion)
+			doceava_BSPS := CalcularDoceavaBonServPS(reglas,tipoPreliquidacion_string, idProveedor, periodo, fechaPreliquidacion)
 			lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptos(m, reglas,dias_liquidar_prima_semestral,asignacion_basica_string,id_cargo_string,dias_laborados_string, "3",esAnual, porcentajePT, idProveedor)
 			total_calculos = append (total_calculos, lista_descuentos_semestral...)
-			total_calculos = append (total_calculos, doceavas...)
+			total_calculos = append (total_calculos, 	doceava_BSPS...)
 			ibc = 0
 			}
 
@@ -112,13 +112,14 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 					dias_liquidacion_diciembre := fmt.Sprintf("%s", solution.ByName_("D"))
 					lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptos(m, reglas,dias_liquidacion_diciembre,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoLiq,esAnual, porcentajePT, idProveedor)
 					total_calculos = append (total_calculos, lista_descuentos_semestral...)
-					doceavas := CalcularDoceavas(reglas,tipoPreliquidacion_string, idProveedor, periodo, fechaPreliquidacion)
-					fmt.Println(doceavas)
-					total_calculos = append (total_calculos, doceavas...)
+					doceavas_bsd := CalcularDoceavaBonServDic(reglas,tipoLiq, idProveedor, periodo, fechaPreliquidacion)
+					doceavas_psd := CalcularDoceavaPSDic(reglas,tipoLiq, idProveedor, periodo, fechaPreliquidacion)
+					total_calculos = append (total_calculos, doceavas_bsd...)
+					total_calculos = append (total_calculos, doceavas_psd...)
 					ibc = 0
 
 			}
-			fmt.Println(total_calculos)
+			
 		}
  		// ----------------------------------
 
@@ -421,20 +422,16 @@ func ManejarNovedades(reglas string, idProveedor int, tipoPreliquidacion string)
 }
 
 //Función que calcula doceavas de bonificacion por servicios, doceava de prima semestral, doceava de prima vacaciones y adhiere resutltado a lo anterior
-func CalcularDoceavas(reglas string,tipoPreliquidacion_string string, idProveedor int, periodo string, fechaPreliquidacion time.Time) (rest []models.ConceptosResumen){
+func CalcularDoceavaBonServDic(reglas string,tipoPreliquidacion_string string, idProveedor int, periodo string, fechaPreliquidacion time.Time) (rest []models.ConceptosResumen){
 
 	var lista_doceavas []models.ConceptosResumen
 	var total_sumado int64
-	mes_preliquidacion := int(fechaPreliquidacion.Month())
-
-	if(mes_preliquidacion == 12){
-
 	f := NewMachine().Consult(reglas)
 
  	consultar_valores_bonificacion := f.ProveAll("concepto_bon_serv_dic(X).")
 	 for _, solution := range consultar_valores_bonificacion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
-		total_sumado = total_sumado + ConsultarValoresPrimasEspeciales(fechaPreliquidacion, idProveedor,codigo_concepto, periodo)
+		total_sumado = total_sumado + ConsultarValoresBonServDic(fechaPreliquidacion, idProveedor,codigo_concepto, periodo)
 
 	}
 
@@ -460,23 +457,29 @@ func CalcularDoceavas(reglas string,tipoPreliquidacion_string string, idProveedo
 	}
 
 	return lista_doceavas
-	}
 
-	if(mes_preliquidacion == 6){
+}
+
+
+func CalcularDoceavaBonServPS(reglas string,tipoPreliquidacion_string string, idProveedor int, periodo string, fechaPreliquidacion time.Time) (rest []models.ConceptosResumen){
+
+	var lista_doceavas []models.ConceptosResumen
+	var total_sumado int64
+
 		tipoPreliquidacion_string = "3"
 		f := NewMachine().Consult(reglas)
 		consultar_valores_bonificacion := f.ProveAll("concepto_bon_serv_ps(X).")
 		 for _, solution := range consultar_valores_bonificacion {
 
 			codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
-			total_sumado = total_sumado + ConsultarValoresPrimasEspeciales(fechaPreliquidacion, idProveedor,codigo_concepto, periodo)
+			total_sumado = total_sumado + ConsultarValoresBonServPS(fechaPreliquidacion, idProveedor,codigo_concepto, periodo)
 
 		}
 
 		reglas = reglas + "bonificacion_servicio_ps(bonServ,"+strconv.Itoa(int(total_sumado))+")."
 
 		e := NewMachine().Consult(reglas)
-	 	doc_bonServ := e.ProveAll("doceava_ps(N,"+dias_liquidar_prima_semestral+",V).")
+	 	doc_bonServ := e.ProveAll("doceava_bs(N,"+dias_liquidar_prima_semestral+",V).")
 		for _, solution := range doc_bonServ {
 
 				Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
@@ -494,6 +497,41 @@ func CalcularDoceavas(reglas string,tipoPreliquidacion_string string, idProveedo
 			lista_doceavas = append(lista_doceavas, temp_conceptos)
 		}
 		return lista_doceavas
+
+}
+
+func CalcularDoceavaPSDic(reglas string,tipoPreliquidacion_string string, idProveedor int, periodo string, fechaPreliquidacion time.Time) (rest []models.ConceptosResumen){
+
+	var lista_doceavas []models.ConceptosResumen
+	var total_sumado int64
+	f := NewMachine().Consult(reglas)
+
+	total_sumado = ConsultarValoresPriServDic(fechaPreliquidacion, idProveedor, periodo)
+
+
+
+	reglas = reglas + "prima_servicios(priServ,"+strconv.Itoa(int(total_sumado))+")."
+
+	e := NewMachine().Consult(reglas)
+	doc_bonServ := e.ProveAll("doceava_ps(N,V).")
+	for _, solution := range doc_bonServ {
+			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
+			temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
+			Valor: fmt.Sprintf("%.0f", Valor),
+		}
+
+		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		for _, cod := range codigo {
+			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
+		}
+
+		lista_doceavas = append(lista_doceavas, temp_conceptos)
+
 	}
-	return nil
+
+	return lista_doceavas
+
+
 }
