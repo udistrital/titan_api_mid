@@ -127,12 +127,9 @@ func ConsultarValoresBonServPS(fechaPreliquidacion time.Time, idPersona int, cod
 	var valor int64
 	var id_persona_string string = strconv.Itoa(idPersona)
 			//http://localhost:8082/v1/detalle_liquidacion?limit=-1&query=Liquidacion.FechaLiquidacion__gte:2016-05-30,Liquidacion.FechaLiquidacion__lte:2017-06-30,Concepto.Id:1195,Persona:29
-		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_liquidacion?limit=-1&query=Liquidacion.FechaLiquidacion__gte:"+ano_busqueda_string+"-05-30,Liquidacion.FechaLiquidacion__lte:"+ano_preliquidacion_string+"-"+mes_preliquidacion_string+"-"+dia_preliquidacion_string+",Concepto.Id:"+codigo_concepto+",Persona:"+id_persona_string+"", &valor_concepto); err == nil {
-
+		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_liquidacion?limit=-1&query=Liquidacion.FechaLiquidacion__gte:"+ano_busqueda_string+"-05-30,Liquidacion.FechaLiquidacion__lte:"+ano_preliquidacion_string+"-"+mes_preliquidacion_string+"-"+dia_preliquidacion_string+",Concepto.Id:"+codigo_concepto+",Persona:"+id_persona_string+",TipoLiquidacion:2", &valor_concepto); err == nil {
 			for _, solution := range valor_concepto {
 		 	valor = valor + solution.ValorCalculado
-			fmt.Println("resultado")
-			fmt.Println(solution.ValorCalculado)
 		 }
 		}else{
 			fmt.Println(err)

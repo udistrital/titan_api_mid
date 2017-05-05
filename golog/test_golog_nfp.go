@@ -116,10 +116,16 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 					doceavas_psd := CalcularDoceavaPSDic(reglas,tipoLiq, idProveedor, periodo, fechaPreliquidacion)
 					total_calculos = append (total_calculos, doceavas_bsd...)
 					total_calculos = append (total_calculos, doceavas_psd...)
-					ibc = 0
 
+					if(tipoLiq == "6"){
+						doceavas_pv := CalcularDoceavaPV(tipoLiq,reglas, total_calculos)
+						total_calculos = append (total_calculos, doceavas_pv...)
+					}
+
+					ibc = 0
 			}
-			
+
+
 		}
  		// ----------------------------------
 
@@ -534,4 +540,39 @@ func CalcularDoceavaPSDic(reglas string,tipoPreliquidacion_string string, idProv
 	return lista_doceavas
 
 
+}
+
+func CalcularDoceavaPV(tipoPreliquidacion_string string, reglas string, total_calculado []models.ConceptosResumen) (rest []models.ConceptosResumen){
+
+	var lista_doceavas []models.ConceptosResumen
+	var total_sumado int64
+
+	for _, solution := range total_calculado {
+			if(solution.TipoPreliquidacion == "4"){
+				i, _ := strconv.ParseInt(solution.Valor, 10, 64)
+				total_sumado = total_sumado + i
+			}
+		}
+
+		reglas = reglas + "prima_vacaciones(priVac,"+strconv.Itoa(int(total_sumado))+")."
+
+		e := NewMachine().Consult(reglas)
+		doc_bonServ := e.ProveAll("doceava_pv(N,V).")
+		for _, solution := range doc_bonServ {
+				Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
+				temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
+				Valor: fmt.Sprintf("%.0f", Valor),
+			}
+
+			codigo := e.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+			for _, cod := range codigo {
+				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+				temp_conceptos.DiasLiquidados = dias_a_liquidar
+				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
+			}
+
+			lista_doceavas = append(lista_doceavas, temp_conceptos)
+
+}
+	return lista_doceavas
 }
