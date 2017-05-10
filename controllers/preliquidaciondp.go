@@ -22,7 +22,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 	var resumen_preliqu []models.Respuesta
 	var idDetaPre interface{}
 	var tipoNom string;
-	var puntos float64
+	
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 		var informacion_cargo []models.DocenteCargo
@@ -40,9 +40,9 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 			num_contrato := datos.PersonasPreLiquidacion[i].NumeroContrato
 			if err2 := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/docente_cargo/consultarCedulaDocente", "POST", &cedula, &num_contrato); err == nil {
 
-
+				puntos := strconv.FormatFloat(informacion_cargo[0].Puntos, 'f', 6, 64)
 				regimen := informacion_cargo[0].Regimen
-				puntos = consumir_puntos(cedula)
+				//puntos = consumir_puntos(cedula)
 				tiempo_contrato := CalcularDias(informacion_cargo[0].FechaInicio, time.Now())
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 				reglas = reglasinyectadas + reglasbase

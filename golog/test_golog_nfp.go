@@ -118,13 +118,16 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 					total_calculos = append (total_calculos, doceavas_psd...)
 
 					if(tipoLiq == "6"){
-						doceavas_pv := CalcularDoceavaPV(tipoLiq,reglas, total_calculos)
+						doceavas_pv := CalcularDoceavaPV(reglas, tipoPreliquidacion_string, total_calculos)
 						total_calculos = append (total_calculos, doceavas_pv...)
 					}
 
 					ibc = 0
 			}
 
+
+				fmt.Println("total calculos")
+				fmt.Println(total_calculos)
 
 		}
  		// ----------------------------------
@@ -393,7 +396,7 @@ func CalcularIBC(reglas string){
 	for _, solution := range valor_ibc {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 		ibc = ibc + Valor
-
+		fmt.Println(Valor)
 		}
 }
 
@@ -542,7 +545,7 @@ func CalcularDoceavaPSDic(reglas string,tipoPreliquidacion_string string, idProv
 
 }
 
-func CalcularDoceavaPV(tipoPreliquidacion_string string, reglas string, total_calculado []models.ConceptosResumen) (rest []models.ConceptosResumen){
+func CalcularDoceavaPV(reglas string, tipoPreliquidacion_string string, total_calculado []models.ConceptosResumen) (rest []models.ConceptosResumen){
 
 	var lista_doceavas []models.ConceptosResumen
 	var total_sumado int64

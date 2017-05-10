@@ -57,7 +57,6 @@ codigo_concepto(nombreRegla1101,1101).
 codigo_concepto(nombreRegla140,140).
 codigo_concepto(nombreRegla189,189).
 codigo_concepto(nombreRegla149,149).
-codigo_concepto(nombreRegla113,113).
 codigo_concepto(nombreRegla114,114).
 codigo_concepto(nombreRegla115,115).
 codigo_concepto(nombreRegla117,117).
@@ -103,6 +102,7 @@ codigo_concepto(nombreRegla1199,1199).
 codigo_concepto(nombreRegla135,135).
 codigo_concepto(nombreRegla137,137).
 codigo_concepto(nombreRegla1109,1109).
+codigo_concepto(priVac,113).
 codigo_concepto(nombreRegla144,144).
 codigo_concepto(nombreRegla1103,1103).
 codigo_concepto(nombreRegla139,139).
@@ -497,7 +497,6 @@ codigo_concepto(salarioBase,11).
 codigo_concepto(nombreRegla23,23).
 codigo_concepto(nombreRegla110,110).
 codigo_concepto(priTec,111).
-codigo_concepto(nombreRegla112,112).
 codigo_concepto(nombreRegla128,128).
 codigo_concepto(pension,291).
 codigo_concepto(bonServ,129).
@@ -521,7 +520,11 @@ codigo_concepto(ibc_novedad,2327).
 codigo_concepto(pensionadoPension,14).
 codigo_concepto(subLibros,119).
 codigo_concepto(subFamiliar,1105).
-codigo_concepto(persona_exterior,2328).
+codigo_concepto(incapacidad_laboral,2329).
+codigo_concepto(incapacidad_general,2330).
+codigo_concepto(exterior_sin_familia,2331).
+codigo_concepto(exterior_familia,2328).
+codigo_concepto(priServ,112).
 dias_liquidados(prueba,30).
 info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
 info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(valor_pago(X,P,V),R is V * Z)).
