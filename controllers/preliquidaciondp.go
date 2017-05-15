@@ -22,7 +22,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 	var resumen_preliqu []models.Respuesta
 	var idDetaPre interface{}
 	var tipoNom string;
-	
+
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 		var informacion_cargo []models.DocenteCargo
@@ -39,14 +39,14 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 			fmt.Println(informacion_cargo)
 			num_contrato := datos.PersonasPreLiquidacion[i].NumeroContrato
 			if err2 := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/docente_cargo/consultarCedulaDocente", "POST", &cedula, &num_contrato); err == nil {
-
+				dias_laborados := CalcularDias(informacion_cargo[0].FechaInicio, informacion_cargo[0].FechaFin)
 				puntos := strconv.FormatFloat(informacion_cargo[0].Puntos, 'f', 6, 64)
 				regimen := informacion_cargo[0].Regimen
 				//puntos = consumir_puntos(cedula)
 				tiempo_contrato := CalcularDias(informacion_cargo[0].FechaInicio, time.Now())
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 				reglas = reglasinyectadas + reglasbase
-				temp := golog.CargarReglasDP(datos.PersonasPreLiquidacion[i].IdPersona, reglas, informacion_cargo, tiempo_contrato, datos.Preliquidacion.Nomina.Periodo, puntos, regimen,tipoNom)
+				temp := golog.CargarReglasDP(datos.Preliquidacion.Fecha,dias_laborados, datos.PersonasPreLiquidacion[i].IdPersona, reglas, informacion_cargo, tiempo_contrato, datos.Preliquidacion.Nomina.Periodo, puntos, regimen,tipoNom)
 				resultado := temp[len(temp)-1]
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
 				resumen_preliqu = append(resumen_preliqu, resultado)
@@ -54,7 +54,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 				for _, descuentos := range *resultado.Conceptos {
 					valor, _ := strconv.ParseInt(descuentos.Valor, 10, 64)
 
-					detallepreliqu := models.DetallePreliquidacion{Concepto: &models.Concepto{Id: descuentos.Id}, Persona: datos.PersonasPreLiquidacion[i].IdPersona, Preliquidacion: datos.Preliquidacion.Id, ValorCalculado: valor, NumeroContrato: &models.ContratoGeneral{Id: datos.PersonasPreLiquidacion[i].NumeroContrato}}
+					detallepreliqu := models.DetallePreliquidacion{Concepto: &models.Concepto{Id: descuentos.Id}, Persona: datos.PersonasPreLiquidacion[i].IdPersona, Preliquidacion: datos.Preliquidacion.Id, ValorCalculado: valor, NumeroContrato: &models.ContratoGeneral{Id: datos.PersonasPreLiquidacion[i].NumeroContrato}, DiasLiquidados: descuentos.DiasLiquidados, TipoPreliquidacion: descuentos.TipoPreliquidacion}
 					if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
 
 					} else {
