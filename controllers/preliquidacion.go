@@ -157,11 +157,11 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 							 fmt.Println("es devengo")
 						 }
 
-						 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
+					//	 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
 					 }
 
 				 }else{
-					 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
+					// reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
 				 }
 
 
