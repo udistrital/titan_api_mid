@@ -14,6 +14,7 @@ type PreliquidacionController struct {
 	beego.Controller
 }
 
+var reglas_nov_dev string = ``
 // URLMapping ...
 func (c *PreliquidacionController) URLMapping() {
 	c.Mapping("Preliquidar", c.Preliquidar)
@@ -83,6 +84,7 @@ func (c *PreliquidacionController) Preliquidar() {
 func CargarReglasBase(dominio string) (reglas string) {
 	//carga de reglas desde el ruler
 	var reglasbase string = ``
+
 	var v []models.Predicado
 	var datos_conceptos []models.Concepto
 	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto?limit=0", &datos_conceptos); err == nil {
@@ -122,7 +124,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 
 	//consulta de la(s) novedades que pueda tener la persona para la pre-liquidacion
 	var v []models.ConceptoPorPersona
-
+	reglas_nov_dev = ""
 	reglas = ""//inicializacion de la variable donde se inyectaran las novedades como reglas
 	if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_por_persona/novedades_activas/"+strconv.Itoa(id_persona), "POST", &v, &datos_preliqu.Preliquidacion); err == nil {
 		if v != nil {
@@ -161,7 +163,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 					 }
 
 				 }else{
-					// reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
+					 reglas_nov_dev = reglas_nov_dev + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
 				 }
 
 

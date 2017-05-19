@@ -12,9 +12,9 @@ import (
 
 
 var salario string
+var reglas_nov_dev string
 
-
-func CargarReglasDP(fechaPreliquidacion time.Time, dias_laborados float64, idProveedor int, reglas string, informacion_cargo []models.DocenteCargo, dias_trabajados float64, periodo string, puntos string, regimen string,tipoPreliquidacion string) (rest []models.Respuesta) {
+func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_laborados float64, idProveedor int, reglas string, informacion_cargo []models.DocenteCargo, dias_trabajados float64, periodo string, puntos string, regimen string,tipoPreliquidacion string) (rest []models.Respuesta) {
 	//Definición de variables
 
 	var resultado []models.Respuesta
@@ -31,6 +31,7 @@ func CargarReglasDP(fechaPreliquidacion time.Time, dias_laborados float64, idPro
 	asignacion_basica_string := strconv.Itoa(informacion_cargo[0].Asignacion_basica)
 	tipoPreliquidacion_string = tipoPreliquidacion
 	dias_laborados_string := strconv.Itoa(int(dias_laborados))
+	reglas_nov_dev = reglas_dev
 
 	if informacion_cargo[0].Cargo == "DC" {
 		cargo = "1"
@@ -241,7 +242,7 @@ func CargarReglasDP(fechaPreliquidacion time.Time, dias_laborados float64, idPro
 			}
 
 			idProveedorString := strconv.Itoa(idProveedor)
-			reglas = reglas + "concepto(" + strconv.Itoa(idProveedor) + ",devengo, fijo,asigAdicDec, 54000,2017)."+ "\n"
+			reglas = reglas + reglas_nov_dev
 
 			//	 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
 			e := NewMachine().Consult(reglas)

@@ -46,7 +46,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 				tiempo_contrato := CalcularDias(informacion_cargo[0].FechaInicio, time.Now())
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 				reglas = reglasinyectadas + reglasbase
-				temp := golog.CargarReglasDP(datos.Preliquidacion.Fecha,dias_laborados, datos.PersonasPreLiquidacion[i].IdPersona, reglas, informacion_cargo, tiempo_contrato, datos.Preliquidacion.Nomina.Periodo, puntos, regimen,tipoNom)
+				temp := golog.CargarReglasDP(reglas_nov_dev, datos.Preliquidacion.Fecha,dias_laborados, datos.PersonasPreLiquidacion[i].IdPersona, reglas, informacion_cargo, tiempo_contrato, datos.Preliquidacion.Nomina.Periodo, puntos, regimen,tipoNom)
 				resultado := temp[len(temp)-1]
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
 				resumen_preliqu = append(resumen_preliqu, resultado)
