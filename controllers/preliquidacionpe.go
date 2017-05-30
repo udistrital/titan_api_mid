@@ -25,6 +25,7 @@ func (c *PreliquidacionpeController) Preliquidar(datos *models.DatosPreliquidaci
 	var beneficiarioF int //Beneficiarios con sub familiar
 	var beneficiarioE int //Beneficiarios con aux de estudio
 	var beneficiarios []models.Beneficiarios
+	var tipoNom string;
 
 	var reglasinyectadas string
 	var reglas string
@@ -33,6 +34,7 @@ func (c *PreliquidacionpeController) Preliquidar(datos *models.DatosPreliquidaci
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
 		filtrodatos := models.InformacionPensionado{Id: datos.PersonasPreLiquidacion[i].IdPersona}
+		tipoNom = tipoNomina(datos.Preliquidacion.Tipo)
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/informacion_pensionado", "POST", &pensionados, &filtrodatos); err == nil {
 
 			var idPensionado = pensionados[0].InformacionProveedor
@@ -80,7 +82,7 @@ func (c *PreliquidacionpeController) Preliquidar(datos *models.DatosPreliquidaci
 								}
 								fmt.Println("beneficiariooos")
 								fmt.Println(beneficiarioE)
-								temp := golog.CargarReglasPE(reglas, pensionados[0],beneficiarioF, beneficiarioE)
+								temp := golog.CargarReglasPE(datos.Preliquidacion.Fecha,reglas, pensionados[0],beneficiarioF, beneficiarioE, tipoNom)
 								resultado := temp[len(temp)-1]
 								resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
 								resumen_preliqu = append(resumen_preliqu, resultado)
@@ -91,7 +93,7 @@ func (c *PreliquidacionpeController) Preliquidar(datos *models.DatosPreliquidaci
 								for _, descuentos := range *resultado.Conceptos {
 									valor, _ := strconv.ParseInt(descuentos.Valor, 10, 64)
 									//fmt.Println("asdfg"+datos.PersonasPreLiquidacion[i].NumeroContrato)
-									detallepreliqu := models.DetallePreliquidacion{Concepto: &models.Concepto{Id: descuentos.Id}, Persona: datos.PersonasPreLiquidacion[i].IdPersona, Preliquidacion: datos.Preliquidacion.Id, ValorCalculado: valor, NumeroContrato: &models.ContratoGeneral{Id: datos.PersonasPreLiquidacion[i].NumeroContrato}}
+									detallepreliqu := models.DetallePreliquidacion{Concepto: &models.Concepto{Id: descuentos.Id}, Persona: datos.PersonasPreLiquidacion[i].IdPersona, Preliquidacion: datos.Preliquidacion.Id, ValorCalculado: valor, NumeroContrato: &models.ContratoGeneral{Id: datos.PersonasPreLiquidacion[i].NumeroContrato}, DiasLiquidados: descuentos.DiasLiquidados, TipoPreliquidacion: descuentos.TipoPreliquidacion}
 									if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
 
 										} else {

@@ -6,15 +6,18 @@ import (
 	models "github.com/udistrital/titan_api_mid/models"
 	. "github.com/mndrix/golog"
 	"strings"
+	"time"
 )
 
 var pen string
 
-func CargarReglasPE(reglas string, pensionado models.InformacionPensionado,beneficiarioF int, beneficiarioE int) (rest []models.Respuesta) {
+
+func CargarReglasPE(fechaPreliquidacion time.Time, reglas string, pensionado models.InformacionPensionado,beneficiarioF int, beneficiarioE int, tipoPreliquidacion string) (rest []models.Respuesta) {
 
 	var resultado []models.Respuesta
 	var lista_descuentos []models.ConceptosResumen
 	var lista_novedades []models.ConceptosResumen
+	var tipoPreliquidacion_string string
 
 	var cedulaPensionado = strconv.Itoa(pensionado.InformacionProveedor)
 	var valorpension = strconv.Itoa(pensionado.ValorPensionAsignada)
@@ -23,11 +26,19 @@ func CargarReglasPE(reglas string, pensionado models.InformacionPensionado,benef
 	var tpensionado = strconv.Itoa(pensionado.TipoPensionado)
 	var benF = strconv.Itoa(beneficiarioF)
 	var benE = strconv.Itoa(beneficiarioE)
+	tipoPreliquidacion_string = tipoPreliquidacion
 
 	if lugarResidencia == "S"{
 		lugar = "1"
 		}else{
 			lugar = "2"
+		}
+
+		if tipoPreliquidacion_string  == "0" || tipoPreliquidacion_string  == "1" {
+			dias_a_liquidar = "15"
+
+		} else {
+			dias_a_liquidar = "30"
 		}
 
 		reglas = reglas + "valor_mesada_pensionado(" + cedulaPensionado + "," + valorpension + ")." + "\n"
@@ -40,7 +51,32 @@ func CargarReglasPE(reglas string, pensionado models.InformacionPensionado,benef
 
 		m := NewMachine().Consult(reglas)
 
-		lista_descuentos = CalcularConceptosPE(m, reglas, cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE)
+		// -- PRIMA SEMESTRAL --
+
+		if(int(fechaPreliquidacion.Month()) == 6){
+
+
+			lista_descuentos = CalcularConceptosPE(m, reglas, cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE, "3")
+			lista_novedades = ManejarNovedadesPE(reglas,cedulaPensionado)
+			total_calculos = append(total_calculos, lista_descuentos...)
+			total_calculos = append(total_calculos, lista_novedades...)
+
+			}
+
+		//--------------------------------
+
+		//-----NOMINA DE DICIEMBRE ------
+		if(int(fechaPreliquidacion.Month()) == 12){
+
+
+			lista_descuentos = CalcularConceptosPE(m, reglas, cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE, "3")
+			lista_novedades = ManejarNovedadesPE(reglas,cedulaPensionado)
+			total_calculos = append(total_calculos, lista_descuentos...)
+			total_calculos = append(total_calculos, lista_novedades...)
+
+			}
+		//	-----
+		lista_descuentos = CalcularConceptosPE(m, reglas, cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE, tipoPreliquidacion_string)
 		lista_novedades = ManejarNovedadesPE(reglas,cedulaPensionado)
 		total_calculos = append(total_calculos, lista_descuentos...)
 		total_calculos = append(total_calculos, lista_novedades...)
@@ -92,6 +128,7 @@ for _, solution := range pensionSust {
 	codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 	for _, cod := range codigo {
 		temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+
 	}
 	lista_descuentos = append(lista_descuentos, temp_conceptos)
 	temp.Conceptos = &lista_descuentos
@@ -156,7 +193,7 @@ return resultado
 }
 
 
-func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, benE string, beneficiarioF, beneficiarioE int)(rest []models.ConceptosResumen){
+func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, benE string, beneficiarioF, beneficiarioE int, tipoPreliquidacion_string string)(rest []models.ConceptosResumen){
 	var lista_descuentos []models.ConceptosResumen
 
 	pension := m.ProveAll("pension_asignada(" + cedulaProveedor +",P).")
@@ -170,6 +207,8 @@ func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, 
 		codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -208,6 +247,8 @@ func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, 
 		codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -224,6 +265,8 @@ func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, 
 		codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 		}
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
 	}
@@ -245,6 +288,8 @@ func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, 
 	codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 	for _, cod := range codigo {
 	temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+	temp_conceptos.DiasLiquidados = dias_a_liquidar
+	temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 }
 lista_descuentos = append(lista_descuentos, temp_conceptos)
 
@@ -266,6 +311,8 @@ lista_descuentos = append(lista_descuentos, temp_conceptos)
 	codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 	for _, cod := range codigo {
 	temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+	temp_conceptos.DiasLiquidados = dias_a_liquidar
+	temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 }
 lista_descuentos = append(lista_descuentos, temp_conceptos)
 
@@ -286,6 +333,8 @@ if beneficiarioE != 0 && (tpensionado == "1"||tpensionado == "3" ) {
 	codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 	for _, cod := range codigo {
 	temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+	temp_conceptos.DiasLiquidados = dias_a_liquidar
+	temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 	}
 	lista_descuentos = append(lista_descuentos, temp_conceptos)
 

@@ -107,19 +107,3 @@ func esAnual(FechaPreliq time.Time, FechaIngreso time.Time) (flag int) {
 
 	return esAnual
 }
-
-
-func tipoNomina(tipoNomina string)(tipo string){
-	if tipoNomina == "151"  {
-		tipo = "0"
-	}
-
-	if tipoNomina == "152" {
-		tipo = "1"
-	}
-
-	if tipoNomina == "30" {
-		tipo = "2"
-	}
-	 return tipo
-}
