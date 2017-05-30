@@ -196,7 +196,7 @@ return resultado
 func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, benE string, beneficiarioF, beneficiarioE int, tipoPreliquidacion_string string)(rest []models.ConceptosResumen){
 	var lista_descuentos []models.ConceptosResumen
 
-	pension := m.ProveAll("pension_asignada(" + cedulaProveedor +",P).")
+	pension := m.ProveAll("pension_asignada("+cedulaProveedor+","+tipoPreliquidacion_string+",P).")
 	for _, solution := range pension {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("P")), 64)
 		pen = strconv.FormatFloat(Valor, 'f', 6, 64)
@@ -214,7 +214,7 @@ func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
 	}
 
-	valor := m.ProveAll("aporte_fondoSoli(" + cedulaProveedor +",W).")
+	valor := m.ProveAll("aporte_fondoSoli(" + cedulaProveedor +","+tipoPreliquidacion_string+",W).")
 	for _, solution := range valor {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("W")), 64)
 		var v int = int(Valor)
@@ -256,7 +256,7 @@ func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, 
 	}
 
 
-	aporte_salud := m.ProveAll("aporte_salud(" + cedulaProveedor +",S).")
+	aporte_salud := m.ProveAll("aporte_salud(" + cedulaProveedor +","+tipoPreliquidacion_string+",S).")
 	for _, solution := range aporte_salud {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("S")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: "salud",
@@ -277,7 +277,7 @@ func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, 
 
 		fmt.Println("SSSSSuuuuuuuuuub")
 		fmt.Println(benF)
-		subfamiliar:= m.ProveAll("subsidio_familiar(" + cedulaProveedor +",F).")
+		subfamiliar:= m.ProveAll("subsidio_familiar(" + cedulaProveedor +","+tipoPreliquidacion_string+",F).")
 		for _, solution := range subfamiliar {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("F")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: "subFamiliar",
@@ -300,7 +300,7 @@ lista_descuentos = append(lista_descuentos, temp_conceptos)
 	if beneficiarioF != 0  && tpensionado == "3"{
 		fmt.Println("SSSSSuuuuuuuuuub3")
 		fmt.Println(benF)
-		subfamiliar:= m.ProveAll("subsidio_familiar_to(" + cedulaProveedor +",F).")
+		subfamiliar:= m.ProveAll("subsidio_familiar_to(" + cedulaProveedor +","+tipoPreliquidacion_string+",F).")
 		for _, solution := range subfamiliar {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("F")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: "subFamiliar",

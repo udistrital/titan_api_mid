@@ -32,6 +32,8 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 	var tipoNom string;
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
+		fmt.Println("num personas")
+		fmt.Println(i)
 		var informacion_cargo []models.FuncionarioCargo
 		filtrodatos := models.FuncionarioCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
 		tipoNom = tipoNomina(datos.Preliquidacion.Tipo)

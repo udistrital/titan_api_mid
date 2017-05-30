@@ -60,7 +60,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 	for _, solution := range novedades_seg_social {
 
-
+		fmt.Println("aqui nov")
 		novedad := fmt.Sprintf("%s", solution.ByName_("N"))
 		AnoDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
 		MesDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
@@ -89,6 +89,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 		// -- PRIMA SEMESTRAL --
 
 		if(int(fechaPreliquidacion.Month()) == 6){
+			fmt.Println("aqui semestral")
 			dias_liq_ps := m.ProveAll("dias_liq_ps("+dias_laborados_string+",V).")
 			for _, solution := range dias_liq_ps{
 					dias_liquidar_prima_semestral = fmt.Sprintf("%s", solution.ByName_("V"))
@@ -105,6 +106,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		//-----NOMINA DE DICIEMBRE ------
 		if(int(fechaPreliquidacion.Month()) == 12){
+			fmt.Println("aqui dic")
 			dias_liq_dic := m.ProveAll("dias_liq_dic(FP,TLIQ,D).")
 			dias_a_liquidar = "9"
 			for _, solution := range dias_liq_dic{
@@ -133,12 +135,15 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
  		// ----------------------------------
 
 		// ----- Nomina ordinaria ----- Proceso de cálculo, manejo de novedades y guardado de conceptos
+
 		lista_descuentos,total_devengado_no_novedad = CalcularConceptos(m, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoPreliquidacion_string,esAnual, porcentajePT, idProveedor)
 		ibc = 0
 		lista_novedades = ManejarNovedades(reglas,idProveedor, tipoPreliquidacion_string)
 		total_calculos = append(total_calculos, lista_descuentos...)
 		total_calculos = append(total_calculos, lista_novedades...)
 		resultado = GuardarConceptos(total_calculos)
+		fmt.Println("hola resultados")
+		fmt.Println(lista_descuentos)
 		total_calculos = []models.ConceptosResumen{}
 
 		// ---------------------------
@@ -148,7 +153,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 //Función que, utilizando las reglas, calcula cada uno de los conceptos. Retorna un objeto con los resultados
 	func CalcularConceptos(m Machine, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string,tipoPreliquidacion_string string,  esAnual,  porcentajePT,idProveedor  int) (rest []models.ConceptosResumen, total_dev float64){
-
+		fmt.Println("una vez")
 		var lista_descuentos []models.ConceptosResumen
 		porcentaje_PT_string := strconv.Itoa(porcentajePT)
 
@@ -402,6 +407,7 @@ func CalcularIBC(reglas string){
 
 //Función que gestiona las novedades de la persona
 func ManejarNovedades(reglas string, idProveedor int, tipoPreliquidacion string) (rest []models.ConceptosResumen){
+	fmt.Println("novedades")
 	var lista_novedades []models.ConceptosResumen
 
 	f := NewMachine().Consult(reglas)
