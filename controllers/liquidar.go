@@ -29,7 +29,8 @@ func (c *LiquidarController) Liquidar() {
 	var idDetaLiq interface{}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		liquidacion := models.Liquidacion{Id: v.Preliquidacion.Id, NombreLiquidacion: v.Preliquidacion.Nombre, Nomina: &models.Nomina{Id: v.Preliquidacion.Nomina.Id}, EstadoLiquidacion: "L", FechaLiquidacion: time.Now(), FechaInicio: v.Preliquidacion.FechaInicio, FechaFin: v.Preliquidacion.FechaFin}
-		fmt.Println(v.Preliquidacion.Liquidada)
+		fmt.Println("liquidacion")
+		fmt.Println(v.Preliquidacion.Nombre)
 		if v.Preliquidacion.Liquidada == "No" {
 			Idpreliquidacion := strconv.Itoa(v.Preliquidacion.Id)
 			if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/liquidacion", "POST", &idLiquidacion, &liquidacion); err == nil {

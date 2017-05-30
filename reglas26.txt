@@ -1,7 +1,3 @@
-concepto(26,descuento, porcentaje, nombreRegla269, 1, 2017). 
-concepto(26,descuento, porcentaje, nombreRegla231, 3, 2017). 
-concepto(26,descuento, fijo, nombreRegla266, 137215, 2017). 
-concepto(26,descuento, fijo, nombreRegla2266, 640761, 2017). 
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
@@ -58,7 +54,6 @@ codigo_concepto(nombreRegla1101,1101).
 codigo_concepto(nombreRegla140,140).
 codigo_concepto(nombreRegla189,189).
 codigo_concepto(nombreRegla149,149).
-codigo_concepto(nombreRegla113,113).
 codigo_concepto(nombreRegla114,114).
 codigo_concepto(nombreRegla115,115).
 codigo_concepto(nombreRegla117,117).
@@ -104,6 +99,7 @@ codigo_concepto(nombreRegla1199,1199).
 codigo_concepto(nombreRegla135,135).
 codigo_concepto(nombreRegla137,137).
 codigo_concepto(nombreRegla1109,1109).
+codigo_concepto(priVac,113).
 codigo_concepto(nombreRegla144,144).
 codigo_concepto(nombreRegla1103,1103).
 codigo_concepto(nombreRegla139,139).
@@ -498,7 +494,6 @@ codigo_concepto(salarioBase,11).
 codigo_concepto(nombreRegla23,23).
 codigo_concepto(nombreRegla110,110).
 codigo_concepto(priTec,111).
-codigo_concepto(nombreRegla112,112).
 codigo_concepto(nombreRegla128,128).
 codigo_concepto(pension,291).
 codigo_concepto(bonServ,129).
@@ -526,6 +521,7 @@ codigo_concepto(incapacidad_laboral,2329).
 codigo_concepto(incapacidad_general,2330).
 codigo_concepto(exterior_sin_familia,2331).
 codigo_concepto(exterior_familia,2328).
+codigo_concepto(priServ,112).
 total_pension(TD,P,V) :- pension_fun(TD,P,PF), pension_ud(TD,P,PU), V is PF + PU.
 porcentaje_fondo(TD,SM,PF) :- LI is 4 * SM, (TD @< LI -> PF is 0).
 porcentaje_fondo(TD,SM,PF) :- LI is 4 * SM, LS is 16 * SM, (TD @>= LI, TD @< LS  -> PF is 0.01).
@@ -581,7 +577,6 @@ periodo_liq_gastosrep(1).
 periodo_liq_gastosrep(2).
 periodo_liq_gastosrep(3).
 periodo_liq_bonserv(2).
-periodo_liq_bonserv(4).
 periodo_liq_primaant(1).
 periodo_liq_primaant(2).
 periodo_liq_primaant(3).
@@ -678,4 +673,15 @@ periodo_liq_primaant(5).
 periodo_liq_primaant(6).
 periodo_sb(5).
 periodo_sb(6).
+periodo_primatec(4).
+doceava_bs(N,D,V):- bonificacion_servicio_ps(N,X), V is ((X/12) * (D/30) rnd 0).
+doceava_pv(N,V) :- prima_vacaciones(N,X), V is (X/12 rnd 0).
+doceava(N,V):-bonificacion_servicio(N,X), V is (X/12 rnd 0).
+concepto_bon_serv_dic(129).
+concepto_bon_serv_dic(1195).
+concepto_bon_serv_dic(139).
+concepto_bon_serv_ps(129).
+concepto_bon_serv_ps(1195).
+concepto_bon_serv_ps(139).
+doceava_ps(N,V):- prima_servicios(N,X), V is (X/12 rnd 0).
 salario_base(4672560).tipo_nomina(2).
