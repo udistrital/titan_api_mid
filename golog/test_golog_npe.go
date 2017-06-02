@@ -12,7 +12,7 @@ import (
 var pen string
 
 
-func CargarReglasPE(fechaPreliquidacion time.Time, reglas string, pensionado models.InformacionPensionado,beneficiarioF int, beneficiarioE int, tipoPreliquidacion string) (rest []models.Respuesta) {
+func CargarReglasPE(fechaPreliquidacion time.Time, reglas, periodo string, pensionado models.InformacionPensionado,beneficiarioF int, beneficiarioE int, tipoPreliquidacion string) (rest []models.Respuesta) {
 
 	var resultado []models.Respuesta
 	var lista_descuentos []models.ConceptosResumen
@@ -56,7 +56,7 @@ func CargarReglasPE(fechaPreliquidacion time.Time, reglas string, pensionado mod
 		if(int(fechaPreliquidacion.Month()) == 6){
 
 
-			lista_descuentos = CalcularConceptosPE(m, reglas, cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE, "3")
+			lista_descuentos = CalcularConceptosPE(m, reglas, periodo,cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE, "3")
 			lista_novedades = ManejarNovedadesPE(reglas,cedulaPensionado)
 			total_calculos = append(total_calculos, lista_descuentos...)
 			total_calculos = append(total_calculos, lista_novedades...)
@@ -69,14 +69,14 @@ func CargarReglasPE(fechaPreliquidacion time.Time, reglas string, pensionado mod
 		if(int(fechaPreliquidacion.Month()) == 12){
 
 
-			lista_descuentos = CalcularConceptosPE(m, reglas, cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE, "3")
+			lista_descuentos = CalcularConceptosPE(m, reglas, periodo,cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE, "6")
 			lista_novedades = ManejarNovedadesPE(reglas,cedulaPensionado)
 			total_calculos = append(total_calculos, lista_descuentos...)
 			total_calculos = append(total_calculos, lista_novedades...)
 
 			}
 		//	-----
-		lista_descuentos = CalcularConceptosPE(m, reglas, cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE, tipoPreliquidacion_string)
+		lista_descuentos = CalcularConceptosPE(m, reglas, periodo,cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE, tipoPreliquidacion_string)
 		lista_novedades = ManejarNovedadesPE(reglas,cedulaPensionado)
 		total_calculos = append(total_calculos, lista_descuentos...)
 		total_calculos = append(total_calculos, lista_novedades...)
@@ -88,7 +88,7 @@ func CargarReglasPE(fechaPreliquidacion time.Time, reglas string, pensionado mod
 
 }
 
-func CargarReglasSustitutosPE(reglas string, sustituto models.Sustituto, cedulaPensionado string, pension string) (rest []models.Respuesta) {
+func CargarReglasSustitutosPE(reglas string, sustituto models.Sustituto, cedulaPensionado string, pension, periodo string) (rest []models.Respuesta) {
 
 	var resultado []models.Respuesta
 	temp := models.Respuesta{}
@@ -135,7 +135,7 @@ for _, solution := range pensionSust {
 	resultado = append(resultado, temp)
 }
 
-fondo := m.ProveAll("aporte_fondoSoli_sust(" + cedulaProveedor +",W).")
+fondo := m.ProveAll("aporte_fondoSoli_sust(" + cedulaProveedor +","+periodo+",W).")
 for _, solution := range fondo {
 	Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("W")), 64)
 	var v int = int(Valor)
@@ -193,10 +193,10 @@ return resultado
 }
 
 
-func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, benE string, beneficiarioF, beneficiarioE int, tipoPreliquidacion_string string)(rest []models.ConceptosResumen){
+func CalcularConceptosPE(m Machine, reglas, periodo, cedulaProveedor, tpensionado, benF, benE string, beneficiarioF, beneficiarioE int, tipoPreliquidacion_string string)(rest []models.ConceptosResumen){
 	var lista_descuentos []models.ConceptosResumen
 
-	pension := m.ProveAll("pension_asignada("+cedulaProveedor+","+tipoPreliquidacion_string+",P).")
+	pension := m.ProveAll("pension_asignada("+cedulaProveedor+","+periodo+","+tipoPreliquidacion_string+",P).")
 	for _, solution := range pension {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("P")), 64)
 		pen = strconv.FormatFloat(Valor, 'f', 6, 64)
@@ -214,7 +214,7 @@ func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
 	}
 
-	valor := m.ProveAll("aporte_fondoSoli(" + cedulaProveedor +","+tipoPreliquidacion_string+",W).")
+	valor := m.ProveAll("aporte_fondoSoli(" + cedulaProveedor +","+periodo+","+tipoPreliquidacion_string+",W).")
 	for _, solution := range valor {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("W")), 64)
 		var v int = int(Valor)
@@ -256,7 +256,7 @@ func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, 
 	}
 
 
-	aporte_salud := m.ProveAll("aporte_salud(" + cedulaProveedor +","+tipoPreliquidacion_string+",S).")
+	aporte_salud := m.ProveAll("aporte_salud(" + cedulaProveedor +","+periodo+","+tipoPreliquidacion_string+",S).")
 	for _, solution := range aporte_salud {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("S")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: "salud",
@@ -277,7 +277,7 @@ func CalcularConceptosPE(m Machine, reglas, cedulaProveedor, tpensionado, benF, 
 
 		fmt.Println("SSSSSuuuuuuuuuub")
 		fmt.Println(benF)
-		subfamiliar:= m.ProveAll("subsidio_familiar(" + cedulaProveedor +","+tipoPreliquidacion_string+",F).")
+		subfamiliar:= m.ProveAll("subsidio_familiar(" + cedulaProveedor +","+periodo+","+tipoPreliquidacion_string+",F).")
 		for _, solution := range subfamiliar {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("F")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: "subFamiliar",
@@ -300,7 +300,7 @@ lista_descuentos = append(lista_descuentos, temp_conceptos)
 	if beneficiarioF != 0  && tpensionado == "3"{
 		fmt.Println("SSSSSuuuuuuuuuub3")
 		fmt.Println(benF)
-		subfamiliar:= m.ProveAll("subsidio_familiar_to(" + cedulaProveedor +","+tipoPreliquidacion_string+",F).")
+		subfamiliar:= m.ProveAll("subsidio_familiar_to(" + cedulaProveedor +","+periodo+","+tipoPreliquidacion_string+",F).")
 		for _, solution := range subfamiliar {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("F")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: "subFamiliar",

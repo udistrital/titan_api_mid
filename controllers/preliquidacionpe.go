@@ -82,7 +82,7 @@ func (c *PreliquidacionpeController) Preliquidar(datos *models.DatosPreliquidaci
 								}
 								fmt.Println("beneficiariooos")
 								fmt.Println(beneficiarioE)
-								temp := golog.CargarReglasPE(datos.Preliquidacion.Fecha,reglas, pensionados[0],beneficiarioF, beneficiarioE, tipoNom)
+								temp := golog.CargarReglasPE(datos.Preliquidacion.Fecha,reglas, datos.Preliquidacion.Nomina.Periodo, pensionados[0],beneficiarioF, beneficiarioE, tipoNom)
 								resultado := temp[len(temp)-1]
 								resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
 								resumen_preliqu = append(resumen_preliqu, resultado)
@@ -107,7 +107,7 @@ func (c *PreliquidacionpeController) Preliquidar(datos *models.DatosPreliquidaci
 											var cedulaPensionado = strconv.Itoa(pensionados[0].InformacionProveedor)
 											var pension = strconv.Itoa(pensionados[0].ValorPensionAsignada)
 
-											temp := golog.CargarReglasSustitutosPE(reglas, sustitutos[i], cedulaPensionado ,pension)
+											temp := golog.CargarReglasSustitutosPE(reglas, sustitutos[i], cedulaPensionado ,pension,datos.Preliquidacion.Nomina.Periodo)
 											resultado := temp[len(temp)-1]
 											resultado.NumDocumento = float64(sustitutos[0].Proveedor)
 											resumen_preliqu = append(resumen_preliqu, resultado)
