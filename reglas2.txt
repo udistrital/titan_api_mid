@@ -1,4 +1,12 @@
-seg_social(exterior_familia,2017,3,15,2017,4,10).
+concepto(2,descuento, porcentaje, nombreRegla29, 1, 2017). 
+concepto(2,descuento, porcentaje, nombreRegla269, 1, 2017). 
+concepto(2,descuento, porcentaje, nombreRegla231, 3, 2017). 
+concepto(2,descuento, fijo, nombreRegla2259, 93163, 2017). 
+concepto(2,descuento, fijo, nombreRegla243, 101211, 2017). 
+concepto(2,descuento, fijo, nombreRegla266, 103883, 2017). 
+concepto(2,descuento, fijo, nombreRegla2303, 211922, 2017). 
+concepto(2,devengo, fijo, subsidioFa, 233628, 2017). 
+devengo(233628,subsidioFa).
 concepto(2,seguridad_social, porcentaje, exterior_familia, 0, 2017). 
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(primaNavidad,1261).
