@@ -299,6 +299,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		//Previo a pagos de salud y pensión se calcula el IBC
 		CalcularIBC(reglas)
+		ManejarNovedadesDevengosDP(reglas, tipoPreliquidacion_string)
 		total_devengado_string := strconv.Itoa(int(ibc))
 
 		valor_salud := m.ProveAll("salud_fun(" + total_devengado_string + ",2016,"+tipoPreliquidacion_string+",V).")
@@ -436,6 +437,15 @@ func ManejarNovedades(reglas string, idProveedor int, tipoPreliquidacion string)
 
 }
 
+func ManejarNovedadesDevengosFP(reglas string, tipoPreliquidacion string){
+
+	f := NewMachine().Consult(reglas)
+	novedades_devengo := f.ProveAll("novedades_devengos(X).")
+		for _, solution := range novedades_devengo {
+			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("X")), 64)
+			ibc = ibc + Valor
+		}
+}
 //Función que calcula doceavas de bonificacion por servicios, doceava de prima semestral, doceava de prima vacaciones y adhiere resutltado a lo anterior
 func CalcularDoceavaBonServDic(reglas string,tipoPreliquidacion_string string, idProveedor int, periodo string, fechaPreliquidacion time.Time) (rest []models.ConceptosResumen){
 

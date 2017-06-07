@@ -26,6 +26,9 @@ func CargarReglasPE(fechaPreliquidacion time.Time, reglas, periodo string, pensi
 	var tpensionado = strconv.Itoa(pensionado.TipoPensionado)
 	var benF = strconv.Itoa(beneficiarioF)
 	var benE = strconv.Itoa(beneficiarioE)
+	fmt.Println("beneficiarios")
+	fmt.Println(benF)
+	fmt.Println(benE)
 	tipoPreliquidacion_string = tipoPreliquidacion
 
 	if lugarResidencia == "S"{
@@ -271,13 +274,7 @@ func CalcularConceptosPE(m Machine, reglas, periodo, cedulaProveedor, tpensionad
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
 	}
 
-	fmt.Println("tipo pensionado")
-	fmt.Println(tpensionado)
-	if beneficiarioF != 0  && tpensionado == "1"{
-
-		fmt.Println("SSSSSuuuuuuuuuub")
-		fmt.Println(benF)
-		subfamiliar:= m.ProveAll("subsidio_familiar(" + cedulaProveedor +","+periodo+","+tipoPreliquidacion_string+",F).")
+		subfamiliar:= m.ProveAll("subsidio_familiar(" + cedulaProveedor +","+periodo+","+tipoPreliquidacion_string+","+benF+","+tpensionado+",F).")
 		for _, solution := range subfamiliar {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("F")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: "subFamiliar",
@@ -295,13 +292,9 @@ lista_descuentos = append(lista_descuentos, temp_conceptos)
 
 }
 
-	}
 
-	if beneficiarioF != 0  && tpensionado == "3"{
-		fmt.Println("SSSSSuuuuuuuuuub3")
-		fmt.Println(benF)
-		subfamiliar:= m.ProveAll("subsidio_familiar_to(" + cedulaProveedor +","+periodo+","+tipoPreliquidacion_string+",F).")
-		for _, solution := range subfamiliar {
+		subfamiliar_to:= m.ProveAll("subsidio_familiar_to(" + cedulaProveedor +","+periodo+","+tipoPreliquidacion_string+","+benF+","+tpensionado+",F).")
+		for _, solution := range subfamiliar_to {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("F")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: "subFamiliar",
 		Valor: fmt.Sprintf("%.0f", Valor),
@@ -318,10 +311,9 @@ lista_descuentos = append(lista_descuentos, temp_conceptos)
 
 }
 
-	}
 
-if beneficiarioE != 0 && (tpensionado == "1"||tpensionado == "3" ) {
-	pago_subsidio_libros := m.ProveAll("pago_subsidio_libros(" + cedulaProveedor +",F).")
+
+	pago_subsidio_libros := m.ProveAll("pago_subsidio_libros(" + cedulaProveedor +","+benE+","+tpensionado+",F).")
 	for _, solution := range pago_subsidio_libros {
 	Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("F")), 64)
 	temp_conceptos := models.ConceptosResumen{Nombre: "subLibros",
@@ -340,7 +332,7 @@ if beneficiarioE != 0 && (tpensionado == "1"||tpensionado == "3" ) {
 
 	}
 
-}
+
 
 return lista_descuentos
 }

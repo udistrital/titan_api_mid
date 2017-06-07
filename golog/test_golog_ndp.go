@@ -98,7 +98,6 @@ func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_labor
 
 		doceava_BSPS := CalcularDoceavaBonServPSDP(reglas,"3", idProveedor, periodo, fechaPreliquidacion)
 		lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptosDP(m, reglas,dias_liquidar_prima_semestral,asignacion_basica_string, "3",regimen_numero, puntos, cargo, fechaInicio, fechaActual)
-		ManejarNovedadesDevengosDP(reglas,idProveedor, "3")
 		fmt.Println(lista_descuentos_semestral)
 		total_calculos = append (total_calculos, lista_descuentos_semestral...)
 		total_calculos = append (total_calculos, 	doceava_BSPS...)
@@ -117,7 +116,6 @@ func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_labor
 					total_calculos = append (total_calculos, lista_descuentos_semestral...)
 					doceavas_bsd := CalcularDoceavaBonServDicDP(reglas,tipoLiq, idProveedor, periodo, fechaPreliquidacion)
 					doceavas_psd := CalcularDoceavaPSDicDP(reglas,tipoLiq, idProveedor, periodo, fechaPreliquidacion)
-					ManejarNovedadesDevengosDP(reglas,idProveedor, tipoLiq)
 					total_calculos = append (total_calculos, doceavas_bsd...)
 					total_calculos = append (total_calculos, doceavas_psd...)
 					ibc = 0
@@ -131,7 +129,6 @@ func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_labor
 	lista_descuentos,total_devengado_no_novedad = CalcularConceptosDP(m, reglas,dias_a_liquidar,asignacion_basica_string, tipoPreliquidacion_string,regimen_numero, puntos, cargo, fechaInicio, fechaActual)
 	ibc = 0
 	lista_novedades = ManejarNovedadesDP(reglas,idProveedor, tipoPreliquidacion_string)
-	ManejarNovedadesDevengosDP(reglas,idProveedor, tipoPreliquidacion_string)
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
 	resultado = GuardarConceptosDP(total_calculos)
@@ -191,10 +188,9 @@ func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_labor
 
 		//Previo a pagos de salud y pensión se calcula el IBC
 		CalcularIBC(reglas)
+		ManejarNovedadesDevengosDP(reglas, tipoPreliquidacion_string)
 		total_devengado_string := strconv.Itoa(int(ibc))
-		fmt.Println("total devengado")
-
-
+		
 		salud_empleado := m.ProveAll("salud("+tipoPreliquidacion_string+"," + total_devengado_string + ",S).")
 		for _, solution := range salud_empleado {
 		  Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("S")), 64)
@@ -263,7 +259,7 @@ func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_labor
 
 	}
 
-	func ManejarNovedadesDevengosDP(reglas string, idProveedor int, tipoPreliquidacion string){
+	func ManejarNovedadesDevengosDP(reglas string, tipoPreliquidacion string){
 
 		f := NewMachine().Consult(reglas)
  		novedades_devengo := f.ProveAll("novedades_devengos(X).")
