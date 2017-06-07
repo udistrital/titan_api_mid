@@ -99,6 +99,7 @@ func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_labor
 		doceava_BSPS := CalcularDoceavaBonServPSDP(reglas,"3", idProveedor, periodo, fechaPreliquidacion)
 		lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptosDP(m, reglas,dias_liquidar_prima_semestral,asignacion_basica_string, "3",regimen_numero, puntos, cargo, fechaInicio, fechaActual)
 		ManejarNovedadesDevengosDP(reglas,idProveedor, "3")
+		fmt.Println(lista_descuentos_semestral)
 		total_calculos = append (total_calculos, lista_descuentos_semestral...)
 		total_calculos = append (total_calculos, 	doceava_BSPS...)
 		ibc = 0
@@ -194,7 +195,7 @@ func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_labor
 		fmt.Println("total devengado")
 
 
-		salud_empleado := m.ProveAll("salud(" + total_devengado_string + ",S).")
+		salud_empleado := m.ProveAll("salud("+tipoPreliquidacion_string+"," + total_devengado_string + ",S).")
 		for _, solution := range salud_empleado {
 		  Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("S")), 64)
 		  temp_conceptos := models.ConceptosResumen{Nombre: "salud",
@@ -212,7 +213,7 @@ func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_labor
 
 		}
 
-		pension_empleado := m.ProveAll("pension(" + total_devengado_string + ",S).")
+		pension_empleado := m.ProveAll("pension("+tipoPreliquidacion_string+"," + total_devengado_string + ",S).")
 		for _, solution := range pension_empleado {
 		  Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("S")), 64)
 		  temp_conceptos := models.ConceptosResumen{Nombre: "pension",
