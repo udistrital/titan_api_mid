@@ -60,9 +60,7 @@ func CargarReglasPE(fechaPreliquidacion time.Time, reglas, periodo string, pensi
 
 
 			lista_descuentos = CalcularConceptosPE(m, reglas, periodo,cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE, "3")
-			lista_novedades = ManejarNovedadesPE(reglas,cedulaPensionado)
 			total_calculos = append(total_calculos, lista_descuentos...)
-			total_calculos = append(total_calculos, lista_novedades...)
 
 			}
 
@@ -73,9 +71,8 @@ func CargarReglasPE(fechaPreliquidacion time.Time, reglas, periodo string, pensi
 
 
 			lista_descuentos = CalcularConceptosPE(m, reglas, periodo,cedulaPensionado, tpensionado, benF, benE, beneficiarioF, beneficiarioE, "6")
-			lista_novedades = ManejarNovedadesPE(reglas,cedulaPensionado)
 			total_calculos = append(total_calculos, lista_descuentos...)
-			total_calculos = append(total_calculos, lista_novedades...)
+
 
 			}
 		//	-----
