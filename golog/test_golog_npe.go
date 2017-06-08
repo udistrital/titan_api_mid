@@ -51,8 +51,38 @@ func CargarReglasPE(fechaPreliquidacion time.Time, reglas, periodo string, pensi
 		reglas = reglas + "numero_beneficiariosL("+ cedulaPensionado +" , "+ benE +")." + "\n"
 		reglas = reglas + "tipo_valor(" + "1" + ")." + "\n"
 		//reglas = reglas + "valor_incremento_vigencia(" + incremento + ","+ año +")." + "\n"
-
+		fmt.Println(reglas)
 		m := NewMachine().Consult(reglas)
+
+		//-- NOVEDADES DE SEGURIDAD SOCIAL --
+		novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
+
+		for _, solution := range novedades_seg_social {
+
+			fmt.Println("aqui nov")
+			novedad := fmt.Sprintf("%s", solution.ByName_("N"))
+			AnoDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
+			MesDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
+			DiaDesde,_:= strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("D")), 64)
+			AnoHasta,_:= strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("AA")), 64)
+			MesHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
+			DiaHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
+
+			afectacion_seg_social := m.ProveAll("afectacion_seguridad("+novedad+").")
+			for _, solution := range afectacion_seg_social {
+
+					fmt.Println(solution)
+					dias_novedad := CalcularDiasNovedades(fechaPreliquidacion, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
+					dias_a_liquidar = strconv.Itoa(int(30 - dias_novedad))
+					fmt.Println("dias a liquidar")
+
+					dias_novedad_string = strconv.Itoa(int(dias_novedad))
+				//	_,total_devengado_novedad = CalcularConceptos(m, reglas, dias_novedad_string,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoPreliquidacion_string,esAnual, porcentajePT, idProveedor)
+					ibc = 0;
+			}
+
+			}
+
 
 		// -- PRIMA SEMESTRAL --
 

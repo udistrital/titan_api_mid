@@ -157,15 +157,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 		var lista_descuentos []models.ConceptosResumen
 		porcentaje_PT_string := strconv.Itoa(porcentajePT)
 
-		//Se suman al ibc novedades que la persona tenga registradas y sean devengos
-		novedades_devengo := m.ProveAll("novedades_devengos(X).")
-		for _, solution := range novedades_devengo {
-			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("X")), 64)
-			ibc = ibc + Valor
-
-		}
-
-		//Cálculo de cada uno de los devengos, si aplican a la persona
+			//Cálculo de cada uno de los devengos, si aplican a la persona
 		valor_salario := m.ProveAll("sb(" + asignacion_basica_string + "," + tipoPreliquidacion_string + "," + dias_a_liquidar + ",V).")
 		for _, solution := range valor_salario {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)

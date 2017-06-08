@@ -1,5 +1,6 @@
 concepto(29,descuento, porcentaje, nombreRegla269, 1, 2017). 
 concepto(29,descuento, porcentaje, nombreRegla231, 3, 2017). 
+seg_social(incapacidad_general,2017,3,15,2017,4,10).
 concepto(29,seguridad_social, porcentaje, incapacidad_general, 0, 2017). 
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(primaNavidad,1261).

@@ -69,6 +69,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 		} else {
 			fmt.Println(err)
 		}
+			reglasinyectadas = "";
 	}
 	return resumen_preliqu
 }
