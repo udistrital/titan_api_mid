@@ -1,3 +1,7 @@
+concepto(26,descuento, porcentaje, nombreRegla269, 1, 2017). 
+concepto(26,descuento, porcentaje, nombreRegla231, 3, 2017). 
+concepto(26,descuento, fijo, nombreRegla266, 137215, 2017). 
+concepto(26,descuento, fijo, nombreRegla2266, 640761, 2017). 
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
