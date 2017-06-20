@@ -141,7 +141,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 						year2, month2, day2 := v[i].FechaHasta.Date()
 
 						reglas = reglas + "seg_social("+v[i].Concepto.NombreConcepto+","+strconv.Itoa(year)+","+strconv.Itoa(int(month))+","+strconv.Itoa(day + 1)+","+strconv.Itoa(year2)+","+strconv.Itoa(int(month2))+","+strconv.Itoa(day2 + 1)+")." + "\n"
-						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
+						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Concepto.TipoConcepto + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
 
 						}
          }
@@ -156,7 +156,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 						 //inhabilitar cuotas
 					 }else{
 						 fmt.Println("no pagadas")
-						 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
+						 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Concepto.TipoConcepto + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
 						 if (v[i].Concepto.Naturaleza == "devengo"){
 							 reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
 						 }
@@ -165,7 +165,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 
 				 if(v[i].NumCuotas == 999 && v[i].Concepto.Naturaleza != "seguridad_social"){
 					  fmt.Println("no cuotas")
-					 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Tipo + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
+					 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Concepto.TipoConcepto + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
 
 					 if (v[i].Concepto.Naturaleza == "devengo"){
 							 reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"

@@ -16,5 +16,5 @@ type ConceptoPorPersona struct {
 	Concepto      *Concepto `orm:"column(concepto);rel(fk)"`
 	Nomina        *Nomina       `orm:"column(nomina)"`
 	Id            int       `orm:"auto;column(id);pk"`
-	Tipo          string    `orm:"column(tipo);null"`
+	FechaRegistro time.Time             `orm:"column(fecha_registro);type(date)"`
 }
