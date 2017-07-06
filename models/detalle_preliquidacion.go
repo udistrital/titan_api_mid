@@ -11,4 +11,5 @@ type DetallePreliquidacion struct {
 	NumeroContrato *ContratoGeneral `orm:"column(numero_contrato);rel(fk)"`
 	DiasLiquidados string       `orm:"column(dias_liquidados)"`
 	TipoPreliquidacion string   `orm:"column(tipo_preliquidacion)"`
+	VigenciaContrato int       `orm:"column(vigencia_contrato)"`
 }

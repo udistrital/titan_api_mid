@@ -41,7 +41,7 @@ func (c *LiquidarController) Liquidar() {
 						idPersonaString := strconv.Itoa(v.Personas[i])
 						if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=0&query=Preliquidacion:"+Idpreliquidacion+",Persona:"+idPersonaString+"", &d); err == nil {
 							for i := 0; i < len(d); i++ {
-								detalleliquidacion := models.DetalleLiquidacion{Id: d[i].Id, ValorCalculado: d[i].ValorCalculado, EstadoConcepto: "P", Liquidacion: &models.Liquidacion{Id: v.Preliquidacion.Id}, Persona: d[i].Persona, Concepto: &models.Concepto{Id: d[i].Concepto.Id}, NumeroContrato: &models.ContratoGeneral{Id: d[i].NumeroContrato.Id}, DiasLiquidados: d[i].DiasLiquidados}
+								detalleliquidacion := models.DetalleLiquidacion{Id: d[i].Id, ValorCalculado: d[i].ValorCalculado, EstadoConcepto: "P", Liquidacion: &models.Liquidacion{Id: v.Preliquidacion.Id}, Persona: d[i].Persona, Concepto: &models.Concepto{Id: d[i].Concepto.Id}, NumeroContrato: &models.ContratoGeneral{Id: d[i].NumeroContrato.Id},VigenciaContrato: d[i].VigenciaContrato, DiasLiquidados: d[i].DiasLiquidados}
 								if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_liquidacion", "POST", &idDetaLiq, &detalleliquidacion); err == nil {
 								} else {
 									beego.Debug("error23: ", err)

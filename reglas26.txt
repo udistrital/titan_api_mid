@@ -1,6 +1,8 @@
 concepto(26,descuento, porcentaje, nombreRegla269, 1, 2017). 
 concepto(26,descuento, porcentaje, nombreRegla231, 3, 2017). 
+concepto(26,descuento, fijo, nombreRegla266, 865000, 2017). 
 concepto(26,descuento, fijo, nombreRegla266, 137215, 2017). 
+concepto(26,descuento, fijo, nombreRegla266, 865000, 2017). 
 concepto(26,descuento, fijo, nombreRegla2266, 640761, 2017). 
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
@@ -12,7 +14,6 @@ codigo_concepto(reteIca,1268).
 codigo_concepto(estampillaUD,1269).
 codigo_concepto(proCultura,1270).
 codigo_concepto(rete384,1271).
-codigo_concepto(primaVacaciones,1272).
 codigo_concepto(cesantias,1262).
 codigo_concepto(nombreRegla1,1).
 codigo_concepto(nombreRegla1172,1172).
@@ -94,6 +95,7 @@ codigo_concepto(nombreRegla135,135).
 codigo_concepto(nombreRegla137,137).
 codigo_concepto(nombreRegla1109,1109).
 codigo_concepto(nombreRegla2282,2282).
+codigo_concepto(primaVacaciones,1272).
 codigo_concepto(nombreRegla144,144).
 codigo_concepto(nombreRegla2188,2188).
 codigo_concepto(nombreRegla2172,2172).
@@ -444,15 +446,6 @@ codigo_concepto(nombreRegla2317,2317).
 codigo_concepto(nombreRegla2318,2318).
 codigo_concepto(nombreRegla2320,2320).
 codigo_concepto(nombreRegla2321,2321).
-codigo_concepto(licencia_norem,2324).
-codigo_concepto(licencia_rem,2323).
-codigo_concepto(comision_estudio,2325).
-codigo_concepto(comision_norem,2326).
-codigo_concepto(ibc_novedad,2327).
-codigo_concepto(incapacidad_laboral,2329).
-codigo_concepto(incapacidad_general,2330).
-codigo_concepto(exterior_sin_familia,2331).
-codigo_concepto(exterior_familia,2328).
 codigo_concepto(nombreRegla19,19).
 codigo_concepto(horasExtras,176).
 codigo_concepto(fondoSolidaridad,290).
@@ -526,6 +519,16 @@ codigo_concepto(nombreRegla2304,2304).
 codigo_concepto(nombreRegla2305,2305).
 codigo_concepto(nombreRegla2313,2313).
 codigo_concepto(ibc_liquidado,2322).
+codigo_concepto(licencia_rem,2323).
+codigo_concepto(licencia_norem,2324).
+codigo_concepto(comision_estudio,2325).
+codigo_concepto(ibc_novedad,2327).
+codigo_concepto(comision_norem,2326).
+codigo_concepto(exterior_familia,2328).
+codigo_concepto(incapacidad_general,2330).
+codigo_concepto(exterior_sin_familia,2331).
+codigo_concepto(incapacidad_laboral,2329).
+codigo_concepto(nombreregla0,0).
 total_pension(TD,P,V) :- pension_fun(TD,P,PF), pension_ud(TD,P,PU), V is PF + PU.
 porcentaje_fondo(TD,SM,PF) :- LI is 4 * SM, (TD @< LI -> PF is 0).
 porcentaje_fondo(TD,SM,PF) :- LI is 4 * SM, LS is 16 * SM, (TD @>= LI, TD @< LS  -> PF is 0.01).
