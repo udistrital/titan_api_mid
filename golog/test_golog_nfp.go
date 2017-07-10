@@ -78,7 +78,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 				fmt.Println("dias a liquidar")
 
 				dias_novedad_string = strconv.Itoa(int(dias_novedad))
-				_,total_devengado_novedad = CalcularConceptos(m, reglas, dias_novedad_string,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoPreliquidacion_string,esAnual, porcentajePT, idProveedor)
+				_,total_devengado_novedad = CalcularConceptos(m, reglas, dias_novedad_string,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoPreliquidacion_string,esAnual, porcentajePT, idProveedor,periodo)
 				ibc = 0;
 		}
 
@@ -96,7 +96,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 			}
 
 			doceava_BSPS := CalcularDoceavaBonServPS(reglas,tipoPreliquidacion_string, idProveedor, periodo, fechaPreliquidacion)
-			lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptos(m, reglas,dias_liquidar_prima_semestral,asignacion_basica_string,id_cargo_string,dias_laborados_string, "3",esAnual, porcentajePT, idProveedor)
+			lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptos(m, reglas,dias_liquidar_prima_semestral,asignacion_basica_string,id_cargo_string,dias_laborados_string, "3",esAnual, porcentajePT, idProveedor,periodo)
 			total_calculos = append (total_calculos, lista_descuentos_semestral...)
 			total_calculos = append (total_calculos, 	doceava_BSPS...)
 			ibc = 0
@@ -112,7 +112,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 			for _, solution := range dias_liq_dic{
 					tipoLiq := fmt.Sprintf("%s", solution.ByName_("TLIQ"))
 					dias_liquidacion_diciembre := fmt.Sprintf("%s", solution.ByName_("D"))
-					lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptos(m, reglas,dias_liquidacion_diciembre,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoLiq,esAnual, porcentajePT, idProveedor)
+					lista_descuentos_semestral,total_devengado_no_novedad_semestral = CalcularConceptos(m, reglas,dias_liquidacion_diciembre,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoLiq,esAnual, porcentajePT, idProveedor,periodo)
 					total_calculos = append (total_calculos, lista_descuentos_semestral...)
 					doceavas_bsd := CalcularDoceavaBonServDic(reglas,tipoLiq, idProveedor, periodo, fechaPreliquidacion)
 					doceavas_psd := CalcularDoceavaPSDic(reglas,tipoLiq, idProveedor, periodo, fechaPreliquidacion)
@@ -136,9 +136,9 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		// ----- Nomina ordinaria ----- Proceso de cálculo, manejo de novedades y guardado de conceptos
 
-		lista_descuentos,total_devengado_no_novedad = CalcularConceptos(m, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoPreliquidacion_string,esAnual, porcentajePT, idProveedor)
+		lista_descuentos,total_devengado_no_novedad = CalcularConceptos(m, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoPreliquidacion_string,esAnual, porcentajePT, idProveedor,periodo)
 		ibc = 0
-		lista_novedades = ManejarNovedades(reglas,idProveedor, tipoPreliquidacion_string)
+		lista_novedades = ManejarNovedades(reglas,idProveedor, tipoPreliquidacion_string, periodo)
 		total_calculos = append(total_calculos, lista_descuentos...)
 		total_calculos = append(total_calculos, lista_novedades...)
 		resultado = GuardarConceptos(total_calculos)
@@ -152,7 +152,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 	}
 
 //Función que, utilizando las reglas, calcula cada uno de los conceptos. Retorna un objeto con los resultados
-	func CalcularConceptos(m Machine, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string,tipoPreliquidacion_string string,  esAnual,  porcentajePT,idProveedor  int) (rest []models.ConceptosResumen, total_dev float64){
+	func CalcularConceptos(m Machine, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string,tipoPreliquidacion_string string,  esAnual,  porcentajePT,idProveedor  int,periodo string) (rest []models.ConceptosResumen, total_dev float64){
 		fmt.Println("una vez")
 		var lista_descuentos []models.ConceptosResumen
 		porcentaje_PT_string := strconv.Itoa(porcentajePT)
@@ -179,7 +179,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		}
 
-		valor_gastos_representacion := m.ProveAll("gr(" + asignacion_basica_string + "," + dias_a_liquidar + "," + tipoPreliquidacion_string + ",2016," + id_cargo_string + ",V).")
+		valor_gastos_representacion := m.ProveAll("gr(" + asignacion_basica_string + "," + dias_a_liquidar + "," + tipoPreliquidacion_string + ","+periodo+"," + id_cargo_string + ",V).")
 		for _, solution := range valor_gastos_representacion {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 			temp_conceptos := models.ConceptosResumen{Nombre: "gastosRep",
@@ -200,7 +200,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		}
 
-		valor_prima_antiguedad := m.ProveAll("prima_ant(" + asignacion_basica_string + "," + dias_a_liquidar + "," + tipoPreliquidacion_string + ",2016," + dias_laborados_string + ",V).")
+		valor_prima_antiguedad := m.ProveAll("prima_ant(" + asignacion_basica_string + "," + dias_a_liquidar + "," + tipoPreliquidacion_string + ","+periodo+"," + dias_laborados_string + ",V).")
 		for _, solution := range valor_prima_antiguedad {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 			temp_conceptos := models.ConceptosResumen{Nombre: "primaAnt",
@@ -223,7 +223,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 		}
 
 		if esAnual == 1 {
-			valor_bonificacion_servicios := m.ProveAll("bon_ser(" + asignacion_basica_string + "," + dias_a_liquidar + "," + tipoPreliquidacion_string + ",2016," + dias_laborados_string + "," + id_cargo_string + ",V).")
+			valor_bonificacion_servicios := m.ProveAll("bon_ser(" + asignacion_basica_string + "," + dias_a_liquidar + "," + tipoPreliquidacion_string + ","+periodo+"," + dias_laborados_string + "," + id_cargo_string + ",V).")
 			for _, solution := range valor_bonificacion_servicios {
 				Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 				temp_conceptos := models.ConceptosResumen{Nombre: "bonServ",
@@ -268,7 +268,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 			}
 		}
 
-		valor_prima_secretarial := m.ProveAll("prima_secretarial(" + asignacion_basica_string + ",2016," + id_cargo_string + "," + tipoPreliquidacion_string + "," + dias_laborados_string + ",V).")
+		valor_prima_secretarial := m.ProveAll("prima_secretarial(" + asignacion_basica_string + ","+periodo+"," + id_cargo_string + "," + tipoPreliquidacion_string + "," + dias_laborados_string + ",V).")
 		for _, solution := range valor_prima_secretarial {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 			temp_conceptos := models.ConceptosResumen{Nombre: "primaSecr",
@@ -294,7 +294,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 		ManejarNovedadesDevengosDP(reglas, tipoPreliquidacion_string)
 		total_devengado_string := strconv.Itoa(int(ibc))
 
-		valor_salud := m.ProveAll("salud_fun(" + total_devengado_string + ",2016,"+tipoPreliquidacion_string+",V).")
+		valor_salud := m.ProveAll("salud_fun(" + total_devengado_string + ","+periodo+","+tipoPreliquidacion_string+",V).")
 		for _, solution := range valor_salud {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 			temp_conceptos := models.ConceptosResumen{Nombre: "salud",
@@ -312,7 +312,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		}
 
-		valor_pension := m.ProveAll("pension_fun(" + total_devengado_string + ",2016,"+tipoPreliquidacion_string+",V).")
+		valor_pension := m.ProveAll("pension_fun(" + total_devengado_string + ","+periodo+","+tipoPreliquidacion_string+",V).")
 		for _, solution := range valor_pension {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 			temp_conceptos := models.ConceptosResumen{Nombre: "pension",
@@ -332,7 +332,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 		if tipoPreliquidacion_string == "1" || tipoPreliquidacion_string == "2" {
 
-			valor_fondo_solidaridad := m.ProveAll("fondo_solidaridad_fun(" + asignacion_basica_string + ",2017,V).")
+			valor_fondo_solidaridad := m.ProveAll("fondo_solidaridad_fun(" + total_devengado_string + ","+periodo+",V).")
 			for _, solution := range valor_fondo_solidaridad {
 				Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 				temp_conceptos := models.ConceptosResumen{Nombre: "fondoSolidaridad",
@@ -399,14 +399,14 @@ func CalcularIBC(reglas string){
 }
 
 //Función que gestiona las novedades de la persona
-func ManejarNovedades(reglas string, idProveedor int, tipoPreliquidacion string) (rest []models.ConceptosResumen){
+func ManejarNovedades(reglas string, idProveedor int, tipoPreliquidacion, periodo string) (rest []models.ConceptosResumen){
 	fmt.Println("novedades")
 	var lista_novedades []models.ConceptosResumen
 
 	f := NewMachine().Consult(reglas)
 
 	idProveedorString := strconv.Itoa(idProveedor)
-	novedades := f.ProveAll("info_concepto(" + idProveedorString + ",T,2017,N,R).")
+	novedades := f.ProveAll("info_concepto(" + idProveedorString + ",T,"+periodo+",N,R).")
 
 	for _, solution := range novedades {
 
