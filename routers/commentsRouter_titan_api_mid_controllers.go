@@ -8,9 +8,8 @@ func init() {
 
 	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:LiquidarController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:LiquidarController"],
 			beego.ControllerComments{
-				"Liquidar",
-				`/`,
-				[]string{"post"},
-				nil})
-
+				Method: "Liquidar",
+				Router: `/`,
+				AllowHTTPMethods: []string{"post"},
+				Params: nil})
 }
