@@ -20,6 +20,14 @@ func (c *LiquidarController) URLMapping() {
 	c.Mapping("Liquidar", c.Liquidar)
 }
 
+// Post ...
+// @Title Create
+// @Description create Liquidar
+// @Param	body		body 	models.Liquidacion	true		"body for Liquidar content"
+// @Success 201 {object} models.Liquidacion
+// @Failure 403 body is empty
+// @router / [post]
+
 func (c *LiquidarController) Liquidar() {
 	var idLiquidacion interface{}
 	var errores []string
