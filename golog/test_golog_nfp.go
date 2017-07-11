@@ -67,7 +67,7 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 		DiaDesde,_:= strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("D")), 64)
 		AnoHasta,_:= strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("AA")), 64)
 		MesHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
-		DiaHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
+		DiaHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64) 
 
 		afectacion_seg_social := m.ProveAll("afectacion_seguridad("+novedad+").")
 		for _, solution := range afectacion_seg_social {
@@ -267,7 +267,10 @@ func CargarReglasFP(fechaPreliquidacion time.Time, reglas string, idProveedor in
 
 			}
 		}
-
+		fmt.Println("dias laborados")
+		fmt.Println(dias_laborados_string)
+		fmt.Println("asignacion")
+		fmt.Println(asignacion_basica_string)
 		valor_prima_secretarial := m.ProveAll("prima_secretarial(" + asignacion_basica_string + ","+periodo+"," + id_cargo_string + "," + tipoPreliquidacion_string + "," + dias_laborados_string + ",V).")
 		for _, solution := range valor_prima_secretarial {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)

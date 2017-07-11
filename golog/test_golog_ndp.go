@@ -128,7 +128,7 @@ func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_labor
 	// ----- Nomina ordinaria ----- Proceso de cálculo, manejo de novedades y guardado de conceptos
 	lista_descuentos,total_devengado_no_novedad = CalcularConceptosDP(m, reglas,dias_a_liquidar,asignacion_basica_string, tipoPreliquidacion_string,regimen_numero, puntos, cargo, fechaInicio, fechaActual)
 	ibc = 0
-	lista_novedades = ManejarNovedadesDP(reglas,idProveedor, tipoPreliquidacion_string)
+	lista_novedades = ManejarNovedadesDP(reglas,idProveedor, tipoPreliquidacion_string,periodo)
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
 	resultado = GuardarConceptosDP(total_calculos)
@@ -190,7 +190,7 @@ func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_labor
 		CalcularIBC(reglas)
 		ManejarNovedadesDevengosDP(reglas, tipoPreliquidacion_string)
 		total_devengado_string := strconv.Itoa(int(ibc))
-		
+
 		salud_empleado := m.ProveAll("salud("+tipoPreliquidacion_string+"," + total_devengado_string + ",S).")
 		for _, solution := range salud_empleado {
 		  Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("S")), 64)
@@ -230,13 +230,13 @@ func CargarReglasDP(reglas_dev string, fechaPreliquidacion time.Time, dias_labor
 		return lista_descuentos,ibc
 	}
 
-	func ManejarNovedadesDP(reglas string, idProveedor int, tipoPreliquidacion string) (rest []models.ConceptosResumen){
+	func ManejarNovedadesDP(reglas string, idProveedor int, tipoPreliquidacion,periodo string) (rest []models.ConceptosResumen){
 		var lista_novedades []models.ConceptosResumen
 
 		f := NewMachine().Consult(reglas)
 
 		idProveedorString := strconv.Itoa(idProveedor)
-		novedades := f.ProveAll("info_concepto(" + idProveedorString + ",T,2017,N,R).")
+		novedades := f.ProveAll("info_concepto(" + idProveedorString + ",T,"+periodo+",N,R).")
 
 		for _, solution := range novedades {
 
