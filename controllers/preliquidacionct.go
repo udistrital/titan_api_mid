@@ -41,7 +41,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 	//carga de informacion de los empleados a partir del id de persona Natural (en este momento id proveedor)
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
-		filtrodatos = "NumeroContrato.Id:" + (datos.PersonasPreLiquidacion[i].NumeroContrato) + ",Vigencia:" + datos.Preliquidacion.Nomina.Periodo
+		filtrodatos = "NumeroContrato.Id:" + (datos.PersonasPreLiquidacion[i].NumeroContrato)
 
 		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio?limit=1&query="+filtrodatos, &datos_contrato); err == nil && datos_contrato != nil {
 
@@ -67,16 +67,17 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 
 			}
 
-
+			vigencia_contrato := strconv.Itoa(datos_contrato[0].NumeroContrato.Vigencia)
 			predicados = append(predicados, models.Predicado{Nombre: "dias_liquidados(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(periodo_liquidacion, 'f', -1, 64) + "). "})
 			predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(datos_contrato[0].NumeroContrato.ValorContrato, 'f', -1, 64) + "). "})
-			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(dias_contrato, 'f', -1, 64) + "," + datos.Preliquidacion.Nomina.Periodo + "). "})
+			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(dias_contrato, 'f', -1, 64) + "," + vigencia_contrato + "). "})
 			reglasinyectadas = FormatoReglas(predicados)
 
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 			reglas = reglasinyectadas + reglasbase
+
 			//fmt.Println("Reglas: ", reglasbase)
-			temp := golog.CargarReglasCT(datos.PersonasPreLiquidacion[i].IdPersona, reglas, datos.Preliquidacion.Nomina.Periodo)
+			temp := golog.CargarReglasCT(datos.PersonasPreLiquidacion[i].IdPersona, reglas, vigencia_contrato)
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = datos_contrato[0].NumeroContrato.Contratista.NumDocumento
