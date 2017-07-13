@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"github.com/udistrital/titan_api_mid/golog"
 	"github.com/udistrital/titan_api_mid/models"
-
+	"encoding/json"
 	"github.com/astaxie/beego"
   "fmt"
 	"time"
@@ -23,10 +23,12 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 	var resumen_preliqu []models.Respuesta
 	var porcentajePT int
 	var tipoNom string;
+	var arreglo_pruebas []models.PruebaGo
+	arreglo_pruebas = make([]models.PruebaGo, len(datos.PersonasPreLiquidacion))
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
-		fmt.Println("num personas")
-		fmt.Println(i)
+
+
 		var informacion_cargo []models.FuncionarioCargo
 		filtrodatos := models.FuncionarioCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
 		tipoNom = tipoNomina(datos.Preliquidacion.Tipo)
@@ -36,13 +38,17 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 		}
 
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo", "POST", &informacion_cargo, &filtrodatos); err == nil {
+
 			dias_laborados := CalcularDias(informacion_cargo[0].FechaInicio, informacion_cargo[0].FechaFin)
 			//reglasNominasEspeciales := crearHechosNominasEspeciales(datos.Preliquidacion,datos.PersonasPreLiquidacion[i].IdPersona)
 			esAnual := esAnual(datos.Preliquidacion.Fecha, informacion_cargo[0].FechaInicio)
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 			reglas = reglasinyectadas + reglasbase // + reglasNominasEspeciales
 
-			fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
+			//fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
+			arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.Fecha, "",datos.PersonasPreLiquidacion[i].IdPersona,dias_laborados,datos.Preliquidacion.Nomina.Periodo,esAnual, porcentajePT, tipoNom}
+
+
 			temp := golog.CargarReglasFP(datos.Preliquidacion.Fecha, reglas, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
 
 			resultado := temp[len(temp)-1]
@@ -63,6 +69,15 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 		reglasinyectadas = "";
 	}
 
+	data, err := json.Marshal(arreglo_pruebas)
+	if err != nil {
+			fmt.Println("error en json")
+		}
+	str := fmt.Sprintf("%s", data)
+	mes := strconv.Itoa(int(datos.Preliquidacion.Fecha.Month()))
+	if err := WriteStringToFile("prueba"+mes+".txt", str); err != nil {
+			panic(err)
+	}
 	return resumen_preliqu
 
 }
@@ -94,7 +109,9 @@ func esAnual(FechaPreliq time.Time, FechaIngreso time.Time) (flag int) {
 	var esAnual int
 
 	if FechaPreliq.Month() == FechaIngreso.Month() {
-
+		fmt.Println("año")
+		fmt.Println(FechaIngreso)
+		fmt.Println(time.Now())
 		esAnual = 1
 	} else {
 		esAnual = 0

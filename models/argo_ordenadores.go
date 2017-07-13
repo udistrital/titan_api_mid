@@ -1,7 +1,6 @@
 package models
 
 
-
 type ArgoOrdenadores struct {
 	ORGTIPOORDENADOR  string  `orm:"column(ORG_TIPO_ORDENADOR)"`
 	ORGIDENTIFICADOR  float64 `orm:"column(ORG_IDENTIFICADOR)"`

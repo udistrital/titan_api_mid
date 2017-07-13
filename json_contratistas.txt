@@ -12,8 +12,3 @@
     "Valor_correcto_salario": "896293"
    }
 ]
-
-
-
-
-

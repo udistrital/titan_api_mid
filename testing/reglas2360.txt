@@ -1,6 +1,11 @@
-dias_liquidados(4204,12). 
-valor_contrato(4204,23786198). 
-duracion_contrato(4204,345,2016). 
+concepto(2360,descuento, porcentaje, nombreRegla29, 1, 2017). 
+concepto(2360,descuento, porcentaje, nombreRegla269, 1, 2017). 
+concepto(2360,descuento, porcentaje, nombreRegla231, 3, 2017). 
+concepto(2360,descuento, fijo, nombreRegla286, 63691, 2017). 
+concepto(2360,descuento, fijo, nombreRegla214, 28572, 2017). 
+concepto(2360,descuento, fijo, nombreRegla214, 57136, 2017). 
+concepto(2360,descuento, fijo, nombreRegla214, 57136, 2017). 
+concepto(2360,descuento, fijo, nombreRegla2183, 405086, 2017). 
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
 codigo_concepto(bancoPichincha,1264).
@@ -526,25 +531,190 @@ codigo_concepto(incapacidad_general,2330).
 codigo_concepto(exterior_sin_familia,2331).
 codigo_concepto(incapacidad_laboral,2329).
 codigo_concepto(nombreregla0,0).
-dias_liquidados(prueba,30).
+total_pension(TD,P,V) :- pension_fun(TD,P,PF), pension_ud(TD,P,PU), V is PF + PU.
+porcentaje_fondo(TD,SM,PF) :- LI is 4 * SM, (TD @< LI -> PF is 0).
+porcentaje_fondo(TD,SM,PF) :- LI is 4 * SM, LS is 16 * SM, (TD @>= LI, TD @< LS  -> PF is 0.01).
+porcentaje_fondo(TD,SM,PF) :- LI is 17 * SM, LS is 18 * SM, (TD @>= LI, TD @< LS  -> PF is 0.014).
+porcentaje_gr(2016,3, 0.20).
+nuevo_SB(S,I,V) :- V is S*(1+I).
+porcentaje_gr(2016,1, 0.50).
+porcentaje_gr(2016,2, 0.50).
+nuevo_GR(S,I,V) :- V is S*(1+I).
+parametro_auxilio_trans(2016,153274,5928700).
+auxilio_transporte(S,P,DL,V) :- parametro_auxilio_trans(P,VA,TO), (S @>= TO -> V is 0 ;  V is (DL/30)*VA).
+porcentaje_gr(2016,218, 0.30).
+porcentaje_gr(2016,263, 0.50).
+porcentaje_gr(2016,264, 0.50).
+gr(S,DL,M,P,C,V) :-  periodo_liq_gastosrep(M), porcentaje_gr(P,C,A),V is ((S*A)*(DL/30) rnd 0).
+parametro_auxilio_ali(2016,140932,5928700).
+subsidio_alimentacion(S,P,DL,V) :- parametro_auxilio_ali(P,VA,TO), (S @>= TO -> V is 0 ;  V is (DL/30)*VA).
+porcentaje_pa(2016, 1, 0).
+porcentaje_pa(2016,2,0.03).
+porcentaje_pa(2016,3,0.05).
+porcentaje_pa(2016,4,0.07).
+meses_laborados(A1,M1,D1,A2,M2,D2,V) :- A is (A2 - A1) * 12, (D2 @< D1 -> M is (M2 - M1) - 1; M is M2 - M1), V is A + M.
+dias_laborados(A1,M1,D1,A2,M2,D2, V) :- meses_laborados(A1,M1,D1,A2,M2,D2, D), V is (D * 30).
+dias_pa(DT,DPA) :- (DT @> 0, DT @=< 1440 -> DPA is 1; DT @>= 1441, DT @=< 3240 -> DPA is 2 ; DT @>= 3241, DT @=< 5040 -> DPA is 3; DT @>= 5041, DT @=< 99999 -> DPA is 4; DPA is 0).
+porcentaje_ps(2016,3, 0.05).
+porcentaje_ps(2016,4, 0.07).
+porcentaje_ps(2016,5, 0.09).
+porcentaje_pension(2016,1, 0.04).
+porcentaje_pension(2016,2, 0.125).
+total_salud(TD,P,V) :- salud_fun(TD,P,SF), salud_ud(TD,P,SU), V is SF + SU.
+pension_ud(TD,P,V) :- porcentaje_pension(P,2,PF), V is (TD * PF rnd 0).
+porcentaje_fondo(TD,SM,PF) :- LI is 16 * SM, LS is 17 * SM, (TD @>= LI, TD @< LS  -> PF is 0.012).
+prima_tecnica(S,DL,M,P,V) :- periodo_primatec(M), X is P/ 100, V is ((S*X) * (DL/30) rnd 0).
+porcentaje_fondo(TD,SM,PF) :- LI is 18 * SM, LS is 19 * SM, (TD @>= LI, TD @< LS  -> PF is 0.016).
+porcentaje_fondo(TD,SM,PF) :- LI is 19 * SM, LS is 20 * SM, (TD @>= LI, TD @=< LS  -> PF is 0.018).
+porcentaje_fondo(TD,SM,PF) :- LI is 20 * SM, (TD @> LI -> PF is 0.02).
+porcentaje_ps(2016,1, 0).
+porcentaje_ps(2016,2, 0.03).
+salario_minimo(2017, 737717).
 info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
-info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(valor_pago(X,P,V),R is V * Z)).
-concepto(prueb, devengo, fijo, s, 1000000, 2017).
-valor_pago(X,V,P):-valor_contrato(X,Y), duracion_contrato(X,D,V), R is Y / D, dias_liquidados(X,DL),P is (DL * R).
-calcular_reteica(B,V,R):- base_retencion(B,V,X), reteica(V,RI), R is ((RI * X) / 1000 rnd 0). 
-reteica(2016, 9.66).
-estampilla(2016, 0.01). 
-procultura(2016,0.005).
-adulto_mayor(2016, 0.02).
-salud(2016,12.5).
-pension(2016,16).
-salario_minimo(2016, 689454).
-calcular_estampilla(B,V,R) :- base_retencion(B,V,X) , estampilla(V, RE) , R is ((RE * X) rnd 0).
-calcular_procultura(B,V,R) :- base_retencion(B,V,X) , procultura(V, RP) , R is ((RP * X) rnd 0).
-calcular_adulto_mayor(B,V,R) :- base_retencion(B,V,X) , adulto_mayor(V, RA) , R is ((RA * X) rnd 0).
-arl(2016,1,0.522).
-base_retencion(B, V, R) :- base_minimo(B,V,A), calcular_salud(A,V,VS),  calcular_pension(A,V,VP), calcular_ARL(B,V,VARL), M is (VS+VP+VARL), T is B- M, C is T*0.25, R is T-C. 
-calcular_salud(B,V,VS) :- salud(V,PS), X is (B * (PS/100) rnd 0), Y is ((X+50) / 100 int 0), VS is Y * 100.
-calcular_pension(B,V,VP) :- pension(V, PP), X is (B * (PP/100) rnd 0), Y is ((X+50) / 100 int 0), VP is Y * 100.
-calcular_ARL(B,V,VARL) :- arl(V,1,PARL), X is ((PARL/100)* (B * 0.40) rnd 0), Y is ((X + 50)/ 100 int 0), VARL is Y * 100.
-base_minimo(B,V,A):- salario_minimo(V,Z), X is B*0.40, (X@=<Z -> A is Z; A is X).
+p_salud(exterior_familia, 2016,0.015).
+porcentaje_salud(P, V):-seg_social(exterior_familia,_,_,_,_,_,_), p_salud(exterior_familia,P,PP), V is PP.
+porcentaje_salud(P,V):- \+(seg_social(exterior_familia,_,_,_,_,_,_))-> p_salud(otro,P,PP), V is PP.
+prima_secretarial(S,P,C,M,DT,V) :- secretario(C), periodo_liq_primsec(M), (DT @> 0, DT @=< 360 -> Z is 1 ; DT @>= 361, DT @=< 1080 -> Z is 2 ; DT @>= 1081, DT @=< 2880 -> Z is 3; DT @>= 2881, DT @=< 5400 -> Z is 4; DT @>5401 -> Z is 5; Z is 1), porcentaje_ps(P,Z,A), V is (S*A rnd 0).
+concepto(prueba, devengo, porcentaje, salud,0.5 , 2016).
+periodo_sb(2).
+periodo_sb(0).
+periodo_sb(3).
+periodo_sb(1).
+sb(S,N,DL,V):-  periodo_sb(N), V is ((DL/30)*S rnd 0).
+periodo_liq_gastosrep(1).
+periodo_liq_gastosrep(2).
+periodo_liq_gastosrep(3).
+periodo_liq_bonserv(2).
+periodo_liq_primaant(1).
+periodo_liq_primaant(2).
+periodo_liq_primaant(3).
+periodo_liq_primsec(1).
+secretario(84).
+periodo_liq_bonserv(3).
+periodo_liq_bonserv(1).
+periodo_liq_primsec(2).
+secretario(105).
+secretario(110).
+bon_ser(S,DL,M,P,DLA,C,V) :- periodo_liq_bonserv(M),gr(S,DL,M,P,C,GR), prima_ant(S,DL,M,P,DLA,PA), V is ((S + GR + PA) * 0.35 rnd 0).
+periodo_primatec(1).
+periodo_primatec(3).
+porcentaje_gr(2016,265, 0.50).
+info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(salario_base(V),valor_pago(V, F), R is F * (Z/100))).
+valor_pago(S,V):- tipo_nomina(0), V is ((15/30)*S rnd 0).
+valor_pago(S,V):- tipo_nomina(2), V is ((30/30)*S rnd 0).
+prima_ant(S,DL,M,P,DLA,V) :- periodo_liq_primaant(M), dias_pa(DLA,DP), porcentaje_pa(P,DP,PA), V is ((S * PA) * (DL/30) rnd 0).
+periodo_primatec(2).
+periodo_liq_gastosrep(4).
+periodo_liq_primaant(4).
+periodo_sb(4).
+periodo_primatec(6).
+bon_ser(S,DL,M,P,DLA,C,V) :- periodo_liq_bonserv(M), \+(gr(S,DL,M,P,C,GR)) -> GR is 0, prima_ant(S,DL,M,P,DLA,PA), V is ((S + GR + PA) * 0.35 rnd 0).
+periodo_primatec(0).
+valor_pago(S,V):- tipo_nomina(1), V is ((15/30)*S rnd 0).
+devengo(0,prueba).
+conceptos_ibc(nombreRegla18).
+conceptos_ibc(nombreRegla118).
+conceptos_ibc(nombreRegla139).
+conceptos_ibc(nombreRegla151).
+conceptos_ibc(nombreRegla152).
+conceptos_ibc(nombreRegla157).
+conceptos_ibc(nombreRegla160).
+conceptos_ibc(nombreRegla161).
+conceptos_ibc(nombreRegla168).
+conceptos_ibc(nombreRegla174).
+conceptos_ibc(horasExtras).
+conceptos_ibc(nombreRegla178).
+conceptos_ibc(nombreRegla1177).
+conceptos_ibc(nombreRegla1179).
+conceptos_ibc(nombreRegla1195).
+conceptos_ibc(nombreRegla1201).
+conceptos_ibc(nombreRegla1202).
+conceptos_ibc(nombreRegla1206).
+conceptos_ibc(nombreRegla1209).
+conceptos_ibc(asigAdicDec).
+conceptos_ibc(nombreRegla1214).
+conceptos_ibc(nombreRegla1225).
+conceptos_ibc(nombreRegla1226).
+conceptos_ibc(nombreRegla1227).
+conceptos_ibc(nombreRegla1230).
+conceptos_ibc(nombreRegla1232).
+conceptos_ibc(nombreRegla1239).
+conceptos_ibc(nombreRegla1240).
+conceptos_ibc(nombreRegla1242).
+conceptos_ibc(nombreRegla1245).
+conceptos_ibc(nombreRegla1248).
+conceptos_ibc(nombreRegla1249).
+conceptos_ibc(nombreRegla1250).
+conceptos_ibc(nombreRegla1251).
+afectacion_seguridad(comision_norem).
+conceptos_ibc(nombreRegla1253).
+conceptos_ibc(nombreRegla1254).
+conceptos_ibc(nombreRegla1257).
+afectacion_seguridad(licencia_norem).
+seg_social(prueba,1,1,1,1,1,1).
+salud_fun(TD,P,M,V):- \+(seg_social(comision_estudio,_,_,_,_,_,_)) -> periodo_liq_salud(M),porcentaje_salud(P,PF), V is (TD * PF rnd 0).
+conceptos_ibc(nombreRegla158).
+conceptos_ibc(nombreRegla1252).
+novedades_devengos(X):- devengo(V,N), conceptos_ibc(N), X is V.
+conceptos_ibc(nombreRegla17).
+concepto_ibc(salarioBase).
+concepto_ibc(gastosRep).
+concepto_ibc(bonServ).
+concepto_ibc(primaAnt).
+conceptos_ibc(subsidioFa).
+calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
+concepto_ibc(priTec).
+porcentaje_pension(2017,2, 0.125).
+p_salud(exterior_familia, 2017,0.015).
+concepto(prueba, devengo, porcentaje, salud,0.5 , 2017).
+p_salud(otro, 2017,0.04).
+periodo_liq_salud(1).
+periodo_liq_salud(2).
+periodo_liq_pension(1).
+periodo_liq_pension(2).
+pension_fun(TD,P,M,V):- periodo_liq_pension(M),porcentaje_pension(P,1,PF), V is (TD * PF rnd 0).
+dias_liq_ps(DL,V):-(DL@>=360 -> V is 37; DL < 90 -> V is 0; V is ((DL*46) / 360 rnd 0)). 
+dias_liq_dic(FP,4,15).
+dias_liq_dic(FP,5,21).
+dias_liq_dic(FP,6,30).
+periodo_primatec(5).
+periodo_liq_gastosrep(5).
+periodo_liq_gastosrep(6).
+periodo_liq_primaant(5).
+periodo_liq_primaant(6).
+periodo_sb(5).
+periodo_sb(6).
+periodo_primatec(4).
+doceava_bs(N,D,V):- bonificacion_servicio_ps(N,X), V is ((X/12) * (D/30) rnd 0).
+doceava_pv(N,V) :- prima_vacaciones(N,X), V is (X/12 rnd 0).
+doceava(N,V):-bonificacion_servicio(N,X), V is (X/12 rnd 0).
+concepto_bon_serv_dic(129).
+concepto_bon_serv_dic(1195).
+concepto_bon_serv_dic(139).
+concepto_bon_serv_ps(129).
+concepto_bon_serv_ps(1195).
+concepto_bon_serv_ps(139).
+doceava_ps(N,V):- prima_servicios(N,X), V is (X/12 rnd 0).
+afectacion_seguridad(incapacidad_laboral).
+afectacion_seguridad(incapacidad_general).
+p_salud(otro, 2016,0.04).
+fondo_solidaridad_fun(TD,P,V) :- salario_minimo(P,SM),porcentaje_fondo(TD, SM, PF), (V is PF * TD int 0).
+porcentaje_gr(2017,3, 0.20).
+porcentaje_gr(2017,1, 0.50).
+porcentaje_gr(2017,2, 0.50).
+porcentaje_gr(2017,218, 0.30).
+porcentaje_gr(2017,263, 0.50).
+porcentaje_gr(2017,265, 0.50).
+porcentaje_gr(2017,264, 0.50).
+porcentaje_pa(2017, 1, 0).
+porcentaje_pa(2017,2,0.03).
+porcentaje_pa(2017,3,0.05).
+porcentaje_pa(2017,4,0.07).
+porcentaje_ps(2017,1, 0).
+porcentaje_ps(2017,2, 0.03).
+porcentaje_ps(2017,3, 0.05).
+porcentaje_ps(2017,4, 0.07).
+porcentaje_ps(2017,5, 0.09).
+porcentaje_pension(2017,1, 0.04).
+salario_base(2193636).tipo_nomina(2).
+salario_base(2193636).tipo_nomina(2).

@@ -23,7 +23,7 @@ func TestFuncionarios(t *testing.T) {
     var funcionarios string
 
 
-    funcionarios_a_probar =  file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/json_funcionarios.txt")
+    funcionarios_a_probar =  file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/prueba.txt")
     funcionarios = processString(funcionarios_a_probar)
 
     b := []byte(funcionarios)
@@ -47,7 +47,7 @@ func TestFuncionarios(t *testing.T) {
              if(i == 0){
                if descuentos.Valor != arreglo_funcionarios[x].Valor_correcto_salario {
                  fmt.Print("Test funcionarios: ")
-                  t.Errorf("Los datos son incorrectos, se obtuvo: "+descuentos.Valor+" y era: "+arreglo_funcionarios[x].Valor_correcto_salario)
+                  t.Errorf("Los datos son incorrectos para salario, se obtuvo: "+descuentos.Valor+" y era: "+arreglo_funcionarios[x].Valor_correcto_salario)
                }
              }
 
@@ -61,7 +61,7 @@ func TestFuncionarios(t *testing.T) {
   }
 
 
-  func TestContratistas(e *testing.T) {
+  /*func TestContratistas(e *testing.T) {
 
 
     var resultado []models.Respuesta
@@ -107,7 +107,7 @@ func TestFuncionarios(t *testing.T) {
     }
 
   }
-
+*/
   func file2lines(filePath string) []string {
         f, err := os.Open(filePath)
         if err != nil {

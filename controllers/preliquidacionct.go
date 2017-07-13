@@ -41,7 +41,8 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 	//carga de informacion de los empleados a partir del id de persona Natural (en este momento id proveedor)
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
-		filtrodatos = "NumeroContrato.Id:" + (datos.PersonasPreLiquidacion[i].NumeroContrato)
+		
+		filtrodatos = "NumeroContrato.Id:"+(datos.PersonasPreLiquidacion[i].NumeroContrato)
 
 		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio?limit=1&query="+filtrodatos, &datos_contrato); err == nil && datos_contrato != nil {
 

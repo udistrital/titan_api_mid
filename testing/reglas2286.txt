@@ -1,8 +1,9 @@
-concepto(2327,descuento, porcentaje, nombreRegla29, 1, 2017). 
-concepto(2327,descuento, porcentaje, nombreRegla269, 1, 2017). 
-concepto(2327,descuento, fijo, nombreRegla26, 56000, 2017). 
-concepto(2327,descuento, porcentaje, nombreRegla231, 3, 2017). 
-concepto(2327,descuento, fijo, nombreRegla2202, 82584, 2017). 
+concepto(2286,descuento, porcentaje, nombreRegla269, 1, 2017). 
+concepto(2286,descuento, porcentaje, nombreRegla231, 3, 2017). 
+concepto(2286,descuento, porcentaje, nombreRegla29, 1, 2017). 
+concepto(2286,descuento, fijo, nombreRegla2303, 378496, 2017). 
+concepto(2286,descuento, fijo, nombreRegla216, 100000, 2017). 
+concepto(2286,descuento, fijo, nombreRegla266, 229600, 2017). 
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
 codigo_concepto(bancoPichincha,1264).
@@ -713,4 +714,5 @@ porcentaje_ps(2017,3, 0.05).
 porcentaje_ps(2017,4, 0.07).
 porcentaje_ps(2017,5, 0.09).
 porcentaje_pension(2017,1, 0.04).
-salario_base(2345274).tipo_nomina(2).
+salario_base(2148775).tipo_nomina(2).
+salario_base(2148775).tipo_nomina(2).

@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"github.com/astaxie/beego"
 	"time"
-
+	"io"
+	"os"
+	"strings"
 )
 
 func sendJson(url string, trequest string, target interface{}, datajson interface{}) error {
@@ -91,4 +93,19 @@ func tipoNomina(tipoNomina string)(tipo string){
 		tipo = "2"
 	}
 	 return tipo
+}
+
+func WriteStringToFile(filepath, s string) error {
+	fo, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer fo.Close()
+
+	_, err = io.Copy(fo, strings.NewReader(s))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

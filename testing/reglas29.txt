@@ -1,7 +1,5 @@
-concepto(29,descuento, porcentaje, nombreRegla269, 1, 2017). 
 concepto(29,descuento, porcentaje, nombreRegla231, 3, 2017). 
-seg_social(incapacidad_general,2017,3,15,2017,4,10).
-concepto(29,seguridad_social, seguridad_social, incapacidad_general, 0, 2017). 
+concepto(29,descuento, porcentaje, nombreRegla269, 1, 2017). 
 codigo_concepto(primaNavidad,1261).
 codigo_concepto(interesCesantias,1263).
 codigo_concepto(bancoPichincha,1264).
@@ -565,7 +563,6 @@ porcentaje_fondo(TD,SM,PF) :- LI is 19 * SM, LS is 20 * SM, (TD @>= LI, TD @=< L
 porcentaje_fondo(TD,SM,PF) :- LI is 20 * SM, (TD @> LI -> PF is 0.02).
 porcentaje_ps(2016,1, 0).
 porcentaje_ps(2016,2, 0.03).
-fondo_solidaridad_fun(TD,P,V) :- salario_minimo(P,SM),porcentaje_fondo(TD, SM, PF), (V is PF * TD rnd 0).
 salario_minimo(2017, 737717).
 info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
 p_salud(exterior_familia, 2016,0.015).
@@ -661,6 +658,10 @@ concepto_ibc(primaAnt).
 conceptos_ibc(subsidioFa).
 calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
 concepto_ibc(priTec).
+porcentaje_pension(2017,2, 0.125).
+p_salud(exterior_familia, 2017,0.015).
+concepto(prueba, devengo, porcentaje, salud,0.5 , 2017).
+p_salud(otro, 2017,0.04).
 periodo_liq_salud(1).
 periodo_liq_salud(2).
 periodo_liq_pension(1).
@@ -691,5 +692,23 @@ doceava_ps(N,V):- prima_servicios(N,X), V is (X/12 rnd 0).
 afectacion_seguridad(incapacidad_laboral).
 afectacion_seguridad(incapacidad_general).
 p_salud(otro, 2016,0.04).
+fondo_solidaridad_fun(TD,P,V) :- salario_minimo(P,SM),porcentaje_fondo(TD, SM, PF), (V is PF * TD int 0).
+porcentaje_gr(2017,3, 0.20).
+porcentaje_gr(2017,1, 0.50).
+porcentaje_gr(2017,2, 0.50).
+porcentaje_gr(2017,218, 0.30).
+porcentaje_gr(2017,263, 0.50).
+porcentaje_gr(2017,265, 0.50).
+porcentaje_gr(2017,264, 0.50).
+porcentaje_pa(2017, 1, 0).
+porcentaje_pa(2017,2,0.03).
+porcentaje_pa(2017,3,0.05).
+porcentaje_pa(2017,4,0.07).
+porcentaje_ps(2017,1, 0).
+porcentaje_ps(2017,2, 0.03).
+porcentaje_ps(2017,3, 0.05).
+porcentaje_ps(2017,4, 0.07).
+porcentaje_ps(2017,5, 0.09).
+porcentaje_pension(2017,1, 0.04).
 salario_base(4114674).tipo_nomina(2).
 salario_base(4114674).tipo_nomina(2).
