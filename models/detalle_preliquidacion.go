@@ -3,13 +3,13 @@ package models
 
 
 type DetallePreliquidacion struct {
-	Id             int       `orm:"column(id);pk"`
-	ValorCalculado int64     `orm:"column(valor_calculado)"`
-	Preliquidacion int       `orm:"column(preliquidacion)"`
-	Persona        int       `orm:"column(persona)"`
-	Concepto       *Concepto `orm:"column(concepto);rel(fk)"`
-	NumeroContrato *ContratoGeneral `orm:"column(numero_contrato);rel(fk)"`
-	DiasLiquidados string       `orm:"column(dias_liquidados)"`
-	TipoPreliquidacion string   `orm:"column(tipo_preliquidacion)"`
-	VigenciaContrato int       `orm:"column(vigencia_contrato)"`
+	Id                 int                   `orm:"column(id);pk"`
+	ValorCalculado     float64               `orm:"column(valor_calculado)"`
+	NumeroContrato     string                `orm:"column(numero_contrato);null"`
+	VigenciaContrato   int                   `orm:"column(vigencia_contrato);null"`
+	DiasLiquidados     float64               `orm:"column(dias_liquidados);null"`
+	TipoPreliquidacion *TipoPreliquidacion   `orm:"column(tipo_preliquidacion);rel(fk)"`
+	Persona            *InformacionProveedor `orm:"column(persona);rel(fk)"`
+	Preliquidacion     *Preliquidacion       `orm:"column(preliquidacion);rel(fk)"`
+	Concepto           *ConceptoNomina       `orm:"column(concepto);rel(fk)"`
 }

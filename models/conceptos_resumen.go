@@ -7,6 +7,6 @@ type ConceptosResumen struct {
 	Nombre                string                 `orm:"column(nombre);null"`
 	Base                  string               `orm:"column(base);null"`
 	Valor                 string                `orm:"column(valor);null"`
-	DiasLiquidados  string
-	TipoPreliquidacion string
+	DiasLiquidados  			string
+	TipoPreliquidacion 		string
 }

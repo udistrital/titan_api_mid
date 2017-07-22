@@ -31,19 +31,19 @@ func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
-
 		//carga de reglas desde el ruler
 		reglasbase := CargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
 
 		//-----------------------------
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HC" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HC-SALARIOS" {
+		/*
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
 			var n *PreliquidacionHcController
 			resumen := n.Preliquidar(&v, reglasbase)
 
 			c.Data["json"] = resumen
 			c.ServeJSON()
 
-		}
+		}*/
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "FP" {
 
 			var n *PreliquidacionFpController
@@ -54,7 +54,7 @@ func (c *PreliquidacionController) Preliquidar() {
 			c.ServeJSON()
 
 		}
-
+		/*
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "DP" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "DP-SALARIOS" {
 			var n *PreliquidaciondpController
 			resumen := n.Preliquidar(&v, reglasbase)
@@ -75,7 +75,7 @@ func (c *PreliquidacionController) Preliquidar() {
 			c.Data["json"] = resumen
 			c.ServeJSON()
 		}
-
+*/
 	} else {
 		fmt.Println("error2: ", err)
 	}
@@ -86,8 +86,8 @@ func CargarReglasBase(dominio string) (reglas string) {
 	var reglasbase string = ``
 
 	var v []models.Predicado
-	var datos_conceptos []models.Concepto
-	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto?limit=0", &datos_conceptos); err == nil {
+	var datos_conceptos []models.ConceptoNomina
+	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina?limit=0", &datos_conceptos); err == nil {
 		for _, datos := range datos_conceptos {
 			reglasbase = reglasbase + `codigo_concepto(` + datos.NombreConcepto + `,` + strconv.Itoa(datos.Id) + `).` + "\n"
 		}
@@ -131,17 +131,17 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 
 			for i := 0; i < len(v); i++ {
 
-				esActiva := validarNovedades_segSocial(datos_preliqu.Preliquidacion.Fecha, v[i].FechaDesde, v[i].FechaHasta)
+				esActiva := validarNovedades_segSocial(datos_preliqu.Preliquidacion.FechaRegistro, v[i].FechaDesde, v[i].FechaHasta)
 
 				if esActiva == 1 {
 					fmt.Println("activo")
 						//todo debe estar dentro de este if para que se verifiquen fechas siempre
-					if (v[i].Concepto.Naturaleza == "seguridad_social"){
+					if (v[i].Concepto.NaturalezaConcepto.Nombre == "seguridad_social"){
 						year, month, day := v[i].FechaDesde.Date()
 						year2, month2, day2 := v[i].FechaHasta.Date()
 
 						reglas = reglas + "seg_social("+v[i].Concepto.NombreConcepto+","+strconv.Itoa(year)+","+strconv.Itoa(int(month))+","+strconv.Itoa(day + 1)+","+strconv.Itoa(year2)+","+strconv.Itoa(int(month2))+","+strconv.Itoa(day2 + 1)+")." + "\n"
-						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Concepto.TipoConcepto + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
+						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Preliquidacion.Ano) + "). " + "\n"
 
 						}
          }
@@ -151,23 +151,22 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 					 numCuotas := cuotasPagas(v[i].Persona.Id, v[i].Concepto.Id)
 					 if(numCuotas == int(v[i].NumCuotas)){
 						 fmt.Println("se pagó tota la novedad")
-						 v[i].EstadoNovedad = "Inactivo"
+						 v[i].Activo = false
 						 desactivarNovedad(v[i].Concepto.Id, v[i])
 						 //inhabilitar cuotas
 					 }else{
 						 fmt.Println("no pagadas")
-						 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Concepto.TipoConcepto + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
-						 if (v[i].Concepto.Naturaleza == "devengo"){
+						 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Preliquidacion.Ano) + "). " + "\n"
+						 if (v[i].Concepto.NaturalezaConcepto.Nombre == "devengo"){
 							 reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
 						 }
 					 }
 				 }
 
-				 if(v[i].NumCuotas == 999 && v[i].Concepto.Naturaleza != "seguridad_social"){
+				 if(v[i].NumCuotas == 999 && v[i].Concepto.NaturalezaConcepto.Nombre != "seguridad_social"){
 					  fmt.Println("no cuotas")
-					 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.Naturaleza + ", " + v[i].Concepto.TipoConcepto + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + datos_preliqu.Preliquidacion.Nomina.Periodo + "). " + "\n"
-
-					 if (v[i].Concepto.Naturaleza == "devengo"){
+						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Preliquidacion.Ano) + "). " + "\n"
+					 if (v[i].Concepto.NaturalezaConcepto.Nombre == "devengo"){
 							 reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
 
 						 }
@@ -205,19 +204,20 @@ func validarNovedades_segSocial(FechaPreliq time.Time, FechaDesde time.Time, Fec
 
 func cuotasPagas(idPersona, idConcepto int)(cuotas_pagas int){
 
-	var idPersona_string string
-	var idConcepto_string string
+	//var idPersona_string string
+	//var idConcepto_string string
 
-	idPersona_string = strconv.Itoa(idPersona)
-	idConcepto_string = strconv.Itoa(idConcepto)
+	//idPersona_string = strconv.Itoa(idPersona)
+	//idConcepto_string = strconv.Itoa(idConcepto)
 
 	var numero_cuotas_pagas int
+	/*
 	var detalle_liquidacion []models.DetalleLiquidacion
 
 	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_liquidacion?limit=0&query=Persona:"+idPersona_string+",Concepto.Id:"+idConcepto_string+"", &detalle_liquidacion); err == nil {
 		numero_cuotas_pagas = len(detalle_liquidacion)
   }
-
+*/
 	return numero_cuotas_pagas
 }
 

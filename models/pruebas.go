@@ -15,5 +15,5 @@ type PruebaGo struct {
   Periodo string
   EsAnual int
   PorcentajePT int
-  TipoNomina string
+  TipoNomina int
 }

@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"encoding/json"
+	//"encoding/json"
 
-	"strconv"
-	"github.com/udistrital/titan_api_mid/models"
+	//"strconv"
+	//"github.com/udistrital/titan_api_mid/models"
 
 	"github.com/astaxie/beego"
 )
@@ -19,7 +19,7 @@ func (c *DetalleLiquidacionController) URLMapping() {
 }
 
 func (c *DetalleLiquidacionController) InsertarDetallePreliquidacion() {
-
+	/*
 	var v []int
 	var tam int
 	var IdPreliquidacion int
@@ -49,4 +49,5 @@ func (c *DetalleLiquidacionController) InsertarDetallePreliquidacion() {
 
 		//http://localhost:8082/v1/detalle_preliquidacion?limit=0&query=Preliquidacion:7,Persona:184
 	}
+	*/
 }

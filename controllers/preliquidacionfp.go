@@ -22,7 +22,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 	var idDetaPre interface{}
 	var resumen_preliqu []models.Respuesta
 	var porcentajePT int
-	var tipoNom string;
+	var tipoNom int;
 	var arreglo_pruebas []models.PruebaGo
 	arreglo_pruebas = make([]models.PruebaGo, len(datos.PersonasPreLiquidacion))
 
@@ -31,7 +31,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 		var informacion_cargo []models.FuncionarioCargo
 		filtrodatos := models.FuncionarioCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
-		tipoNom = tipoNomina(datos.Preliquidacion.Tipo)
+		tipoNom = 2
 
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_primatec", "POST", &porcentajePT, datos.PersonasPreLiquidacion[i].IdPersona); err != nil {
 			porcentajePT = 0
@@ -41,23 +41,25 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 			dias_laborados := CalcularDias(informacion_cargo[0].FechaInicio, informacion_cargo[0].FechaFin)
 			//reglasNominasEspeciales := crearHechosNominasEspeciales(datos.Preliquidacion,datos.PersonasPreLiquidacion[i].IdPersona)
-			esAnual := esAnual(datos.Preliquidacion.Fecha, informacion_cargo[0].FechaInicio)
+			esAnual := esAnual(datos.Preliquidacion.Mes, informacion_cargo[0].FechaInicio)
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 			reglas = reglasinyectadas + reglasbase // + reglasNominasEspeciales
 
 			//fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
-			arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.Fecha, "",datos.PersonasPreLiquidacion[i].IdPersona,dias_laborados,datos.Preliquidacion.Nomina.Periodo,esAnual, porcentajePT, tipoNom}
-
-
-			temp := golog.CargarReglasFP(datos.Preliquidacion.Fecha, reglas, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
+			ano:= strconv.Itoa(datos.Preliquidacion.Ano)
+			arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, "",datos.PersonasPreLiquidacion[i].IdPersona,dias_laborados,ano,esAnual, porcentajePT, tipoNom}
+			
+			temp := golog.CargarReglasFP(datos.Preliquidacion.FechaRegistro, datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,reglas, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, ano, esAnual, porcentajePT,tipoNom)
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
 			resumen_preliqu = append(resumen_preliqu, resultado)
 
 			for _, descuentos := range *resultado.Conceptos {
-				valor, _ := strconv.ParseInt(descuentos.Valor, 10, 64)
-				detallepreliqu := models.DetallePreliquidacion{Concepto: &models.Concepto{Id: descuentos.Id}, Persona: datos.PersonasPreLiquidacion[i].IdPersona, Preliquidacion: datos.Preliquidacion.Id, ValorCalculado: valor, NumeroContrato: &models.ContratoGeneral{Id: datos.PersonasPreLiquidacion[i].NumeroContrato},VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: descuentos.DiasLiquidados, TipoPreliquidacion: descuentos.TipoPreliquidacion}
+				valor, _ := strconv.ParseFloat(descuentos.Valor,64)
+				dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
+				tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
+				detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Persona: &models.InformacionProveedor{Id: datos.PersonasPreLiquidacion[i].IdPersona}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}}
 				if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
 
 				} else {
@@ -74,7 +76,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 			fmt.Println("error en json")
 		}
 	str := fmt.Sprintf("%s", data)
-	mes := strconv.Itoa(int(datos.Preliquidacion.Fecha.Month()))
+	mes := strconv.Itoa(datos.Preliquidacion.Mes)
 	if err := WriteStringToFile("prueba"+mes+".txt", str); err != nil {
 			panic(err)
 	}
@@ -104,11 +106,11 @@ func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados flo
 
 }
 
-func esAnual(FechaPreliq time.Time, FechaIngreso time.Time) (flag int) {
+func esAnual(MesPreliquidacion int, FechaIngreso time.Time) (flag int) {
 	//Si es uno, es el momento de pagar bonificacion por servicios.
 	var esAnual int
 
-	if FechaPreliq.Month() == FechaIngreso.Month() {
+	if MesPreliquidacion == int(FechaIngreso.Month()) {
 		fmt.Println("año")
 		fmt.Println(FechaIngreso)
 		fmt.Println(time.Now())

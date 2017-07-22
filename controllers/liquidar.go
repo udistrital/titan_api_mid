@@ -2,11 +2,11 @@
 package controllers
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
-	"strconv"
-	"time"
-	"github.com/udistrital/titan_api_mid/models"
+	//"strconv"
+	//"time"
+	//"github.com/udistrital/titan_api_mid/models"
 
 	"github.com/astaxie/beego"
 )
@@ -29,6 +29,8 @@ func (c *LiquidarController) URLMapping() {
 // @router / [post]
 
 func (c *LiquidarController) Liquidar() {
+	fmt.Println("verificacion con Kronos par liquidar")
+	/*
 	var idLiquidacion interface{}
 	var errores []string
 	var v models.DatosLiquidacion
@@ -64,7 +66,7 @@ func (c *LiquidarController) Liquidar() {
 						fmt.Print("err3 ")
 						fmt.Println(err3)
 						errores = append(errores, "error.err3")
-					}*/
+					}
 				} else {
 					fmt.Print("err2 ")
 					fmt.Println(err2)
@@ -87,4 +89,5 @@ func (c *LiquidarController) Liquidar() {
 		c.Data["json"] = "Ok"
 	}
 	c.ServeJSON()
+	*/
 }
