@@ -54,14 +54,14 @@ func (c *PreliquidacionController) Preliquidar() {
 			c.ServeJSON()
 
 		}
-		/*
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "DP" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "DP-SALARIOS" {
+
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "DP"  {
 			var n *PreliquidaciondpController
 			resumen := n.Preliquidar(&v, reglasbase)
 			c.Data["json"] = resumen
 			c.ServeJSON()
 		}
-
+/*
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "PE" {
 			var n *PreliquidacionpeController
 			resumen := n.Preliquidar(&v, reglasbase)
