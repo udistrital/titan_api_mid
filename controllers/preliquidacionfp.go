@@ -46,10 +46,10 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 			reglas = reglasinyectadas + reglasbase // + reglasNominasEspeciales
 
 			//fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
-			ano:= strconv.Itoa(datos.Preliquidacion.Ano)
-			arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, "",datos.PersonasPreLiquidacion[i].IdPersona,dias_laborados,ano,esAnual, porcentajePT, tipoNom}
-			
-			temp := golog.CargarReglasFP(datos.Preliquidacion.FechaRegistro, datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,reglas, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, ano, esAnual, porcentajePT,tipoNom)
+
+			arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, "",datos.PersonasPreLiquidacion[i].IdPersona,dias_laborados,strconv.Itoa(datos.Preliquidacion.Ano),esAnual, porcentajePT, tipoNom}
+
+			temp := golog.CargarReglasFP(datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,reglas, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, esAnual, porcentajePT,tipoNom)
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
