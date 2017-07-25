@@ -35,7 +35,7 @@ func (c *PreliquidacionController) Preliquidar() {
 		reglasbase := CargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
 
 		//-----------------------------
-		/*
+
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
 			var n *PreliquidacionHcController
 			resumen := n.Preliquidar(&v, reglasbase)
@@ -43,7 +43,8 @@ func (c *PreliquidacionController) Preliquidar() {
 			c.Data["json"] = resumen
 			c.ServeJSON()
 
-		}*/
+		}
+		
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "FP" {
 
 			var n *PreliquidacionFpController

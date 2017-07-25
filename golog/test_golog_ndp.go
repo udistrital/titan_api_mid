@@ -64,7 +64,7 @@ func CargarReglasDP(reglas_dev string, MesPreliquidacion int, AnoPreliquidacion 
 
 		for _, solution := range novedades_seg_social {
 
-			fmt.Println("aqui nov")
+
 			novedad := fmt.Sprintf("%s", solution.ByName_("N"))
 			AnoDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
 			MesDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
