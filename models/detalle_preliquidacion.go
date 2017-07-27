@@ -9,7 +9,6 @@ type DetallePreliquidacion struct {
 	VigenciaContrato   int                   `orm:"column(vigencia_contrato);null"`
 	DiasLiquidados     float64               `orm:"column(dias_liquidados);null"`
 	TipoPreliquidacion *TipoPreliquidacion   `orm:"column(tipo_preliquidacion);rel(fk)"`
-	Persona            *InformacionProveedor `orm:"column(persona);rel(fk)"`
 	Preliquidacion     *Preliquidacion       `orm:"column(preliquidacion);rel(fk)"`
 	Concepto           *ConceptoNomina       `orm:"column(concepto);rel(fk)"`
 }

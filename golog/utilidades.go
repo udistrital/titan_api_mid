@@ -114,7 +114,7 @@ func WriteStringToFile(filepath, s string) error {
 }
 
 
-func ConsultarValoresBonServPS(mesPreliq, anoPreliq int, idPersona int, codigo_concepto string, periodo string ) (valor_con float64){
+func ConsultarValoresBonServPS(mesPreliq, anoPreliq int, numero_contrato string, vigencia_contrato int, codigo_concepto string, periodo string ) (valor_con float64){
 
 	var valor float64
 
@@ -124,12 +124,12 @@ func ConsultarValoresBonServPS(mesPreliq, anoPreliq int, idPersona int, codigo_c
 	ano_busqueda_string := strconv.Itoa(ano_busqueda)
 
 	var valor_concepto []models.DetallePreliquidacion
-	var id_persona_string string = strconv.Itoa(idPersona)
+	var vigencia_contrato_string string = strconv.Itoa(vigencia_contrato)
 
 	for i:=1; i< mesPreliq; i++{
 		mesPreliq_string := strconv.Itoa(i)
 			//http://localhost:8082/v1/detalle_liquidacion?limit=-1&query=Liquidacion.FechaLiquidacion__gte:2016-05-30,Liquidacion.FechaLiquidacion__lte:2017-06-30,Concepto.Id:1195,Persona:29
-		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.Ano:"+ano_preliquidacion_string+",Preliquidacion.Mes:"+mesPreliq_string+",Concepto.Id:"+codigo_concepto+",Persona:"+id_persona_string+",TipoPreliquidacion.Id:2,Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada", &valor_concepto); err == nil {
+		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.Ano:"+ano_preliquidacion_string+",Preliquidacion.Mes:"+mesPreliq_string+",Concepto.Id:"+codigo_concepto+",NumeroContrato:"+numero_contrato+",VigenciaContrato:"+vigencia_contrato_string+",TipoPreliquidacion.Id:2,Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada", &valor_concepto); err == nil {
 			for _, solution := range valor_concepto {
 		 	valor = valor + solution.ValorCalculado
 		 }
@@ -142,7 +142,7 @@ func ConsultarValoresBonServPS(mesPreliq, anoPreliq int, idPersona int, codigo_c
 		for i:=5; i<=12 ; i++{
 			mesPreliq_string := strconv.Itoa(i)
 				//http://localhost:8082/v1/detalle_liquidacion?limit=-1&query=Liquidacion.FechaLiquidacion__gte:2016-05-30,Liquidacion.FechaLiquidacion__lte:2017-06-30,Concepto.Id:1195,Persona:29
-			if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.Ano:"+ano_busqueda_string+",Preliquidacion.Mes:"+mesPreliq_string+",Concepto.Id:"+codigo_concepto+",Persona:"+id_persona_string+",TipoPreliquidacion.Id:2,Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada", &valor_concepto); err == nil {
+			if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.Ano:"+ano_busqueda_string+",Preliquidacion.Mes:"+mesPreliq_string+",Concepto.Id:"+codigo_concepto+",NumeroContrato:"+numero_contrato+",VigenciaContrato:"+vigencia_contrato_string+",TipoPreliquidacion.Id:2,Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada", &valor_concepto); err == nil {
 				for _, solution := range valor_concepto {
 			 	valor = valor + solution.ValorCalculado
 			 }
@@ -155,15 +155,15 @@ func ConsultarValoresBonServPS(mesPreliq, anoPreliq int, idPersona int, codigo_c
 
 }
 
-func ConsultarValoresBonServDic(idPersona int, codigo_concepto string, periodo string ) (valor_con float64){
+func ConsultarValoresBonServDic(numero_contrato string, vigencia_contrato int, codigo_concepto string, periodo string ) (valor_con float64){
 
 	var valor float64
 	periodo_nomina := periodo
 	var valor_concepto []models.DetallePreliquidacion
 
-	var id_persona_string string = strconv.Itoa(idPersona)
+	var vigencia_contrato_string string = strconv.Itoa(vigencia_contrato)
 	//AGREGAR TIPO DE LIQUIDACION!! porque habran varios 29, y se necesita el pagado en nomina 2
-		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.Ano:"+periodo_nomina+",Concepto.Id:"+codigo_concepto+",Persona:"+id_persona_string+",TipoLiquidacion:2,Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada", &valor_concepto); err == nil {
+		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.Ano:"+periodo_nomina+",Concepto.Id:"+codigo_concepto+",NumeroContrato:"+numero_contrato+",VigenciaContrato:"+vigencia_contrato_string+",TipoLiquidacion:2,Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada", &valor_concepto); err == nil {
 			for _, solution := range valor_concepto {
 		 	valor = valor + solution.ValorCalculado
 		 }
@@ -176,16 +176,16 @@ func ConsultarValoresBonServDic(idPersona int, codigo_concepto string, periodo s
 
 }
 
-func ConsultarValoresPriServDic(idPersona int, periodo string ) (valor_con float64){
+func ConsultarValoresPriServDic(numero_contrato string, vigencia_contrato int, periodo string ) (valor_con float64){
 
 	var valor float64
 	periodo_nomina := periodo
 	var valor_concepto []models.DetallePreliquidacion
 
-	var id_persona_string string = strconv.Itoa(idPersona)
+	var vigencia_contrato_string string = strconv.Itoa(vigencia_contrato)
 	//AGREGAR TIPO DE LIQUIDACION!! porque habran varios 29, y se necesita el pagado en nomina 2
 
-		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.Ano:"+periodo_nomina+",Persona:"+id_persona_string+",TipoLiquidacion:3,Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada", &valor_concepto); err == nil {
+		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.Ano:"+periodo_nomina+",NumeroContrato:"+numero_contrato+",VigenciaContrato:"+vigencia_contrato_string+",TipoLiquidacion:3,Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada", &valor_concepto); err == nil {
 			for _, solution := range valor_concepto {
 		 	valor = valor + solution.ValorCalculado
 		 }
@@ -193,7 +193,7 @@ func ConsultarValoresPriServDic(idPersona int, periodo string ) (valor_con float
 		//http://localhost:8082/v1/detalle_liquidacion?limit=-1&query=Liquidacion.Nomina.Periodo:2017,Persona:29,TipoLiquidacion:3 <-- CONSULTA DOCEAVA PRIMA SEMESTRAL
 		//nuevaRegla = "bonificacion_servicio(bonServ,1540945)."
 		//hacer consulta de conceptos con codigo 129,139,1195 que se le hayan pagado a la persona en el presente año y se crea este hecho
-	
+
 		return valor
 
 }

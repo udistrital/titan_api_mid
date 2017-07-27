@@ -46,7 +46,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 				tiempo_contrato := CalcularDias(informacion_cargo[0].FechaInicio, time.Now())
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 				reglas = reglasinyectadas + reglasbase
-				temp := golog.CargarReglasDP(reglas_nov_dev, datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,dias_laborados, datos.PersonasPreLiquidacion[i].IdPersona, reglas, informacion_cargo, tiempo_contrato,puntos, regimen,tipoNom)
+				temp := golog.CargarReglasDP(reglas_nov_dev, datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,dias_laborados, datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato,reglas, informacion_cargo, tiempo_contrato,puntos, regimen,tipoNom)
 				resultado := temp[len(temp)-1]
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
 				resumen_preliqu = append(resumen_preliqu, resultado)
@@ -55,7 +55,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 					valor, _ := strconv.ParseFloat(descuentos.Valor,64)
 					dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
 					tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
-					detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Persona: &models.InformacionProveedor{Id: datos.PersonasPreLiquidacion[i].IdPersona}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}}
+					detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}}
 
 					if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
 
