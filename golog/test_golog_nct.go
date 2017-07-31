@@ -68,7 +68,7 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 	}
 
 	//Estampila UD
-	fmt.Println("asdasdasdasdasdsadasd")
+
 	descuento_estampilla := m.ProveAll("calcular_estampilla("+salarioBase_string+", "+periodo+", R).")
 
 	for _, solution := range descuento_estampilla {

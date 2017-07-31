@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"github.com/udistrital/titan_api_mid/golog"
 	"fmt"
-
+	"time"
 )
 
 // PreliquidacionHcController operations for PreliquidacionHc
@@ -24,13 +24,16 @@ func (c *PreliquidacionHcController) Preliquidar(datos *models.DatosPreliquidaci
 	//var datos_novedades []models.ConceptoPorPersona
 	var resumen_preliqu []models.Respuesta
 	var meses_contrato float64
-	var periodo_liquidacion int
+	var periodo_liquidacion float64
 
 	var reglasinyectadas string
 	var reglas string
 	var filtrodatos string
 	var filtrodatos_acta string
 	var idDetaPre interface{}
+	var FechaInicioContrato time.Time
+	var FechaFinContrato time.Time
+	var FechaControl time.Time
 //	var al,ml,dl int
 	//-----------------------
 
@@ -46,6 +49,24 @@ func (c *PreliquidacionHcController) Preliquidar(datos *models.DatosPreliquidaci
 		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/contrato_general?limit=1&query="+filtrodatos, &datos_contrato); err == nil && datos_contrato != nil{
 			if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio?limit=1&query="+filtrodatos_acta, &datos_acta); err == nil && datos_acta != nil{
 			a,m,d := diff(datos_acta[0].FechaInicio,datos_acta[0].FechaFin)
+
+			FechaInicioContrato = time.Date(datos_acta[0].FechaInicio.Year(), datos_acta[0].FechaInicio.Month(), datos_acta[0].FechaInicio.Day() + 1, 0, 0, 0, 0, time.UTC)
+			FechaFinContrato = time.Date(datos_acta[0].FechaFin.Year(), datos_acta[0].FechaFin.Month(), datos_acta[0].FechaFin.Day() + 1, 0, 0, 0, 0, time.UTC)
+
+			if int(FechaInicioContrato.Month()) == datos.Preliquidacion.Mes && int(FechaInicioContrato.Year()) == datos.Preliquidacion.Ano {
+				FechaControl = time.Date(datos.Preliquidacion.Ano, time.Month(datos.Preliquidacion.Mes), 30, 0, 0, 0, 0, time.UTC)
+				periodo_liquidacion = CalcularDias(FechaInicioContrato, FechaControl)
+
+
+			} else if int(FechaFinContrato.Month()) == datos.Preliquidacion.Mes && int(FechaFinContrato.Year()) == datos.Preliquidacion.Ano {
+				FechaControl = time.Date(datos.Preliquidacion.Ano, time.Month(datos.Preliquidacion.Mes), 1, 0, 0, 0, 0, time.UTC)
+				periodo_liquidacion = CalcularDias(FechaControl, FechaFinContrato)
+
+			} else {
+				periodo_liquidacion = 30
+
+
+			}
 			//TRAER CONTRATOS VIGENTES
 			/*a,m,d := diff(datos_contrato[0].FechaInicio,datos_contrato[0].FechaFin)
 			if datos_contrato[0].FechaInicio.After(datos.Preliquidacion.FechaInicio){
@@ -67,17 +88,20 @@ func (c *PreliquidacionHcController) Preliquidar(datos *models.DatosPreliquidaci
 			//al,ml,dl := diff(datos.FechaInicio,datos.FechaFin)
 			vigencia_contrato := strconv.Itoa(datos_contrato[0].Vigencia)
 			meses_contrato = (float64(a*12))+float64(m)+(float64(d)/30)
-			periodo_liquidacion = 30
+
 			fmt.Println("meses: ",meses_contrato)
 			fmt.Println("dias: ",periodo_liquidacion)
 			if int(datos_acta[0].FechaFin.Month()) == datos.Preliquidacion.Mes && int(datos_acta[0].FechaFin.Year()) == datos.Preliquidacion.Ano {
 				predicados = append(predicados,models.Predicado{Nombre:"fin_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+",si). "} )
+			}else{
+				predicados = append(predicados,models.Predicado{Nombre:"fin_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+",no). "} )
 			}
-			predicados = append(predicados,models.Predicado{Nombre:"dias_liquidados("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.Itoa(periodo_liquidacion)+"). "} )
+		
+			predicados = append(predicados,models.Predicado{Nombre:"dias_liquidados("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(periodo_liquidacion, 'f', -1, 64)+"). "} )
 			predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(datos_contrato[0].ValorContrato, 'f', -1, 64)+"). "} )
 			predicados = append(predicados,models.Predicado{Nombre:"duracion_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(meses_contrato, 'f', -1, 64)+","+vigencia_contrato+"). "} )
 			reglasinyectadas = FormatoReglas(predicados)
-
+			fmt.Println(reglasinyectadas)
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos)
 			reglas =  reglasinyectadas + reglasbase
 			temp := golog.CargarReglas(reglas,vigencia_contrato)
