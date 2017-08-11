@@ -6,7 +6,7 @@ import (
 
 )
 
-type ConceptoPorPersona struct {
+type ConceptoNominaPorPersona struct {
 	ValorNovedad  float64               `orm:"column(valor_novedad)"`
 	NumCuotas     int                   `orm:"column(num_cuotas)"`
 	Id            int                   `orm:"column(id);pk"`

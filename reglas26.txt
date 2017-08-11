@@ -90,6 +90,7 @@ codigo_concepto(nombreRegla137,137).
 codigo_concepto(nombreRegla1109,1109).
 codigo_concepto(nombreRegla2282,2282).
 codigo_concepto(primaVacaciones,1272).
+codigo_concepto(vacaciones,1273).
 codigo_concepto(nombreRegla144,144).
 codigo_concepto(nombreRegla2188,2188).
 codigo_concepto(nombreRegla2172,2172).

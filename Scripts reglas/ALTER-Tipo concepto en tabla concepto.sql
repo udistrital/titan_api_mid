@@ -1,1 +1,0 @@
-﻿ALTER TABLE titan.concepto ADD COLUMN tipo character varying(25);

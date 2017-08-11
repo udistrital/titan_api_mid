@@ -122,10 +122,10 @@ func FormatoReglas(v []models.Predicado) (reglas string) {
 func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquidacion) (reglas string) {
 
 	//consulta de la(s) novedades que pueda tener la persona para la pre-liquidacion
-	var v []models.ConceptoPorPersona
+	var v []models.ConceptoNominaPorPersona
 	reglas_nov_dev = ""
 	reglas = ""//inicializacion de la variable donde se inyectaran las novedades como reglas
-	if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_por_persona/novedades_activas/"+strconv.Itoa(id_persona), "POST", &v, &datos_preliqu.Preliquidacion); err == nil {
+	if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/novedades_activas/"+strconv.Itoa(id_persona), "POST", &v, &datos_preliqu.Preliquidacion); err == nil {
 		if v != nil {
 
 			for i := 0; i < len(v); i++ {
@@ -220,11 +220,11 @@ func cuotasPagas(idPersona, idConcepto int)(cuotas_pagas int){
 	return numero_cuotas_pagas
 }
 
-func desactivarNovedad(idNovedad int, v models.ConceptoPorPersona){
+func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona){
 		var idNovedad_string string
 		var idCPP interface{}
 		idNovedad_string = strconv.Itoa(idNovedad)
-		if err2 := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_por_persona/"+idNovedad_string, "PUT", &idCPP, &v); err2 == nil {
+		if err2 := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/"+idNovedad_string, "PUT", &idCPP, &v); err2 == nil {
 
 	}
 }
