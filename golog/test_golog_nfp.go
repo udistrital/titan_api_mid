@@ -52,13 +52,13 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
   }
 
 	m := NewMachine().Consult(reglas)
-
-	//-- NOVEDADES DE SEGURIDAD SOCIAL --
+		//-- NOVEDADES DE SEGURIDAD SOCIAL --
 	novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
 
 	for _, solution := range novedades_seg_social {
 
 		fmt.Println("aqui nov")
+
 		novedad := fmt.Sprintf("%s", solution.ByName_("N"))
 		AnoDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
 		MesDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
@@ -73,8 +73,6 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 				fmt.Println(solution)
 				dias_novedad := CalcularDiasNovedades(MesPreliquidacion, AnoPreliquidacion,AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
 				dias_a_liquidar = strconv.Itoa(int(30 - dias_novedad))
-				fmt.Println("dias a liquidar")
-
 				dias_novedad_string = strconv.Itoa(int(dias_novedad))
 				_,total_devengado_novedad = CalcularConceptos(m, reglas, dias_novedad_string,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoPreliquidacion_string,esAnual, porcentajePT, idProveedor,periodo)
 				ibc = 0;
@@ -134,6 +132,8 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 		lista_descuentos,total_devengado_no_novedad = CalcularConceptos(m, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoPreliquidacion_string,esAnual, porcentajePT, idProveedor,periodo)
 		ibc = 0
 		lista_novedades = ManejarNovedades(reglas,idProveedor, tipoPreliquidacion_string, periodo)
+		fmt.Println("lista novedades")
+		fmt.Println(lista_novedades)
 		total_calculos = append(total_calculos, lista_descuentos...)
 		total_calculos = append(total_calculos, lista_novedades...)
 		resultado = GuardarConceptos(total_calculos)
@@ -485,7 +485,7 @@ func CalcularDoceavaBonServPS(reglas string,tipoPreliquidacion_string string, nu
 			total_sumado = total_sumado + ConsultarValoresBonServPS(mesPreliq, anoPreliq, numero_contrato, vigencia_contrato,codigo_concepto, periodo)
 
 		}
-		
+
 		reglas = reglas + "bonificacion_servicio_ps(bonServ,"+strconv.Itoa(int(total_sumado))+")."
 
 		e := NewMachine().Consult(reglas)

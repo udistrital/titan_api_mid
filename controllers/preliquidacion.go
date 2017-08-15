@@ -119,35 +119,33 @@ func FormatoReglas(v []models.Predicado) (reglas string) {
 	return
 }
 
-func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquidacion) (reglas string) {
+func CargarNovedadesPersona(id_persona int, numero_contrato string, vigencia int, datos_preliqu *models.Preliquidacion) (reglas string) {
 
 	//consulta de la(s) novedades que pueda tener la persona para la pre-liquidacion
 	var v []models.ConceptoNominaPorPersona
 	reglas_nov_dev = ""
 	reglas = ""//inicializacion de la variable donde se inyectaran las novedades como reglas
-	if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/novedades_activas/"+strconv.Itoa(id_persona), "POST", &v, &datos_preliqu.Preliquidacion); err == nil {
+	query := "Activo:true,Persona:"+strconv.Itoa(id_persona)
+	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona?limit=-1&query="+query, &v); err == nil {
 		if v != nil {
-
 			for i := 0; i < len(v); i++ {
-
-				esActiva := validarNovedades_segSocial(datos_preliqu.Preliquidacion.FechaRegistro, v[i].FechaDesde, v[i].FechaHasta)
-
+				esActiva := validarNovedades_segSocial(datos_preliqu.Mes,datos_preliqu.Ano , v[i].FechaDesde, v[i].FechaHasta)
 				if esActiva == 1 {
-					fmt.Println("activo")
-						//todo debe estar dentro de este if para que se verifiquen fechas siempre
+					//todo debe estar dentro de este if para que se verifiquen fechas siempre
 					if (v[i].Concepto.NaturalezaConcepto.Nombre == "seguridad_social"){
+
 						year, month, day := v[i].FechaDesde.Date()
 						year2, month2, day2 := v[i].FechaHasta.Date()
 
 						reglas = reglas + "seg_social("+v[i].Concepto.NombreConcepto+","+strconv.Itoa(year)+","+strconv.Itoa(int(month))+","+strconv.Itoa(day + 1)+","+strconv.Itoa(year2)+","+strconv.Itoa(int(month2))+","+strconv.Itoa(day2 + 1)+")." + "\n"
-						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Preliquidacion.Ano) + "). " + "\n"
+						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Ano) + "). " + "\n"
 
 						}
          }
 
-				 if(v[i].NumCuotas != 999){
+				 if(v[i].NumCuotas != 999 && v[i].NumCuotas != 0 ){
 					 fmt.Println("cuotas")
-					 numCuotas := cuotasPagas(v[i].Persona.Id, v[i].Concepto.Id)
+					 numCuotas := cuotasPagas(numero_contrato, vigencia,v[i].Concepto.Id)
 					 if(numCuotas == int(v[i].NumCuotas)){
 						 fmt.Println("se pagó tota la novedad")
 						 v[i].Activo = false
@@ -155,7 +153,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 						 //inhabilitar cuotas
 					 }else{
 						 fmt.Println("no pagadas")
-						 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Preliquidacion.Ano) + "). " + "\n"
+						 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Ano) + "). " + "\n"
 						 if (v[i].Concepto.NaturalezaConcepto.Nombre == "devengo"){
 							 reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
 						 }
@@ -164,7 +162,7 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 
 				 if(v[i].NumCuotas == 999 && v[i].Concepto.NaturalezaConcepto.Nombre != "seguridad_social"){
 					  fmt.Println("no cuotas")
-						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Preliquidacion.Ano) + "). " + "\n"
+						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Ano) + "). " + "\n"
 					 if (v[i].Concepto.NaturalezaConcepto.Nombre == "devengo"){
 							 reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
 
@@ -172,7 +170,8 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 				 }
 			 }
 		 }
-
+	 }else{
+		 fmt.Println(err)
 	 }
 	 fmt.Println(reglas)
 	//------------------------------------------------------------------------------
@@ -181,15 +180,15 @@ func CargarNovedadesPersona(id_persona int, datos_preliqu *models.DatosPreliquid
 
 }
 
-func validarNovedades_segSocial(FechaPreliq time.Time, FechaDesde time.Time, FechaHasta time.Time) (flag int) {
+func validarNovedades_segSocial(Mes, Ano int, FechaDesde, FechaHasta time.Time) (flag int) {
 
-	if FechaDesde.Month() == FechaPreliq.Month() && FechaDesde.Year() == FechaPreliq.Year() {
+	if FechaDesde.Month() == time.Month(Mes) && FechaDesde.Year() == Ano {
 		flag = 1
 
-	} else if FechaHasta.Month() == FechaPreliq.Month() && FechaHasta.Year() == FechaPreliq.Year() {
+	} else if FechaHasta.Month() == time.Month(Mes) && FechaHasta.Year() == Ano {
 		flag = 1
 
-	} else if FechaHasta.Month() == FechaDesde.Month() && FechaHasta.Year() == FechaDesde.Year() {
+	} else if FechaHasta.Month() == time.Month(Mes) && FechaHasta.Year() == Ano {
 		flag = 1
 
 	} else{
@@ -201,22 +200,24 @@ func validarNovedades_segSocial(FechaPreliq time.Time, FechaDesde time.Time, Fec
 
 }
 
-func cuotasPagas(idPersona, idConcepto int)(cuotas_pagas int){
+func cuotasPagas(numero_contrato string, vigencia,idConcepto int)(cuotas_pagas int){
 
-	//var idPersona_string string
-	//var idConcepto_string string
+	var vigencia_string string
+	var idConcepto_string string
 
-	//idPersona_string = strconv.Itoa(idPersona)
-	//idConcepto_string = strconv.Itoa(idConcepto)
+	vigencia_string = strconv.Itoa(vigencia)
+	idConcepto_string = strconv.Itoa(idConcepto)
 
 	var numero_cuotas_pagas int
-	/*
-	var detalle_liquidacion []models.DetalleLiquidacion
 
-	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_liquidacion?limit=0&query=Persona:"+idPersona_string+",Concepto.Id:"+idConcepto_string+"", &detalle_liquidacion); err == nil {
-		numero_cuotas_pagas = len(detalle_liquidacion)
+	var detalle_preliquidacion []models.DetallePreliquidacion
+	fmt.Println(vigencia_string)
+	fmt.Println(numero_contrato)
+	fmt.Println(idConcepto)
+	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada,VigenciaContrato:"+vigencia_string+",NumeroContrato:"+numero_contrato+",Concepto.Id:"+idConcepto_string+"", &detalle_preliquidacion); err == nil {
+		numero_cuotas_pagas = len(detalle_preliquidacion)
   }
-*/
+
 	return numero_cuotas_pagas
 }
 
