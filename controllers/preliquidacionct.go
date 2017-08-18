@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego"
+	"encoding/json"
 )
 
 // operations for Preliquidacionct
@@ -23,6 +24,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 	var predicados []models.Predicado //variable para inyectar reglas
 	var datos_contrato []models.ContratoGeneral
 	var datos_acta []models.ActaInicio
+	var datos_pruebas []models.DatosPruebas
 	//var datos_novedades []models.ConceptoPorPersona
 	var resumen_preliqu []models.Respuesta
 	var periodo_liquidacion float64
@@ -36,7 +38,9 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 	var FechaInicioContrato time.Time
 	var FechaFinContrato time.Time
 
-
+	var arreglo_pruebas []models.PruebaGo
+	arreglo_pruebas = make([]models.PruebaGo, len(datos.PersonasPreLiquidacion))
+	var informacion_cargo []models.FuncionarioCargo
 	//var al, ml, dl int
 	//-----------------------
 
@@ -81,7 +85,11 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
 			reglas = reglasinyectadas + reglasbase
 
-
+			if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/datos_pruebas?limit=-1&query=MesPreliq:"+strconv.Itoa(datos.Preliquidacion.Mes)+",AnoPreliq:"+strconv.Itoa(datos.Preliquidacion.Ano)+",NumDocumento:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].NumDocumento), &datos_pruebas); err == nil && datos_pruebas != nil{
+				arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, datos_pruebas[0].ValorSalario,datos.PersonasPreLiquidacion[i].IdPersona,datos.PersonasPreLiquidacion[i].NumDocumento,0,datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,0, 0, 0}
+			}else{
+				fmt.Println(err)
+			}
 			temp := golog.CargarReglasCT(datos.PersonasPreLiquidacion[i].IdPersona, reglas, vigencia_contrato)
 
 			resultado := temp[len(temp)-1]
@@ -113,6 +121,16 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 			fmt.Println(filtrodatos)
 			fmt.Println("error2: ", err)
 		}
+	}
+
+	data, err := json.Marshal(arreglo_pruebas)
+	if err != nil {
+			fmt.Println("error en json")
+		}
+	str := fmt.Sprintf("%s", data)
+	mes := strconv.Itoa(datos.Preliquidacion.Mes)
+	if err := WriteStringToFile("pruebaContratistas"+mes+".txt", str); err != nil {
+			panic(err)
 	}
 	//-----------------------------
 	return resumen_preliqu
