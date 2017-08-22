@@ -47,7 +47,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 			//fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
 
-			arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, "",datos.PersonasPreLiquidacion[i].IdPersona,0,dias_laborados,datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,esAnual, porcentajePT, tipoNom}
+			arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, "","","","","",datos.PersonasPreLiquidacion[i].IdPersona,0,dias_laborados,datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,esAnual, porcentajePT, tipoNom}
 
 			temp := golog.CargarReglasFP(datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,reglas, datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, informacion_cargo, dias_laborados, esAnual, porcentajePT,tipoNom)
 

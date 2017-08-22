@@ -93,14 +93,43 @@ func TestFuncionarios(t *testing.T) {
          arreglo_contratistas[x].Reglas = processString(reglas)
          resultado = golog.CargarReglasCT(arreglo_contratistas[x].IdProveedor, arreglo_contratistas[x].Reglas, strconv.Itoa(arreglo_contratistas[x].Ano))
          conceptos = resultado[0].Conceptos
-         for i, descuentos := range *conceptos {
-             if(i == 0){
+         fmt.Println(conceptos)
+         for _, descuentos := range *conceptos {
+             if(descuentos.Nombre == "pagoBruto"){
                if descuentos.Valor != arreglo_contratistas[x].Valor_correcto_salario {
                  fmt.Print("Test funcionarios: ")
-                  e.Errorf("Los datos son incorrectos para funcionario "+strconv.Itoa(arreglo_contratistas[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_salario)
+                  e.Errorf("Los datos son incorrectos para valor salario de funcionario "+strconv.Itoa(arreglo_contratistas[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_salario)
                }
              }
 
+            if(descuentos.Nombre == "reteIca"){
+               if descuentos.Valor != arreglo_contratistas[x].Valor_correcto_Reteica {
+                 fmt.Print("Test funcionarios: ")
+                  e.Errorf("Los datos son incorrectos para descuento reteica de funcionario "+strconv.Itoa(arreglo_contratistas[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_Reteica)
+               }
+             }
+
+             if(descuentos.Nombre == "estampillaUD"){
+                if descuentos.Valor != arreglo_contratistas[x].Valor_correcto_EstampillaUD {
+                  fmt.Print("Test funcionarios: ")
+                   e.Errorf("Los datos son incorrectos para descuento Estampilla de funcionario "+strconv.Itoa(arreglo_contratistas[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_EstampillaUD)
+                }
+              }
+
+
+              if(descuentos.Nombre == "proCultura"){
+                 if descuentos.Valor != arreglo_contratistas[x].Valor_correcto_ProCultura {
+                   fmt.Print("Test funcionarios: ")
+                    e.Errorf("Los datos son incorrectos para descuento ProCultura de funcionario "+strconv.Itoa(arreglo_contratistas[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_ProCultura)
+                 }
+               }
+
+               if(descuentos.Nombre == "adultoMayor"){
+                  if descuentos.Valor != arreglo_contratistas[x].Valor_correcto_AdultoMayor {
+                    fmt.Print("Test funcionarios: ")
+                     e.Errorf("Los datos son incorrectos para descuento AdultoMayor de funcionario "+strconv.Itoa(arreglo_contratistas[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_AdultoMayor)
+                  }
+                }
            }
 
 
