@@ -3,7 +3,7 @@ package controllers
 import (
 	"fmt"
 	"strconv"
-	"time"
+
 	"github.com/udistrital/titan_api_mid/golog"
 	"github.com/udistrital/titan_api_mid/models"
    "net/http"
@@ -22,6 +22,9 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 	var resumen_preliqu []models.Respuesta
 	var idDetaPre interface{}
 	var tipoNom string;
+	var datos_pruebas []models.DatosPruebas
+	var arreglo_pruebas []models.PruebaGoDocentes
+	arreglo_pruebas = make([]models.PruebaGoDocentes, len(datos.PersonasPreLiquidacion))
 
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
@@ -31,7 +34,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 		var reglas string
 		filtrodatos := models.DocenteCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
 		tipoNom = "2"
-
+		tipoNom_int, _ :=  strconv.Atoi(tipoNom)
 		//fmt.Println("reglas: ", reglasbase)
 		//consulta que envie ID de proveedor en datos y retorne el salario, para que sea enviado a CargarReglas
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/docente_cargo", "POST", &informacion_cargo, &filtrodatos); err == nil {
@@ -43,10 +46,18 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 				puntos := strconv.FormatFloat(informacion_cargo[0].Puntos, 'f', 6, 64)
 				regimen := informacion_cargo[0].Regimen
 				//puntos = consumir_puntos(cedula)
-				tiempo_contrato := CalcularDias(informacion_cargo[0].FechaInicio, time.Now())
+
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
 				reglas = reglasinyectadas + reglasbase
-				temp := golog.CargarReglasDP(reglas_nov_dev, datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,dias_laborados, datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato,reglas, informacion_cargo, tiempo_contrato,puntos, regimen,tipoNom)
+
+				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/datos_pruebas?limit=-1&query=MesPreliq:"+strconv.Itoa(datos.Preliquidacion.Mes)+",AnoPreliq:"+strconv.Itoa(datos.Preliquidacion.Ano)+",NumDocumento:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].NumDocumento), &datos_pruebas); err == nil && datos_pruebas != nil{
+					arreglo_pruebas[i] = models.PruebaGoDocentes{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, datos_pruebas[0].ValorSalario,"","","","",datos_pruebas[0].ValorPrimaTecnica,datos_pruebas[0].ValorPrimaAnt,datos_pruebas[0].ValorSalud,datos_pruebas[0].ValorPension,datos.PersonasPreLiquidacion[i].IdPersona,datos.PersonasPreLiquidacion[i].NumDocumento,dias_laborados,datos.Preliquidacion.Mes,datos.Preliquidacion.Ano, 0,0, tipoNom_int}
+
+				}else{
+					fmt.Println(err)
+				}
+
+				temp := golog.CargarReglasDP(datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,dias_laborados, datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato,reglas, informacion_cargo, puntos, regimen,tipoNom)
 				resultado := temp[len(temp)-1]
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
 				resumen_preliqu = append(resumen_preliqu, resultado)
@@ -72,6 +83,17 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 			fmt.Println(err)
 		}
 			reglasinyectadas = "";
+	}
+
+	data, err := json.Marshal(arreglo_pruebas)
+	if err != nil {
+			fmt.Println("error en json")
+		}
+	str := fmt.Sprintf("%s", data)
+	mes := strconv.Itoa(datos.Preliquidacion.Mes)
+	ano := strconv.Itoa(datos.Preliquidacion.Ano)
+	if err := WriteStringToFile("pruebaDocentesPlanta"+ano+mes+".txt", str); err != nil {
+			panic(err)
 	}
 	return resumen_preliqu
 }

@@ -30,6 +30,31 @@ type PruebaGo struct {
   TipoNomina int
 }
 
+
+
+type PruebaGoDocentes struct {
+	InformacionCargo []DocenteCargo
+  Reglas string
+  FechaPreliquidacion time.Time
+  Valor_correcto_salario string
+	Valor_correcto_Reteica				string
+	Valor_correcto_EstampillaUD		string
+	Valor_correcto_ProCultura			string
+	Valor_correcto_AdultoMayor	  string
+	Valor_correcto_PrimaTecnica	  string
+	Valor_correcto_PrimaAnt	  		string
+	Valor_correcto_Salud  				string
+	Valor_correcto_Pension			  string
+  IdProveedor int
+	NumDocumento int
+  Dias_laborados float64
+	Mes int
+  Ano int
+  EsAnual int
+  PorcentajePT int
+  TipoNomina int
+}
+
 //estructura para guardar lo traido desde tabla datos prueba
 type DatosPruebas struct {
 	Id 									int                      `orm:"auto;column(id);pk"`

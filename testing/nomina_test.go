@@ -12,6 +12,93 @@ import "bufio"
 import "io"
 import "strings"
 
+func TestDocentesPlanta(t *testing.T) {
+
+    //pasar aqui JSON proveniente de archivo
+
+    var resultado []models.Respuesta
+    var reglas []string
+    var conceptos *[]models.ConceptosResumen
+    var nombre_archivo string
+
+    var docentes_planta_a_probar []string
+    var docentes_planta string
+    var reporte string
+
+
+    docentes_planta_a_probar =  file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/pruebaDocentesPlanta20174.txt")
+    docentes_planta = processString(docentes_planta_a_probar)
+
+    reporte = "Mes de mayo de 2017 - Docentes planta \n"
+    b := []byte(docentes_planta)
+
+    var arreglo_docentes_planta []models.PruebaGoDocentes
+    err := json.Unmarshal(b, &arreglo_docentes_planta)
+    fmt.Println(err)
+
+    if err == nil {
+
+       fmt.Println("Inicio test docentes")
+       for x:=0; x < len(arreglo_docentes_planta) ; x++ {
+        nombre_archivo = "reglas"
+         nombre_archivo = nombre_archivo + strconv.Itoa(arreglo_docentes_planta[x].IdProveedor) +".txt"
+         reglas = file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/"+nombre_archivo+"")
+         arreglo_docentes_planta[x].Reglas = processString(reglas)
+         puntos := strconv.FormatFloat(arreglo_docentes_planta[x].InformacionCargo[0].Puntos, 'f', 6, 64)
+ 				 regimen := arreglo_docentes_planta[x].InformacionCargo[0].Regimen
+
+
+         resultado = golog.CargarReglasDP(arreglo_docentes_planta[x].Mes, arreglo_docentes_planta[x].Ano,arreglo_docentes_planta[x].Dias_laborados,arreglo_docentes_planta[x].IdProveedor,"",0,arreglo_docentes_planta[x].Reglas,arreglo_docentes_planta[x].InformacionCargo ,
+         puntos, regimen,strconv.Itoa(arreglo_docentes_planta[x].TipoNomina))
+
+         conceptos = resultado[0].Conceptos
+         reporte = reporte + "--------------------------------------------------------\n"
+         reporte = reporte + strconv.Itoa(arreglo_docentes_planta[x].NumDocumento) + "\n"
+         for _, descuentos := range *conceptos {
+             if(descuentos.Nombre == "salarioBase"){
+               reporte = reporte + "salarioBase \n"
+               if descuentos.Valor != arreglo_docentes_planta[x].Valor_correcto_salario {
+                 fmt.Print("Test docentes_planta: ")
+                  t.Errorf("Los datos son incorrectos para valor salario de funcionario "+strconv.Itoa(arreglo_docentes_planta[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_docentes_planta[x].Valor_correcto_salario)
+               }
+                 reporte = reporte + "Titan: " + descuentos.Valor + " NOMINAOAS: "+arreglo_docentes_planta[x].Valor_correcto_salario+"\n"
+
+             }
+
+
+             if(descuentos.Nombre == "salud"){
+               reporte = reporte + "Salud \n"
+               if descuentos.Valor != arreglo_docentes_planta[x].Valor_correcto_Salud {
+                 fmt.Print("Test docentes_planta: ")
+                  t.Errorf("Los datos son incorrectos para valor de salud de funcionario "+strconv.Itoa(arreglo_docentes_planta[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_docentes_planta[x].Valor_correcto_Salud)
+               }
+                 reporte = reporte + "Titan: " + descuentos.Valor + " NOMINAOAS: "+arreglo_docentes_planta[x].Valor_correcto_Salud+"\n"
+
+             }
+
+             if(descuentos.Nombre == "pension"){
+               reporte = reporte + "Pension \n"
+               if descuentos.Valor != arreglo_docentes_planta[x].Valor_correcto_Pension {
+                 fmt.Print("Test docentes_planta: ")
+                  t.Errorf("Los datos son incorrectos para valor de pension de funcionario "+strconv.Itoa(arreglo_docentes_planta[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_docentes_planta[x].Valor_correcto_Pension)
+               }
+                 reporte = reporte + "Titan: " + descuentos.Valor + " NOMINAOAS: "+arreglo_docentes_planta[x].Valor_correcto_Pension+"\n"
+
+             }
+
+           }
+
+
+       }
+    }
+
+    str := fmt.Sprintf("%s", reporte)
+    if err := WriteStringToFile("docentes_plantaReporte20175.txt", str); err != nil {
+        panic(err)
+    }
+
+  }
+
 /*
 func TestFuncionarios(t *testing.T) {
 

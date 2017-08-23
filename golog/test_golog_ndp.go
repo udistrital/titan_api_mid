@@ -12,9 +12,8 @@ import (
 
 
 var salario string
-var reglas_nov_dev string
 
-func CargarReglasDP(reglas_dev string, MesPreliquidacion int, AnoPreliquidacion int, dias_laborados float64, idProveedor int, numero_contrato string, vigencia_contrato int,reglas string, informacion_cargo []models.DocenteCargo, dias_trabajados float64, puntos string, regimen string,tipoPreliquidacion string) (rest []models.Respuesta) {
+func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados float64, idProveedor int, numero_contrato string, vigencia_contrato int,reglas string, informacion_cargo []models.DocenteCargo, puntos string, regimen string,tipoPreliquidacion string) (rest []models.Respuesta) {
 	//Definición de variables
 
 	var resultado []models.Respuesta
@@ -22,6 +21,7 @@ func CargarReglasDP(reglas_dev string, MesPreliquidacion int, AnoPreliquidacion 
 	var lista_novedades []models.ConceptosResumen
 	var lista_descuentos_semestral []models.ConceptosResumen
 	var tipoPreliquidacion_string string
+	var nombre_archivo string
 	var regimen_numero string
 	var cargo string
 	var periodo string
@@ -31,7 +31,6 @@ func CargarReglasDP(reglas_dev string, MesPreliquidacion int, AnoPreliquidacion 
 	asignacion_basica_string := strconv.Itoa(informacion_cargo[0].Asignacion_basica)
 	tipoPreliquidacion_string = tipoPreliquidacion
 	dias_laborados_string := strconv.Itoa(int(dias_laborados))
-	reglas_nov_dev = reglas_dev
 	periodo = strconv.Itoa(AnoPreliquidacion)
 
 	if informacion_cargo[0].Cargo == "DC" {
@@ -54,6 +53,14 @@ func CargarReglasDP(reglas_dev string, MesPreliquidacion int, AnoPreliquidacion 
 	} else {
 		dias_a_liquidar = "30"
 	}
+
+	nombre_archivo = "reglas" + strconv.Itoa(idProveedor) + ".txt"
+	reglas = reglas + "salario_base(" + asignacion_basica_string + ")."
+	reglas = reglas + "tipo_nomina(" + tipoPreliquidacion_string + ")."
+
+	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
+      panic(err)
+  }
 
 		m := NewMachine().Consult(reglas)
 
