@@ -2,4 +2,12 @@ Mes de mayo de 2017 - Admin de planta
 --------------------------------------------------------
 79962511
 salarioBase 
-Titan: 4672560 Excel: 4672560
+Titan: 4672560 NOMINAOAS: 4672560
+Prima antiguedad 
+Titan: 140177 NOMINAOAS: 140177
+Prima técnica 
+Titan: 2336280 NOMINAOAS: 2336280
+Salud 
+Titan: 285961 NOMINAOAS: 285961
+Pension 
+Titan: 285961 NOMINAOAS: 285961
