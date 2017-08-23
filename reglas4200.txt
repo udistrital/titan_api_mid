@@ -1,4 +1,4 @@
-dias_liquidados(4200,12). 
+dias_liquidados(4200,30). 
 valor_contrato(4200,23786198). 
 duracion_contrato(4200,345,2016). 
 codigo_concepto(primaNavidad,1261).

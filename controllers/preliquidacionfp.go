@@ -21,6 +21,8 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 	var reglas string
 	var idDetaPre interface{}
 	var resumen_preliqu []models.Respuesta
+		var datos_pruebas []models.DatosPruebas
+
 	var porcentajePT int
 	var tipoNom int;
 	var arreglo_pruebas []models.PruebaGo
@@ -46,8 +48,14 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 			reglas = reglasinyectadas + reglasbase // + reglasNominasEspeciales
 
 			//fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
+			if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/datos_pruebas?limit=-1&query=MesPreliq:"+strconv.Itoa(datos.Preliquidacion.Mes)+",AnoPreliq:"+strconv.Itoa(datos.Preliquidacion.Ano)+",NumDocumento:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].NumDocumento), &datos_pruebas); err == nil && datos_pruebas != nil{
+				arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, datos_pruebas[0].ValorSalario,"","","","",datos.PersonasPreLiquidacion[i].IdPersona,datos.PersonasPreLiquidacion[i].NumDocumento,dias_laborados,datos.Preliquidacion.Mes,datos.Preliquidacion.Ano, esAnual,porcentajePT, tipoNom}
 
-			arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, "","","","","",datos.PersonasPreLiquidacion[i].IdPersona,0,dias_laborados,datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,esAnual, porcentajePT, tipoNom}
+			}else{
+				fmt.Println(err)
+			}
+
+
 
 			temp := golog.CargarReglasFP(datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,reglas, datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, informacion_cargo, dias_laborados, esAnual, porcentajePT,tipoNom)
 
@@ -77,7 +85,8 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 		}
 	str := fmt.Sprintf("%s", data)
 	mes := strconv.Itoa(datos.Preliquidacion.Mes)
-	if err := WriteStringToFile("prueba"+mes+".txt", str); err != nil {
+	ano := strconv.Itoa(datos.Preliquidacion.Ano)
+	if err := WriteStringToFile("pruebaFuncionarios"+ano+mes+".txt", str); err != nil {
 			panic(err)
 	}
 	return resumen_preliqu

@@ -129,7 +129,8 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 		}
 	str := fmt.Sprintf("%s", data)
 	mes := strconv.Itoa(datos.Preliquidacion.Mes)
-	if err := WriteStringToFile("pruebaContratistas"+mes+".txt", str); err != nil {
+	ano := strconv.Itoa(datos.Preliquidacion.Ano)
+	if err := WriteStringToFile("pruebaContratistas"+ano+mes+".txt", str); err != nil {
 			panic(err)
 	}
 	//-----------------------------

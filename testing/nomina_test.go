@@ -9,8 +9,10 @@ import 	"encoding/json"
 import 	"strconv"
 import "os"
 import "bufio"
+import "io"
+import "strings"
 
-/*
+
 func TestFuncionarios(t *testing.T) {
 
     //pasar aqui JSON proveniente de archivo
@@ -20,36 +22,47 @@ func TestFuncionarios(t *testing.T) {
     var conceptos *[]models.ConceptosResumen
     var nombre_archivo string
 
-   var funcionarios_a_probar []string
+    var funcionarios_a_probar []string
     var funcionarios string
+    var reporte string
 
 
-    funcionarios_a_probar =  file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/prueba.txt")
+    funcionarios_a_probar =  file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/pruebaFuncionarios20175.txt")
     funcionarios = processString(funcionarios_a_probar)
 
+    reporte = "Mes de mayo de 2017 - Admin de planta \n"
     b := []byte(funcionarios)
 
-    var arreglo_funcionarios []models.FuncionarioInfoPruebas
+    var arreglo_funcionarios []models.PruebaGo
     err := json.Unmarshal(b, &arreglo_funcionarios)
     fmt.Println(err)
 
     if err == nil {
-      fmt.Println(arreglo_funcionarios)
+
        fmt.Println("Inicio test funcionarios")
        for x:=0; x < len(arreglo_funcionarios) ; x++ {
         nombre_archivo = "reglas"
          nombre_archivo = nombre_archivo + strconv.Itoa(arreglo_funcionarios[x].IdProveedor) +".txt"
          reglas = file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/"+nombre_archivo+"")
          arreglo_funcionarios[x].Reglas = processString(reglas)
-         resultado = golog.CargarReglasFP(arreglo_funcionarios[x].FechaPreliquidacion, arreglo_funcionarios[x].Reglas, arreglo_funcionarios[x].IdProveedor,arreglo_funcionarios[x].InformacionCargo , arreglo_funcionarios[x].Dias_laborados,
-         arreglo_funcionarios[x].Periodo, 	arreglo_funcionarios[x].EsAnual , 	arreglo_funcionarios[x].PorcentajePT ,	arreglo_funcionarios[x].TipoNomina)
+         resultado = golog.CargarReglasFP(arreglo_funcionarios[x].Mes, arreglo_funcionarios[x].Ano,arreglo_funcionarios[x].Reglas, arreglo_funcionarios[x].IdProveedor,"",0,arreglo_funcionarios[x].InformacionCargo , arreglo_funcionarios[x].Dias_laborados,
+         arreglo_funcionarios[x].EsAnual , 	arreglo_funcionarios[x].PorcentajePT ,	arreglo_funcionarios[x].TipoNomina)
+
          conceptos = resultado[0].Conceptos
-         for i, descuentos := range *conceptos {
-             if(i == 0){
+         reporte = reporte + "--------------------------------------------------------\n"
+         reporte = reporte + strconv.Itoa(arreglo_funcionarios[x].NumDocumento) + "\n"
+         for _, descuentos := range *conceptos {
+
+
+             if(descuentos.Nombre == "salarioBase"){
+               reporte = reporte + "salarioBase \n"
                if descuentos.Valor != arreglo_funcionarios[x].Valor_correcto_salario {
                  fmt.Print("Test funcionarios: ")
-                  t.Errorf("Los datos son incorrectos para salario, se obtuvo: "+descuentos.Valor+" y era: "+arreglo_funcionarios[x].Valor_correcto_salario)
+                  t.Errorf("Los datos son incorrectos para valor salario de funcionario "+strconv.Itoa(arreglo_funcionarios[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_funcionarios[x].Valor_correcto_salario)
                }
+                 reporte = reporte + "Titan: " + descuentos.Valor + " Excel: "+arreglo_funcionarios[x].Valor_correcto_salario+"\n"
+
+
              }
 
            }
@@ -58,9 +71,14 @@ func TestFuncionarios(t *testing.T) {
        }
     }
 
+    str := fmt.Sprintf("%s", reporte)
+    if err := WriteStringToFile("FuncionariosReporte20175.txt", str); err != nil {
+        panic(err)
+    }
 
   }
-*/
+
+/*
 
   func TestContratistas(e *testing.T) {
 
@@ -72,11 +90,12 @@ func TestFuncionarios(t *testing.T) {
 
    var contratistas_a_probar []string
     var contratistas string
+    var reporte string
 
 
-    contratistas_a_probar =  file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/pruebaContratistas10.txt")
+    contratistas_a_probar =  file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/pruebaContratistas201610.txt")
     contratistas = processString(contratistas_a_probar)
-
+    reporte = "Mes de octubre de 2016 - Contratistas \n"
     b := []byte(contratistas)
 
     var arreglo_contratistas []models.PruebaGo
@@ -93,42 +112,59 @@ func TestFuncionarios(t *testing.T) {
          arreglo_contratistas[x].Reglas = processString(reglas)
          resultado = golog.CargarReglasCT(arreglo_contratistas[x].IdProveedor, arreglo_contratistas[x].Reglas, strconv.Itoa(arreglo_contratistas[x].Ano))
          conceptos = resultado[0].Conceptos
-         fmt.Println(conceptos)
+         reporte = reporte + "--------------------------------------------------------\n"
+         reporte = reporte + strconv.Itoa(arreglo_contratistas[x].NumDocumento) + "\n"
          for _, descuentos := range *conceptos {
              if(descuentos.Nombre == "pagoBruto"){
+               reporte = reporte + "pago bruto \n"
                if descuentos.Valor != arreglo_contratistas[x].Valor_correcto_salario {
                  fmt.Print("Test funcionarios: ")
                   e.Errorf("Los datos son incorrectos para valor salario de funcionario "+strconv.Itoa(arreglo_contratistas[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_salario)
                }
+                 reporte = reporte + "Titan: " + descuentos.Valor + " Excel: "+arreglo_contratistas[x].Valor_correcto_salario+"\n"
+
+
              }
 
             if(descuentos.Nombre == "reteIca"){
+              reporte = reporte + "Reteica \n"
                if descuentos.Valor != arreglo_contratistas[x].Valor_correcto_Reteica {
                  fmt.Print("Test funcionarios: ")
                   e.Errorf("Los datos son incorrectos para descuento reteica de funcionario "+strconv.Itoa(arreglo_contratistas[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_Reteica)
                }
+                 reporte = reporte + " Titan: " + descuentos.Valor + " Excel: "+arreglo_contratistas[x].Valor_correcto_Reteica+"\n"
+
              }
 
              if(descuentos.Nombre == "estampillaUD"){
+               reporte = reporte + "Estampilal UD \n"
                 if descuentos.Valor != arreglo_contratistas[x].Valor_correcto_EstampillaUD {
                   fmt.Print("Test funcionarios: ")
                    e.Errorf("Los datos son incorrectos para descuento Estampilla de funcionario "+strconv.Itoa(arreglo_contratistas[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_EstampillaUD)
                 }
+                  reporte = reporte + " Titan: " + descuentos.Valor + " Excel: "+arreglo_contratistas[x].Valor_correcto_EstampillaUD+"\n"
+
               }
 
 
               if(descuentos.Nombre == "proCultura"){
+                reporte = reporte + "proCultura \n"
                  if descuentos.Valor != arreglo_contratistas[x].Valor_correcto_ProCultura {
                    fmt.Print("Test funcionarios: ")
                     e.Errorf("Los datos son incorrectos para descuento ProCultura de funcionario "+strconv.Itoa(arreglo_contratistas[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_ProCultura)
                  }
+                   reporte = reporte + "Titan: " + descuentos.Valor + " Excel: "+arreglo_contratistas[x].Valor_correcto_ProCultura+"\n"
+
                }
 
                if(descuentos.Nombre == "adultoMayor"){
+                  reporte = reporte + "Adulto mayor \n"
                   if descuentos.Valor != arreglo_contratistas[x].Valor_correcto_AdultoMayor {
                     fmt.Print("Test funcionarios: ")
                      e.Errorf("Los datos son incorrectos para descuento AdultoMayor de funcionario "+strconv.Itoa(arreglo_contratistas[x].NumDocumento)+", se obtuvo: "+descuentos.Valor+" y era: "+arreglo_contratistas[x].Valor_correcto_AdultoMayor)
                   }
+                    reporte = reporte + " Titan: " + descuentos.Valor + " Excel: "+arreglo_contratistas[x].Valor_correcto_AdultoMayor+"\n"
+
                 }
            }
 
@@ -136,8 +172,12 @@ func TestFuncionarios(t *testing.T) {
        }
     }
 
+    str := fmt.Sprintf("%s", reporte)
+  	if err := WriteStringToFile("ContratistasReporte102017.txt", str); err != nil {
+  			panic(err)
+  	}
   }
-
+*/
   func file2lines(filePath string) []string {
         f, err := os.Open(filePath)
         if err != nil {
@@ -156,6 +196,22 @@ func TestFuncionarios(t *testing.T) {
 
         return lines
   }
+
+  func WriteStringToFile(filepath, s string) error {
+  	fo, err := os.Create(filepath)
+  	if err != nil {
+  		return err
+  	}
+  	defer fo.Close()
+
+  	_, err = io.Copy(fo, strings.NewReader(s))
+  	if err != nil {
+  		return err
+  	}
+
+  	return nil
+  }
+
 
   func processString(reglas []string)(reglas_t string){
     var reglas_temp string = ""
