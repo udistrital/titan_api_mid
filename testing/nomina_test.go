@@ -133,7 +133,7 @@ func TestFuncionarios(t *testing.T) {
          reglas = file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/"+nombre_archivo+"")
          arreglo_funcionarios[x].Reglas = processString(reglas)
          resultado = golog.CargarReglasFP(arreglo_funcionarios[x].Mes, arreglo_funcionarios[x].Ano,arreglo_funcionarios[x].Reglas, arreglo_funcionarios[x].IdProveedor,"",0,arreglo_funcionarios[x].InformacionCargo , arreglo_funcionarios[x].Dias_laborados,
-         arreglo_funcionarios[x].EsAnual , 	arreglo_funcionarios[x].PorcentajePT ,	arreglo_funcionarios[x].TipoNomina)
+     	   arreglo_funcionarios[x].PorcentajePT ,	arreglo_funcionarios[x].TipoNomina)
 
          conceptos = resultado[0].Conceptos
          reporte = reporte + "--------------------------------------------------------\n"

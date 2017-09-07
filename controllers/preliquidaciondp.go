@@ -45,10 +45,11 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 				dias_laborados := CalcularDias(informacion_cargo[0].FechaInicio, informacion_cargo[0].FechaFin)
 				puntos := strconv.FormatFloat(informacion_cargo[0].Puntos, 'f', 6, 64)
 				regimen := informacion_cargo[0].Regimen
+				esAnual := esAnual(datos.Preliquidacion.Mes, informacion_cargo[0].FechaInicio)
 				//puntos = consumir_puntos(cedula)
 
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
-				reglas = reglasinyectadas + reglasbase
+				reglas = reglasinyectadas + reglasbase + esAnual
 
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/datos_pruebas?limit=-1&query=MesPreliq:"+strconv.Itoa(datos.Preliquidacion.Mes)+",AnoPreliq:"+strconv.Itoa(datos.Preliquidacion.Ano)+",NumDocumento:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].NumDocumento), &datos_pruebas); err == nil && datos_pruebas != nil{
 					arreglo_pruebas[i] = models.PruebaGoDocentes{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, datos_pruebas[0].ValorSalario,"","","","",datos_pruebas[0].ValorPrimaTecnica,datos_pruebas[0].ValorPrimaAnt,datos_pruebas[0].ValorSalud,datos_pruebas[0].ValorPension,datos.PersonasPreLiquidacion[i].IdPersona,datos.PersonasPreLiquidacion[i].NumDocumento,dias_laborados,datos.Preliquidacion.Mes,datos.Preliquidacion.Ano, 0,0, tipoNom_int}

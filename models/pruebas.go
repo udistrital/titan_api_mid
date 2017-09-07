@@ -25,7 +25,6 @@ type PruebaGo struct {
   Dias_laborados float64
 	Mes int
   Ano int
-  EsAnual int
   PorcentajePT int
   TipoNomina int
 }

@@ -42,9 +42,11 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 	if regimen == "N" {
 		fmt.Println("Nuevo")
 		regimen_numero = "1"
+		reglas = reglas + "regimen(1)."
 	} else {
 		fmt.Println("antiguo")
 		regimen_numero = "2"
+		reglas = reglas + "regimen(2)."
 	}
 
 	if tipoPreliquidacion_string  == "0" || tipoPreliquidacion_string  == "1" {
@@ -61,7 +63,7 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
       panic(err)
   }
-
+		
 		m := NewMachine().Consult(reglas)
 
 
@@ -160,6 +162,7 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 		    Valor: fmt.Sprintf("%.0f", Valor),
 		  }
 			salario = strconv.FormatFloat(Valor, 'f', 6, 64)
+
 			reglas = reglas + "sumar_ibc(salarioBase,"+strconv.Itoa(int(Valor))+")."
 			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 
@@ -173,9 +176,10 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 
 		}
 
-		if fechaInicio.Month() == fechaActual.Month() && regimen_numero == "2" {
+
 		  bonificacion := m.ProveAll("bonificacionServicios(" + salario + ",S).")
 		  for _, solution := range bonificacion {
+
 		    Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("S")), 64)
 		    temp_conceptos := models.ConceptosResumen{Nombre: "bonServ",
 		      Valor: fmt.Sprintf("%.0f", Valor),
@@ -192,7 +196,7 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 
 				lista_descuentos = append(lista_descuentos, temp_conceptos)
 		  }
-		}
+
 
 		//Previo a pagos de salud y pensión se calcula el IBC
 		CalcularIBC(reglas)
