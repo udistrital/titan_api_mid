@@ -86,7 +86,7 @@ func CargarReglasBase(dominio string) (reglas string) {
 
 	var v []models.Predicado
 	var datos_conceptos []models.ConceptoNomina
-	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina?limit=0", &datos_conceptos); err == nil {
+	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina?limit=-1", &datos_conceptos); err == nil {
 		for _, datos := range datos_conceptos {
 			reglasbase = reglasbase + `codigo_concepto(` + datos.NombreConcepto + `,` + strconv.Itoa(datos.Id) + `).` + "\n"
 		}
@@ -94,7 +94,7 @@ func CargarReglasBase(dominio string) (reglas string) {
 
 	}
 	fmt.Println(dominio)
-	if err := getJson("http://"+beego.AppConfig.String("Urlruler")+":"+beego.AppConfig.String("Portruler")+"/"+beego.AppConfig.String("Nsruler")+"/predicado?limit=0&query=Dominio.Nombre:"+dominio, &v); err == nil {
+	if err := getJson("http://"+beego.AppConfig.String("Urlruler")+"/"+beego.AppConfig.String("Nsruler")+"/predicado?limit=-1&query=Dominio.Nombre:"+dominio, &v); err == nil {
 
 		reglasbase = reglasbase + FormatoReglas(v) //funcion general para dar formato a reglas cargadas desde el ruler
 	} else {
