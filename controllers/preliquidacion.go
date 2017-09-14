@@ -91,10 +91,10 @@ func CargarReglasBase(dominio string) (reglas string) {
 			reglasbase = reglasbase + `codigo_concepto(` + datos.NombreConcepto + `,` + strconv.Itoa(datos.Id) + `).` + "\n"
 		}
 	} else {
-
+		fmt.Println("errorcito")
 	}
 	fmt.Println(dominio)
-	if err := getJson("http://"+beego.AppConfig.String("Urlruler")+"/"+beego.AppConfig.String("Nsruler")+"/predicado?limit=-1&query=Dominio.Nombre:"+dominio, &v); err == nil {
+	if err := getJson("http://"+beego.AppConfig.String("Urlruler")+":"+beego.AppConfig.String("Portruler")+"/"+beego.AppConfig.String("Nsruler")+"/predicado?limit=-1&query=Dominio.Nombre:"+dominio, &v); err == nil {
 
 		reglasbase = reglasbase + FormatoReglas(v) //funcion general para dar formato a reglas cargadas desde el ruler
 	} else {
