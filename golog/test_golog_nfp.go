@@ -34,6 +34,7 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 	dias_laborados_string := strconv.Itoa(int(dias_laborados))
 	tipoPreliquidacion_string = strconv.Itoa(tipoPreliquidacion)
 	periodo:= strconv.Itoa(AnoPreliquidacion)
+	porcentaje_PT_string := strconv.Itoa(porcentajePT)
 	//Asignación de número de días segun tipo de nomina (0 es quince días, 1 es el mes completo)
 	if tipoPreliquidacion_string  == "0" || tipoPreliquidacion_string  == "1" {
 		dias_a_liquidar = "15"
@@ -42,10 +43,10 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 		dias_a_liquidar = "30"
 	}
 
-
-  nombre_archivo = "reglas" + strconv.Itoa(idProveedor) + ".txt"
+	nombre_archivo = "reglas" + strconv.Itoa(idProveedor) + ".txt"
 	reglas = reglas + "salario_base(" + asignacion_basica_string + ")."
 	reglas = reglas + "tipo_nomina(" + tipoPreliquidacion_string + ")."
+	reglas = reglas + "porcentaje_pt("+porcentaje_PT_string+")."
 
 	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
       panic(err)
@@ -148,17 +149,16 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 	func CalcularConceptos(m Machine, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string,tipoPreliquidacion_string string, porcentajePT,idProveedor  int,periodo string) (rest []models.ConceptosResumen, total_dev float64){
 
 		var lista_descuentos []models.ConceptosResumen
-		porcentaje_PT_string := strconv.Itoa(porcentajePT)
 
-			//Cálculo de cada uno de los devengos, si aplican a la persona
-		valor_salario := m.ProveAll("sb(" + asignacion_basica_string + "," + tipoPreliquidacion_string + "," + dias_a_liquidar + ",V).")
-		for _, solution := range valor_salario {
+		valor_devengo := m.ProveAll("liquidacion_planta(CON,"+asignacion_basica_string+","+tipoPreliquidacion_string+","+dias_a_liquidar+","+periodo+","+id_cargo_string+","+dias_laborados_string+",V).")
+		for _, solution := range valor_devengo {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-			temp_conceptos := models.ConceptosResumen{Nombre: "salarioBase",
+			Nom_Concepto := fmt.Sprintf("%s", solution.ByName_("CON"))
+			temp_conceptos := models.ConceptosResumen{Nombre: Nom_Concepto,
 			Valor: fmt.Sprintf("%.0f", Valor),
 			}
 
-			reglas = reglas + "sumar_ibc(salarioBase,"+strconv.Itoa(int(Valor))+")."
+			reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
 			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 
 			for _, cod := range codigo {
@@ -167,116 +167,6 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 			}
 
-			lista_descuentos = append(lista_descuentos, temp_conceptos)
-
-
-		}
-
-		valor_gastos_representacion := m.ProveAll("gr(" + asignacion_basica_string + "," + dias_a_liquidar + "," + tipoPreliquidacion_string + ","+periodo+"," + id_cargo_string + ",V).")
-		for _, solution := range valor_gastos_representacion {
-			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-			temp_conceptos := models.ConceptosResumen{Nombre: "gastosRep",
-				Valor: fmt.Sprintf("%.0f", Valor),
-			}
-
-			reglas = reglas + "sumar_ibc(gastosRep,"+strconv.Itoa(int(Valor))+")."
-			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
-
-			for _, cod := range codigo {
-				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-				temp_conceptos.DiasLiquidados = dias_a_liquidar
-				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
-
-			}
-			lista_descuentos = append(lista_descuentos, temp_conceptos)
-
-
-		}
-
-		valor_prima_antiguedad := m.ProveAll("prima_ant(" + asignacion_basica_string + "," + dias_a_liquidar + "," + tipoPreliquidacion_string + ","+periodo+"," + dias_laborados_string + ",V).")
-		for _, solution := range valor_prima_antiguedad {
-			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-			temp_conceptos := models.ConceptosResumen{Nombre: "primaAnt",
-				Valor: fmt.Sprintf("%.0f", Valor),
-			}
-
-			reglas = reglas + "sumar_ibc(primaAnt,"+strconv.Itoa(int(Valor))+")."
-			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
-
-			for _, cod := range codigo {
-				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-				temp_conceptos.DiasLiquidados = dias_a_liquidar
-				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
-
-			}
-
-			lista_descuentos = append(lista_descuentos, temp_conceptos)
-
-
-		}
-
-
-			valor_bonificacion_servicios := m.ProveAll("bon_ser(" + asignacion_basica_string + "," + dias_a_liquidar + "," + tipoPreliquidacion_string + ","+periodo+"," + dias_laborados_string + "," + id_cargo_string + ",V).")
-			for _, solution := range valor_bonificacion_servicios {
-				Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-				temp_conceptos := models.ConceptosResumen{Nombre: "bonServ",
-					Valor: fmt.Sprintf("%.0f", Valor),
-				}
-
-				reglas = reglas + "sumar_ibc(bonServ,"+strconv.Itoa(int(Valor))+")."
-				codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
-
-				for _, cod := range codigo {
-					temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-					temp_conceptos.DiasLiquidados = dias_a_liquidar
-					temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
-				}
-
-				lista_descuentos = append(lista_descuentos, temp_conceptos)
-
-
-			}
-
-
-		if porcentajePT != 0 {
-
-			valor_prima_tecnica := m.ProveAll("prima_tecnica(" + asignacion_basica_string + "," + dias_a_liquidar + "," + tipoPreliquidacion_string + "," + porcentaje_PT_string + ",V).")
-			for _, solution := range valor_prima_tecnica {
-				Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-				temp_conceptos := models.ConceptosResumen{Nombre: "priTec",
-					Valor: fmt.Sprintf("%.0f", Valor),
-				}
-				reglas = reglas + "sumar_ibc(priTec,"+strconv.Itoa(int(Valor))+")."
-				codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
-
-				for _, cod := range codigo {
-					temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-					temp_conceptos.DiasLiquidados = dias_a_liquidar
-				  temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
-				}
-
-				lista_descuentos = append(lista_descuentos, temp_conceptos)
-
-
-			}
-		}
-
-		valor_prima_secretarial := m.ProveAll("prima_secretarial(" + asignacion_basica_string + ","+periodo+"," + id_cargo_string + "," + tipoPreliquidacion_string + "," + dias_laborados_string + ",V).")
-		for _, solution := range valor_prima_secretarial {
-			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-			temp_conceptos := models.ConceptosResumen{Nombre: "primaSecr",
-				Valor: fmt.Sprintf("%.0f", Valor),
-			}
-
-			reglas = reglas + "sumar_ibc(primaSecr,"+strconv.Itoa(int(Valor))+")."
-			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
-
-			for _, cod := range codigo {
-				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-				temp_conceptos.DiasLiquidados = dias_a_liquidar
-				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
-
-			}
 			lista_descuentos = append(lista_descuentos, temp_conceptos)
 
 
@@ -287,12 +177,16 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 		ManejarNovedadesDevengosFP(reglas, tipoPreliquidacion_string)
 		total_devengado_string := strconv.Itoa(int(ibc))
 
-		valor_salud := m.ProveAll("salud_fun(" + total_devengado_string + ","+periodo+","+tipoPreliquidacion_string+",V).")
-		for _, solution := range valor_salud {
+
+		valor_descuentos := m.ProveAll("desc_obli_planta(CON, "+total_devengado_string+", "+periodo+","+tipoPreliquidacion_string+", V).")
+		for _, solution := range valor_descuentos {
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-			temp_conceptos := models.ConceptosResumen{Nombre: "salud",
-				Valor: fmt.Sprintf("%.0f", Valor),
+			Nom_Concepto := fmt.Sprintf("%s", solution.ByName_("CON"))
+			temp_conceptos := models.ConceptosResumen{Nombre: Nom_Concepto,
+			Valor: fmt.Sprintf("%.0f", Valor),
 			}
+
+			reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
 			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 
 			for _, cod := range codigo {
@@ -300,51 +194,11 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 				temp_conceptos.DiasLiquidados = dias_a_liquidar
 				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 			}
+
 			lista_descuentos = append(lista_descuentos, temp_conceptos)
 
 
 		}
-
-		valor_pension := m.ProveAll("pension_fun(" + total_devengado_string + ","+periodo+","+tipoPreliquidacion_string+",V).")
-		for _, solution := range valor_pension {
-			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-			temp_conceptos := models.ConceptosResumen{Nombre: "pension",
-				Valor: fmt.Sprintf("%.0f", Valor),
-			}
-			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
-
-			for _, cod := range codigo {
-				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-				temp_conceptos.DiasLiquidados = dias_a_liquidar
-				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
-			}
-			lista_descuentos = append(lista_descuentos, temp_conceptos)
-
-
-		}
-
-		if tipoPreliquidacion_string == "1" || tipoPreliquidacion_string == "2" {
-
-			valor_fondo_solidaridad := m.ProveAll("fondo_solidaridad_fun(" + total_devengado_string + ","+periodo+",V).")
-			for _, solution := range valor_fondo_solidaridad {
-				Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-				temp_conceptos := models.ConceptosResumen{Nombre: "fondoSolidaridad",
-					Valor: fmt.Sprintf("%.0f", Valor),
-				}
-				codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
-
-				for _, cod := range codigo {
-					temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-					temp_conceptos.DiasLiquidados = dias_a_liquidar
-			    temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
-				}
-				lista_descuentos = append(lista_descuentos, temp_conceptos)
-
-
-			}
-		}
-
-
 
 		return lista_descuentos, ibc
 }
