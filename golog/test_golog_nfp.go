@@ -25,6 +25,7 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 	//--- Creación de variables
 	var resultado []models.Respuesta
 	var lista_descuentos []models.ConceptosResumen
+	var lista_retefuente []models.ConceptosResumen
 	var lista_descuentos_semestral []models.ConceptosResumen
 	var lista_novedades []models.ConceptosResumen
 	var tipoPreliquidacion_string string
@@ -135,9 +136,10 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 		lista_descuentos,total_devengado_no_novedad = CalcularConceptos(m, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoPreliquidacion_string, porcentajePT, idProveedor,periodo)
 		ibc = 0
 		lista_novedades = ManejarNovedades(reglas,idProveedor, tipoPreliquidacion_string, periodo)
-		CalcularReteFuente(reglas, lista_descuentos);
+		lista_retefuente = CalcularReteFuente(tipoPreliquidacion_string,reglas, lista_descuentos);
 		total_calculos = append(total_calculos, lista_descuentos...)
 		total_calculos = append(total_calculos, lista_novedades...)
+		total_calculos = append(total_calculos, lista_retefuente...)
 		resultado = GuardarConceptos(total_calculos)
 		total_calculos = []models.ConceptosResumen{}
 		ingresos = 0
@@ -437,8 +439,9 @@ func CalcularDoceavaPV(reglas string, tipoPreliquidacion_string string, total_ca
 	return lista_doceavas
 }
 
-func CalcularReteFuente(reglas string, lista_descuentos []models.ConceptosResumen){
+func CalcularReteFuente(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
 
+	var lista_retefuente []models.ConceptosResumen
 
 	var ingresos int
 	var deduccion_salud int
@@ -450,11 +453,11 @@ func CalcularReteFuente(reglas string, lista_descuentos []models.ConceptosResume
 	//var Valor_alivio_declarante float64
 
 	temp_reglas := reglas
-	temp_reglas = temp_reglas + "beneficiario(si)." //BENEFICIARIO, INTERES DE VIVIENDA, SALUD PREPAGADA, DECLARANTE
+	temp_reglas = temp_reglas + "beneficiario(no)." //BENEFICIARIO, INTERES DE VIVIENDA, SALUD PREPAGADA, DECLARANTE
 	temp_reglas = temp_reglas + "intereses_vivienda(0)."
 	temp_reglas = temp_reglas + "salud_prepagada(0)."
 	temp_reglas = temp_reglas + "declarante(si)."
-	temp_reglas = temp_reglas + "porcentaje_diciembre(3.09)."
+	temp_reglas = temp_reglas + "porcentaje_diciembre(3.23)."
 	temp_reglas = temp_reglas + "valor_uvt(2017,31859)."
 	m := NewMachine().Consult(temp_reglas)
 
@@ -483,15 +486,16 @@ func CalcularReteFuente(reglas string, lista_descuentos []models.ConceptosResume
 	n := NewMachine().Consult(temp_reglas)
 
  //GASTOS DE REPRESENTACION
+ 
 	alivios := n.ProveAll("calcular_alivios(B,V,SP,D).")
 	 for _, solution := range alivios {
 		Valor_alivio_beneficiario, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("B")), 64)
 		Valor_alivio_vivienda, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 		Valor_alivio_salud_prepagada, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("SP")), 64)
-		//Valor_alivio_declarante, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("D")), 64)
+
 	}
 
-	//fmt.Println(Valor_alivio_declarante)
+
 
 	ajuste_deduccion := n.ProveAll("ajustar_deducciones(AD).")
 	 for _, solution := range ajuste_deduccion {
@@ -499,6 +503,7 @@ func CalcularReteFuente(reglas string, lista_descuentos []models.ConceptosResume
 
 	}
 
+/*
 	fmt.Println("ingresos")
 	fmt.Println(ingresos)
 	fmt.Println(deduccion_salud)
@@ -506,9 +511,9 @@ func CalcularReteFuente(reglas string, lista_descuentos []models.ConceptosResume
 	fmt.Println(Valor_alivio_beneficiario)
 	fmt.Println(Valor_alivio_vivienda)
 	fmt.Println(Valor_alivio_salud_prepagada)
-
+*/
 	definitivo_deduccion = int(Valor_alivio_beneficiario) + int(Valor_alivio_vivienda)+ int(Valor_alivio_salud_prepagada)
-	fmt.Println(definitivo_deduccion)
+	//fmt.Println(definitivo_deduccion)
 
 	temp_reglas = temp_reglas + "definitivo_deduccion("+strconv.Itoa(definitivo_deduccion)+")."
 
@@ -516,11 +521,25 @@ func CalcularReteFuente(reglas string, lista_descuentos []models.ConceptosResume
 
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
 	 for _, solution := range valor_retencion {
-		val_reten,_ := strconv.Atoi(fmt.Sprintf("%s", solution.ByName_("VR")))
-		fmt.Println("retencion")
-		fmt.Println(val_reten)
+		val_reten:= fmt.Sprintf("%s", solution.ByName_("VR"))
+		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
+		Valor: val_reten,
+		}
+
+
+		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		for _, cod := range codigo {
+			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
+		}
+
+		lista_retefuente = append(lista_retefuente, temp_conceptos)
+
 	}
 
+
+	return lista_retefuente
 }
 
 func BuscarValorConcepto(lista_descuentos []models.ConceptosResumen,codigo_concepto string)(valor int){
