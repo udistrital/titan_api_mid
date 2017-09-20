@@ -49,7 +49,7 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 	reglas = reglas + "salario_base(" + asignacion_basica_string + ")."
 	reglas = reglas + "tipo_nomina(" + tipoPreliquidacion_string + ")."
 	reglas = reglas + "porcentaje_pt("+porcentaje_PT_string+")."
-
+	reglas = reglas + "cargo("+id_cargo_string+")."
 
 	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
       panic(err)
@@ -446,14 +446,14 @@ func CalcularReteFuente(tipoPreliquidacion_string, reglas string, lista_descuent
 	var ingresos int
 	var deduccion_salud int
 	var deduccion_pen_vol int
+	var valor_gastos_rep int
 	var Valor_alivio_beneficiario float64
 	var Valor_alivio_vivienda float64
 	var Valor_alivio_salud_prepagada float64
 	var definitivo_deduccion int
-	//var Valor_alivio_declarante float64
 
 	temp_reglas := reglas
-	temp_reglas = temp_reglas + "beneficiario(no)." //BENEFICIARIO, INTERES DE VIVIENDA, SALUD PREPAGADA, DECLARANTE
+	temp_reglas = temp_reglas + "beneficiario(no)."
 	temp_reglas = temp_reglas + "intereses_vivienda(0)."
 	temp_reglas = temp_reglas + "salud_prepagada(0)."
 	temp_reglas = temp_reglas + "declarante(si)."
@@ -479,14 +479,26 @@ func CalcularReteFuente(tipoPreliquidacion_string, reglas string, lista_descuent
 		deduccion_pen_vol = deduccion_pen_vol + BuscarValorConcepto(lista_descuentos, codigo_concepto)
 	}
 
+	consultar_gastos_rep := m.ProveAll("aplica_gastos_rep(X).")
+ 	for _, solution := range consultar_gastos_rep {
+ 	 codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
+ 	 valor_gastos_rep = valor_gastos_rep + BuscarValorConcepto(lista_descuentos, codigo_concepto)
+  }
+
 	temp_reglas = temp_reglas + "ingreso_retencion("+strconv.Itoa(ingresos)+")."
 	temp_reglas = temp_reglas + "deduccion_salud("+strconv.Itoa(deduccion_salud)+")."
 	temp_reglas = temp_reglas + "deduccion_pen_vol("+strconv.Itoa(deduccion_pen_vol)+")."
+	temp_reglas = temp_reglas + "valor_gastos_rep("+strconv.Itoa(valor_gastos_rep)+")."
 
 	n := NewMachine().Consult(temp_reglas)
 
- //GASTOS DE REPRESENTACION
- 
+ deduccion_gastos_rep_rector := n.ProveAll("deduccion_gastos_rep_rector(DGR).")
+ for _, solution := range deduccion_gastos_rep_rector {
+	Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DGR")), 64)
+	ingresos = int(Valor)
+	}
+
+
 	alivios := n.ProveAll("calcular_alivios(B,V,SP,D).")
 	 for _, solution := range alivios {
 		Valor_alivio_beneficiario, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("B")), 64)
@@ -494,8 +506,6 @@ func CalcularReteFuente(tipoPreliquidacion_string, reglas string, lista_descuent
 		Valor_alivio_salud_prepagada, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("SP")), 64)
 
 	}
-
-
 
 	ajuste_deduccion := n.ProveAll("ajustar_deducciones(AD).")
 	 for _, solution := range ajuste_deduccion {
