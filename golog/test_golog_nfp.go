@@ -509,6 +509,18 @@ func CalcularReteFuente(reglas string, lista_descuentos []models.ConceptosResume
 
 	definitivo_deduccion = int(Valor_alivio_beneficiario) + int(Valor_alivio_vivienda)+ int(Valor_alivio_salud_prepagada)
 	fmt.Println(definitivo_deduccion)
+
+	temp_reglas = temp_reglas + "definitivo_deduccion("+strconv.Itoa(definitivo_deduccion)+")."
+
+	o := NewMachine().Consult(temp_reglas)
+
+	valor_retencion := o.ProveAll("valor_retencion(VR).")
+	 for _, solution := range valor_retencion {
+		val_reten,_ := strconv.Atoi(fmt.Sprintf("%s", solution.ByName_("VR")))
+		fmt.Println("retencion")
+		fmt.Println(val_reten)
+	}
+
 }
 
 func BuscarValorConcepto(lista_descuentos []models.ConceptosResumen,codigo_concepto string)(valor int){
