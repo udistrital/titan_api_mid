@@ -19,6 +19,7 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 	var resultado []models.Respuesta
 	var lista_descuentos []models.ConceptosResumen
 	var lista_novedades []models.ConceptosResumen
+	var lista_retefuente []models.ConceptosResumen
 	var lista_descuentos_semestral []models.ConceptosResumen
 	var tipoPreliquidacion_string string
 	var nombre_archivo string
@@ -59,11 +60,12 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 	nombre_archivo = "reglas" + strconv.Itoa(idProveedor) + ".txt"
 	reglas = reglas + "salario_base(" + asignacion_basica_string + ")."
 	reglas = reglas + "tipo_nomina(" + tipoPreliquidacion_string + ")."
+	reglas = reglas + "cargo("+cargo+")."
 
 	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
       panic(err)
   }
-		
+
 		m := NewMachine().Consult(reglas)
 
 
@@ -139,8 +141,10 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 	lista_descuentos,total_devengado_no_novedad = CalcularConceptosDP(m, reglas,dias_a_liquidar,asignacion_basica_string, tipoPreliquidacion_string,regimen_numero, puntos, cargo, fechaInicio, fechaActual)
 	ibc = 0
 	lista_novedades = ManejarNovedadesDP(reglas,idProveedor, tipoPreliquidacion_string,periodo)
+	lista_retefuente = CalcularReteFuente(tipoPreliquidacion_string,reglas, lista_descuentos);
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
+	total_calculos = append(total_calculos, lista_retefuente...)
 	resultado = GuardarConceptosDP(total_calculos)
 
 	total_calculos = []models.ConceptosResumen{}

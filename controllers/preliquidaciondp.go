@@ -48,6 +48,7 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 				esAnual := esAnual(datos.Preliquidacion.Mes, informacion_cargo[0].FechaInicio)
 				//puntos = consumir_puntos(cedula)
 
+
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
 				reglas = reglasinyectadas + reglasbase + esAnual
 
