@@ -36,7 +36,7 @@ func (c *PreliquidacionController) Preliquidar() {
 
 		//-----------------------------
 
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
 			var n *PreliquidacionHcController
 			resumen := n.Preliquidar(&v, reglasbase)
 
@@ -68,7 +68,7 @@ func (c *PreliquidacionController) Preliquidar() {
 			c.ServeJSON()
 */
 
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT-SALARIOS" {
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
 			var n *PreliquidacionctController //aca se esta creando un objeto del controlador especico
 			resumen := n.Preliquidar(&v, reglasbase)
 			c.Data["json"] = resumen
@@ -83,7 +83,7 @@ func (c *PreliquidacionController) Preliquidar() {
 func CargarReglasBase(dominio string) (reglas string) {
 	//carga de reglas desde el ruler
 	var reglasbase string = ``
-
+	
 	var v []models.Predicado
 	var datos_conceptos []models.ConceptoNomina
 	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina?limit=-1", &datos_conceptos); err == nil {

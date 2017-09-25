@@ -11,6 +11,7 @@ import (
 
 
 func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []models.Respuesta) {
+	fmt.Println("holi")
 	//******QUITAR ARREGLO, DEJAR UNA SOLA VARIABLE PARA LAS REGLAS ******
   var nombre_archivo string
 	nombre_archivo = "reglas" + strconv.Itoa(idProveedor) + ".txt"
@@ -46,9 +47,10 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 
 	//DESCUENTOS
 	//Reteica
-
+	fmt.Println(salarioBase_string)
 	descuento_reteica := m.ProveAll("calcular_reteica("+salarioBase_string+", "+periodo+", R).")
 	for _, solution := range descuento_reteica {
+		fmt.Println("prueba rete ica")
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteIca",
 			Valor: fmt.Sprintf("%.0f", Valor),
