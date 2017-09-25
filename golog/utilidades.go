@@ -210,7 +210,7 @@ func getJson(url string, target interface{}) error {
 }
 
 func CalcularReteFuente(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
-
+	fmt.Println("retefuente")
 	var lista_retefuente []models.ConceptosResumen
 
 	var ingresos int
@@ -221,7 +221,7 @@ func CalcularReteFuente(tipoPreliquidacion_string, reglas string, lista_descuent
 	var Valor_alivio_vivienda float64
 	var Valor_alivio_salud_prepagada float64
 	var definitivo_deduccion int
-
+	fmt.Println(lista_descuentos)
 	temp_reglas := reglas
 	temp_reglas = temp_reglas + "beneficiario(no)."
 	temp_reglas = temp_reglas + "intereses_vivienda(0)."
