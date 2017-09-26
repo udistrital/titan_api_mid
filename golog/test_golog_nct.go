@@ -19,11 +19,12 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 	var tipoPreliquidacion_string = "2";
 
 	reglas = reglas + "cargo(0)."
+	reglas = reglas + "periodo("+periodo+")."
 
 
 	lista_descuentos = CalcularConceptosCT(idProveedor,periodo,reglas)
 	lista_novedades = ManejarNovedadesCT(reglas,idProveedor, tipoPreliquidacion_string,periodo)
-	lista_retefuente = CalcularReteFuente(tipoPreliquidacion_string,reglas, lista_descuentos);
+	lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos);
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
 	total_calculos = append(total_calculos, lista_retefuente...)

@@ -209,7 +209,7 @@ func getJson(url string, target interface{}) error {
 	return json.NewDecoder(r.Body).Decode(target)
 }
 
-func CalcularReteFuente(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
+func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
 	fmt.Println("retefuente")
 	var lista_retefuente []models.ConceptosResumen
 
@@ -341,4 +341,46 @@ func BuscarValorConcepto(lista_descuentos []models.ConceptosResumen,codigo_conce
 		}
 
 		return temp
+}
+
+func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
+	var lista_retefuente []models.ConceptosResumen
+	var ingresos int
+	temp_reglas := reglas
+	m := NewMachine().Consult(reglas)
+
+	consultar_conceptos_ingresos_retencion := m.ProveAll("aplica_ingreso_retencion(X).")
+	 for _, solution := range consultar_conceptos_ingresos_retencion {
+		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
+		ingresos = ingresos + BuscarValorConcepto(lista_descuentos, codigo_concepto)
+	}
+
+	fmt.Println("ingresos")
+	fmt.Println(ingresos)
+
+	temp_reglas = temp_reglas + "ingresos("+strconv.Itoa(ingresos)+")."
+
+	o := NewMachine().Consult(temp_reglas)
+
+	valor_retencion := o.ProveAll("valor_retencion(VR).")
+	 for _, solution := range valor_retencion {
+		 fmt.Println("asdf")
+		val_reten:= fmt.Sprintf("%s", solution.ByName_("VR"))
+		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
+		Valor: val_reten,
+		}
+
+
+		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		for _, cod := range codigo {
+			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
+		}
+
+		lista_retefuente = append(lista_retefuente, temp_conceptos)
+
+	}
+
+	return lista_retefuente
 }

@@ -136,7 +136,7 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 		lista_descuentos,total_devengado_no_novedad = CalcularConceptos(m, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoPreliquidacion_string, porcentajePT, idProveedor,periodo)
 		ibc = 0
 		lista_novedades = ManejarNovedades(reglas,idProveedor, tipoPreliquidacion_string, periodo)
-		lista_retefuente = CalcularReteFuente(tipoPreliquidacion_string,reglas, lista_descuentos);
+		lista_retefuente = CalcularReteFuentePlanta(tipoPreliquidacion_string,reglas, lista_descuentos);
 		total_calculos = append(total_calculos, lista_descuentos...)
 		total_calculos = append(total_calculos, lista_novedades...)
 		total_calculos = append(total_calculos, lista_retefuente...)
