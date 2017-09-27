@@ -14,7 +14,7 @@ import (
 func main() {
   var reglas_a_probar []string
   var reglas string
-  var archivo_reglas_a_cargar = "ReglasHCS"
+  var archivo_reglas_a_cargar = "HCSReglas"
 
   reglas_a_probar =  file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/ScriptsReglas/"+archivo_reglas_a_cargar+".txt")
   reglas = processString(reglas_a_probar)
