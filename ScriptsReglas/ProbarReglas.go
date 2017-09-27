@@ -5,19 +5,28 @@ import (
 	//"strconv"
   "os"
   "bufio"
-  "io"
+	"io"
+  "io/ioutil"
   "strings"
-	. "github.com/mndrix/golog"
+	."github.com/mndrix/golog"
+	"net/http"
 
 )
 
 func main() {
-  var reglas_a_probar []string
+//  var reglas_a_probar []string
   var reglas string
   var archivo_reglas_a_cargar = "HCSReglas"
 
-  reglas_a_probar =  file2lines("/home/mariaalejandra9404/Documentos/ProyectosGo/src/github.com/udistrital/titan_api_mid/ScriptsReglas/"+archivo_reglas_a_cargar+".txt")
-  reglas = processString(reglas_a_probar)
+
+	resp, err := http.Get("https://raw.githubusercontent.com/udistrital/titan_api_mid/desarrollo/ScriptsReglas/"+archivo_reglas_a_cargar+".txt")
+		if err != nil {
+			fmt.Println("error")
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		reglas = string(body)
+	
   m := NewMachine().Consult(reglas)
   predicado_a_probar:= "evaluar_uvt(31859,99,X)."
 
