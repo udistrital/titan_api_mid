@@ -116,7 +116,7 @@ func (c *PreliquidacionHcController) Preliquidar(datos *models.DatosPreliquidaci
 				fmt.Println(err)
 			}
 
-			temp := golog.CargarReglas(datos.PersonasPreLiquidacion[i].IdPersona,reglas,vigencia_contrato)
+			temp := golog.CargarReglasHCS(datos.PersonasPreLiquidacion[i].IdPersona,reglas,vigencia_contrato)
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = datos_contrato[0].Contratista.NumDocumento

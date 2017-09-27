@@ -335,7 +335,7 @@ func BuscarValorConcepto(lista_descuentos []models.ConceptosResumen,codigo_conce
 	var temp int
 	 for _, solution := range lista_descuentos {
 				if(strconv.Itoa(solution.Id) == codigo_concepto ){
-						temp,_ = strconv.Atoi(solution.Valor)
+							temp,_ = strconv.Atoi(solution.Valor)
 
 				}
 		}
@@ -346,6 +346,8 @@ func BuscarValorConcepto(lista_descuentos []models.ConceptosResumen,codigo_conce
 func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
 	var lista_retefuente []models.ConceptosResumen
 	var ingresos int
+	var deduccion_salud int
+
 	temp_reglas := reglas
 	m := NewMachine().Consult(reglas)
 
@@ -355,16 +357,22 @@ func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descu
 		ingresos = ingresos + BuscarValorConcepto(lista_descuentos, codigo_concepto)
 	}
 
-	fmt.Println("ingresos")
-	fmt.Println(ingresos)
-
 	temp_reglas = temp_reglas + "ingresos("+strconv.Itoa(ingresos)+")."
+
+	consultar_conceptos_deduccion_retencion := m.ProveAll("aplica_deduccion_retencion(X).")
+	 for _, solution := range consultar_conceptos_deduccion_retencion {
+		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
+		deduccion_salud = deduccion_salud + BuscarValorConcepto(lista_descuentos, codigo_concepto)
+	}
+
+
+	temp_reglas = temp_reglas + "deducciones("+strconv.Itoa(deduccion_salud)+")."
 
 	o := NewMachine().Consult(temp_reglas)
 
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
 	 for _, solution := range valor_retencion {
-		 fmt.Println("asdf")
+		 fmt.Println("retefuente")
 		val_reten:= fmt.Sprintf("%s", solution.ByName_("VR"))
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 		Valor: val_reten,
