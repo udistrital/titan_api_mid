@@ -1,0 +1,110 @@
+aplica_ingreso_retencion(11).
+sueldoSemestralViejo(S,T,VT) :- salarioBasicoViejo(S,SV), bonificacionViejo(SV,BV),primaViejo(SV,T,PS), VT is SV+BV+PS.
+salud(TL,V,S) :- periodo_liq_salud(TL),S is V*0.04.
+pension(TL,V,S) :- periodo_liq_pension(TL), S is V*0.04.
+info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
+transporteTope(2017,5928700).
+tranporte(2017,153274).
+alimentacionTope(2017,5928700).
+alimentacion(2017,140932).
+primaServicios(S,T,P) :- (T @>= 12 -> P is S;P is S/12).
+info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(valor_pago(X,P,V),R is V * Z)).
+valor_pago(X,V,P):- P is X*V/100.
+concepto(prueba, devengo, porcentaje, salud,0.5 , 2016).
+devengo(0,prueba).
+novedades_devengos(X):- devengo(V,N), conceptos_ibc(N), X is V.
+conceptos_ibc(subsidioFa).
+salarioBasicoViejo(S,C,T,X) :- (C = 1 -> X is (S+S*0.35) *(T/30); X is S * (T /30)).
+liquidar(R,P,V,T,C,L):- (R == 1 -> salarioBasicoNuevo(P,V,T,S), L is S;R == 2 ->  salarioBasicoViejo(V,C,T,X), L is X; L is 0).
+salarioBasicoNuevo(P,V,T,S) :- S is (P*V)*(T/30).
+conceptos_ibc(nombreRegla17).
+conceptos_ibc(nombreRegla18).
+conceptos_ibc(nombreRegla139).
+conceptos_ibc(nombreRegla151).
+conceptos_ibc(nombreRegla157).
+conceptos_ibc(nombreRegla152).
+conceptos_ibc(nombreRegla158).
+conceptos_ibc(nombreRegla160).
+conceptos_ibc(nombreRegla161).
+conceptos_ibc(nombreRegla168).
+conceptos_ibc(nombreRegla174).
+conceptos_ibc(horasExtras).
+conceptos_ibc(nombreRegla178).
+conceptos_ibc(nombreRegla1257).
+conceptos_ibc(nombreRegla1254).
+conceptos_ibc(nombreRegla1253).
+conceptos_ibc(nombreRegla1252).
+conceptos_ibc(nombreRegla1251).
+conceptos_ibc(nombreRegla1250).
+conceptos_ibc(nombreRegla1249).
+conceptos_ibc(nombreRegla1248).
+conceptos_ibc(nombreRegla1245).
+conceptos_ibc(nombreRegla1242).
+conceptos_ibc(nombreRegla1240).
+conceptos_ibc(nombreRegla1239).
+conceptos_ibc(nombreRegla1232).
+conceptos_ibc(nombreRegla1230).
+conceptos_ibc(nombreRegla1227).
+conceptos_ibc(nombreRegla1226).
+conceptos_ibc(nombreRegla1225).
+conceptos_ibc(nombreRegla1214).
+conceptos_ibc(asigAdicDec).
+conceptos_ibc(nombreRegla1209).
+conceptos_ibc(nombreRegla1206).
+conceptos_ibc(nombreRegla1202).
+conceptos_ibc(nombreRegla1201).
+conceptos_ibc(nombreRegla1195).
+conceptos_ibc(nombreRegla1179).
+conceptos_ibc(nombreRegla1177).
+dias_liq_dic(1,6,30).
+conceptos_ibc(nombreRegla118).
+calcular_ibc(V):- conceptos_ibc(X), sumar_ibc(X,Y), V is Y.
+conceptos_ibc(subsidioFa).
+conceptos_ibc(primaAnt).
+conceptos_ibc(bonServ).
+conceptos_ibc(gastosRep).
+conceptos_ibc(salarioBase).
+dias_liq_ps(DL,R,V):-dias_liq_doc(R,ND), (DL@>=360 -> V is 30; DL < 90 -> V is 0; V is ((DL*ND) / 360 rnd 0)).
+dias_liq_doc(1,30).
+dias_liq_doc(2,15).
+concepto_bon_serv_ps(129).
+concepto_bon_serv_ps(1195).
+concepto_bon_serv_ps(139).
+doceava_bs(N,D,V):- bonificacion_servicio_ps(N,X), V is ((X/12) rnd 0).
+dias_liq_dic(2,5,21).
+dias_liq_dic(1,4,20).
+concepto_bon_serv_dic(129).
+concepto_bon_serv_dic(1195).
+concepto_bon_serv_dic(139).
+doceava(N,V):-bonificacion_servicio(N,X), V is (X/12 rnd 0).
+doceava_ps(N,V):- prima_servicios(N,X), V is (X/12 rnd 0).
+doceava_pv(N,V) :- prima_vacaciones(N,X), V is (X/12 rnd 0).
+dias_liq_dic(2,6,30).
+dias_liq_dic(2,4,15).
+dias_liq_dic(1,5,34).
+seg_social(prueba,1,1,1,1,1,1).
+afectacion_seguridad(incapacidad_laboral).
+afectacion_seguridad(incapacidad_general).
+afectacion_seguridad(licencia_norem).
+afectacion_seguridad(comision_norem).
+periodo_liq_salud(2).
+periodo_liq_pension(2).
+bonificacionServicios(V,S) :-esAnual(si), (V/2 @< 756411 -> S is V*0.50; S is V*0.35).
+aplica_ingreso_retencion(1174).
+aplica_ingreso_retencion(111).
+aplica_ingreso_retencion(129).
+aplica_ingreso_retencion(1175).
+aplica_deduccion_retencion(239).
+aplica_deduccion_retencion(290).
+aplica_deduccion_retencion(291).
+ajustar_deducciones(AD):- ingreso_retencion(IR),deduccion_salud(DS), deduccion_pen_vol(DPV), valor_uvt(2017, VU), Y is ((IR * 0.30) rnd 0), X is DS + DPV, Z is X / VU, (X@>=Y -> (Z@>=316.66 -> AD is ((VU * 316.66 )rnd 0);AD is X); AD is DPV).
+calcular_alivio_beneficiario(CAB):-beneficiario(si), ingreso_retencion(IR), valor_uvt(2017, VU), X is (IR * 0.10 rnd 0), Y is X / VU, (Y@>=32 -> CAB is VU * 32;CAB is X).
+aplica_deduccion_penvol_retencion(2173).
+calcular_alivio_vivienda(CAV):- intereses_vivienda(IV), valor_uvt(2017, VU), Y is IV / VU, (Y@>=100 -> CAV is VU * 100; CAV is IV).
+calcular_alivio_salud_prepagada(CSP):- salud_prepagada(SP), valor_uvt(2017, VU), Y is SP / VU, (Y@>=16 -> CSP is VU * 16; CSP is SP).
+calcular_alivios(B,V,SP,D):- calcular_alivio_beneficiario(CAB), B is CAB, calcular_alivio_vivienda(CIV), V is CIV, calcular_alivio_salud_prepagada(CSP), SP is CSP.
+tope_deduccion(TD):- ingreso_retencion(IR), TD is IR * 0.40.
+valor_retencion(VR):- porcentaje_diciembre(PD),ingreso_retencion(IR), definitivo_deduccion(DD), tope_deduccion(TD), (DD@>=TD-> X is TD; X is DD),G is ((IR - X) * 0.75), VR is (((G * PD)/ 100) rnd 0).
+aplica_gastos_rep(12).
+deduccion_gastos_rep_rector(DGR):- cargo(1), ingreso_retencion(IR), valor_gastos_rep(G), DGR is IR - G.
+definitivo_deduccion(DD):- tope_deduccion(TD), DD is TD.

@@ -1,0 +1,46 @@
+evaluar_uvt(VU,U,R):- (U @=< 95 -> R is 0).
+evaluar_uvt(VU,U,R):- (U @> 95, U@=<150 -> A is U - 95, B is A*0.19, C is B * VU, R is (C rnd 0)).
+evaluar_uvt(VU,U,R):- (U @> 150, U @=<360 -> A is U - 150, B is A*0.28, C is B * VU, D is (10 * VU), F is C + D, R is (F rnd 0)).
+evaluar_uvt(VU,U,R):- (U @> 360 -> A is U - 360, B is A*0.33, C is B * VU, D is (69 * VU), F is C + D, R is (F rnd 0)).
+base_retencion(B, V, R) :- base_minimo(B,V,A), calcular_salud(A,V,VS),  calcular_pension(A,V,VP), calcular_ARL(B,V,VARL), M is (VS+VP+VARL), T is B- M, C is T*0.25, R is T-C.
+base_retefuente(B, R) :- X is (B * 0.25 rnd 0),R is B-X.
+valor_uvt(2017,31859).
+valor_uvt(2016,29753).
+aplica_deduccion_retencion(239).
+aplica_deduccion_retencion(290).
+aplica_deduccion_retencion(291).
+dias_liquidados(prueba,30).
+info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
+info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(valor_pago(X,P,V),R is V * Z)).
+concepto(prueb, devengo, fijo, s, 1000000, 2017).
+valor_pago(X,V,P):-valor_contrato(X,Y), duracion_contrato(X,D,V), R is Y / D, dias_liquidados(X,DL),P is (DL * R).
+reteica(2016, 9.66).
+estampilla(2016, 0.01).
+procultura(2016,0.005).
+adulto_mayor(2016, 0.02).
+salud(2016,12.5).
+pension(2016,16).
+salario_minimo(2016, 689454).
+calcular_estampilla(B,V,R) :- base_retencion(B,V,X) , estampilla(V, RE) , R is ((RE * X) rnd 0).
+calcular_procultura(B,V,R) :- base_retencion(B,V,X) , procultura(V, RP) , R is ((RP * X) rnd 0).
+calcular_adulto_mayor(B,V,R) :- base_retencion(B,V,X) , adulto_mayor(V, RA) , R is ((RA * X) rnd 0).
+arl(2016,1,0.522).
+calcular_reteica(B,V,R):- base_retencion(B,V,X), reteica(V,RI), R is ((RI * X) / 1000 rnd 0).
+calcular_salud(B,V,VS) :- salud(V,PS), X is (B * (PS/100) rnd 0), Y is ((X+50) / 100 int 0), VS is Y * 100.
+calcular_pension(B,V,VP) :- pension(V, PP), X is (B * (PP/100) rnd 0), Y is ((X+50) / 100 int 0), VP is Y * 100.
+calcular_ARL(B,V,VARL) :- arl(V,1,PARL), X is ((PARL/100)* (B * 0.40) rnd 0), Y is ((X + 50)/ 100 int 0), VARL is Y * 100.
+base_minimo(B,V,A):- salario_minimo(V,Z), X is B*0.40, (X@=<Z -> A is Z; A is X).
+reteica(2017,9.66).
+aplica_ingreso_retencion(11).
+aplica_ingreso_retencion(1174).
+aplica_ingreso_retencion(111).
+aplica_ingreso_retencion(129).
+aplica_ingreso_retencion(1175).
+valor_retencion(VR):- ingresos(B), periodo(P), base_retefuente(B,R), valor_uvt(P, VU), X is (R / VU), evaluar_uvt(VU, X, E), H is ((E + 50) / 1000 rnd 0), VR is (H * 1000).
+salario_minimo(2017,737717).
+salud(2017,12.5).
+pension(2017,16).
+estampilla(2017,0.01).
+procultura(2017,0.005).
+arl(2017,1,0.522).
+adulto_mayor(2017,0.02).
