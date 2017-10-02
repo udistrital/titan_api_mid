@@ -83,7 +83,7 @@ func (c *PreliquidacionController) Preliquidar() {
 func CargarReglasBase(dominio string) (reglas string) {
 	//carga de reglas desde el ruler
 	var reglasbase string = ``
-	
+
 	var v []models.Predicado
 	var datos_conceptos []models.ConceptoNomina
 	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina?limit=-1", &datos_conceptos); err == nil {
@@ -91,7 +91,7 @@ func CargarReglasBase(dominio string) (reglas string) {
 			reglasbase = reglasbase + `codigo_concepto(` + datos.NombreConcepto + `,` + strconv.Itoa(datos.Id) + `).` + "\n"
 		}
 	} else {
-		fmt.Println("errorcito")
+		fmt.Println("errorcitooouo")
 	}
 	fmt.Println(dominio)
 	if err := getJson("http://"+beego.AppConfig.String("Urlruler")+":"+beego.AppConfig.String("Portruler")+"/"+beego.AppConfig.String("Nsruler")+"/predicado?limit=-1&query=Dominio.Nombre:"+dominio, &v); err == nil {
