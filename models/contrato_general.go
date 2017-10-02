@@ -5,6 +5,18 @@ import (
 
 )
 
+type ContratoEstado struct {
+	ValorContrato  string `xml:"valorContrato"`
+	Estado 				Estado   `xml:"estado"`
+	Vigencia      int				 `xml:"vigencia"`
+	NumeroContrato string    `xml:"numeroContrato"`
+}
+
+type Estado struct {
+	Id           int		  `xml:"id"`
+	NombreEstado string   `xml:"nombreEstado"`
+}
+
 type ContratoGeneral struct {
 	Id                           string                 `orm:"column(numero_contrato);pk"`
 	Vigencia                     int                 `orm:"column(vigencia)"`

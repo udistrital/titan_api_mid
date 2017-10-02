@@ -26,7 +26,7 @@ func main() {
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
 		reglas = string(body)
-	
+
   m := NewMachine().Consult(reglas)
   predicado_a_probar:= "evaluar_uvt(31859,99,X)."
 

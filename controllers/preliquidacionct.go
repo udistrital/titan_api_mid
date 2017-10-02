@@ -41,6 +41,8 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 	var arreglo_pruebas []models.PruebaGo
 	arreglo_pruebas = make([]models.PruebaGo, len(datos.PersonasPreLiquidacion))
 	var informacion_cargo []models.FuncionarioCargo
+
+	var datos_contrato_cosa interface{}
 	//var al, ml, dl int
 	//-----------------------
 
@@ -48,10 +50,19 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
+		consulta_contratos := models.ContratoGeneral{Id: datos.PersonasPreLiquidacion[i].NumeroContrato,Vigencia:datos.PersonasPreLiquidacion[i].VigenciaContrato}
+
 		filtrodatos = "Id:"+(datos.PersonasPreLiquidacion[i].NumeroContrato)+",Vigencia:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 		filtrodatos_acta = "NumeroContrato:"+(datos.PersonasPreLiquidacion[i].NumeroContrato)+",Vigencia:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 
-		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/contrato_general?limit=1&query="+filtrodatos, &datos_contrato); err == nil && datos_contrato != nil{
+		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/contrato_general/contratosProduccion", "POST", &datos_contrato_cosa, &consulta_contratos); err == nil {
+			fmt.Println(datos_contrato_cosa)
+		} else {
+			fmt.Println("error consultando contratos en produccion")
+			beego.Debug("error1: ", err)
+		}
+
+		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/contrato_general/contratosProduccion", "POST", &datos_contrato_cosa, &consulta_contratos); err == nil {
 			if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio?limit=1&query="+filtrodatos_acta, &datos_acta); err == nil && datos_acta != nil{
 			FechaInicioContrato = time.Date(datos_acta[0].FechaInicio.Year(), datos_acta[0].FechaInicio.Month(), datos_acta[0].FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
 			FechaFinContrato = time.Date(datos_acta[0].FechaFin.Year(), datos_acta[0].FechaFin.Month(), datos_acta[0].FechaFin.Day(), 0, 0, 0, 0, time.UTC)
