@@ -5,16 +5,17 @@ import (
 
 )
 
+
 type ContratoEstado struct {
-	ValorContrato  string `xml:"valorContrato"`
-	Estado 				Estado   `xml:"estado"`
-	Vigencia      int				 `xml:"vigencia"`
-	NumeroContrato string    `xml:"numeroContrato"`
+	ValorContrato  string
+	Estado 				Estado
+	Vigencia      int
+	NumeroContrato string
 }
 
 type Estado struct {
-	Id           int		  `xml:"id"`
-	NombreEstado string   `xml:"nombreEstado"`
+	Id           int
+	NombreEstado string
 }
 
 type ContratoGeneral struct {

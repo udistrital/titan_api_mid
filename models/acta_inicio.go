@@ -15,3 +15,10 @@ type ActaInicio struct {
 	Descripcion    string    `orm:"column(descripcion);null"`
 	Usuario        string    `orm:"column(usuario);null"`
 }
+
+type ActaInicioP struct {
+
+	FechaInicioTemp 	string
+	FechaFinTemp      string			
+
+}

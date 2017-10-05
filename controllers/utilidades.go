@@ -10,6 +10,15 @@ import (
 	"strings"
 )
 
+func stripchars(str, chr string) string {
+    return strings.Map(func(r rune) rune {
+        if strings.IndexRune(chr, r) < 0 {
+            return r
+        }
+        return -1
+    }, str)
+}
+
 func sendJson(url string, trequest string, target interface{}, datajson interface{}) error {
 	b := new(bytes.Buffer)
 	if datajson != nil{
