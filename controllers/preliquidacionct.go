@@ -51,8 +51,8 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
-		//consulta_contratos := models.ContratoGeneral{Id: datos.PersonasPreLiquidacion[i].NumeroContrato,Vigencia:datos.PersonasPreLiquidacion[i].VigenciaContrato}
-		consulta_contratos := models.ContratoGeneral{Id: "658",Vigencia:2017}
+		consulta_contratos := models.ContratoGeneral{Id: datos.PersonasPreLiquidacion[i].NumeroContrato,Vigencia:datos.PersonasPreLiquidacion[i].VigenciaContrato}
+		//consulta_contratos := models.ContratoGeneral{Id: "658",Vigencia:2017}
 
 		filtrodatos_acta = "NumeroContrato:"+(datos.PersonasPreLiquidacion[i].NumeroContrato)+",Vigencia:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 
@@ -61,12 +61,14 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/contrato_general/contratosProduccion", "POST", &datos_contrato, &consulta_contratos); err == nil {
 			fmt.Println(datos_contrato)
 			if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio/actaInicioProduccion", "POST", &datos_acta, &consulta_contratos); err == nil {
-				fmt.Println(stripchars(datos_acta.FechaInicioTemp,"-05:00"))
+
 				layout := "2006-01-02"
-				FechaInicio, err = time.Parse(layout , datos_acta.FechaInicioTemp)
+		//		FechaInicio, err = time.Parse(layout , datos_acta.FechaInicioTemp)
+				FechaInicio, err = time.Parse(layout , "2017-02-08")
 				fmt.Println(FechaInicio)
 				fmt.Println(err)
-				FechaFin, err = time.Parse(layout , datos_acta.FechaFinTemp)
+				FechaFin, err = time.Parse(layout , "2017-10-31")
+			//	FechaFin, err = time.Parse(layout , datos_acta.FechaFinTemp)
 
 			FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
 			FechaFinContrato = time.Date(FechaFin.Year(), FechaFin.Month(), FechaFin.Day(), 0, 0, 0, 0, time.UTC)
@@ -95,6 +97,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 			predicados = append(predicados, models.Predicado{Nombre: "dias_liquidados(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(periodo_liquidacion, 'f', -1, 64) + "). "})
 			predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + datos_contrato.ValorContrato+ "). "})
 			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(dias_contrato, 'f', -1, 64) + "," + vigencia_contrato + "). "})
+			fmt.Println(predicados)
 			reglasinyectadas = FormatoReglas(predicados)
 
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)

@@ -51,13 +51,13 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas string)(rest []models.
 
 	m := NewMachine().Consult(reglas)
 
-
 	valor_pago := m.ProveAll("valor_pago(X,"+periodo+",P).")
 
 	for _, solution := range valor_pago {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("P")), 64)
 
 		salarioBase = Valor
+		fmt.Println(salarioBase)
 		salarioBase_string = strconv.Itoa(int(salarioBase))
 		temp_conceptos := models.ConceptosResumen{Nombre: "salarioBase",
 			Valor: fmt.Sprintf("%.0f", Valor),
