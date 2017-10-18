@@ -37,7 +37,7 @@ func (c *PreliquidacionController) Preliquidar() {
 		//-----------------------------
 
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
-			var n *PreliquidacionHcController
+			var n *PreliquidacionHcSController
 			resumen := n.Preliquidar(&v, reglasbase)
 
 			c.Data["json"] = resumen
@@ -69,11 +69,13 @@ func (c *PreliquidacionController) Preliquidar() {
 */
 
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
-			var n *PreliquidacionctController //aca se esta creando un objeto del controlador especico
+			var n *PreliquidacioncthchController //aca se esta creando un objeto del controlador especico
 			resumen := n.Preliquidar(&v, reglasbase)
 			c.Data["json"] = resumen
 			c.ServeJSON()
 		}
+
+		
 
 	}else {
 		fmt.Println("error2: ", err)

@@ -10,12 +10,12 @@ import (
 	"encoding/json"
 )
 
-// PreliquidacionHcController operations for PreliquidacionHc
-type PreliquidacionHcController struct {
+// PreliquidacionHcSController operations for PreliquidacionHcS
+type PreliquidacionHcSController struct {
 	beego.Controller
 }
 
-func (c *PreliquidacionHcController) Preliquidar(datos *models.DatosPreliquidacion , reglasbase string) (res []models.Respuesta) {
+func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidacion , reglasbase string) (res []models.Respuesta) {
 	//declaracion de variables
 
 

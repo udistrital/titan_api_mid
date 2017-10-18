@@ -12,12 +12,12 @@ import (
 	"encoding/json"
 )
 
-// operations for Preliquidacionct
-type PreliquidacionctController struct {
+// operations for Preliquidacioncthch
+type PreliquidacioncthchController struct {
 	beego.Controller
 }
 
-func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
+func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
 	//declaracion de variables
 
 	var predicados []models.Predicado //variable para inyectar reglas
@@ -30,7 +30,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 
 	var reglasinyectadas string
 	var reglas string
-
+	var url_consulta string
 	var filtrodatos_acta string
 	var idDetaPre interface{}
 	var FechaControl time.Time
@@ -43,7 +43,12 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 	arreglo_pruebas = make([]models.PruebaGo, len(datos.PersonasPreLiquidacion))
 	var informacion_cargo []models.FuncionarioCargo
 
+	if(datos.Preliquidacion.Nomina.TipoNomina.Nombre == "CT"){
+		url_consulta = "ContratistasPruebas"
+	}else{
+		url_consulta = "HonorariosPruebas"
 
+	}
 	//var al, ml, dl int
 	//-----------------------
 
@@ -58,17 +63,15 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 
 
 
-		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/contrato_general/contratosProduccion", "POST", &datos_contrato, &consulta_contratos); err == nil {
+		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/contrato_general/contratos"+url_consulta, "POST", &datos_contrato, &consulta_contratos); err == nil {
 			fmt.Println(datos_contrato)
-			if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio/actaInicioProduccion", "POST", &datos_acta, &consulta_contratos); err == nil {
+			if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio/actaInicio"+url_consulta, "POST", &datos_acta, &consulta_contratos); err == nil {
 
 				layout := "2006-01-02"
-		//		FechaInicio, err = time.Parse(layout , datos_acta.FechaInicioTemp)
-				FechaInicio, err = time.Parse(layout , "2017-02-08")
-				fmt.Println(FechaInicio)
-				fmt.Println(err)
-				FechaFin, err = time.Parse(layout , "2017-10-31")
-			//	FechaFin, err = time.Parse(layout , datos_acta.FechaFinTemp)
+				FechaInicio, err = time.Parse(layout , "2017-02-01")
+				FechaFin, err = time.Parse(layout , "2017-06-15")
+				//FechaInicio, err = time.Parse(layout , datos_acta.FechaInicioTemp)
+				//FechaFin, err = time.Parse(layout , datos_acta.FechaFinTemp)
 
 			FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
 			FechaFinContrato = time.Date(FechaFin.Year(), FechaFin.Month(), FechaFin.Day(), 0, 0, 0, 0, time.UTC)
