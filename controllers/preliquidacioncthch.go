@@ -64,7 +64,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/contrato_general/contratos"+url_consulta, "POST", &datos_contrato, &consulta_contratos); err == nil {
-			fmt.Println(datos_contrato)
+			
 			if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio/actaInicio"+url_consulta, "POST", &datos_acta, &consulta_contratos); err == nil {
 
 				layout := "2006-01-02"
