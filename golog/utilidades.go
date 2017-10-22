@@ -316,11 +316,12 @@ func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas string, lista_de
 		}
 
 
-		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.DiasLiquidados = dias_a_liquidar
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_retefuente = append(lista_retefuente, temp_conceptos)
@@ -379,11 +380,12 @@ func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descu
 		}
 
 
-		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.DiasLiquidados = dias_a_liquidar
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_retefuente = append(lista_retefuente, temp_conceptos)

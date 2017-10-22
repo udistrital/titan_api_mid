@@ -57,16 +57,16 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas string)(rest []models.
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("P")), 64)
 
 		salarioBase = Valor
-		fmt.Println(salarioBase)
+
 		salarioBase_string = strconv.Itoa(int(salarioBase))
 		temp_conceptos := models.ConceptosResumen{Nombre: "salarioBase",
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
-		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C).`)
+		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -81,11 +81,11 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas string)(rest []models.
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
-		codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -103,11 +103,11 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas string)(rest []models.
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
-		codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -126,11 +126,11 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas string)(rest []models.
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
-		codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -149,11 +149,11 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas string)(rest []models.
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
-		codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -192,11 +192,12 @@ func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, peri
 		temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
-		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.DiasLiquidados = dias_a_liquidar
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_novedades = append(lista_novedades, temp_conceptos)

@@ -39,6 +39,8 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 	var FechaInicio time.Time
 	var FechaFin time.Time
 
+
+
 	var arreglo_pruebas []models.PruebaGo
 	arreglo_pruebas = make([]models.PruebaGo, len(datos.PersonasPreLiquidacion))
 	var informacion_cargo []models.FuncionarioCargo
@@ -64,7 +66,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/contrato_general/contratos"+url_consulta, "POST", &datos_contrato, &consulta_contratos); err == nil {
-			
+
 			if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio/actaInicio"+url_consulta, "POST", &datos_acta, &consulta_contratos); err == nil {
 
 				layout := "2006-01-02"
@@ -115,12 +117,16 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
-			//se guardan los conceptos calculados en la nomina
+			disponiblidad:= calcular_disponibilidad(2439,2017,resultado)
+			fmt.Println("disponibilidad")
+			fmt.Println(disponiblidad)
+			//calcular_disponibilidad(datos.PersonasPreLiquidacion[i].NumDocumento, 	datos.PersonasPreLiquidacion[i].VigenciaContrato, resultado)
+
 			for _, descuentos := range *resultado.Conceptos {
 				valor, _ := strconv.ParseFloat(descuentos.Valor,64)
 				dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
 				tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
-				detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}}
+				detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: disponiblidad}}
 
 				if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
 
@@ -129,7 +135,10 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 				}
 			}
 			//------------------------------------------------
-			resumen_preliqu = append(resumen_preliqu, resultado)
+
+		//
+
+			fmt.Println(resumen_preliqu)
 			predicados = nil
 			datos_contrato = models.ContratoEstado{}
 			reglas = ""
@@ -156,4 +165,62 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 	}
 	//-----------------------------
 	return resumen_preliqu
+}
+
+func consultar_rp (num_documento, vigencia int) (saldo float64){
+		var registro_presupuestal []models.RegistroPresupuestal
+		var saldo_rp float64
+		var num_documento_string = strconv.Itoa(num_documento)
+		var vigencia_string = strconv.Itoa(vigencia)
+		if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal?limit=-1&query=Beneficiario:"+num_documento_string+",Vigencia:"+vigencia_string, &registro_presupuestal); err == nil {
+			var id_registro_pre = strconv.Itoa(registro_presupuestal[0].Id)
+			if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorTotalRp/"+id_registro_pre, &saldo_rp); err == nil {
+				fmt.Println("saldo rp")
+				fmt.Println(saldo_rp)
+			}else{
+				fmt.Println("error al consultar saldo de rp")
+				fmt.Println(err)
+			}
+
+
+
+		}else{
+			fmt.Println("error en consulta de rp")
+			fmt.Println(err)
+		}
+
+		return saldo_rp
+}
+
+
+func total_a_pagar(respuesta models.Respuesta)(total float64){
+	var total_dev float64
+	for _, descuentos := range *respuesta.Conceptos {
+		if(descuentos.NaturalezaConcepto == 1){
+			valor, _ := strconv.ParseFloat(descuentos.Valor,64)
+			total_dev = total_dev + valor
+		}
+
+
+}
+fmt.Println("total a pagar")
+fmt.Println(total_dev)
+return total_dev
+}
+
+func calcular_disponibilidad(num_documento, vigencia int,respuesta models.Respuesta)(disp int){
+	var valor_a_pagar float64
+	var saldo_rp float64
+	var disponibilidad int
+	saldo_rp = consultar_rp(num_documento, vigencia)
+	valor_a_pagar = total_a_pagar(respuesta)
+	if(valor_a_pagar > saldo_rp){
+		disponibilidad = 1;
+		fmt.Println("no hay dinero")
+	}else{
+		disponibilidad = 2;
+		fmt.Println("si hay dinero ")
+	}
+
+	return disponibilidad
 }

@@ -9,4 +9,5 @@ type ConceptosResumen struct {
 	Valor                 string                `orm:"column(valor);null"`
 	DiasLiquidados  			string
 	TipoPreliquidacion 		string
+	NaturalezaConcepto		int
 }
