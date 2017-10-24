@@ -8,7 +8,7 @@ import (
 	"io"
   "io/ioutil"
   "strings"
-	."github.com/mndrix/golog"
+	. "github.com/udistrital/golog"
 	"net/http"
 
 )

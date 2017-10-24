@@ -3,7 +3,7 @@ import (
 
 	"time"
 	"github.com/udistrital/titan_api_mid/models"
-	. "github.com/mndrix/golog"
+	. "github.com/udistrital/golog"
 	"io"
 	"os"
 	"strings"

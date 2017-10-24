@@ -113,10 +113,12 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 			}else{
 				fmt.Println(err)
 			}
+			
 			temp := golog.CargarReglasCT(datos.PersonasPreLiquidacion[i].IdPersona, reglas, vigencia_contrato)
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
+
 			disponiblidad:= calcular_disponibilidad(2439,2017,resultado)
 			fmt.Println("disponibilidad")
 			fmt.Println(disponiblidad)
@@ -174,7 +176,7 @@ func consultar_rp (num_documento, vigencia int) (saldo float64){
 		var vigencia_string = strconv.Itoa(vigencia)
 		if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal?limit=-1&query=Beneficiario:"+num_documento_string+",Vigencia:"+vigencia_string, &registro_presupuestal); err == nil {
 			var id_registro_pre = strconv.Itoa(registro_presupuestal[0].Id)
-			if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorTotalRp/"+id_registro_pre, &saldo_rp); err == nil {
+			if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorActualRp/"+id_registro_pre, &saldo_rp); err == nil {
 				fmt.Println("saldo rp")
 				fmt.Println(saldo_rp)
 			}else{

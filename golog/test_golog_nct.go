@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	. "github.com/mndrix/golog"
+	. "github.com/udistrital/golog"
 	models "github.com/udistrital/titan_api_mid/models"
 )
 
@@ -22,7 +22,7 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 	reglas = reglas + "periodo("+periodo+")."
 
 
-	lista_descuentos = CalcularConceptosCT(idProveedor,periodo,reglas)
+	lista_descuentos = CalcularConceptosCT(idProveedor,periodo,reglas, tipoPreliquidacion_string)
 	lista_novedades = ManejarNovedadesCT(reglas,idProveedor, tipoPreliquidacion_string,periodo)
 	lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos);
 	total_calculos = append(total_calculos, lista_descuentos...)
@@ -36,7 +36,7 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 
 }
 
-func CalcularConceptosCT (idProveedor int, periodo,reglas string)(rest []models.ConceptosResumen){
+func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_string string)(rest []models.ConceptosResumen){
 
 	var lista_descuentos []models.ConceptosResumen
 

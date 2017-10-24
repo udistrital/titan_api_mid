@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"github.com/udistrital/titan_api_mid/models"
-	. "github.com/mndrix/golog"
+	. "github.com/udistrital/golog"
 
 )
 

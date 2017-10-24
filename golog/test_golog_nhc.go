@@ -4,7 +4,7 @@ import (
   "fmt"
   "strconv"
   models "github.com/udistrital/titan_api_mid/models"
-  . "github.com/mndrix/golog"
+  . "github.com/udistrital/golog"
 )
 
 func CargarReglasHCS(idProveedor int, reglas string, periodo string) (rest []models.Respuesta) {
@@ -18,7 +18,7 @@ func CargarReglasHCS(idProveedor int, reglas string, periodo string) (rest []mod
 	reglas = reglas + "cargo(0)."
 	reglas = reglas + "periodo("+periodo+")."
 
-  lista_descuentos = CalcularConceptosHCS(idProveedor,periodo,reglas)
+  lista_descuentos = CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string)
 	lista_novedades = ManejarNovedadesHCS(reglas,idProveedor, tipoPreliquidacion_string,periodo)
   lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos);
 	total_calculos = append(total_calculos, lista_descuentos...)
@@ -31,7 +31,7 @@ func CargarReglasHCS(idProveedor int, reglas string, periodo string) (rest []mod
 	return resultado;
 }
 
-func CalcularConceptosHCS(idProveedor int, periodo,reglas string)(rest []models.ConceptosResumen) {
+func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_string string)(rest []models.ConceptosResumen) {
 
   var lista_descuentos []models.ConceptosResumen
 
@@ -51,11 +51,13 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas string)(rest []models.
       temp_conceptos := models.ConceptosResumen {Nombre : "salarioBase" ,
                                                  Valor : fmt.Sprintf("%.0f", Valor),
                                                                        }
-      codigo := m.ProveAll(`codigo_concepto(`+temp_conceptos.Nombre+`,C).`)
+      codigo := m.ProveAll(`codigo_concepto(`+temp_conceptos.Nombre+`,C,N).`)
 
       for _, cod := range codigo{
         temp_conceptos.Id , _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-
+        temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+        temp_conceptos.DiasLiquidados = dias_a_liquidar
+				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
        }
       lista_descuentos = append(lista_descuentos,temp_conceptos)
 
@@ -73,11 +75,12 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas string)(rest []models.
                                                  Base : fmt.Sprintf("%.0f", Base),
                                                  Valor : fmt.Sprintf("%.0f", Valor),
                                                                        }
-      codigo := m.ProveAll("codigo_concepto("+temp_conceptos.Nombre+",C).")
+      codigo := m.ProveAll("codigo_concepto("+temp_conceptos.Nombre+",C,N).")
 
       for _, cod := range codigo{
         temp_conceptos.Id , _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-
+        temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+        temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
        }
 
       lista_descuentos = append(lista_descuentos,temp_conceptos)
@@ -115,11 +118,12 @@ func ManejarNovedadesHCS(reglas string, idProveedor int, tipoPreliquidacion, per
 		temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
-		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
+		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.DiasLiquidados = dias_a_liquidar
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion
+      temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_novedades = append(lista_novedades, temp_conceptos)
