@@ -70,10 +70,10 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 			if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio/actaInicio"+url_consulta, "POST", &datos_acta, &consulta_contratos); err == nil {
 
 				layout := "2006-01-02"
-				FechaInicio, err = time.Parse(layout , "2017-02-01")
-				FechaFin, err = time.Parse(layout , "2017-06-15")
-				//FechaInicio, err = time.Parse(layout , datos_acta.FechaInicioTemp)
-				//FechaFin, err = time.Parse(layout , datos_acta.FechaFinTemp)
+				//FechaInicio, err = time.Parse(layout , "2017-02-01")
+				//FechaFin, err = time.Parse(layout , "2017-06-15")
+				FechaInicio, err = time.Parse(layout , datos_acta.FechaInicioTemp)
+				FechaFin, err = time.Parse(layout , datos_acta.FechaFinTemp)
 
 			FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
 			FechaFinContrato = time.Date(FechaFin.Year(), FechaFin.Month(), FechaFin.Day(), 0, 0, 0, 0, time.UTC)
@@ -113,7 +113,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 			}else{
 				fmt.Println(err)
 			}
-			
+
 			temp := golog.CargarReglasCT(datos.PersonasPreLiquidacion[i].IdPersona, reglas, vigencia_contrato)
 
 			resultado := temp[len(temp)-1]

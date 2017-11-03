@@ -58,7 +58,7 @@ func diff(a, b time.Time) (year, month, day int) {
 
     year = int(y2 - y1)
     month = int(M2 - M1)
-    day = int(d2 - d1)
+    day = int(d2 - d1) + 1
 
 
     // Normalize negative values

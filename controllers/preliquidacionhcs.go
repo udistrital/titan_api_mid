@@ -58,10 +58,10 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 			if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio/actaInicioHonorariosPruebas", "POST", &datos_acta, &consulta_contratos); err == nil {
 				layout := "2006-01-02"
-				FechaInicio, err = time.Parse(layout , "2017-02-01")
-				FechaFin, err = time.Parse(layout , "2017-06-15")
-				//FechaInicio, err = time.Parse(layout , datos_acta.FechaInicioTemp)
-				//FechaFin, err = time.Parse(layout , datos_acta.FechaFinTemp)
+				//FechaInicio, err = time.Parse(layout , "2017-02-01")
+				//FechaFin, err = time.Parse(layout , "2017-06-15")
+				FechaInicio, err = time.Parse(layout , datos_acta.FechaInicioTemp)
+				FechaFin, err = time.Parse(layout , datos_acta.FechaFinTemp)
 				a,m,d := diff(FechaInicio,FechaFin)
 
 			FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
@@ -84,7 +84,10 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 			vigencia_contrato := strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 			meses_contrato = (float64(a*12))+float64(m)+(float64(d)/30)
-
+		
+			fmt.Println(a)
+			fmt.Println(m)
+			fmt.Println(d)
 			fmt.Println("meses: ",meses_contrato)
 			fmt.Println("dias: ",periodo_liquidacion)
 			if int(FechaFinContrato.Month()) == datos.Preliquidacion.Mes && int(FechaFinContrato.Year()) == datos.Preliquidacion.Ano {
@@ -97,7 +100,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 			predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+datos_contrato.ValorContrato+"). "} )
 			predicados = append(predicados,models.Predicado{Nombre:"duracion_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(meses_contrato, 'f', -1, 64)+","+vigencia_contrato+"). "} )
 			reglasinyectadas = FormatoReglas(predicados)
-			
+
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
 			reglas =  reglasinyectadas + reglasbase
 
