@@ -47,5 +47,5 @@ calcular_reteica(B,V,R):- base_retencion(B,X), reteica(V,RI), R is ((RI * X) / 1
 calcular_estampilla(B,V,R) :- base_retencion(B,X) , estampilla(V, RE) , R is ((RE * X) rnd 0).
 calcular_procultura(B,V,R) :- base_retencion(B,X) , procultura(V, RP) , R is ((RP * X) rnd 0).
 calcular_adulto_mayor(B,V,R) :- base_retencion(B,X) , adulto_mayor(V, RA) , R is ((RA * X) rnd 0).
-calcular_salud(B,V,VS) :- salud(V,PS), salario_minimo(V,SM), BA is (B * 0.40 rnd 0), (BA @>= SM -> X is (BA * (PS/100) rnd 0), Y is ((X+50) / 100 int 0), VS is Y * 100;  X is (SM * (PS/100) rnd 0), Y is ((X+50) / 100 int 0), VS is Y * 100).
-calcular_pension(B,V,VS) :- pension(V,PS), salario_minimo(V,SM), BA is (B * 0.40 rnd 0), (BA @>= SM -> X is (BA * (PS/100) rnd 0), Y is ((X+50) / 100 int 0), VS is Y * 100;  X is (SM * (PS/100) rnd 0), Y is ((X+50) / 100 int 0), VS is Y * 100).
+calcular_salud(B,V,VS) :- salud(V,PS), salario_minimo(V,SM), BA is (B * 0.40 rnd 0), (BA @>= SM -> VS is (BA * (PS/100)) approach 100;  VS is (SM * (PS/100)) approach 100).
+calcular_pension(B,V,VS) :- pension(V,PS), salario_minimo(V,SM), BA is (B * 0.40 rnd 0), (BA @>= SM -> VS is (BA * (PS/100)) approach 100;  VS is (SM * (PS/100)) approach 100).
