@@ -102,6 +102,9 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 			predicados = append(predicados, models.Predicado{Nombre: "dias_liquidados(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(periodo_liquidacion, 'f', -1, 64) + "). "})
 			predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + datos_contrato.ValorContrato+ "). "})
 			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(dias_contrato, 'f', -1, 64) + "," + vigencia_contrato + "). "})
+			//* ---- ESTE PREDICADO DEBE TRAERSE DE ÁGORA
+			predicados = append(predicados, models.Predicado{Nombre: "pensionado(no)."})
+			//* -----------------------------------
 			fmt.Println(predicados)
 			reglasinyectadas = FormatoReglas(predicados)
 
