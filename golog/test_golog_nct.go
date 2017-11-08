@@ -161,7 +161,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 	}
 
-	descuento_salud:= m.ProveAll("calcular_salud("+salarioBase_string+", "+periodo+", R).")
+	descuento_salud:= m.ProveAll("calcular_salud(si,"+salarioBase_string+", "+periodo+", R).")
 
 	for _, solution := range descuento_salud {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
@@ -182,7 +182,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 	}
 
-	descuento_pension:= m.ProveAll("calcular_pension("+salarioBase_string+", "+periodo+", R).")
+	descuento_pension:= m.ProveAll("calcular_pension(si,"+salarioBase_string+", "+periodo+", R).")
 
 	for _, solution := range descuento_pension {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)

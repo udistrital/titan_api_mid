@@ -46,7 +46,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 	var informacion_cargo []models.FuncionarioCargo
 
 	if(datos.Preliquidacion.Nomina.TipoNomina.Nombre == "CT"){
-		url_consulta = "ContratistasPruebas"
+			url_consulta = "ContratistasPruebas"
 	}else{
 		url_consulta = "HonorariosPruebas"
 
@@ -70,9 +70,9 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 			if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio/actaInicio"+url_consulta, "POST", &datos_acta, &consulta_contratos); err == nil {
 
 				layout := "2006-01-02"
-				FechaInicio, err = time.Parse(layout , "2017-08-01")
+			//	FechaInicio, err = time.Parse(layout , "2017-08-01")
 				//FechaFin, err = time.Parse(layout , "2017-06-15")
-			//	FechaInicio, err = time.Parse(layout , datos_acta.FechaInicioTemp)
+				FechaInicio, err = time.Parse(layout , datos_acta.FechaInicioTemp)
 				FechaFin, err = time.Parse(layout , datos_acta.FechaFinTemp)
 
 			FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
