@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.7.2" last-position="0,0" last-zoom="1">
+<database name="new_database">
+</database>
+
+<schema name="public" protected="true" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<schema name="administrativa" fill-color="#e1e1e1">
+</schema>
+
+<table name="pension">
+	<schema name="administrativa"/>
+	<comment><![CDATA[Entidad que consigna el valor de la pension y a que tipo corresponde]]></comment>
+	<position x="396" y="168"/>
+	<column name="id" not-null="true">
+		<type name="serial"/>
+		<comment><![CDATA[Llave primaria de tabla pension]]></comment>
+	</column>
+	<column name="valor_pension" not-null="true">
+		<type name="numeric" length="8" precision="0"/>
+		<comment><![CDATA[Valor de la pension que fue asignada]]></comment>
+	</column>
+	<column name="tipo_pension" not-null="true">
+		<type name="integer"/>
+		<comment><![CDATA[Llave foranea a tabla parametica tipo_pension]]></comment>
+	</column>
+	<column name="fecha_pension">
+		<type name="timestamp"/>
+		<comment><![CDATA[Fecha en la que se asigno la pension]]></comment>
+	</column>
+	<constraint name="pk_pension" type="pk-constr" factor="100" table="administrativa.pension">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<schema name="titan" rect-visible="true" fill-color="#43c810">
+	<role name="postgres"/>
+</schema>
+
+<table name="tipo_pension" unlogged="true">
+	<schema name="administrativa"/>
+	<role name="postgres"/>
+	<comment><![CDATA[Tabla parametrica que indica el motivo de la pension asignada]]></comment>
+	<position x="898" y="147.4"/>
+	<column name="id" not-null="true" default-value="nextval('titan.tipo_nomina_id_seq'::regclass)">
+		<type name="integer"/>
+	</column>
+	<column name="nombre" not-null="true">
+		<type name="character varying" length="50"/>
+	</column>
+	<column name="descripcion">
+		<type name="character varying" length="100"/>
+	</column>
+	<column name="codigo_abreviacion">
+		<type name="character varying" length="20"/>
+	</column>
+	<column name="activo" not-null="true">
+		<type name="boolean"/>
+	</column>
+	<column name="numero_orden">
+		<type name="numeric" length="5" precision="2"/>
+	</column>
+	<constraint name="pk_tipo_nomina" type="pk-constr" factor="100" table="administrativa.tipo_pension">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="asignacion_pension_user_role">
+	<schema name="administrativa"/>
+	<comment><![CDATA[Relaciona una pension a una persona con un rol de pensionado, beneficiario o sustituto]]></comment>
+	<position x="346" y="426"/>
+	<column name="id" not-null="true">
+		<type name="smallint"/>
+		<comment><![CDATA[Llave primaria de la tabla asignacion_pension_user_rol]]></comment>
+	</column>
+	<column name="pension" not-null="true">
+		<type name="integer"/>
+		<comment><![CDATA[Llave foranea a pension]]></comment>
+	</column>
+	<column name="persona_asignada" not-null="true">
+		<type name="integer"/>
+		<comment><![CDATA[Relacion a tabla um_user_rol, indica que esta persona tiene a ella relacionada cierta pension]]></comment>
+	</column>
+	<column name="estado_rol_pension" not-null="true">
+		<type name="integer"/>
+		<comment><![CDATA[Llave foranea a tabla estado_rol_pension]]></comment>
+	</column>
+	<column name="fecha_inicio_beneficio_pension">
+		<type name="timestamp"/>
+		<comment><![CDATA[Indica la fecha en la que la persona asociada comenzo a recibir dicha pension]]></comment>
+	</column>
+	<column name="fecha_fin_beneficio_pension">
+		<type name="timestamp"/>
+		<comment><![CDATA[Indica la fecha en la que la persona asignada dejo de recibir la pension]]></comment>
+	</column>
+	<column name="tutor">
+		<type name="integer"/>
+		<comment><![CDATA[Indica quien en tabla um_user_rol es tutor de la persona asignada. Solo aplica para persona asignada menor de edad]]></comment>
+	</column>
+	<column name="porcentaje">
+		<type name="numeric" length="3" precision="2"/>
+		<comment><![CDATA[Indica el porcentaje de la pension que le corresponde como sustituto]]></comment>
+	</column>
+	<constraint name="pk_asignacion_pension_user_rol" type="pk-constr" factor="100" table="administrativa.asignacion_pension_user_role">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="estado_rol_pension" unlogged="true">
+	<schema name="administrativa"/>
+	<role name="postgres"/>
+	<comment><![CDATA[Tabla parametrica que indica el estado de la pension recibida]]></comment>
+	<position x="939" y="436.4"/>
+	<column name="id" not-null="true" default-value="nextval('titan.tipo_nomina_id_seq'::regclass)">
+		<type name="integer"/>
+	</column>
+	<column name="nombre" not-null="true">
+		<type name="character varying" length="50"/>
+	</column>
+	<column name="descripcion">
+		<type name="character varying" length="100"/>
+	</column>
+	<column name="codigo_abreviacion">
+		<type name="character varying" length="20"/>
+	</column>
+	<column name="activo" not-null="true">
+		<type name="boolean"/>
+	</column>
+	<column name="numero_orden">
+		<type name="numeric" length="5" precision="2"/>
+	</column>
+	<constraint name="pk_tipo_nomina" type="pk-constr" factor="100" table="administrativa.estado_rol_pension">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="relacion">
+	<schema name="core"/>
+	<position x="510" y="766"/>
+	<column name="id" not-null="true">
+		<type name="serial"/>
+		<comment><![CDATA[llave primaria de tabla relacion]]></comment>
+	</column>
+	<column name="persona_principal" not-null="true">
+		<type name="integer"/>
+		<comment><![CDATA[Persona principal, la cual cuenta con el parentesco a describir. Se relaciona con tabla um_user_rol ]]></comment>
+	</column>
+	<column name="persona_relacionada" not-null="true">
+		<type name="integer"/>
+		<comment><![CDATA[Persona que tiene parentesco con persona_principal. Se relaciona con tabla um_user_rol]]></comment>
+	</column>
+	<column name="tipo_relacion" not-null="true">
+		<type name="integer"/>
+	</column>
+	<constraint name="pk_relacion" type="pk-constr" factor="100" table="core.relacion">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="tipo_relacion" unlogged="true">
+	<schema name="core"/>
+	<role name="postgres"/>
+	<comment><![CDATA[Tabla parametrica que indica el tipo de relacion que pueden tener dos user]]></comment>
+	<position x="955" y="739.4"/>
+	<column name="id" not-null="true" default-value="nextval('titan.tipo_nomina_id_seq'::regclass)">
+		<type name="integer"/>
+	</column>
+	<column name="nombre" not-null="true">
+		<type name="character varying" length="50"/>
+	</column>
+	<column name="descripcion">
+		<type name="character varying" length="100"/>
+	</column>
+	<column name="codigo_abreviacion">
+		<type name="character varying" length="20"/>
+	</column>
+	<column name="activo" not-null="true">
+		<type name="boolean"/>
+	</column>
+	<column name="numero_orden">
+		<type name="numeric" length="5" precision="2"/>
+	</column>
+	<constraint name="pk_tipo_nomina" type="pk-constr" factor="100" table="core.tipo_relacion">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="informacion_asignacion_rol">
+	<schema name="core"/>
+	<comment><![CDATA[Esta tabla agrega información adicional a la tabla um_user_role, cuando un rol se le ha asignado a una persona. ]]></comment>
+	<position x="731" y="1031"/>
+	<column name="id" not-null="true">
+		<type name="serial"/>
+		<comment><![CDATA[llave primaria de tabla informacion_asignacion_rol]]></comment>
+	</column>
+	<column name="um_user_role" not-null="true">
+		<type name="integer"/>
+		<comment><![CDATA[llave foranea a registro de usuario y rol en WSO2]]></comment>
+	</column>
+	<column name="fecha_inicio" not-null="true">
+		<type name="timestamp"/>
+		<comment><![CDATA[Indica desde cuándo la persona cuenta con un vinculo laboral con la organización]]></comment>
+	</column>
+	<column name="fecha_fin">
+		<type name="timestamp"/>
+		<comment><![CDATA[Indica cuándo terminó el vínculo laboral de la persona con la organización]]></comment>
+	</column>
+	<column name="documento_soporte" not-null="true">
+		<type name="integer"/>
+		<comment><![CDATA[referencia a soporte de rol asignado a la persona]]></comment>
+	</column>
+	<constraint name="pk_informacion_asignacion_rol" type="pk-constr" factor="100" table="core.informacion_asignacion_rol">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="uk_um_user_rol" type="uq-constr" factor="100" table="core.informacion_asignacion_rol">
+		<columns names="um_user_role" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<schema name="core" fill-color="#e1e1e1">
+</schema>
+
+<constraint name="fk_pension_tipo_pension" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="administrativa.tipo_pension" table="administrativa.pension">
+	<columns names="tipo_pension" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+<constraint name="fk_asignacion_pension_user_rol_pension" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="administrativa.pension" table="administrativa.asignacion_pension_user_role">
+	<columns names="pension" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+<constraint name="fk_asignacion_pension_user_rol_estado_pension" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="administrativa.estado_rol_pension" table="administrativa.asignacion_pension_user_role">
+	<columns names="estado_rol_pension" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+<constraint name="fk_relacion_tipo_relacion" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="core.tipo_relacion" table="core.relacion">
+	<columns names="tipo_relacion" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+<relationship name="rel_pension_tipo_pension" type="relfk"
+	 src-table="administrativa.pension"
+	 dst-table="administrativa.tipo_pension"
+	 src-required="true" dst-required="true"/>
+
+<relationship name="rel_asignacion_pension_user_rol_pension" type="relfk"
+	 src-table="administrativa.asignacion_pension_user_role"
+	 dst-table="administrativa.pension"
+	 src-required="true" dst-required="true"/>
+
+<relationship name="rel_asignacion_pension_user_rol_estado_rol_pension" type="relfk"
+	 src-table="administrativa.asignacion_pension_user_role"
+	 dst-table="administrativa.estado_rol_pension"
+	 src-required="true" dst-required="true"/>
+
+<relationship name="rel_relacion_tipo_relacion" type="relfk"
+	 src-table="core.relacion"
+	 dst-table="core.tipo_relacion"
+	 src-required="true" dst-required="true"/>
+
+</dbmodel>

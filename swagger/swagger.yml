@@ -1,0 +1,105 @@
+swagger: "2.0"
+info:
+  title: beego Test API
+  description: beego has a very cool tools to autogenerate documents for your API
+  version: 1.0.0
+  termsOfService: http://beego.me/
+  contact:
+    email: astaxie@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+basePath: /v1
+paths:
+  /preliquidacion/:
+    post:
+      tags:
+      - preliquidacion
+      description: create Preliquidacion
+      operationId: PreliquidacionController.Create
+      parameters:
+      - in: body
+        name: body
+        description: body for Preliquidacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Preliquidacion'
+      responses:
+        "201":
+          schema:
+            $ref: '#/definitions/models.Preliquidacion'
+        "403":
+          description: body is empty
+definitions:
+  models.EstadoPreliquidacion:
+    title: EstadoPreliquidacion
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      CodigoAbreviacion:
+        type: string
+      Descripcion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      Nombre:
+        type: string
+      NumeroOrden:
+        type: number
+        format: double
+  models.Nomina:
+    title: Nomina
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      Descripcion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      TipoNomina:
+        $ref: '#/definitions/models.TipoNomina'
+  models.Preliquidacion:
+    title: Preliquidacion
+    type: object
+    properties:
+      Ano:
+        type: integer
+        format: int64
+      Descripcion:
+        type: string
+      EstadoPreliquidacion:
+        $ref: '#/definitions/models.EstadoPreliquidacion'
+      FechaRegistro:
+        type: string
+        format: string
+      Id:
+        type: integer
+        format: int64
+      Mes:
+        type: integer
+        format: int64
+      Nomina:
+        $ref: '#/definitions/models.Nomina'
+  models.TipoNomina:
+    title: TipoNomina
+    type: object
+    properties:
+      Id:
+        type: integer
+        format: int64
+      Nombre:
+        type: string
+tags:
+- name: preliquidacion
+  description: |
+    PreliquidacionController operations for Preliquidacion
+- name: liquidacion
+  description: |
+    operations for Liquidar
+- name: detalle_liquidacion
+  description: |
+    operations for Liquidar
