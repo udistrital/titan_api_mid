@@ -10,11 +10,11 @@ aplica_deduccion_retencion(239).
 aplica_deduccion_retencion(290).
 aplica_deduccion_retencion(291).
 ajustar_deducciones(AD):- ingreso_retencion(IR),deduccion_salud(DS), deduccion_pen_vol(DPV), valor_uvt(2017, VU), Y is ((IR * 0.30) rnd 0), X is DS + DPV, Z is X / VU, (X@>=Y -> (Z@>=316.66 -> AD is ((VU * 316.66 )rnd 0);AD is X); AD is DPV).
-calcular_alivio_beneficiario(CAB):-beneficiario(si), ingreso_retencion(IR), valor_uvt(2017, VU), X is (IR * 0.10 rnd 0), Y is X / VU, (Y@>=32 -> CAB is VU * 32;CAB is X).
+calcular_alivio_beneficiario(V,CAB):-beneficiario(si), ingreso_retencion(IR), valor_uvt(V, VU), X is (IR * 0.10 rnd 0), Y is X / VU, (Y@>=32 -> CAB is VU * 32;CAB is X).
 aplica_deduccion_penvol_retencion(2173).
-calcular_alivio_vivienda(CAV):- intereses_vivienda(IV), valor_uvt(2017, VU), Y is IV / VU, (Y@>=100 -> CAV is VU * 100; CAV is IV).
-calcular_alivio_salud_prepagada(CSP):- salud_prepagada(SP), valor_uvt(2017, VU), Y is SP / VU, (Y@>=16 -> CSP is VU * 16; CSP is SP).
-calcular_alivios(B,V,SP,D):- calcular_alivio_beneficiario(CAB), B is CAB, calcular_alivio_vivienda(CIV), V is CIV, calcular_alivio_salud_prepagada(CSP), SP is CSP.
+calcular_alivio_vivienda(V,CAV):- intereses_vivienda(IV), valor_uvt(V, VU), Y is IV / VU, (Y@>=100 -> CAV is VU * 100; CAV is IV).
+calcular_alivio_salud_prepagada(V,CSP):- salud_prepagada(SP), valor_uvt(V, VU), Y is SP / VU, (Y@>=16 -> CSP is VU * 16; CSP is SP).
+calcular_alivios(B,V,SP,D):- calcular_alivio_beneficiario(V,CAB), B is CAB, calcular_alivio_vivienda(V,CIV), V is CIV, calcular_alivio_salud_prepagada(V,CSP), SP is CSP.
 tope_deduccion(TD):- ingreso_retencion(IR), TD is IR * 0.40.
 aplica_gastos_rep(12).
 definitivo_deduccion(DD):- tope_deduccion(TD), DD is TD.
@@ -49,3 +49,15 @@ calcular_procultura(B,V,R) :- base_retencion(B,X) , procultura(V, RP) , R is ((R
 calcular_adulto_mayor(B,V,R) :- base_retencion(B,X) , adulto_mayor(V, RA) , R is ((RA * X) rnd 0).
 calcular_salud(si,B,V,VS) :- salud(V,PS), salario_minimo(V,SM), BA is (B * 0.40 rnd 0), (BA @>= SM -> VS is (BA * (PS/100)) approach 100;  VS is (SM * (PS/100)) approach 100).
 calcular_pension(si,B,V,VS) :- pensionado(no),pension(V,PS), salario_minimo(V,SM), BA is (B * 0.40 rnd 0), (BA @>= SM -> VS is (BA * (PS/100)) approach 100;  VS is (SM * (PS/100)) approach 100).
+
+valor_uvt(2018,33156).
+concepto(prueb, devengo, fijo, s, 1000000, 2018).
+reteica(2018,9.66).
+salario_minimo(2018,781242).
+salud(2018,12.5).
+pension(2018,16).
+estampilla(2018,0.01).
+procultura(2018,0.005).
+arl(2018,1,0.522).
+adulto_mayor(2018,0.02).
+

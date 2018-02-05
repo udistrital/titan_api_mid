@@ -44,3 +44,14 @@ estampilla(2017,0.01).
 procultura(2017,0.005).
 arl(2017,1,0.522).
 adulto_mayor(2017,0.02).
+
+valor_uvt(2018,33156).
+concepto(prueb, devengo, fijo, s, 1000000, 2018).
+reteica(2018,9.66).
+salario_minimo(2018,781242).
+salud(2018,12.5).
+pension(2018,16).
+estampilla(2018,0.01).
+procultura(2018,0.005).
+arl(2018,1,0.522).
+adulto_mayor(2018,0.02).

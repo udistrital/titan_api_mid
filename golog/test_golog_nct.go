@@ -40,14 +40,8 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 	var lista_descuentos []models.ConceptosResumen
 
-	var nombre_archivo string
 	var salarioBase float64
 	var salarioBase_string string
-
-	nombre_archivo = "reglas" + strconv.Itoa(idProveedor) + ".txt"
-	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
-      panic(err)
-  }
 
 	m := NewMachine().Consult(reglas)
 

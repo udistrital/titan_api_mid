@@ -21,17 +21,12 @@ func init() {
 			),
 		),
 
-		beego.NSNamespace("/liquidacion",
+		beego.NSNamespace("/gestion_personas_a_liquidar",
 			beego.NSInclude(
-				&controllers.LiquidarController{},
+				&controllers.GestionPersonasAPreliquidarController{},
 			),
 		),
 
-		beego.NSNamespace("/detalle_liquidacion",
-			beego.NSInclude(
-				&controllers.DetalleLiquidacionController{},
-			),
-		),
 	)
 	beego.AddNamespace(ns)
 }

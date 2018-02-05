@@ -35,18 +35,13 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
 
   var lista_descuentos []models.ConceptosResumen
 
-	var nombre_archivo string
-
-	nombre_archivo = "reglas" + strconv.Itoa(idProveedor) + ".txt"
-	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
-      panic(err)
-  }
 
 	m := NewMachine().Consult(reglas)
 
 
     valor_pago := m.ProveAll("valor_pago(X,V,"+periodo+",T).")
     for _, solution := range valor_pago {
+      fmt.Println("pago hcs")
       Valor,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
       temp_conceptos := models.ConceptosResumen {Nombre : "salarioBase" ,
                                                  Valor : fmt.Sprintf("%.0f", Valor),

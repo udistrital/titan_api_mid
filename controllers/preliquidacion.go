@@ -30,7 +30,6 @@ func (c *PreliquidacionController) URLMapping() {
 func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-
 		//carga de reglas desde el ruler
 		reglasbase := CargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
 
@@ -45,6 +44,14 @@ func (c *PreliquidacionController) Preliquidar() {
 
 		}
 
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
+			var n *PreliquidacioncthchController //aca se esta creando un objeto del controlador especico
+			resumen := n.Preliquidar(&v, reglasbase)
+			c.Data["json"] = resumen
+			c.ServeJSON()
+		}
+		
+		/*
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "FP" {
 
 			var n *PreliquidacionFpController
@@ -60,7 +67,7 @@ func (c *PreliquidacionController) Preliquidar() {
 			c.Data["json"] = resumen
 			c.ServeJSON()
 		}
-/*
+
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "PE" {
 			var n *PreliquidacionpeController
 			resumen := n.Preliquidar(&v, reglasbase)
@@ -68,17 +75,12 @@ func (c *PreliquidacionController) Preliquidar() {
 			c.ServeJSON()
 */
 
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
-			var n *PreliquidacioncthchController //aca se esta creando un objeto del controlador especico
-			resumen := n.Preliquidar(&v, reglasbase)
-			c.Data["json"] = resumen
-			c.ServeJSON()
-		}
+
 
 
 
 	}else {
-		fmt.Println("error2: ", err)
+		fmt.Println("errorrrr2: ", err)
 	}
 
 }

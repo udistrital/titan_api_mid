@@ -7,7 +7,7 @@ import (
 	"github.com/udistrital/titan_api_mid/golog"
 	"fmt"
 	"time"
-	"encoding/json"
+
 )
 
 // PreliquidacionHcSController operations for PreliquidacionHcS
@@ -20,28 +20,25 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 
 	var predicados []models.Predicado //variable para inyectar reglas
-	var datos_contrato models.ContratoEstado
-	var datos_acta models.ActaInicioP
-	var datos_pruebas []models.DatosPruebas
-	//var datos_novedades []models.ConceptoPorPersona
+	var objeto_datos_contrato models.ObjetoContratoEstado
+	var objeto_datos_acta models.ObjetoActaInicio
+	var error_consulta_contrato error
+	var error_consulta_acta error
+
 	var resumen_preliqu []models.Respuesta
 	var meses_contrato float64
 	var periodo_liquidacion float64
 
 	var reglasinyectadas string
 	var reglas string
-	var filtrodatos string
-	var filtrodatos_acta string
+
 	var idDetaPre interface{}
 	var FechaInicioContrato time.Time
 	var FechaFinContrato time.Time
 	var FechaControl time.Time
 	var FechaInicio time.Time
 	var FechaFin time.Time
-	var arreglo_pruebas []models.PruebaGo
-	arreglo_pruebas = make([]models.PruebaGo, len(datos.PersonasPreLiquidacion))
-	var informacion_cargo []models.FuncionarioCargo
-//	var al,ml,dl int
+
 	//-----------------------
 
 
@@ -49,19 +46,21 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
-		consulta_contratos := models.ContratoGeneral{Id: datos.PersonasPreLiquidacion[i].NumeroContrato,Vigencia:datos.PersonasPreLiquidacion[i].VigenciaContrato}
-		//consulta_contratos := models.ContratoGeneral{Id: "658",Vigencia:2017}
+		objeto_datos_contrato, error_consulta_contrato = ContratosHonorarios(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
+		objeto_datos_acta, error_consulta_acta = ActaInicioHonorarios(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
+		fmt.Println("bbb")
+		fmt.Println(objeto_datos_contrato)
+		fmt.Println(objeto_datos_acta)
+		if(error_consulta_contrato == nil){
+			if(error_consulta_acta == nil){
 
-		filtrodatos_acta = "NumeroContrato:"+(datos.PersonasPreLiquidacion[i].NumeroContrato)+",Vigencia:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
-
-		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/contrato_general/contratosHonorariosPruebas", "POST", &datos_contrato, &consulta_contratos); err == nil {
-
-			if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/acta_inicio/actaInicioHonorariosPruebas", "POST", &datos_acta, &consulta_contratos); err == nil {
+				datos_contrato := objeto_datos_contrato.ContratoEstado
+				datos_acta := objeto_datos_acta.ActaInicio
 				layout := "2006-01-02"
 				//FechaInicio, err = time.Parse(layout , "2017-02-01")
 				//FechaFin, err = time.Parse(layout , "2017-06-15")
-				FechaInicio, err = time.Parse(layout , datos_acta.FechaInicioTemp)
-				FechaFin, err = time.Parse(layout , datos_acta.FechaFinTemp)
+				FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
+				FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
 				a,m,d := diff(FechaInicio,FechaFin)
 
 			FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
@@ -84,7 +83,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 			vigencia_contrato := strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 			meses_contrato = (float64(a*12))+float64(m)+(float64(d)/30)
-		
+
 			fmt.Println(a)
 			fmt.Println(m)
 			fmt.Println(d)
@@ -103,12 +102,6 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
 			reglas =  reglasinyectadas + reglasbase
-
-			if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/datos_pruebas?limit=-1&query=MesPreliq:"+strconv.Itoa(datos.Preliquidacion.Mes)+",AnoPreliq:"+strconv.Itoa(datos.Preliquidacion.Ano)+",NumDocumento:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].NumDocumento), &datos_pruebas); err == nil && datos_pruebas != nil{
-				arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, datos_pruebas[0].ValorSalario,"","","","","","",datos_pruebas[0].ValorSalud,datos_pruebas[0].ValorPension,datos.PersonasPreLiquidacion[i].IdPersona,datos.PersonasPreLiquidacion[i].NumDocumento,0,datos.Preliquidacion.Mes, datos.Preliquidacion.Ano, 0, 0}
-			}else{
-				fmt.Println(err)
-			}
 
 			temp := golog.CargarReglasHCS(datos.PersonasPreLiquidacion[i].IdPersona,reglas,vigencia_contrato)
 
@@ -130,30 +123,21 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 			//------------------------------------------------
 			resumen_preliqu = append(resumen_preliqu, resultado)
 			predicados = nil;
-			datos_contrato = models.ContratoEstado{}
+			objeto_datos_contrato = models.ObjetoContratoEstado{}
 			reglas = ""
 			reglasinyectadas = ""
+
+			}else{
+				fmt.Println("error al traer acta de inicio")
+			}
+
 		}else{
-			fmt.Println(filtrodatos_acta)
-			fmt.Println("error3: ", err)
+			fmt.Println("error al traer valor del contrato")
 		}
 
-	}else{
-		fmt.Println(filtrodatos)
-		fmt.Println("error2: ", err)
-	}
 }
 
-			data, err := json.Marshal(arreglo_pruebas)
-			if err != nil {
-					fmt.Println("error en json")
-				}
-			str := fmt.Sprintf("%s", data)
-			mes := strconv.Itoa(datos.Preliquidacion.Mes)
-			ano := strconv.Itoa(datos.Preliquidacion.Ano)
-			if err := WriteStringToFile("pruebaHC"+ano+mes+".txt", str); err != nil {
-					panic(err)
-			}
+
 		//-----------------------------
 		return resumen_preliqu
 }
