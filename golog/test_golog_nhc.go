@@ -18,7 +18,7 @@ func CargarReglasHCS(idProveedor int, reglas string, periodo string) (rest []mod
 	reglas = reglas + "cargo(0)."
 	reglas = reglas + "periodo("+periodo+")."
 
-  lista_descuentos = CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string)
+  lista_descuentos,total_devengado_no_novedad = CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string)
 	lista_novedades = ManejarNovedadesHCS(reglas,idProveedor, tipoPreliquidacion_string,periodo)
   lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos);
 	total_calculos = append(total_calculos, lista_descuentos...)
@@ -31,7 +31,7 @@ func CargarReglasHCS(idProveedor int, reglas string, periodo string) (rest []mod
 	return resultado;
 }
 
-func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_string string)(rest []models.ConceptosResumen) {
+func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_string string)(rest []models.ConceptosResumen, total_dev float64) {
 
   var lista_descuentos []models.ConceptosResumen
 
@@ -41,11 +41,13 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
 
     valor_pago := m.ProveAll("valor_pago(X,V,"+periodo+",T).")
     for _, solution := range valor_pago {
-      fmt.Println("pago hcs")
+
       Valor,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
+      Nom_Concepto := "salarioBase"
       temp_conceptos := models.ConceptosResumen {Nombre : "salarioBase" ,
                                                  Valor : fmt.Sprintf("%.0f", Valor),
                                                                        }
+    	reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
       codigo := m.ProveAll(`codigo_concepto(`+temp_conceptos.Nombre+`,C,N).`)
 
       for _, cod := range codigo{
@@ -64,12 +66,12 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
     for _, solution := range descuentos {
       Base,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("B")), 64)
       Valor,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("Y")), 64)
-
-
+      Nom_Concepto := fmt.Sprintf("%s", solution.ByName_("N"))
       temp_conceptos := models.ConceptosResumen {Nombre : fmt.Sprintf("%s", solution.ByName_("N")),
                                                  Base : fmt.Sprintf("%.0f", Base),
                                                  Valor : fmt.Sprintf("%.0f", Valor),
                                                                        }
+      reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
       codigo := m.ProveAll("codigo_concepto("+temp_conceptos.Nombre+",C,N).")
 
       for _, cod := range codigo{
@@ -81,14 +83,22 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
       lista_descuentos = append(lista_descuentos,temp_conceptos)
       }
 
-
-  	return lista_descuentos
+    CalcularIBC(reglas)  
+  	return lista_descuentos,ibc
 
 }
 
 func GuardarConceptosHCS (lista_descuentos []models.ConceptosResumen)(rest []models.Respuesta){
 		temp := models.Respuesta{}
 		var resultado []models.Respuesta
+
+    temp_conceptos := models.ConceptosResumen{Nombre: "ibc_liquidado",
+			Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
+		}
+		temp_conceptos.Id = 2322
+		temp_conceptos.DiasLiquidados = dias_a_liquidar
+
+		lista_descuentos = append(lista_descuentos, temp_conceptos)
 
 		temp.Conceptos = &lista_descuentos
 		resultado = append(resultado, temp)

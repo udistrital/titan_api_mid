@@ -61,3 +61,7 @@ procultura(2018,0.005).
 arl(2018,1,0.522).
 adulto_mayor(2018,0.02).
 
+calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
+concepto_ibc(salarioBase).
+
+

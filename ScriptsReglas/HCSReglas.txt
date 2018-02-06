@@ -56,3 +56,5 @@ porcentaje_devengo(2018,primaNavidad, 0.295858).
 porcentaje_devengo(2018,cesantias,0.332840).
 valor_uvt(2018,33156).
 
+calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
+concepto_ibc(salarioBase).
