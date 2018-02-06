@@ -22,7 +22,7 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 	reglas = reglas + "periodo("+periodo+")."
 	//reglas = reglas + "nomina("+periodo+")."
 
-	lista_descuentos = CalcularConceptosCT(idProveedor,periodo,reglas, tipoPreliquidacion_string)
+	lista_descuentos,total_devengado_no_novedad = CalcularConceptosCT(idProveedor,periodo,reglas, tipoPreliquidacion_string)
 	lista_novedades = ManejarNovedadesCT(reglas,idProveedor, tipoPreliquidacion_string,periodo)
 	lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos);
 	total_calculos = append(total_calculos, lista_descuentos...)
@@ -36,18 +36,12 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 
 }
 
-func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_string string)(rest []models.ConceptosResumen){
+func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_string string)(rest []models.ConceptosResumen, total_dev float64){
 
 	var lista_descuentos []models.ConceptosResumen
 
-	var nombre_archivo string
 	var salarioBase float64
 	var salarioBase_string string
-
-	nombre_archivo = "reglas" + strconv.Itoa(idProveedor) + ".txt"
-	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
-      panic(err)
-  }
 
 	m := NewMachine().Consult(reglas)
 
@@ -55,13 +49,14 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 	for _, solution := range valor_pago {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("P")), 64)
-
+		Nom_Concepto := "salarioBase"
 		salarioBase = Valor
-
 		salarioBase_string = strconv.Itoa(int(salarioBase))
 		temp_conceptos := models.ConceptosResumen{Nombre: "salarioBase",
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
+
+		reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
 		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
@@ -77,10 +72,12 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 	for _, solution := range descuento_reteica {
 
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
+		Nom_Concepto := "reteIca"
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteIca",
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
+		reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
 		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
@@ -98,11 +95,13 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 	for _, solution := range descuento_estampilla {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
+		Nom_Concepto := "estampillaUD"
 		temp_conceptos := models.ConceptosResumen{Nombre: "estampillaUD",
 
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
+		reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
 		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
@@ -121,11 +120,13 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 	for _, solution := range descuento_procultura {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
+		Nom_Concepto := "proCultura"
 		temp_conceptos := models.ConceptosResumen{Nombre: "proCultura",
 
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
+		reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
 		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
@@ -144,11 +145,13 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 	for _, solution := range descuento_adulto_mayor {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
+		Nom_Concepto := "adultoMayor"
 		temp_conceptos := models.ConceptosResumen{Nombre: "adultoMayor",
 
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
+		reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
 		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
@@ -165,11 +168,13 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 	for _, solution := range descuento_salud {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
+		Nom_Concepto := "salud"
 		temp_conceptos := models.ConceptosResumen{Nombre: "salud",
 
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
+		reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
 		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
@@ -186,11 +191,13 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 	for _, solution := range descuento_pension {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
+		Nom_Concepto := "pension"
 		temp_conceptos := models.ConceptosResumen{Nombre: "pension",
 
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
+		reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
 		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N).`)
 
 		for _, cod := range codigo {
@@ -202,16 +209,26 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 
 	}
-	return lista_descuentos
+
+	CalcularIBC(reglas)
+	return lista_descuentos,ibc
 
 }
 
 func GuardarConceptosCT (lista_descuentos []models.ConceptosResumen)(rest []models.Respuesta){
 		temp := models.Respuesta{}
 		var resultado []models.Respuesta
+		temp_conceptos := models.ConceptosResumen{Nombre: "ibc_liquidado",
+			Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
+		}
+		temp_conceptos.Id = 2322
+		temp_conceptos.DiasLiquidados = dias_a_liquidar
+
+		lista_descuentos = append(lista_descuentos, temp_conceptos)
 
 		temp.Conceptos = &lista_descuentos
 		resultado = append(resultado, temp)
+
 		total_devengado_novedad = 0
 		total_devengado_no_novedad = 0
 		return resultado

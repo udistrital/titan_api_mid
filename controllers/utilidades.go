@@ -8,6 +8,9 @@ import (
 	"io"
 	"os"
 	"strings"
+	"github.com/udistrital/titan_api_mid/models"
+	"strconv"
+	 "fmt"
 )
 
 
@@ -34,6 +37,24 @@ func sendJson(url string, trequest string, target interface{}, datajson interfac
 func getJson(url string, target interface{}) error {
 	r, err := http.Get(url)
 	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+
+	return json.NewDecoder(r.Body).Decode(target)
+}
+
+func getJsonWSO2(urlp string, target interface{}) error {
+	b := new(bytes.Buffer)
+	//proxyUrl, err := url.Parse("http://10.20.4.15:3128")
+	//http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", urlp, b)
+	req.Header.Set("Accept", "application/json")
+	r, err := client.Do(req)
+	//r, err := http.Post(url, "application/json; charset=utf-8", b)
+	if err != nil {
+		beego.Error("error", err)
 		return err
 	}
 	defer r.Body.Close()
@@ -110,4 +131,59 @@ func WriteStringToFile(filepath, s string) error {
 	}
 
 	return nil
+}
+
+
+func ContratosHonorarios(id_contrato string, vigencia int)(datos models.ObjetoContratoEstado,  err error){
+
+	var temp map[string]interface{}
+	var temp_docentes models.ObjetoContratoEstado
+	var control_error error
+
+	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/contrato_elaborado_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+		jsonDocentes, error_json := json.Marshal(temp)
+
+		if error_json == nil {
+
+			json.Unmarshal(jsonDocentes, &temp_docentes)
+
+		} else {
+			control_error = error_json
+			fmt.Println("error al traer contratos docentes DVE")
+		}
+	} else {
+		control_error = err
+		fmt.Println("Error al unmarshal datos de nómina",err)
+
+
+	}
+
+		return temp_docentes, control_error;
+}
+
+func ActaInicioHonorarios(id_contrato string, vigencia int)(datos models.ObjetoActaInicio,  err error){
+
+	var temp map[string]interface{}
+	var temp_docentes models.ObjetoActaInicio
+	var control_error error
+
+	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/acta_inicio_elaborado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+		jsonDocentes, error_json := json.Marshal(temp)
+
+		if error_json == nil {
+
+			json.Unmarshal(jsonDocentes, &temp_docentes)
+
+		} else {
+			control_error = error_json
+			fmt.Println("error al traer contratos docentes DVE")
+		}
+	} else {
+		control_error = err
+		fmt.Println("Error al unmarshal datos de nómina",err)
+
+
+	}
+
+		return temp_docentes, control_error;
 }

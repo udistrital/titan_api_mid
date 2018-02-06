@@ -7,29 +7,29 @@ porcentaje_fondo(TD,SM,PF) :- LI is 17 * SM, LS is 18 * SM, (TD @>= LI, TD @< LS
 porcentaje_gr(2016,3, 0.20).
 nuevo_SB(S,I,V) :- V is S*(1+I).
 porcentaje_gr(2016,1, 0.50).
-conceptos_ibc(nombreRegla1240).
-conceptos_ibc(nombreRegla1242).
-conceptos_ibc(nombreRegla1245).
-conceptos_ibc(nombreRegla1248).
-conceptos_ibc(nombreRegla1249).
-conceptos_ibc(nombreRegla1250).
-conceptos_ibc(nombreRegla1251).
+concepto_ibc(nombreRegla1240).
+concepto_ibc(nombreRegla1242).
+concepto_ibc(nombreRegla1245).
+concepto_ibc(nombreRegla1248).
+concepto_ibc(nombreRegla1249).
+concepto_ibc(nombreRegla1250).
+concepto_ibc(nombreRegla1251).
 afectacion_seguridad(comision_norem).
-conceptos_ibc(nombreRegla1253).
-conceptos_ibc(nombreRegla1254).
-conceptos_ibc(nombreRegla1257).
+concepto_ibc(nombreRegla1253).
+concepto_ibc(nombreRegla1254).
+concepto_ibc(nombreRegla1257).
 afectacion_seguridad(licencia_norem).
 seg_social(prueba,1,1,1,1,1,1).
 salud_fun(TD,P,M,V):- \+(seg_social(comision_estudio,_,_,_,_,_,_)) -> periodo_liq_salud(M),porcentaje_salud(P,PF), V is (TD * PF rnd 0).
-conceptos_ibc(nombreRegla158).
-conceptos_ibc(nombreRegla1252).
-novedades_devengos(X):- devengo(V,N), conceptos_ibc(N), X is V.
-conceptos_ibc(nombreRegla17).
+concepto_ibc(nombreRegla158).
+concepto_ibc(nombreRegla1252).
+novedade_devengos(X):- devengo(V,N), concepto_ibc(N), X is V.
+concepto_ibc(nombreRegla17).
 concepto_ibc(salarioBase).
 concepto_ibc(gastosRep).
 concepto_ibc(bonServ).
 concepto_ibc(primaAnt).
-conceptos_ibc(subsidioFa).
+concepto_ibc(subsidioFa).
 calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
 concepto_ibc(priTec).
 periodo_liq_salud(1).
@@ -141,42 +141,42 @@ bon_ser(S,DL,M,P,DLA,C,V) :- esAnual(si),periodo_liq_bonserv(M), \+(gr(S,DL,M,P,
 periodo_primatec(0).
 valor_pago(S,V):- tipo_nomina(1), V is ((15/30)*S rnd 0).
 devengo(0,prueba).
-conceptos_ibc(nombreRegla18).
-conceptos_ibc(nombreRegla118).
-conceptos_ibc(nombreRegla139).
-conceptos_ibc(nombreRegla151).
-conceptos_ibc(nombreRegla152).
-conceptos_ibc(nombreRegla157).
-conceptos_ibc(nombreRegla160).
-conceptos_ibc(nombreRegla161).
+concepto_ibc(nombreRegla18).
+concepto_ibc(nombreRegla118).
+concepto_ibc(nombreRegla139).
+concepto_ibc(nombreRegla151).
+concepto_ibc(nombreRegla152).
+concepto_ibc(nombreRegla157).
+concepto_ibc(nombreRegla160).
+concepto_ibc(nombreRegla161).
 liquidacion_planta(primaAnt,S,M,DL,P,C,DLA,V):-prima_ant(S,DL,M,P,DLA,V).
 liquidacion_planta(bonServ,S,M,DL,P,C,DLA,V):- bon_ser(S,DL,M,P,DLA,C,V).
 liquidacion_planta(priTec,S,M,DL,P,C,DLA,V):- prima_tecnica(S,DL,M,V).
-conceptos_ibc(nombreRegla168).
-conceptos_ibc(nombreRegla174).
-conceptos_ibc(horasExtras).
-conceptos_ibc(nombreRegla178).
-conceptos_ibc(nombreRegla1177).
-conceptos_ibc(nombreRegla1179).
-conceptos_ibc(nombreRegla1195).
-conceptos_ibc(nombreRegla1201).
-conceptos_ibc(nombreRegla1202).
-conceptos_ibc(nombreRegla1206).
-conceptos_ibc(nombreRegla1209).
-conceptos_ibc(asigAdicDec).
-conceptos_ibc(nombreRegla1214).
-conceptos_ibc(nombreRegla1225).
-conceptos_ibc(nombreRegla1226).
-conceptos_ibc(nombreRegla1227).
-conceptos_ibc(nombreRegla1230).
-conceptos_ibc(nombreRegla1232).
+concepto_ibc(nombreRegla168).
+concepto_ibc(nombreRegla174).
+concepto_ibc(horasExtras).
+concepto_ibc(nombreRegla178).
+concepto_ibc(nombreRegla1177).
+concepto_ibc(nombreRegla1179).
+concepto_ibc(nombreRegla1195).
+concepto_ibc(nombreRegla1201).
+concepto_ibc(nombreRegla1202).
+concepto_ibc(nombreRegla1206).
+concepto_ibc(nombreRegla1209).
+concepto_ibc(asigAdicDec).
+concepto_ibc(nombreRegla1214).
+concepto_ibc(nombreRegla1225).
+concepto_ibc(nombreRegla1226).
+concepto_ibc(nombreRegla1227).
+concepto_ibc(nombreRegla1230).
+concepto_ibc(nombreRegla1232).
 liquidacion_planta(gastosRep,S,M,DL,P,C,DLA,V):-gr(S,DL,M,P,C,V).
 liquidacion_planta(primaSecr,S,M,DL,P,C,DLA,V):- prima_secretarial(S,P,C,M,DLA,V).
 aplica_gastos_rep(12).
 deduccion_gastos_rep_rector(DGR):- cargo(1), ingreso_retencion(IR), valor_gastos_rep(G), DGR is IR - G.
 prima_secretarial(S,P,C,M,DLA,V) :- secretario(C), periodo_liq_primsec(M), (DLA @> 0, DLA @=< 360 -> Z is 1 ; DLA @>= 361, DLA @=< 1080 -> Z is 2 ; DLA @>= 1081, DLA @=< 2880 -> Z is 3; DLA @>= 2881, DLA @=< 5400 -> Z is 4; DLA @>5401 -> Z is 5; Z is 1), porcentaje_ps(P,Z,A), V is (S*A rnd 0).
 fondo_solidaridad_fun(TD,P,M,V) :- periodo_liq_fondo(M),salario_minimo(P,SM),porcentaje_fondo(TD, SM, PF), V is (PF * TD) approach 100.
-conceptos_ibc(nombreRegla1239).
+concepto_ibc(nombreRegla1239).
 doceava_bs(N,D,V):- bonificacion_servicio_ps(N,X), V is ((X/12) * (D/30) rnd 0).
 doceava_pv(N,V) :- prima_vacaciones(N,X), V is (X/12 rnd 0).
 doceava(N,V):-bonificacion_servicio(N,X), V is (X/12 rnd 0).

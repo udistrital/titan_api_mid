@@ -1,4 +1,4 @@
-concepto(X, descuento, porcentaje, salud,0.04, 2017).
+concepto(X, descuento, porcentaje, salud,0.04, 2018).
 fin_contrato(prueba,no).
 tarifa(reteIca,9.66,1000,0,0).
 tarifa(estampillaUD,0.01,0,0,0).
@@ -9,18 +9,18 @@ info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
 base_concepto_ley(X,Y,P,rete383):- valor_pago(X,V,P,T),R is (T * 0.25) rnd 0 , S is T - R,Y is (S rnd 0).
 base_concepto_ley(X,Y,P,rete384):- valor_pago(X,V,P,T), Y is (T rnd 0).
 info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(valor_pago(X,Y,P,T),R is T * Z)).
-concepto(X, descuento, porcentaje, pension,0.04, 2017).
+concepto(X, descuento, porcentaje, pension,0.04, 2018).
 tarifa(adultoMayor,0.02,0,0,0).
-porcentaje_prestaciones(2017,0.200236900127638).
+porcentaje_prestaciones(2018,0.200236900127638).
 valor_pago(X,V,P,T):- valor_contrato(X,VC), calcular_prestaciones(P,PC), Y is (VC - PC), duracion_contrato(X,D,V), R is Y / D, PB is (R rnd 0), dias_liquidados(X,DL),T is ((DL * PB) / 30).
-porcentaje_salud(2017,0.04).
-porcentaje_devengo(2017,vacaciones,0.165680).
-porcentaje_pension(2017,0.04).
+porcentaje_salud(2018,0.04).
+porcentaje_devengo(2018,vacaciones,0.165680).
+porcentaje_pension(2018,0.04).
 calcular_prestaciones(P,VP):- valor_contrato(X,VC),porcentaje_prestaciones(P,PP),Y is PP * VC, VP is (Y rnd 0).
-porcentaje_devengo(2017,primaVacaciones,0.165680).
-porcentaje_devengo(2017,primaNavidad, 0.295858).
+porcentaje_devengo(2018,primaVacaciones,0.165680).
+porcentaje_devengo(2018,primaNavidad, 0.295858).
 concepto_ley(X,Y,P,V,pension):- valor_pago(X,V,P,T), porcentaje_pension(P, PP), R is PP * T , Y is (R rnd 0).
-porcentaje_devengo(2017,cesantias,0.332840).
+porcentaje_devengo(2018,cesantias,0.332840).
 concepto_ley(X,Y,P,V,salud):- valor_pago(X,V,P,T), porcentaje_salud(P, PS), R is PS * T , Y is (R rnd 0).
 aplica_ingreso_retencion(11).
 concepto_ley(X,Y,P,V,vacaciones):- fin_contrato(X,si),calcular_prestaciones(P,VP),porcentaje_devengo(P,vacaciones,PDV), R is VP *PDV, Y is (R rnd 0).
@@ -38,9 +38,23 @@ aplica_deduccion_retencion(239).
 deducciones_totales(DT):- deducciones(D), ingresos(I), DT is I - D.
 subtotal(DT,S):- S is (DT * 0.25 rnd 0).
 gastos_rep(GR):- ingresos(I), GR is (I * 0.50 rnd 0).
-valor_uvt(2017,31859).
+valor_uvt(2018,33156).
 evaluar_uvt(VU,U,R):- (U @=< 95 -> R is 0).
 evaluar_uvt(VU,U,R):- (U @> 95, U@=<150 -> A is U - 95, B is A*0.19, C is B * VU, R is (C rnd 0)).
 valor_retencion(VR):- deducciones_totales(DT), subtotal(DT, S), gastos_rep(GR), B is DT - S - GR, valor_uvt(P,VU), X is (B / VU),  evaluar_uvt(VU, X, E), H is ((E + 50) / 1000 rnd 0), VR is (H * 1000).
 evaluar_uvt(VU,U,R):- (U @> 150, U @=<360 -> A is U - 150, B is A*0.28, C is B * VU, D is (10 * VU), F is C + D, R is (F rnd 0)).
 evaluar_uvt(VU,U,R):- (U @> 360 -> A is U - 360, B is A*0.33, C is B * VU, D is (69 * VU), F is C + D, R is (F rnd 0)).
+
+concepto(X, descuento, porcentaje, salud,0.04, 2018).
+tarifa(adultoMayor,0.02,0,0,0).
+porcentaje_prestaciones(2018,0.200236900127638).
+porcentaje_salud(2018,0.04).
+porcentaje_devengo(2018,vacaciones,0.165680).
+porcentaje_pension(2018,0.04).
+porcentaje_devengo(2018,primaVacaciones,0.165680).
+porcentaje_devengo(2018,primaNavidad, 0.295858).
+porcentaje_devengo(2018,cesantias,0.332840).
+valor_uvt(2018,33156).
+
+calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y.
+concepto_ibc(salarioBase).
