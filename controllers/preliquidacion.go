@@ -20,6 +20,49 @@ func (c *PreliquidacionController) URLMapping() {
 	c.Mapping("Preliquidar", c.Preliquidar)
 }
 
+// Resumen ...
+// @Title Create
+// @Description create Resumen
+// @Param	body		body 	var v models.Preliquidacion	true		"body for Preliquidacion content"
+// @Success 201 {object}  []models.InformePreliquidacion
+// @Failure 403 body is empty
+// @router /resumen/ [post]
+func (c *PreliquidacionController) Resumen() {
+	var v models.Preliquidacion
+	var datos_preliquidacion []models.InformePreliquidacion
+	var error_consulta_informacion_agora error
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+
+		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/resumen", "POST", &datos_preliquidacion, &v); err == nil {
+			for x, dato := range datos_preliquidacion {
+				datos_preliquidacion[x].NombreCompleto, datos_preliquidacion[x].NumeroContrato, datos_preliquidacion[x].Documento, error_consulta_informacion_agora= InformacionContratista(dato.NumeroContrato, dato.Vigencia)
+
+			}
+
+			if(error_consulta_informacion_agora == nil){
+				c.Data["json"] = datos_preliquidacion
+			}else{
+				c.Data["json"] = error_consulta_informacion_agora
+				fmt.Println("error al consultar información en Agora")
+			}
+
+
+		} else {
+			fmt.Println(err)
+			fmt.Println("error al traer resumen de preliquidacion")
+			c.Data["json"] = err
+		}
+
+	}else{
+		c.Data["json"] = err
+
+		fmt.Println("error al leer datos de preliquidación a listar")
+	}
+
+	c.ServeJSON()
+
+}
+
 // Post ...
 // @Title Create
 // @Description create Preliquidacion
@@ -232,4 +275,43 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona){
 		if err2 := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/"+idNovedad_string, "PUT", &idCPP, &v); err2 == nil {
 
 	}
+}
+
+func InformacionContratista(NumeroContrato string, VigenciaContrato int)(Nom, cont, doc string,  err error){
+
+
+	var temp map[string]interface{}
+	var temp_docentes models.ObjetoInformacionContratista
+	var nombre_contratista string
+	var contrato string
+	var documento string
+
+	var control_error error
+
+	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/informacion_contrato_elaborado_contratista/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
+		jsonDocentes, error_json := json.Marshal(temp)
+
+		if error_json == nil {
+
+			json.Unmarshal(jsonDocentes, &temp_docentes)
+			nombre_contratista = temp_docentes.InformacionContratista.NombreCompleto
+			documento = temp_docentes.InformacionContratista.Documento.Numero
+			contrato = temp_docentes.InformacionContratista.Contrato.Numero
+
+
+		} else {
+			control_error = error_json
+			fmt.Println("error al traer contratos docentes DVE")
+		}
+	} else {
+		control_error = err
+		fmt.Println("Error al unmarshal datos de nómina",err)
+
+
+	}
+
+		return nombre_contratista, contrato, documento,control_error;
+
+
+
 }

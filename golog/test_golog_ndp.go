@@ -22,7 +22,6 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 	var lista_retefuente []models.ConceptosResumen
 	var lista_descuentos_semestral []models.ConceptosResumen
 	var tipoPreliquidacion_string string
-	var nombre_archivo string
 	var regimen_numero string
 	var cargo string
 	var periodo string
@@ -62,11 +61,7 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 	reglas = reglas + "tipo_nomina(" + tipoPreliquidacion_string + ")."
 	reglas = reglas + "cargo("+cargo+")."
 
-	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
-      panic(err)
-  }
-
-		m := NewMachine().Consult(reglas)
+			m := NewMachine().Consult(reglas)
 
 
 
@@ -283,8 +278,7 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 				Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("X")), 64)
 				ibc = ibc + Valor
 			}
-			fmt.Println("ibc")
-			fmt.Println(ibc)
+		
 
 	}
 

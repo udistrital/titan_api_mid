@@ -27,7 +27,7 @@ func CargarReglasHCS(idProveedor int, reglas string, periodo string) (rest []mod
 	resultado = GuardarConceptosHCS(total_calculos)
 
 	total_calculos = []models.ConceptosResumen{}
-
+  ibc = 0;
 	return resultado;
 }
 
@@ -83,7 +83,8 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
       lista_descuentos = append(lista_descuentos,temp_conceptos)
       }
 
-    CalcularIBC(reglas)  
+    CalcularIBC(reglas)
+
   	return lista_descuentos,ibc
 
 }

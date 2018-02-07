@@ -31,6 +31,7 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 	resultado = GuardarConceptosCT(total_calculos)
 
 	total_calculos = []models.ConceptosResumen{}
+	ibc = 0;
 
 	return resultado;
 
@@ -62,6 +63,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -83,6 +85,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -107,6 +110,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -132,6 +136,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -157,6 +162,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -180,6 +186,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -203,6 +210,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)

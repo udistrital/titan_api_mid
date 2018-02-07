@@ -13,7 +13,7 @@ dias_liquidados(prueba,30).
 info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
 info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(valor_pago(X,P,V),R is V * Z)).
 concepto(prueb, devengo, fijo, s, 1000000, 2017).
-valor_pago(X,V,P):-valor_contrato(X,Y), duracion_contrato(X,D,V), R is Y / D, dias_liquidados(X,DL),P is (DL * R).
+valor_pago(X,V,P):-valor_contrato(X,Y), duracion_contrato(X,D,V), R is Y / D, dias_liquidados(X,DL),P is ((DL * R) rnd 0).
 reteica(2016, 9.66).
 estampilla(2016, 0.01).
 procultura(2016,0.005).
