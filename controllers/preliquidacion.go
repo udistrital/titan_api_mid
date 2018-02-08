@@ -133,6 +133,7 @@ func CargarReglasBase(dominio string) (reglas string) {
 
 	var v []models.Predicado
 	var datos_conceptos []models.ConceptoNomina
+	fmt.Println("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina?limit=-1")
 	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina?limit=-1", &datos_conceptos); err == nil {
 		for _, datos := range datos_conceptos {
 			reglasbase = reglasbase + "codigo_concepto("+datos.NombreConcepto + "," + strconv.Itoa(datos.Id) + "," + strconv.Itoa(datos.NaturalezaConcepto.Id)+")." + "\n"

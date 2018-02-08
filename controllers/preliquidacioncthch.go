@@ -32,6 +32,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 	var reglasinyectadas string
 	var reglas string
+	var disp int
 
 	var idDetaPre interface{}
 	var FechaControl time.Time
@@ -40,12 +41,16 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 	var FechaInicio time.Time
 	var FechaFin time.Time
 
+
+
 	//var al, ml, dl int
 	//-----------------------
 
 	//carga de informacion de los empleados a partir del id de persona Natural (en este momento id proveedor)
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
+
+
 
 		if(datos.Preliquidacion.Nomina.TipoNomina.Nombre == "CT"){
 			objeto_datos_contrato, error_consulta_contrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
@@ -106,16 +111,17 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 				resultado := temp[len(temp)-1]
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
 
-				disponiblidad:= calcular_disponibilidad(2439,2017,resultado)
-				fmt.Println("disponibilidad")
-				fmt.Println(disponiblidad)
-				//calcular_disponibilidad(datos.PersonasPreLiquidacion[i].NumDocumento, 	datos.PersonasPreLiquidacion[i].VigenciaContrato, resultado)
+				disp = calcular_disponibilidad(2439,2017,resultado)
+
+				/*-----REVISA SI EL PAGO ESTÁ APROBADO O NO --------*/
+				disp = consultar_estado_pago(datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion.Ano, datos.Preliquidacion.Mes);
 
 				for _, descuentos := range *resultado.Conceptos {
+
 					valor, _ := strconv.ParseFloat(descuentos.Valor,64)
 					dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
 					tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
-					detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: disponiblidad}}
+					detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: disp}}
 
 					if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
 
@@ -199,6 +205,30 @@ func calcular_disponibilidad(num_documento, vigencia int,respuesta models.Respue
 	}
 
 	return disponibilidad
+}
+
+func consultar_estado_pago(num_cont string, vigencia, ano, mes int)(disponibilidad int){
+
+		//if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorActualRp/"+id_registro_pre, &saldo_rp); err == nil {
+		var respuesta_servicio string
+		var dispo int
+
+		if err := getJson("http://10.20.0.254/administrativa_mid_api/v1/aprobacion_pago/pago_aprobado/DVE10/2017/8/2018", &respuesta_servicio); err == nil {
+
+			if(respuesta_servicio == "True"){
+				dispo = 2;
+			}else{
+				dispo = 1;
+			}
+
+
+		}else{
+
+			dispo = 1;
+		}
+
+		return dispo
+
 }
 
 

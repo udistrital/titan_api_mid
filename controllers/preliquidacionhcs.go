@@ -28,6 +28,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 	var resumen_preliqu []models.Respuesta
 	var meses_contrato float64
 	var periodo_liquidacion float64
+	var dispo int
 
 	var reglasinyectadas string
 	var reglas string
@@ -48,9 +49,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 		objeto_datos_contrato, error_consulta_contrato = ContratosHonorarios(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 		objeto_datos_acta, error_consulta_acta = ActaInicioHonorarios(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
-		fmt.Println("bbb")
-		fmt.Println(objeto_datos_contrato)
-		fmt.Println(objeto_datos_acta)
+
 		if(error_consulta_contrato == nil){
 			if(error_consulta_acta == nil){
 
@@ -107,12 +106,19 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
+
+			dispo = calcular_disponibilidad(2439,2017,resultado)
+
+			/*-----REVISA SI EL PAGO ESTÁ APROBADO O NO --------*/
+			dispo = consultar_estado_pago(datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion.Ano, datos.Preliquidacion.Mes);
+
+
 			//se guardan los conceptos calculados en la nomina
 			for _, descuentos := range *resultado.Conceptos{
 				valor, _ := strconv.ParseFloat(descuentos.Valor,64)
 				dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
 				tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
-				detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}}
+				detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: dispo}}
 
 				if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
 
