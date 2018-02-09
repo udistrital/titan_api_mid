@@ -25,7 +25,7 @@ func (c *GestionPersonasAPreliquidarController) URLMapping() {
 // @Param	body 	models.Nomina	true		"body for Nomina content"
 // @Success 201 {object}
 // @Failure 403 body is empty
-// @router /listar_personas_a_preliquidar [post]
+// @router /listar_personas_a_preliquidar/ [post]
 func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 	var v models.Nomina
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {

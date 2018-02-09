@@ -10,7 +10,7 @@ func init() {
 	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionPersonasAPreliquidarController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionPersonasAPreliquidarController"],
 		beego.ControllerComments{
 			Method: "ListarPersonasAPreliquidar",
-			Router: `/listar_personas_a_preliquidar`,
+			Router: `/listar_personas_a_preliquidar/`,
 			AllowHTTPMethods: []string{"post"},
 			MethodParams: param.Make(),
 			Params: nil})
