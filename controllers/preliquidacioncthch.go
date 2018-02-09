@@ -57,8 +57,8 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 			objeto_datos_acta, error_consulta_acta = ActaInicioContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
 		}else{
-			objeto_datos_contrato, error_consulta_contrato = ContratosHonorarios(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
-			objeto_datos_acta, error_consulta_acta = ActaInicioHonorarios(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
+			objeto_datos_contrato, error_consulta_contrato = ContratosDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
+			objeto_datos_acta, error_consulta_acta = ActaInicioDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
 		}
 
@@ -91,8 +91,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 
 				}
-				fmt.Println("periodo de liquidacion")
-				fmt.Println(periodo_liquidacion)
+
 
 				vigencia_contrato := strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 				predicados = append(predicados, models.Predicado{Nombre: "dias_liquidados(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(periodo_liquidacion, 'f', -1, 64) + "). "})
@@ -100,7 +99,6 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 				predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(dias_contrato, 'f', -1, 64) + "," + vigencia_contrato + "). "})
 				predicados = append(predicados, models.Predicado{Nombre: "pensionado(no)."})
 
-				fmt.Println(predicados)
 				reglasinyectadas = FormatoReglas(predicados)
 
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
@@ -111,10 +109,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 				resultado := temp[len(temp)-1]
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
 
-				disp = calcular_disponibilidad(2439,2017,resultado)
-
-				/*-----REVISA SI EL PAGO ESTÁ APROBADO O NO --------*/
-				disp = consultar_estado_pago(datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion.Ano, datos.Preliquidacion.Mes);
+				disp=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato,resultado)
 
 				for _, descuentos := range *resultado.Conceptos {
 
@@ -123,14 +118,13 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 					tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
 					detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: disp}}
 
-					if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
+					if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil && idDetaPre != nil {
 
 					} else {
-						beego.Debug("error1: ", err)
+						beego.Debug("error al insertar detalle de preliquidación: ", err)
 					}
 				}
 
-				fmt.Println(resumen_preliqu)
 				predicados = nil
 				objeto_datos_contrato = models.ObjetoContratoEstado{}
 				reglas = ""
@@ -149,96 +143,13 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 	return resumen_preliqu
 }
 
-func consultar_rp (num_documento, vigencia int) (saldo float64){
-		var registro_presupuestal []models.RegistroPresupuestal
-		var saldo_rp float64
-		var num_documento_string = strconv.Itoa(num_documento)
-		var vigencia_string = strconv.Itoa(vigencia)
-		if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal?limit=-1&query=Beneficiario:"+num_documento_string+",Vigencia:"+vigencia_string, &registro_presupuestal); err == nil {
-			var id_registro_pre = strconv.Itoa(registro_presupuestal[0].Id)
-			if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorActualRp/"+id_registro_pre, &saldo_rp); err == nil {
-				fmt.Println("saldo rp")
-				fmt.Println(saldo_rp)
-			}else{
-				fmt.Println("error al consultar saldo de rp")
-				fmt.Println(err)
-			}
-
-
-
-		}else{
-			fmt.Println("error en consulta de rp")
-			fmt.Println(err)
-		}
-
-		return saldo_rp
-}
-
-
-func total_a_pagar(respuesta models.Respuesta)(total float64){
-	var total_dev float64
-	for _, descuentos := range *respuesta.Conceptos {
-		if(descuentos.NaturalezaConcepto == 1){
-			valor, _ := strconv.ParseFloat(descuentos.Valor,64)
-			total_dev = total_dev + valor
-		}
-
-
-}
-fmt.Println("total a pagar")
-fmt.Println(total_dev)
-return total_dev
-}
-
-func calcular_disponibilidad(num_documento, vigencia int,respuesta models.Respuesta)(disp int){
-	var valor_a_pagar float64
-	var saldo_rp float64
-	var disponibilidad int
-	saldo_rp = consultar_rp(num_documento, vigencia)
-	valor_a_pagar = total_a_pagar(respuesta)
-	if(valor_a_pagar > saldo_rp){
-		disponibilidad = 1;
-		fmt.Println("no hay dinero")
-	}else{
-		disponibilidad = 2;
-		fmt.Println("si hay dinero ")
-	}
-
-	return disponibilidad
-}
-
-func consultar_estado_pago(num_cont string, vigencia, ano, mes int)(disponibilidad int){
-
-		//if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorActualRp/"+id_registro_pre, &saldo_rp); err == nil {
-		var respuesta_servicio string
-		var dispo int
-
-		if err := getJson("http://10.20.0.254/administrativa_mid_api/v1/aprobacion_pago/pago_aprobado/DVE10/2017/8/2018", &respuesta_servicio); err == nil {
-
-			if(respuesta_servicio == "True"){
-				dispo = 2;
-			}else{
-				dispo = 1;
-			}
-
-
-		}else{
-
-			dispo = 1;
-		}
-
-		return dispo
-
-}
-
-
 func ContratosContratistas(id_contrato string, vigencia int)(datos models.ObjetoContratoEstado,  err error){
 
 	var temp map[string]interface{}
 	var temp_docentes models.ObjetoContratoEstado
 	var control_error error
 
-	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/contrato_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
@@ -265,7 +176,7 @@ func ActaInicioContratistas(id_contrato string, vigencia int)(datos models.Objet
 	var temp_docentes models.ObjetoActaInicio
 	var control_error error
 
-	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/acta_inicio/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {

@@ -48,7 +48,7 @@ func (c *PreliquidacionController) Resumen() {
 
 
 		} else {
-			fmt.Println(err)
+		
 			fmt.Println("error al traer resumen de preliquidacion")
 			c.Data["json"] = err
 		}
@@ -123,7 +123,7 @@ func (c *PreliquidacionController) Preliquidar() {
 
 
 	}else {
-		fmt.Println("errorrrr2: ", err)
+		fmt.Println("error al leer datos de preliquidacion ", err)
 	}
 
 }
@@ -133,7 +133,7 @@ func CargarReglasBase(dominio string) (reglas string) {
 
 	var v []models.Predicado
 	var datos_conceptos []models.ConceptoNomina
-	fmt.Println("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina?limit=-1")
+
 	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina?limit=-1", &datos_conceptos); err == nil {
 		for _, datos := range datos_conceptos {
 			reglasbase = reglasbase + "codigo_concepto("+datos.NombreConcepto + "," + strconv.Itoa(datos.Id) + "," + strconv.Itoa(datos.NaturalezaConcepto.Id)+")." + "\n"
@@ -141,12 +141,12 @@ func CargarReglasBase(dominio string) (reglas string) {
 	} else {
 		fmt.Println("error al cargar conceptos como reglas")
 	}
-	fmt.Println(dominio)
+
 	if err := getJson("http://"+beego.AppConfig.String("Urlruler")+":"+beego.AppConfig.String("Portruler")+"/"+beego.AppConfig.String("Nsruler")+"/predicado?limit=-1&query=Dominio.Nombre:"+dominio, &v); err == nil {
 
 		reglasbase = reglasbase + FormatoReglas(v) //funcion general para dar formato a reglas cargadas desde el ruler
 	} else {
-		fmt.Println("err: ", err)
+		fmt.Println("error al cargar reglas base: ", err)
 	}
 
 	//-----------------------------
@@ -192,15 +192,15 @@ func CargarNovedadesPersona(id_persona int, numero_contrato string, vigencia int
          }
 
 				 if(v[i].NumCuotas != 999 && v[i].NumCuotas != 0 ){
-					 fmt.Println("cuotas")
+
 					 numCuotas := cuotasPagas(numero_contrato, vigencia,v[i].Concepto.Id)
 					 if(numCuotas == int(v[i].NumCuotas)){
-						 fmt.Println("se pagó tota la novedad")
+
 						 v[i].Activo = false
 						 desactivarNovedad(v[i].Concepto.Id, v[i])
 						 //inhabilitar cuotas
 					 }else{
-						 fmt.Println("no pagadas")
+
 						 reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Ano) + "). " + "\n"
 						 if (v[i].Concepto.NaturalezaConcepto.Nombre == "devengo"){
 							 reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
@@ -209,7 +209,7 @@ func CargarNovedadesPersona(id_persona int, numero_contrato string, vigencia int
 				 }
 
 				 if(v[i].NumCuotas == 999 && v[i].Concepto.NaturalezaConcepto.Nombre != "seguridad_social"){
-					  fmt.Println("no cuotas")
+
 						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Ano) + "). " + "\n"
 					 if (v[i].Concepto.NaturalezaConcepto.Nombre == "devengo"){
 							 reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
@@ -219,9 +219,9 @@ func CargarNovedadesPersona(id_persona int, numero_contrato string, vigencia int
 			 }
 		 }
 	 }else{
-		 fmt.Println(err)
+		 fmt.Println("Error al traer novedades",err)
 	 }
-	 fmt.Println(reglas)
+
 	//------------------------------------------------------------------------------
 	return reglas
 
@@ -259,9 +259,6 @@ func cuotasPagas(numero_contrato string, vigencia,idConcepto int)(cuotas_pagas i
 	var numero_cuotas_pagas int
 
 	var detalle_preliquidacion []models.DetallePreliquidacion
-	fmt.Println(vigencia_string)
-	fmt.Println(numero_contrato)
-	fmt.Println(idConcepto)
 	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada,VigenciaContrato:"+vigencia_string+",NumeroContrato:"+numero_contrato+",Concepto.Id:"+idConcepto_string+"", &detalle_preliquidacion); err == nil {
 		numero_cuotas_pagas = len(detalle_preliquidacion)
   }
@@ -289,7 +286,7 @@ func InformacionContratista(NumeroContrato string, VigenciaContrato int)(Nom, co
 
 	var control_error error
 
-	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/informacion_contrato_elaborado_contratista/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/informacion_contrato_elaborado_contratista/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {

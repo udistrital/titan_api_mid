@@ -134,13 +134,13 @@ func WriteStringToFile(filepath, s string) error {
 }
 
 
-func ContratosHonorarios(id_contrato string, vigencia int)(datos models.ObjetoContratoEstado,  err error){
+func ContratosDVE(id_contrato string, vigencia int)(datos models.ObjetoContratoEstado,  err error){
 
 	var temp map[string]interface{}
 	var temp_docentes models.ObjetoContratoEstado
 	var control_error error
 
-	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/contrato_elaborado_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_elaborado_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
@@ -161,13 +161,13 @@ func ContratosHonorarios(id_contrato string, vigencia int)(datos models.ObjetoCo
 		return temp_docentes, control_error;
 }
 
-func ActaInicioHonorarios(id_contrato string, vigencia int)(datos models.ObjetoActaInicio,  err error){
+func ActaInicioDVE(id_contrato string, vigencia int)(datos models.ObjetoActaInicio,  err error){
 
 	var temp map[string]interface{}
 	var temp_docentes models.ObjetoActaInicio
 	var control_error error
 
-	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/acta_inicio_elaborado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio_elaborado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
@@ -186,4 +186,98 @@ func ActaInicioHonorarios(id_contrato string, vigencia int)(datos models.ObjetoA
 	}
 
 		return temp_docentes, control_error;
+}
+
+func verificacion_pago(id_proveedor,ano, mes int, num_cont string, vig int, resultado models.Respuesta)(estado int){
+
+	estado_pago := consultar_estado_pago(num_cont, vig, ano, mes);
+	disponibilidad := calcular_disponibilidad(id_proveedor,vig,resultado)
+
+	if(estado_pago == 2 && disponibilidad == 2){
+		return 2
+	}else{
+		return 1
+	}
+
+}
+func consultar_rp (id_proveedor, vigencia int) (saldo float64){
+		var registro_presupuestal []models.RegistroPresupuestal
+		var saldo_rp float64
+		var id_proveedor_string = strconv.Itoa(id_proveedor)
+		var vigencia_string = strconv.Itoa(vigencia)
+		if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal?limit=-1&query=Beneficiario:"+id_proveedor_string+",Vigencia:"+vigencia_string, &registro_presupuestal); err == nil && registro_presupuestal != nil {
+			var id_registro_pre = strconv.Itoa(registro_presupuestal[0].Id)
+			if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorActualRp/"+id_registro_pre, &saldo_rp); err == nil {
+				fmt.Println("saldo rp")
+				fmt.Println(saldo_rp)
+			}else{
+				fmt.Println("error al consultar saldo de rp")
+				fmt.Println(err)
+				saldo_rp = 0;
+			}
+
+
+
+		}else{
+			fmt.Println("error en consulta de rp")
+			fmt.Println(err)
+			saldo_rp = 0;
+		}
+
+		return saldo_rp
+}
+
+
+func total_a_pagar(respuesta models.Respuesta)(total float64){
+	var total_dev float64
+	for _, descuentos := range *respuesta.Conceptos {
+		if(descuentos.NaturalezaConcepto == 1){
+			valor, _ := strconv.ParseFloat(descuentos.Valor,64)
+			total_dev = total_dev + valor
+		}
+
+
+}
+ return total_dev
+}
+
+func calcular_disponibilidad(id_proveedor, vigencia int,respuesta models.Respuesta)(disp int){
+	var valor_a_pagar float64
+	var saldo_rp float64
+	var disponibilidad int
+	saldo_rp = consultar_rp(id_proveedor, vigencia)
+	valor_a_pagar = total_a_pagar(respuesta)
+	if(valor_a_pagar > saldo_rp){
+		disponibilidad = 1;
+		fmt.Println("no hay dinero")
+	}else{
+		disponibilidad = 2;
+		fmt.Println("si hay dinero ")
+	}
+
+	return disponibilidad
+}
+
+func consultar_estado_pago(num_cont string, vigencia, ano, mes int)(disponibilidad int){
+
+		//if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorActualRp/"+id_registro_pre, &saldo_rp); err == nil {
+		var respuesta_servicio string
+		var dispo int
+
+		if err :=getJson("http://"+beego.AppConfig.String("Urlargo")+":"+beego.AppConfig.String("Portargo")+"/"+beego.AppConfig.String("Nsargo")+"/aprobacion_pago/pago_aprobado/DVE10/2017/8/2018", &respuesta_servicio); err == nil {
+
+			if(respuesta_servicio == "True"){
+				dispo = 2;
+			}else{
+				dispo = 1;
+			}
+
+			fmt.Println("consulta exitosa de aprobación de pago")
+		}else{
+			fmt.Println("error en consulta de aprobación de pago")
+			dispo = 1;
+		}
+
+		return dispo
+
 }

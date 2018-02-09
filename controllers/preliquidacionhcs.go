@@ -47,8 +47,8 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
-		objeto_datos_contrato, error_consulta_contrato = ContratosHonorarios(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
-		objeto_datos_acta, error_consulta_acta = ActaInicioHonorarios(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
+		objeto_datos_contrato, error_consulta_contrato = ContratosDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
+		objeto_datos_acta, error_consulta_acta = ActaInicioDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
 		if(error_consulta_contrato == nil){
 			if(error_consulta_acta == nil){
@@ -83,11 +83,6 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 			vigencia_contrato := strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 			meses_contrato = (float64(a*12))+float64(m)+(float64(d)/30)
 
-			fmt.Println(a)
-			fmt.Println(m)
-			fmt.Println(d)
-			fmt.Println("meses: ",meses_contrato)
-			fmt.Println("dias: ",periodo_liquidacion)
 			if int(FechaFinContrato.Month()) == datos.Preliquidacion.Mes && int(FechaFinContrato.Year()) == datos.Preliquidacion.Ano {
 				predicados = append(predicados,models.Predicado{Nombre:"fin_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+",si). "} )
 			}else{
@@ -107,11 +102,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
 
-			dispo = calcular_disponibilidad(2439,2017,resultado)
-
-			/*-----REVISA SI EL PAGO ESTÁ APROBADO O NO --------*/
-			dispo = consultar_estado_pago(datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion.Ano, datos.Preliquidacion.Mes);
-
+			dispo=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato,resultado)
 
 			//se guardan los conceptos calculados en la nomina
 			for _, descuentos := range *resultado.Conceptos{

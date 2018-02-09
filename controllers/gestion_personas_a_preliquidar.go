@@ -71,7 +71,7 @@ func ListaContratosDocentesDVE(objeto_nom models.Nomina)(arreglo_contratos model
 		tipo_nom = "2"
 	}
 
-	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/contratos_elaborado_tipo/"+tipo_nom, &temp); err == nil && temp != nil {
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/"+tipo_nom, &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
@@ -99,13 +99,13 @@ func ListaContratosContratistas(objeto_nom models.Nomina)(arreglo_contratos mode
 	var temp_docentes models.ObjetoFuncionarioContrato
 	var control_error error
 
-	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/contratos_tipo/6", &temp); err == nil && temp != nil {
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_tipo/6", &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
 
 			json.Unmarshal(jsonDocentes, &temp_docentes)
-	
+
 		} else {
 			control_error = error_json
 			fmt.Println("error al traer contratos docentes DVE")
