@@ -48,7 +48,7 @@ func (c *PreliquidacionController) Resumen() {
 
 
 		} else {
-		
+
 			fmt.Println("error al traer resumen de preliquidacion")
 			c.Data["json"] = err
 		}
@@ -273,43 +273,4 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona){
 		if err2 := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/"+idNovedad_string, "PUT", &idCPP, &v); err2 == nil {
 
 	}
-}
-
-func InformacionContratista(NumeroContrato string, VigenciaContrato int)(Nom, cont, doc string,  err error){
-
-
-	var temp map[string]interface{}
-	var temp_docentes models.ObjetoInformacionContratista
-	var nombre_contratista string
-	var contrato string
-	var documento string
-
-	var control_error error
-
-	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/informacion_contrato_elaborado_contratista/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
-		jsonDocentes, error_json := json.Marshal(temp)
-
-		if error_json == nil {
-
-			json.Unmarshal(jsonDocentes, &temp_docentes)
-			nombre_contratista = temp_docentes.InformacionContratista.NombreCompleto
-			documento = temp_docentes.InformacionContratista.Documento.Numero
-			contrato = temp_docentes.InformacionContratista.Contrato.Numero
-
-
-		} else {
-			control_error = error_json
-			fmt.Println("error al traer contratos docentes DVE")
-		}
-	} else {
-		control_error = err
-		fmt.Println("Error al unmarshal datos de nómina",err)
-
-
-	}
-
-		return nombre_contratista, contrato, documento,control_error;
-
-
-
 }

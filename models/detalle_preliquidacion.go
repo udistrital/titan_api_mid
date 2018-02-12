@@ -12,4 +12,6 @@ type DetallePreliquidacion struct {
 	Preliquidacion     *Preliquidacion       `orm:"column(preliquidacion);rel(fk)"`
 	Concepto           *ConceptoNomina       `orm:"column(concepto);rel(fk)"`
 	EstadoDisponibilidad *EstadoDisponibilidad   `orm:"column(estado_disponibilidad);rel(fk)"`
+	NombreCompleto 		string
+	Documento         string
 }
