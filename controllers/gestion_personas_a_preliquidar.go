@@ -73,7 +73,7 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidarPendie
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/get_personas_pago_pendiente?idNomina="+strconv.Itoa(v.Id), &personas_pend_preliquidacion); err == nil && personas_pend_preliquidacion !=nil {
 
-			fmt.Println("personas pendientes", personas_pend_preliquidacion)
+			
 
 			for x, dato := range personas_pend_preliquidacion {
 				personas_pend_preliquidacion[x].NombreCompleto, _, personas_pend_preliquidacion[x].Documento, error_consulta_informacion_agora= InformacionContratista(dato.NumeroContrato, dato.VigenciaContrato)
@@ -138,7 +138,7 @@ func ListaContratosDocentesDVE(objeto_nom models.Nomina)(arreglo_contratos model
 }
 
 func ListaContratosContratistas(objeto_nom models.Nomina)(arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error){
-	fmt.Println("contratistas")
+
 	var temp map[string]interface{}
 	var temp_docentes models.ObjetoFuncionarioContrato
 	var control_error error

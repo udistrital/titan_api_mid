@@ -50,7 +50,9 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
-
+		if(datos.PersonasPreLiquidacion[i].Pendiente == "true"){
+			fmt.Println("pendiente")
+		}else{
 
 		if(datos.Preliquidacion.Nomina.TipoNomina.Nombre == "CT"){
 			objeto_datos_contrato, error_consulta_contrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
@@ -138,7 +140,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 			fmt.Println("error al traer valor del contrato")
 		}
 	}
-
+}
 
 	return resumen_preliqu
 }
@@ -195,4 +197,9 @@ func ActaInicioContratistas(id_contrato string, vigencia int)(datos models.Objet
 	}
 
 		return temp_docentes, control_error;
+}
+
+func ConsultarDetalleAModificar(id_contrato string, vigencia int)(){
+
+
 }

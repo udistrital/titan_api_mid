@@ -73,6 +73,7 @@ func (c *PreliquidacionController) Resumen() {
 func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+		fmt.Println("datos preli",v)
 		//carga de reglas desde el ruler
 		reglasbase := CargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
 
