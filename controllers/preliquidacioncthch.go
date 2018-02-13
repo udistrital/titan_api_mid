@@ -51,7 +51,23 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
 		if(datos.PersonasPreLiquidacion[i].Pendiente == "true"){
-			fmt.Println("pendiente")
+
+			var respuesta string
+			var verificacion_pago_pendientes int
+
+			detalles_a_mod := ConsultarDetalleAModificar(datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.PersonasPreLiquidacion[i].Preliquidacion)
+
+			for _, pos := range detalles_a_mod {
+
+				verificacion_pago_pendientes=verificacion_pago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, pos.VigenciaContrato,resultado)
+				pos.EstadoDisponibilidad = &models.EstadoDisponibilidad{Id: verificacion_pago_pendientes}
+				if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/"+strconv.Itoa(pos.Id), "PUT", &respuesta, pos); err == nil  {
+					fmt.Println("preliquidaciones actualizadas")
+				} else {
+					beego.Debug("error al actualizar detalle de preliquidación: ", err)
+				}
+			}
+
 		}else{
 
 		if(datos.Preliquidacion.Nomina.TipoNomina.Nombre == "CT"){
@@ -199,7 +215,15 @@ func ActaInicioContratistas(id_contrato string, vigencia int)(datos models.Objet
 		return temp_docentes, control_error;
 }
 
-func ConsultarDetalleAModificar(id_contrato string, vigencia int)(){
+func ConsultarDetalleAModificar(id_contrato string, vigencia, preliquidacion int)(det []models.DetallePreliquidacion){
+	var v []models.DetallePreliquidacion
+	query := "NumeroContrato:"+id_contrato+",VigenciaContrato:"+strconv.Itoa(vigencia)+",Preliquidacion.Id:"+strconv.Itoa(preliquidacion)
+	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?query="+query, &v); err == nil && v != nil{
 
+	}else{
+		fmt.Println("error al consultar preliquidacion a modificar ",err)
+	}
+
+	return v
 
 }
