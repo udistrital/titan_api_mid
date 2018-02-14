@@ -47,6 +47,26 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
+		if(datos.PersonasPreLiquidacion[i].Pendiente == "true"){
+			
+						var respuesta string
+						var verificacion_pago_pendientes int = 2
+			
+						detalles_a_mod := ConsultarDetalleAModificar(datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.PersonasPreLiquidacion[i].Preliquidacion)
+						resultado := CrearResultado(detalles_a_mod)
+						for _, pos := range detalles_a_mod {
+			
+							verificacion_pago_pendientes=verificacion_pago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, pos.VigenciaContrato,resultado)
+							pos.EstadoDisponibilidad = &models.EstadoDisponibilidad{Id: verificacion_pago_pendientes}
+							if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/"+strconv.Itoa(pos.Id), "PUT", &respuesta, pos); err == nil  {
+								fmt.Println("preliquidaciones actualizadas")
+							} else {
+								beego.Debug("error al actualizar detalle de preliquidación: ", err)
+							}
+						}
+			
+					}else{
+
 		objeto_datos_contrato, error_consulta_contrato = ContratosDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 		objeto_datos_acta, error_consulta_acta = ActaInicioDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
@@ -131,6 +151,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 		}else{
 			fmt.Println("error al traer valor del contrato")
 		}
+	}
 
 }
 

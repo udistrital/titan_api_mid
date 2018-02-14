@@ -227,19 +227,3 @@ func ConsultarDetalleAModificar(id_contrato string, vigencia, preliquidacion int
 	return v
 
 }
-
-func CrearResultado(detalles_a_totalizar []models.DetallePreliquidacion)(respuesta models.Respuesta){
-	var res models.Respuesta
-	
-	conceptos := make([]models.ConceptosResumen, len(detalles_a_totalizar))
-
-	for x,pos := range detalles_a_totalizar{
-		conceptos[x].Valor = strconv.FormatFloat(pos.ValorCalculado, 'E', -1, 64)
-		conceptos[x].NaturalezaConcepto = pos.Concepto.NaturalezaConcepto.Id;
-	
-	}
-	
-	res.Conceptos = &conceptos;
-	return res
-		
-}
