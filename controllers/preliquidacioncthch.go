@@ -53,10 +53,10 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 		if(datos.PersonasPreLiquidacion[i].Pendiente == "true"){
 
 			var respuesta string
-			var verificacion_pago_pendientes int
+			var verificacion_pago_pendientes int = 2
 
 			detalles_a_mod := ConsultarDetalleAModificar(datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.PersonasPreLiquidacion[i].Preliquidacion)
-
+			resultado := CrearResultado(detalles_a_mod)
 			for _, pos := range detalles_a_mod {
 
 				verificacion_pago_pendientes=verificacion_pago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, pos.VigenciaContrato,resultado)
@@ -226,4 +226,20 @@ func ConsultarDetalleAModificar(id_contrato string, vigencia, preliquidacion int
 
 	return v
 
+}
+
+func CrearResultado(detalles_a_totalizar []models.DetallePreliquidacion)(respuesta models.Respuesta){
+	var res models.Respuesta
+	
+	conceptos := make([]models.ConceptosResumen, len(detalles_a_totalizar))
+
+	for x,pos := range detalles_a_totalizar{
+		conceptos[x].Valor = strconv.FormatFloat(pos.ValorCalculado, 'E', -1, 64)
+		conceptos[x].NaturalezaConcepto = pos.Concepto.NaturalezaConcepto.Id;
+	
+	}
+	
+	res.Conceptos = &conceptos;
+	return res
+		
 }
