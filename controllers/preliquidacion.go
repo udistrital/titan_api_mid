@@ -174,7 +174,7 @@ func CargarNovedadesPersona(id_persona int, numero_contrato string, vigencia int
 	var v []models.ConceptoNominaPorPersona
 	reglas_nov_dev = ""
 	reglas = ""//inicializacion de la variable donde se inyectaran las novedades como reglas
-	query := "Activo:true,Persona:"+strconv.Itoa(id_persona)
+	query := "Activo:true,NumeroContrato:"+numero_contrato+",VigenciaContrato:"+strconv.Itoa(vigencia)
 	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona?limit=-1&query="+query, &v); err == nil {
 		if v != nil {
 			for i := 0; i < len(v); i++ {
@@ -210,7 +210,7 @@ func CargarNovedadesPersona(id_persona int, numero_contrato string, vigencia int
 				 }
 
 				 if(v[i].NumCuotas == 999 && v[i].Concepto.NaturalezaConcepto.Nombre != "seguridad_social"){
-
+					 fmt.Println("hellooouu")
 						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Ano) + "). " + "\n"
 					 if (v[i].Concepto.NaturalezaConcepto.Nombre == "devengo"){
 							 reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
@@ -222,7 +222,7 @@ func CargarNovedadesPersona(id_persona int, numero_contrato string, vigencia int
 	 }else{
 		 fmt.Println("Error al traer novedades",err)
 	 }
-
+	 fmt.Println("reglas de novedades",reglas)
 	//------------------------------------------------------------------------------
 	return reglas
 

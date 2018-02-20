@@ -253,7 +253,7 @@ func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, peri
 	novedades := f.ProveAll("info_concepto(" + idProveedorString + ",T,"+periodo+",N,R).")
 
 	for _, solution := range novedades {
-
+		fmt.Println("soluchon")
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
 			Valor: fmt.Sprintf("%.0f", Valor),

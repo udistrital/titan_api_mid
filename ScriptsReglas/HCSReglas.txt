@@ -5,7 +5,7 @@ base_concepto_ley(X,Y,P,secrHacienda):- base_concepto_ley(X,Y,P,rete383).
 info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
 base_concepto_ley(X,Y,P,rete383):- valor_pago(X,V,P,T),R is (T * 0.25) rnd 0 , S is T - R,Y is (S rnd 0).
 base_concepto_ley(X,Y,P,rete384):- valor_pago(X,V,P,T), Y is (T rnd 0).
-info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(valor_pago(X,Y,P,T),R is T * Z)).
+info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentual)->(valor_pago(X,P,V),R is V * (Z/100))).
 concepto(X, descuento, porcentaje, pension,0.04, 2017).
 porcentaje_prestaciones(2017,0.200236900127638).
 valor_pago(X,V,P,T):- valor_contrato(X,VC), calcular_prestaciones(P,PC), Y is (VC - PC), duracion_contrato(X,D,V), R is Y / D, PB is (R rnd 0), dias_liquidados(X,DL),T is (((DL * PB) / 30) rnd 0).

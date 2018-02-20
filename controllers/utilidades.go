@@ -264,7 +264,7 @@ func consultar_estado_pago(num_cont string, vigencia, ano, mes int)(disponibilid
 		var respuesta_servicio string
 		var dispo int
 
-		if err :=getJson("http://"+beego.AppConfig.String("Urlargo")+":"+beego.AppConfig.String("Portargo")+"/"+beego.AppConfig.String("Nsargo")+"/aprobacion_pago/pago_aprobado/DVE10/2017/8/2018", &respuesta_servicio); err == nil {
+		if err :=getJson("http://"+beego.AppConfig.String("Urlargo")+":"+beego.AppConfig.String("Portargo")+"/"+beego.AppConfig.String("Nsargo")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+strconv.Itoa(vigencia)+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
 
 			if(respuesta_servicio == "True"){
 				dispo = 2;
@@ -323,16 +323,16 @@ func InformacionContratista(NumeroContrato string, VigenciaContrato int)(Nom, co
 
 func CrearResultado(detalles_a_totalizar []models.DetallePreliquidacion)(respuesta models.Respuesta){
 	var res models.Respuesta
-	
+
 	conceptos := make([]models.ConceptosResumen, len(detalles_a_totalizar))
 
 	for x,pos := range detalles_a_totalizar{
 		conceptos[x].Valor = strconv.FormatFloat(pos.ValorCalculado, 'E', -1, 64)
 		conceptos[x].NaturalezaConcepto = pos.Concepto.NaturalezaConcepto.Id;
-	
+
 	}
-	
+
 	res.Conceptos = &conceptos;
 	return res
-		
+
 }

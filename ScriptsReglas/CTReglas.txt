@@ -2,7 +2,7 @@ evaluar_uvt(VU,U,R):- (U @=< 95 -> R is 0).
 evaluar_uvt(VU,U,R):- (U @> 95, U@=<150 -> A is U - 95, B is A*0.19, C is B * VU, R is (C rnd 0)).
 evaluar_uvt(VU,U,R):- (U @> 150, U @=<360 -> A is U - 150, B is A*0.28, C is B * VU, D is (10 * VU), F is C + D, R is (F rnd 0)).
 evaluar_uvt(VU,U,R):- (U @> 360 -> A is U - 360, B is A*0.33, C is B * VU, D is (69 * VU), F is C + D, R is (F rnd 0)).
-base_retencion(B, V, R) :- base_minimo(B,V,A), calcular_salud(no,A,V,VS),  calcular_pension(no,A,V,VP), calcular_ARL(B,V,VARL), M is (VS+VP+VARL), T is B- M, C is T*0.25, R is T-C. 
+base_retencion(B, V, R) :- base_minimo(B,V,A), calcular_salud(no,A,V,VS),  calcular_pension(no,A,V,VP), calcular_ARL(B,V,VARL), M is (VS+VP+VARL), T is B- M, C is T*0.25, R is T-C.
 base_retefuente(B, R) :- X is (B * 0.25 rnd 0),R is B-X.
 valor_uvt(2017,31859).
 valor_uvt(2016,29753).
@@ -11,7 +11,7 @@ aplica_deduccion_retencion(290).
 aplica_deduccion_retencion(291).
 dias_liquidados(prueba,30).
 info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
-info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentaje)->(valor_pago(X,P,V),R is V * Z)).
+info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentual)->(valor_pago(X,P,V),R is V * (Z/100))).
 concepto(prueb, devengo, fijo, s, 1000000, 2017).
 valor_pago(X,V,P):-valor_contrato(X,Y), duracion_contrato(X,D,V), R is Y / D, dias_liquidados(X,DL),P is ((DL * R) rnd 0).
 reteica(2016, 9.66).

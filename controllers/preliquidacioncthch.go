@@ -89,7 +89,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 				FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
 				FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
-
+				fmt.Println("fechas de contrato", FechaInicio, FechaFin)
 				FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
 				FechaFinContrato = time.Date(FechaFin.Year(), FechaFin.Month(), FechaFin.Day(), 0, 0, 0, 0, time.UTC)
 
@@ -116,7 +116,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 				predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + datos_contrato.ValorContrato+ "). "})
 				predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(dias_contrato, 'f', -1, 64) + "," + vigencia_contrato + "). "})
 				predicados = append(predicados, models.Predicado{Nombre: "pensionado(no)."})
-
+				fmt.Println("predicados", predicados)
 				reglasinyectadas = FormatoReglas(predicados)
 
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
