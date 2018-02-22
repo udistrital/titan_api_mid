@@ -373,7 +373,6 @@ func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descu
 
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
 	 for _, solution := range valor_retencion {
-		 fmt.Println("retefuente")
 		val_reten:= fmt.Sprintf("%s", solution.ByName_("VR"))
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 		Valor: val_reten,

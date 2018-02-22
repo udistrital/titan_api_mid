@@ -140,7 +140,7 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
 	total_calculos = append(total_calculos, lista_retefuente...)
-	resultado = GuardarConceptosDP(total_calculos)
+	resultado = GuardarConceptosDP(reglas,total_calculos)
 
 	total_calculos = []models.ConceptosResumen{}
 
@@ -278,30 +278,43 @@ func CargarReglasDP(MesPreliquidacion int, AnoPreliquidacion int, dias_laborados
 				Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("X")), 64)
 				ibc = ibc + Valor
 			}
-		
+
 
 	}
 
-func GuardarConceptosDP(lista_descuentos []models.ConceptosResumen)(rest []models.Respuesta){
+func GuardarConceptosDP(reglas string,lista_descuentos []models.ConceptosResumen)(rest []models.Respuesta){
 			temp := models.Respuesta{}
 			var resultado []models.Respuesta
 
-			temp_conceptos := models.ConceptosResumen{Nombre: "ibc_liquidado",
+			m := NewMachine().Consult(reglas)
+
+	    temp_conceptos := models.ConceptosResumen{Nombre: "ibc_liquidado",
+	      Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
+	    }
+
+	    codigo := m.ProveAll(`codigo_concepto(ibc_liquidado,C, N).`)
+
+	    for _, cod := range codigo {
+	      temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+	      temp_conceptos.DiasLiquidados = dias_a_liquidar
+	    }
+
+			lista_descuentos = append(lista_descuentos, temp_conceptos)
+
+			temp_conceptos_1 := models.ConceptosResumen{Nombre: "ibc_novedad",
 				Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
 			}
-			temp_conceptos.Id = 2322
-			temp_conceptos.DiasLiquidados = dias_a_liquidar
 
-			lista_descuentos = append(lista_descuentos, temp_conceptos)
+			codigo_1 := m.ProveAll(`codigo_concepto(ibc_novedad,C, N).`)
 
-			temp_conceptos = models.ConceptosResumen{Nombre: "ibc_novedad",
-				Valor: fmt.Sprintf("%.0f", total_devengado_novedad),
+			for _, cod := range codigo_1 {
+				temp_conceptos_1.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+				temp_conceptos_1.DiasLiquidados = dias_a_liquidar
 			}
-			temp_conceptos.Id = 2327
-			temp_conceptos.DiasLiquidados = dias_novedad_string
 
 
-			lista_descuentos = append(lista_descuentos, temp_conceptos)
+			lista_descuentos = append(lista_descuentos, temp_conceptos_1)
+
 
 			temp.Conceptos = &lista_descuentos
 			resultado = append(resultado, temp)

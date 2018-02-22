@@ -24,7 +24,7 @@ func CargarReglasHCS(idProveedor int, reglas string, periodo string) (rest []mod
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
   total_calculos = append(total_calculos, lista_retefuente...)
-	resultado = GuardarConceptosHCS(total_calculos)
+	resultado = GuardarConceptosHCS(reglas,total_calculos)
 
 	total_calculos = []models.ConceptosResumen{}
   ibc = 0;
@@ -64,9 +64,11 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
 
     descuentos := m.ProveAll("concepto_ley(X,Y,"+periodo+",B,N).")
     for _, solution := range descuentos {
+      fmt.Println("resp")
       Base,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("B")), 64)
       Valor,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("Y")), 64)
       Nom_Concepto := fmt.Sprintf("%s", solution.ByName_("N"))
+      fmt.Println("nomconcepto",Nom_Concepto)
       temp_conceptos := models.ConceptosResumen {Nombre : fmt.Sprintf("%s", solution.ByName_("N")),
                                                  Base : fmt.Sprintf("%.0f", Base),
                                                  Valor : fmt.Sprintf("%.0f", Valor),
@@ -75,6 +77,7 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
       codigo := m.ProveAll("codigo_concepto("+temp_conceptos.Nombre+",C,N).")
 
       for _, cod := range codigo{
+        fmt.Println("nombre")
         temp_conceptos.Id , _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
         temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
         temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
@@ -89,15 +92,21 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
 
 }
 
-func GuardarConceptosHCS (lista_descuentos []models.ConceptosResumen)(rest []models.Respuesta){
+func GuardarConceptosHCS (reglas string,lista_descuentos []models.ConceptosResumen)(rest []models.Respuesta){
 		temp := models.Respuesta{}
 		var resultado []models.Respuesta
+    m := NewMachine().Consult(reglas)
 
     temp_conceptos := models.ConceptosResumen{Nombre: "ibc_liquidado",
-			Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
-		}
-		temp_conceptos.Id = 2322
-		temp_conceptos.DiasLiquidados = dias_a_liquidar
+      Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
+    }
+
+    codigo := m.ProveAll(`codigo_concepto(ibc_liquidado,C, N).`)
+
+    for _, cod := range codigo {
+      temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+      temp_conceptos.DiasLiquidados = dias_a_liquidar
+    }
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
 

@@ -28,7 +28,7 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
 	total_calculos = append(total_calculos, lista_retefuente...)
-	resultado = GuardarConceptosCT(total_calculos)
+	resultado = GuardarConceptosCT(reglas,total_calculos)
 
 	total_calculos = []models.ConceptosResumen{}
 	ibc = 0;
@@ -223,14 +223,22 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 }
 
-func GuardarConceptosCT (lista_descuentos []models.ConceptosResumen)(rest []models.Respuesta){
+func GuardarConceptosCT (reglas string,lista_descuentos []models.ConceptosResumen)(rest []models.Respuesta){
 		temp := models.Respuesta{}
 		var resultado []models.Respuesta
+		m := NewMachine().Consult(reglas)
+
 		temp_conceptos := models.ConceptosResumen{Nombre: "ibc_liquidado",
 			Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
 		}
-		temp_conceptos.Id = 2322
-		temp_conceptos.DiasLiquidados = dias_a_liquidar
+
+		codigo := m.ProveAll(`codigo_concepto(ibc_liquidado,C, N).`)
+
+		for _, cod := range codigo {
+			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.DiasLiquidados = dias_a_liquidar
+		}
+
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
 
