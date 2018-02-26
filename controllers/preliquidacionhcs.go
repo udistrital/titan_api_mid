@@ -32,6 +32,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 	var reglasinyectadas string
 	var reglas string
+	var predicados_retefuente string
 
 	var idDetaPre interface{}
 	var FechaInicioContrato time.Time
@@ -75,11 +76,12 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 				datos_contrato := objeto_datos_contrato.ContratoEstado
 				datos_acta := objeto_datos_acta.ActaInicio
+				fmt.Println(datos_contrato, datos_acta)
 				layout := "2006-01-02"
-				//FechaInicio, err = time.Parse(layout , "2017-02-01")
-				//FechaFin, err = time.Parse(layout , "2017-06-15")
-				FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
-				FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
+				FechaInicio, _ = time.Parse(layout , "2017-02-01")
+				FechaFin, _ = time.Parse(layout , "2017-06-15")
+				//FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
+				//FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
 				a,m,d := diff(FechaInicio,FechaFin)
 
 			FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
@@ -110,16 +112,15 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 			}
 
 			predicados = append(predicados,models.Predicado{Nombre:"dias_liquidados("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(periodo_liquidacion, 'f', -1, 64)+"). "} )
-			predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+datos_contrato.ValorContrato+"). "} )
+			predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+", 30723050). "} )
 			predicados = append(predicados,models.Predicado{Nombre:"duracion_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(meses_contrato, 'f', -1, 64)+","+vigencia_contrato+"). "} )
+
 			reglasinyectadas = FormatoReglas(predicados)
 
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
-			reglas =  reglasinyectadas + reglasbase
-			reglas = reglas + "descuento_int_viv(0)."
-			reglas = reglas + "descuento_med_pre(0)."
-			reglas = reglas + "dependientes(0)."
-			
+			predicados_retefuente = CargarDatosRetefuente(datos.PersonasPreLiquidacion[i].NumDocumento)
+			reglas =  reglasinyectadas + reglasbase + predicados_retefuente
+
 			temp := golog.CargarReglasHCS(datos.PersonasPreLiquidacion[i].IdPersona,reglas,vigencia_contrato)
 
 			resultado := temp[len(temp)-1]
@@ -146,6 +147,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 			objeto_datos_contrato = models.ObjetoContratoEstado{}
 			reglas = ""
 			reglasinyectadas = ""
+			predicados_retefuente = "";
 
 			}else{
 				fmt.Println("error al traer acta de inicio")

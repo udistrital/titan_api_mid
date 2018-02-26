@@ -16,7 +16,7 @@ func CargarReglasHCS(idProveedor int, reglas string, periodo string) (rest []mod
 	var tipoPreliquidacion_string = "2";
 
 	reglas = reglas + "cargo(0)."
-	reglas = reglas + "periodo("+periodo+")."
+	reglas = reglas + "periodo(2017)."
 
   lista_descuentos,total_devengado_no_novedad = CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string)
 	lista_novedades = ManejarNovedadesHCS(reglas,idProveedor, tipoPreliquidacion_string,periodo)

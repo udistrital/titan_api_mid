@@ -210,7 +210,7 @@ func CargarNovedadesPersona(id_persona int, numero_contrato string, vigencia int
 				 }
 
 				 if(v[i].NumCuotas == 999 && v[i].Concepto.NaturalezaConcepto.Nombre != "seguridad_social"){
-					
+
 						reglas = reglas + "concepto(" + strconv.Itoa(id_persona) + "," + v[i].Concepto.NaturalezaConcepto.Nombre + ", " + v[i].Concepto.TipoConcepto.Nombre + ", " + v[i].Concepto.NombreConcepto + ", " + strconv.FormatFloat(v[i].ValorNovedad, 'f', -1, 64) + ", " + strconv.Itoa(datos_preliqu.Ano) + "). " + "\n"
 					 if (v[i].Concepto.NaturalezaConcepto.Nombre == "devengo"){
 							 reglas = reglas + "devengo("+strconv.FormatFloat(v[i].ValorNovedad,'f', -1, 64)+","+v[i].Concepto.NombreConcepto+")." + "\n"
@@ -274,4 +274,44 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona){
 		if err2 := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/"+idNovedad_string, "PUT", &idCPP, &v); err2 == nil {
 
 	}
+}
+
+
+func CargarDatosRetefuente(cedula int) (reglas string) {
+
+	var v []models.InformacionPersonaNatural
+	reglas = ""
+	query := "Id:"+strconv.Itoa(cedula)
+	if err := getJson("https://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
+		if v != nil {
+
+				if(v[0].PersonasACargo == true){
+					reglas = reglas + "dependiente(si)."
+				}else{
+					reglas = reglas + "dependiente(no)."
+				}
+
+				if(v[0].DeclaranteRenta == true){
+					reglas = reglas + "declarante(si)."
+				}else{
+					reglas = reglas + "declarante(no)."
+				}
+
+				if(v[0].MedicinaPrepagada == true){
+					reglas = reglas + "medicina_prepagada(si)."
+				}else{
+					reglas = reglas + "medicina_prepagada(no)."
+				}
+
+				if(v[0].IdFondoPension == 119){
+					reglas = reglas + "pensionado(si)."
+				}else{
+					reglas = reglas + "pensionado(no)."
+				}
+
+				reglas = reglas + "intereses_vivienda("+strconv.Itoa(int(v[0].InteresViviendaAfc))+")."
+		}
+	}
+
+	return reglas
 }
