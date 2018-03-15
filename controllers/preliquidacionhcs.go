@@ -78,10 +78,10 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 				datos_acta := objeto_datos_acta.ActaInicio
 				fmt.Println(datos_contrato, datos_acta)
 				layout := "2006-01-02"
-				FechaInicio, _ = time.Parse(layout , "2017-02-01")
-				FechaFin, _ = time.Parse(layout , "2017-06-15")
-				//FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
-				//FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
+				//FechaInicio, _ = time.Parse(layout , "2017-02-01")
+				//FechaFin, _ = time.Parse(layout , "2017-06-15")
+				FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
+				FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
 				a,m,d := diff(FechaInicio,FechaFin)
 
 			FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
@@ -93,11 +93,13 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 
 			} else if int(FechaFinContrato.Month()) == datos.Preliquidacion.Mes && int(FechaFinContrato.Year()) == datos.Preliquidacion.Ano {
+
 				FechaControl = time.Date(datos.Preliquidacion.Ano, time.Month(datos.Preliquidacion.Mes), 1, 0, 0, 0, 0, time.UTC)
 				periodo_liquidacion = CalcularDias(FechaControl, FechaFinContrato)
 
 			} else {
 				periodo_liquidacion = 30
+
 
 
 			}
@@ -110,11 +112,12 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 			}else{
 				predicados = append(predicados,models.Predicado{Nombre:"fin_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+",no). "} )
 			}
-
+			fmt.Println(vigencia_contrato, meses_contrato)
 			predicados = append(predicados,models.Predicado{Nombre:"dias_liquidados("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(periodo_liquidacion, 'f', -1, 64)+"). "} )
-			predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+", 30723050). "} )
+			predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+datos_contrato.ValorContrato+"). "} )
 			predicados = append(predicados,models.Predicado{Nombre:"duracion_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(meses_contrato, 'f', -1, 64)+","+vigencia_contrato+"). "} )
-
+			fmt.Println("valor contrato",datos_contrato.ValorContrato)
+			fmt.Println("duracion",periodo_liquidacion)
 			reglasinyectadas = FormatoReglas(predicados)
 
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)

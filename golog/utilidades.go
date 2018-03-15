@@ -38,10 +38,12 @@ func CalcularDiasNovedades(MesPreliq, AnoPreliq int,  AnoDesde float64, MesDesde
 }
 
 func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados float64) {
+	fmt.Println("khé")
 	var a, m, d int
 	var meses_contrato float64
 	var dias_contrato float64
 	if FechaFin.IsZero() {
+		fmt.Println("calculo dias",a,m,d)
 		var FechaFin2 time.Time
 		FechaFin2 = time.Now()
 		a, m, d = diff(FechaInicio, FechaFin2)
@@ -50,6 +52,7 @@ func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados flo
 
 	} else {
 		a, m, d = diff(FechaInicio, FechaFin)
+		fmt.Println("calculo dias",a,m,d)
 		meses_contrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
 		dias_contrato = meses_contrato * 30
 
