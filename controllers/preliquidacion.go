@@ -140,6 +140,7 @@ func CargarReglasBase(dominio string) (reglas string) {
 			reglasbase = reglasbase + "codigo_concepto("+datos.NombreConcepto + "," + strconv.Itoa(datos.Id) + "," + strconv.Itoa(datos.NaturalezaConcepto.Id)+")." + "\n"
 		}
 	} else {
+		fmt.Println("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina?limit=-1")
 		fmt.Println("error al cargar conceptos como reglas")
 	}
 
