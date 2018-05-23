@@ -191,7 +191,8 @@ func ActaInicioDVE(id_contrato string, vigencia int)(datos models.ObjetoActaInic
 func verificacion_pago(id_proveedor,ano, mes int, num_cont string, vig int, resultado models.Respuesta)(estado int){
 
 	estado_pago := consultar_estado_pago(num_cont, vig, ano, mes);
-	disponibilidad := calcular_disponibilidad(id_proveedor,vig,resultado)
+	//disponibilidad := calcular_disponibilidad(id_proveedor,vig,resultado)
+	disponibilidad := 2;
 
 	if(estado_pago == 2 && disponibilidad == 2){
 		return 2
@@ -263,7 +264,8 @@ func consultar_estado_pago(num_cont string, vigencia, ano, mes int)(disponibilid
 		//if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorActualRp/"+id_registro_pre, &saldo_rp); err == nil {
 		var respuesta_servicio string
 		var dispo int
-
+		fmt.Println("URL ARGO")
+		fmt.Println("http://"+beego.AppConfig.String("Urlargo")+":"+beego.AppConfig.String("Portargo")+"/"+beego.AppConfig.String("Nsargo")+"/aprobacion_pago/pago_aprobado/")
 		if err :=getJson("http://"+beego.AppConfig.String("Urlargo")+":"+beego.AppConfig.String("Portargo")+"/"+beego.AppConfig.String("Nsargo")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+strconv.Itoa(vigencia)+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
 
 			if(respuesta_servicio == "True"){
@@ -282,7 +284,7 @@ func consultar_estado_pago(num_cont string, vigencia, ano, mes int)(disponibilid
 
 }
 
-func InformacionContratista(NumeroContrato string, VigenciaContrato int)(Nom, cont, doc string,  err error){
+func InformacionPersona(tipoNomina string, NumeroContrato string, VigenciaContrato int)(Nom, cont, doc string,  err error){
 
 
 	var temp map[string]interface{}
@@ -290,10 +292,19 @@ func InformacionContratista(NumeroContrato string, VigenciaContrato int)(Nom, co
 	var nombre_contratista string
 	var contrato string
 	var documento string
+	var endpoint string
 
 	var control_error error
 
-	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/informacion_contrato_contratista/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
+	if(tipoNomina == "CT"){
+		endpoint = "informacion_contrato_contratista"
+	}
+
+	if(tipoNomina == "HCS" || tipoNomina == "HCH"){
+		endpoint = "informacion_contrato_elaborado_contratista"
+	}
+
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/"+endpoint+"/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
 
 		jsonDocentes, error_json := json.Marshal(temp)
 

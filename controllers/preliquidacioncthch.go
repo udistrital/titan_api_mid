@@ -128,7 +128,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
 
 				disp=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato,resultado)
-
+				fmt.Println("verificacion pago")
 				for _, descuentos := range *resultado.Conceptos {
 
 					valor, _ := strconv.ParseFloat(descuentos.Valor,64)

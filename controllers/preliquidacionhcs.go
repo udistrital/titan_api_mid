@@ -78,10 +78,10 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 				datos_acta := objeto_datos_acta.ActaInicio
 				fmt.Println(datos_contrato, datos_acta)
 				layout := "2006-01-02"
-				//FechaInicio, _ = time.Parse(layout , "2017-02-01")
-				//FechaFin, _ = time.Parse(layout , "2017-06-15")
-				FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
-				FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
+				FechaInicio, _ = time.Parse(layout , "2018-02-01")
+				FechaFin, _ = time.Parse(layout , "2018-06-15")
+				//FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
+				//FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
 				a,m,d := diff(FechaInicio,FechaFin)
 
 			FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)

@@ -24,12 +24,13 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 
 	lista_descuentos,total_devengado_no_novedad = CalcularConceptosCT(idProveedor,periodo,reglas, tipoPreliquidacion_string)
 	lista_novedades = ManejarNovedadesCT(reglas,idProveedor, tipoPreliquidacion_string,periodo)
+	fmt.Println("retefuente")
 	lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos);
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
 	total_calculos = append(total_calculos, lista_retefuente...)
 	resultado = GuardarConceptosCT(reglas,total_calculos)
-
+	fmt.Println("estoy guardando")
 	total_calculos = []models.ConceptosResumen{}
 	ibc = 0;
 
@@ -277,7 +278,7 @@ func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, peri
 		lista_novedades = append(lista_novedades, temp_conceptos)
 
 	}
-
+	fmt.Println("terminé novedades")
 	return lista_novedades
 
 }

@@ -1,0 +1,6 @@
+projectKey=scaner:titan_api_mid:0.01
+serverUrl=http://10.20.0.77:9000
+serverVersion=7.0.0.36138
+dashboardUrl=http://10.20.0.77:9000/dashboard/index/scaner:titan_api_mid:0.01
+ceTaskId=AWNvIPBPehz9wCZ_SCQx
+ceTaskUrl=http://10.20.0.77:9000/api/ce/task?id=AWNvIPBPehz9wCZ_SCQx

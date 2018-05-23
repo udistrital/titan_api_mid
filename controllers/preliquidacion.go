@@ -34,12 +34,15 @@ func (c *PreliquidacionController) Resumen() {
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/resumen", "POST", &datos_preliquidacion, &v); err == nil {
+			
 			for x, dato := range datos_preliquidacion {
-				datos_preliquidacion[x].NombreCompleto, datos_preliquidacion[x].NumeroContrato, datos_preliquidacion[x].Documento, error_consulta_informacion_agora= InformacionContratista(dato.NumeroContrato, dato.Vigencia)
+
+				datos_preliquidacion[x].NombreCompleto, datos_preliquidacion[x].NumeroContrato, datos_preliquidacion[x].Documento, error_consulta_informacion_agora= InformacionPersona(v.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.Vigencia)
 
 			}
 
 			if(error_consulta_informacion_agora == nil){
+
 				c.Data["json"] = datos_preliquidacion
 			}else{
 				c.Data["json"] = error_consulta_informacion_agora

@@ -348,6 +348,7 @@ func BuscarValorConcepto(lista_descuentos []models.ConceptosResumen,codigo_conce
 }
 
 func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
+	fmt.Println("entre acá a rete")
 	var lista_retefuente []models.ConceptosResumen
 	var ingresos int
 	var deduccion_salud int
@@ -393,6 +394,6 @@ func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descu
 		lista_retefuente = append(lista_retefuente, temp_conceptos)
 
 	}
-
+fmt.Println("terminé sal")
 	return lista_retefuente
 }

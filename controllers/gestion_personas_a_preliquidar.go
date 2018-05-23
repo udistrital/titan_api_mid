@@ -73,10 +73,10 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidarPendie
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/get_personas_pago_pendiente?idNomina="+strconv.Itoa(v.Id), &personas_pend_preliquidacion); err == nil && personas_pend_preliquidacion !=nil {
 
-			
+
 
 			for x, dato := range personas_pend_preliquidacion {
-				personas_pend_preliquidacion[x].NombreCompleto, _, personas_pend_preliquidacion[x].Documento, error_consulta_informacion_agora= InformacionContratista(dato.NumeroContrato, dato.VigenciaContrato)
+				personas_pend_preliquidacion[x].NombreCompleto, _, personas_pend_preliquidacion[x].Documento, error_consulta_informacion_agora= InformacionPersona(v.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
 				personas_pend_preliquidacion[x].Preliquidacion = Consultar_datos_preliq(dato.Preliquidacion.Id)
 			}
 
