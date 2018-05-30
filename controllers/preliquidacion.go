@@ -34,7 +34,7 @@ func (c *PreliquidacionController) Resumen() {
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/resumen", "POST", &datos_preliquidacion, &v); err == nil {
-			
+
 			for x, dato := range datos_preliquidacion {
 
 				datos_preliquidacion[x].NombreCompleto, datos_preliquidacion[x].NumeroContrato, datos_preliquidacion[x].Documento, error_consulta_informacion_agora= InformacionPersona(v.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.Vigencia)
@@ -76,7 +76,7 @@ func (c *PreliquidacionController) Resumen() {
 func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		fmt.Println("datos preli",v)
+
 		//carga de reglas desde el ruler
 		reglasbase := CargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
 
@@ -98,7 +98,7 @@ func (c *PreliquidacionController) Preliquidar() {
 			c.ServeJSON()
 		}
 
-		/*
+
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "FP" {
 
 			var n *PreliquidacionFpController
@@ -107,7 +107,7 @@ func (c *PreliquidacionController) Preliquidar() {
 			c.ServeJSON()
 
 		}
-
+		/*
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "DP"  {
 			var n *PreliquidaciondpController
 			resumen := n.Preliquidar(&v, reglasbase)
