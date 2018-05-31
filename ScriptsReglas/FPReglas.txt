@@ -112,14 +112,14 @@ aplica_ingreso_retencion(1175).
 aplica_deduccion_retencion(239).
 aplica_deduccion_retencion(290).
 aplica_deduccion_retencion(291).
-ajustar_deducciones(AD):- ingreso_retencion(IR),deduccion_salud(DS), deduccion_pen_vol(DPV), valor_uvt(2017, VU), Y is ((IR * 0.30) rnd 0), X is DS + DPV, Z is X / VU, (X@>=Y -> (Z@>=316.66 -> AD is ((VU * 316.66 )rnd 0);AD is X); AD is DPV).
-calcular_alivio_beneficiario(CAB):-beneficiario(si), ingreso_retencion(IR), valor_uvt(2017, VU), X is (IR * 0.10 rnd 0), Y is X / VU, (Y@>=32 -> CAB is VU * 32;CAB is X).
+ajustar_deducciones(AD,T):- ingreso_retencion(IR),deduccion_salud(DS), deduccion_pen_vol(DPV), valor_uvt(T, VU), Y is ((IR * 0.30) rnd 0), X is DS + DPV, Z is X / VU, (X@>=Y -> (Z@>=316.66 -> AD is ((VU * 316.66 )rnd 0);AD is X); AD is DPV).
+calcular_alivio_beneficiario(CAB,T):-beneficiario(si), ingreso_retencion(IR), valor_uvt(T, VU), X is (IR * 0.10 rnd 0), Y is X / VU, (Y@>=32 -> CAB is VU * 32;CAB is X).
 aplica_deduccion_penvol_retencion(2173).
-calcular_alivio_vivienda(CAV):- intereses_vivienda(IV), valor_uvt(2017, VU), Y is IV / VU, (Y@>=100 -> CAV is VU * 100; CAV is IV).
-calcular_alivio_salud_prepagada(CSP):- salud_prepagada(SP), valor_uvt(2017, VU), Y is SP / VU, (Y@>=16 -> CSP is VU * 16; CSP is SP).
-calcular_alivios(B,V,SP,D):- calcular_alivio_beneficiario(CAB), B is CAB, calcular_alivio_vivienda(CIV), V is CIV, calcular_alivio_salud_prepagada(CSP), SP is CSP.
+calcular_alivio_vivienda(CAV,T):- intereses_vivienda(IV), valor_uvt(T, VU), Y is IV / VU, (Y@>=100 -> CAV is VU * 100; CAV is IV).
+calcular_alivio_salud_prepagada(CSP,T):- salud_prepagada(SP), valor_uvt(T, VU), Y is SP / VU, (Y@>=16 -> CSP is VU * 16; CSP is SP).
+calcular_alivios(B,V,SP,D,T):- calcular_alivio_beneficiario(CAB,T), B is CAB, calcular_alivio_vivienda(CIV,T), V is CIV, calcular_alivio_salud_prepagada(CSP,T), SP is CSP.
 tope_deduccion(TD):- ingreso_retencion(IR), TD is IR * 0.40.
-valor_retencion(VR):- porcentaje_diciembre(PD),ingreso_retencion(IR), definitivo_deduccion(DD), tope_deduccion(TD), (DD@>=TD-> X is TD; X is DD),G is ((IR - X) * 0.75), VR is (((G * PD)/ 100) rnd 0).
+valor_retencion(VR):- porcentaje_diciembre(PD), ingreso_retencion(IR),resultado_deduccion(DD), tope_deduccion(TD), (DD@>=TD-> X is TD; X is DD),G is ((IR - X) * 0.75), VR is (((G * PD)/ 100) rnd 0).
 liquidacion_planta(salarioBase,S,M,DL,P,C,DLA,V):- sb(S,M,DL,V).
 periodo_liq_primsec(2).
 secretario(105).
@@ -215,3 +215,26 @@ info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==seguridad_social)->(R is 
 desc_obli_planta(salud, TD, P,M, V):- salud_fun(TD,P,M,V).
 desc_obli_planta(pension, TD, P,M, V):- pension_fun(TD,P,M,V).
 definitivo_deduccion(DD):- alivio_ben(AB), alivio_vin(AV), alivio_salud(AS), DD is AB + AV + AS.
+porcentaje_gr(2018,3, 0.20).
+porcentaje_gr(2018,1, 0.50).
+porcentaje_gr(2018,2, 0.50).
+porcentaje_gr(2018,218, 0.30).
+porcentaje_gr(2018,263, 0.50).
+porcentaje_gr(2018,265, 0.50).
+porcentaje_gr(2018,264, 0.50).
+porcentaje_pa(2018, 1, 0).
+porcentaje_pa(2018,2,0.03).
+porcentaje_pa(2018,3,0.05).
+porcentaje_pa(2018,4,0.07).
+porcentaje_ps(2018,1, 0).
+porcentaje_ps(2018,2, 0.03).
+porcentaje_ps(2018,3, 0.05).
+porcentaje_ps(2018,4, 0.07).
+porcentaje_ps(2018,5, 0.09).
+porcentaje_pension(2018,1, 0.04).
+porcentaje_pension(2018,2, 0.125).
+p_salud(exterior_familia, 2018,0.015).
+concepto(prueba, devengo, porcentaje, salud,0.5 , 2018).
+p_salud(otro, 2018,0.04).
+valor_uvt(2017,31859).
+valor_uvt(2018,33156).

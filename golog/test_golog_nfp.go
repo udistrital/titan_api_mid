@@ -138,7 +138,7 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 		lista_descuentos,total_devengado_no_novedad = CalcularConceptos(m, reglas,dias_a_liquidar,asignacion_basica_string,id_cargo_string,dias_laborados_string, tipoPreliquidacion_string, porcentajePT, idProveedor,periodo)
 		ibc = 0
 		lista_novedades = ManejarNovedades(reglas,idProveedor, tipoPreliquidacion_string, periodo)
-		//lista_retefuente = CalcularReteFuentePlanta(tipoPreliquidacion_string,reglas, lista_descuentos);
+		lista_retefuente = CalcularReteFuentePlanta(tipoPreliquidacion_string,reglas,periodo, lista_descuentos);
 		total_calculos = append(total_calculos, lista_descuentos...)
 		total_calculos = append(total_calculos, lista_novedades...)
 		total_calculos = append(total_calculos, lista_retefuente...)
@@ -185,7 +185,7 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 		ManejarNovedadesDevengosFP(reglas, tipoPreliquidacion_string)
 		total_devengado_string := strconv.Itoa(int(ibc))
 
-		valor_descuentos := m.ProveAll("desc_obli_planta(CON, "+total_devengado_string+", 2017,"+tipoPreliquidacion_string+", V).")
+		valor_descuentos := m.ProveAll("desc_obli_planta(CON, "+total_devengado_string+", "+periodo+","+tipoPreliquidacion_string+", V).")
 		for _, solution := range valor_descuentos {
 			fmt.Println("descuentos")
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)

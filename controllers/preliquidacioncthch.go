@@ -72,6 +72,8 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 		if(datos.Preliquidacion.Nomina.TipoNomina.Nombre == "CT"){
 			objeto_datos_contrato, error_consulta_contrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
+			fmt.Println("hola")
+			fmt.Println(objeto_datos_contrato)
 			objeto_datos_acta, error_consulta_acta = ActaInicioContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
 		}else{
