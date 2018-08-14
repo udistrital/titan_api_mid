@@ -140,13 +140,14 @@ func ContratosDVE(id_contrato string, vigencia int)(datos models.ObjetoContratoE
 	var temp_docentes models.ObjetoContratoEstado
 	var control_error error
 
+	fmt.Println("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_elaborado_estado/"+id_contrato+"/"+strconv.Itoa(vigencia))
 	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_elaborado_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
 
 			json.Unmarshal(jsonDocentes, &temp_docentes)
-
+			fmt.Println(temp_docentes)
 		} else {
 			control_error = error_json
 			fmt.Println("error al traer contratos docentes DVE")
@@ -296,36 +297,56 @@ func InformacionPersona(tipoNomina string, NumeroContrato string, VigenciaContra
 
 	var control_error error
 
-	if(tipoNomina == "CT"){
-		endpoint = "informacion_contrato_contratista"
-	}
 
-	if(tipoNomina == "HCS" || tipoNomina == "HCH"){
-		endpoint = "informacion_contrato_elaborado_contratista"
-	}
+	if(tipoNomina == "CT" || tipoNomina == "HCS" || tipoNomina == "HCH"){
 
-	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/"+endpoint+"/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
+			if(tipoNomina == "CT"){
+				endpoint = "informacion_contrato_contratista"
+			}
 
-		jsonDocentes, error_json := json.Marshal(temp)
+			if(tipoNomina == "HCS" || tipoNomina == "HCH"){
+				endpoint = "informacion_contrato_elaborado_contratista"
+			}
 
-		if error_json == nil {
+			if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/"+endpoint+"/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
 
-			json.Unmarshal(jsonDocentes, &temp_docentes)
-			nombre_contratista = temp_docentes.InformacionContratista.NombreCompleto
-			documento = temp_docentes.InformacionContratista.Documento.Numero
-			contrato = temp_docentes.InformacionContratista.Contrato.Numero
+				jsonDocentes, error_json := json.Marshal(temp)
+
+				if error_json == nil {
+
+					json.Unmarshal(jsonDocentes, &temp_docentes)
+					nombre_contratista = temp_docentes.InformacionContratista.NombreCompleto
+					documento = temp_docentes.InformacionContratista.Documento.Numero
+					contrato = temp_docentes.InformacionContratista.Contrato.Numero
 
 
-		} else {
-			control_error = error_json
-			fmt.Println("error al traer contratos docentes DVE")
+				} else {
+					control_error = error_json
+					fmt.Println("error al traer contratos docentes DVE")
+				}
+			} else {
+				control_error = err
+				fmt.Println("Error al unmarshal datos de nómina",err)
+
+
+			}
 		}
-	} else {
-		control_error = err
-		fmt.Println("Error al unmarshal datos de nómina",err)
+
+		if(tipoNomina == "FP"){
+			fmt.Println("asdafadada1")
+			var datos_planta []models.Funcionario_x_Proveedor
+			if err = getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/informacion_proveedor/get_informacion_personas_planta?numero_contrato="+NumeroContrato+"&vigencia="+strconv.Itoa(VigenciaContrato), &datos_planta); err == nil {
+				fmt.Println("asdafadada", datos_planta)
+				nombre_contratista = datos_planta[0].NombreProveedor ;
+				contrato = datos_planta[0].NumeroContrato;
+				documento = strconv.Itoa(datos_planta[0].NumDocumento);
+				control_error = err;
+			}else{
+				fmt.Println(err)
+			}
 
 
-	}
+			}
 
 		return nombre_contratista, contrato, documento,control_error;
 

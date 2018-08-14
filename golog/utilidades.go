@@ -212,8 +212,8 @@ func getJson(url string, target interface{}) error {
 	return json.NewDecoder(r.Body).Decode(target)
 }
 
-func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
-	fmt.Println("retefuente")
+func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas,periodo string, lista_descuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
+	fmt.Println("retefuente",periodo)
 	var lista_retefuente []models.ConceptosResumen
 
 	var ingresos int
@@ -231,7 +231,7 @@ func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas string, lista_de
 	temp_reglas = temp_reglas + "salud_prepagada(0)."
 	temp_reglas = temp_reglas + "declarante(si)."
 	temp_reglas = temp_reglas + "porcentaje_diciembre(0.48)."
-	temp_reglas = temp_reglas + "valor_uvt(2017,31859)."
+
 	m := NewMachine().Consult(temp_reglas)
 
 	consultar_conceptos_ingresos_retencion := m.ProveAll("aplica_ingreso_retencion(X).")
@@ -272,7 +272,7 @@ func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas string, lista_de
 	}
 
 
-	alivios := n.ProveAll("calcular_alivios(B,V,SP,D).")
+	alivios := n.ProveAll("calcular_alivios(B,V,SP,D,"+periodo+").")
 	 for _, solution := range alivios {
 		Valor_alivio_beneficiario, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("B")), 64)
 		Valor_alivio_vivienda, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
@@ -280,7 +280,7 @@ func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas string, lista_de
 
 	}
 
-	ajuste_deduccion := n.ProveAll("ajustar_deducciones(AD).")
+	ajuste_deduccion := n.ProveAll("ajustar_deducciones(AD,"+periodo+").")
 	 for _, solution := range ajuste_deduccion {
 		deduccion_pen_vol,_ = strconv.Atoi(fmt.Sprintf("%s", solution.ByName_("AD")))
 
@@ -301,18 +301,21 @@ func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas string, lista_de
 
 	x := NewMachine().Consult(temp_reglas)
 
-	deduccion_def := x.ProveAll("definitivo_deduccion(DD).")
-	 for _, solution := range deduccion_def {
-		definitivo_deduccion,_ = strconv.Atoi(fmt.Sprintf("%s", solution.ByName_("DD")))
-	}
+
+		deduccion_def := x.ProveAll("definitivo_deduccion(DD).")
+		 for _, solution := range deduccion_def {
+			 fmt.Println("deduccion")
+			definitivo_deduccion,_ = strconv.Atoi(fmt.Sprintf("%s", solution.ByName_("DD")))
+		}
 
 
-	temp_reglas = temp_reglas + "definitivo_deduccion("+strconv.Itoa(definitivo_deduccion)+")."
+		temp_reglas = temp_reglas + "resultado_deduccion("+strconv.Itoa(definitivo_deduccion)+")."
 
-	o := NewMachine().Consult(temp_reglas)
+		o := NewMachine().Consult(temp_reglas)
 
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
 	 for _, solution := range valor_retencion {
+		 fmt.Println("asdf")
 		val_reten:= fmt.Sprintf("%s", solution.ByName_("VR"))
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 		Valor: val_reten,

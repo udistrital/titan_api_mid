@@ -48,7 +48,15 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 					c.Data["json"] = err.Error()
 					fmt.Println("error : ", err)
 				}
-			}
+			}	else if v.TipoNomina.Nombre == "FP" {
+					if listaContratos, err := ListaContratosFuncionariosPlanta(); err == nil {
+						c.Ctx.Output.SetStatus(201)
+						c.Data["json"] = listaContratos
+					} else {
+						c.Data["json"] = err.Error()
+						fmt.Println("error : ", err)
+					}
+				}
 
 	} else {
 		c.Data["json"] = err.Error()
@@ -115,7 +123,7 @@ func ListaContratosDocentesDVE(objeto_nom models.Nomina)(arreglo_contratos model
 		tipo_nom = "2"
 	}
 
-	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/"+tipo_nom, &temp); err == nil && temp != nil {
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/"+tipo_nom+"/2018-07/2018-07", &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
@@ -143,7 +151,7 @@ func ListaContratosContratistas(objeto_nom models.Nomina)(arreglo_contratos mode
 	var temp_docentes models.ObjetoFuncionarioContrato
 	var control_error error
 
-	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_tipo/6", &temp); err == nil && temp != nil {
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/2018-07/2018-07", &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
@@ -160,9 +168,20 @@ func ListaContratosContratistas(objeto_nom models.Nomina)(arreglo_contratos mode
 
 
 	}
-
+	fmt.Println("temp",temp_docentes)
 	return temp_docentes, control_error;
 
+}
+
+func ListaContratosFuncionariosPlanta()(arreglo_contratos []models.Funcionario_x_Proveedor, e error){
+	var err error
+	var datos_planta []models.Funcionario_x_Proveedor
+	if err = getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_proveedor/get_funcionarios_planta", &datos_planta); err == nil && datos_planta !=nil {
+		fmt.Println("funcionario")
+		fmt.Println(datos_planta)
+	}
+
+	return datos_planta, err
 }
 
 func  Consultar_datos_preliq(id_pre int)(preliq *models.Preliquidacion){

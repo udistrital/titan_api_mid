@@ -16,12 +16,14 @@ type PreliquidacionFpController struct {
 }
 
 func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
+
+	fmt.Println("holaaa")
 	//declaracion de variables
 	var reglasinyectadas string
 	var reglas string
 	var idDetaPre interface{}
 	var resumen_preliqu []models.Respuesta
-		var datos_pruebas []models.DatosPruebas
+	
 
 	var porcentajePT int
 	var tipoNom int;
@@ -30,7 +32,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
-
+		fmt.Println("hellouuu")
 		var informacion_cargo []models.FuncionarioCargo
 		filtrodatos := models.FuncionarioCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
 		tipoNom = 2
@@ -39,7 +41,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 			porcentajePT = 0
 		}
 
-		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo", "POST", &informacion_cargo, &filtrodatos); err == nil {
+		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo/get_asignacion_basica", "POST", &informacion_cargo, &filtrodatos); err == nil {
 
 			dias_laborados := CalcularDias(informacion_cargo[0].FechaInicio, informacion_cargo[0].FechaFin)
 			//reglasNominasEspeciales := crearHechosNominasEspeciales(datos.Preliquidacion,datos.PersonasPreLiquidacion[i].IdPersona)
@@ -48,12 +50,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 			reglas = reglasinyectadas + reglasbase + esAnual// + reglasNominasEspeciales
 
 			//fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
-			if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/datos_pruebas?limit=-1&query=MesPreliq:"+strconv.Itoa(datos.Preliquidacion.Mes)+",AnoPreliq:"+strconv.Itoa(datos.Preliquidacion.Ano)+",NumDocumento:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].NumDocumento), &datos_pruebas); err == nil && datos_pruebas != nil{
-				arreglo_pruebas[i] = models.PruebaGo{informacion_cargo, "",datos.Preliquidacion.FechaRegistro, datos_pruebas[0].ValorSalario,"","","","",datos_pruebas[0].ValorPrimaTecnica,datos_pruebas[0].ValorPrimaAnt,datos_pruebas[0].ValorSalud,datos_pruebas[0].ValorPension,datos.PersonasPreLiquidacion[i].IdPersona,datos.PersonasPreLiquidacion[i].NumDocumento,dias_laborados,datos.Preliquidacion.Mes,datos.Preliquidacion.Ano, porcentajePT, tipoNom}
 
-			}else{
-				fmt.Println(err)
-			}
 
 
 
