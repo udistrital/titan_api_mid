@@ -219,7 +219,7 @@ func GuardarConceptos (reglas string,lista_descuentos []models.ConceptosResumen)
 		m := NewMachine().Consult(reglas)
 
 		temp_conceptos := models.ConceptosResumen{Nombre: "ibc_liquidado",
-			Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
+		  	Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
 		}
 
 		codigo := m.ProveAll(`codigo_concepto(ibc_liquidado,C, N).`)
@@ -229,6 +229,7 @@ func GuardarConceptos (reglas string,lista_descuentos []models.ConceptosResumen)
 			temp_conceptos.DiasLiquidados = dias_a_liquidar
 		}
 
+		lista_descuentos = append(lista_descuentos, temp_conceptos)
 
 		temp_conceptos_1 := models.ConceptosResumen{Nombre: "ibc_novedad",
 			Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
