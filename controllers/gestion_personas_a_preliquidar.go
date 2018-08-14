@@ -22,14 +22,14 @@ func (c *GestionPersonasAPreliquidarController) URLMapping() {
 // Post ...
 // @Title Create
 // @Description create ListarPersonasAPreliquidar
-// @Param	body 	models.Nomina	true		"body for Nomina content"
+// @Param	body 	models.Preliquidacion	true		"body for Nomina content"
 // @Success 201 {object}
 // @Failure 403 body is empty
 // @router /listar_personas_a_preliquidar_argo/ [post]
 func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
-	var v models.Nomina
+	var v models.Preliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if v.TipoNomina.Nombre == "CT" {
+		if v.Nomina.TipoNomina.Nombre == "CT" {
 
 			if listaContratos, err := ListaContratosContratistas(v); err == nil {
 				c.Ctx.Output.SetStatus(201)
@@ -40,7 +40,7 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 			}
 
 
-		} else if v.TipoNomina.Nombre == "HCS" || v.TipoNomina.Nombre == "HCH" {
+		} else if v.Nomina.TipoNomina.Nombre == "HCS" || v.Nomina.TipoNomina.Nombre == "HCH" {
 				if listaContratos, err := ListaContratosDocentesDVE(v); err == nil {
 					c.Ctx.Output.SetStatus(201)
 					c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
@@ -48,7 +48,7 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 					c.Data["json"] = err.Error()
 					fmt.Println("error : ", err)
 				}
-			}	else if v.TipoNomina.Nombre == "FP" {
+			}	else if v.Nomina.TipoNomina.Nombre == "FP" {
 					if listaContratos, err := ListaContratosFuncionariosPlanta(); err == nil {
 						c.Ctx.Output.SetStatus(201)
 						c.Data["json"] = listaContratos
@@ -69,22 +69,22 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 // Post ...
 // @Title Create
 // @Description create ListarPersonasAPreliquidar
-// @Param	body 	models.Nomina	true		"body for Nomina content"
+// @Param	body 	models.Preliquidacion	true		"body for Nomina content"
 // @Success 201 {object}
 // @Failure 403 body is empty
 // @router /listar_personas_a_preliquidar_pendientes/ [post]
 func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidarPendientes() {
-	var v models.Nomina
+	var v models.Preliquidacion
 	var personas_pend_preliquidacion []models.DetallePreliquidacion
 	var error_consulta_informacion_agora error
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/get_personas_pago_pendiente?idNomina="+strconv.Itoa(v.Id), &personas_pend_preliquidacion); err == nil && personas_pend_preliquidacion !=nil {
+		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/get_personas_pago_pendiente?idNomina="+strconv.Itoa(v.Nomina.Id), &personas_pend_preliquidacion); err == nil && personas_pend_preliquidacion !=nil {
 
 
 
 			for x, dato := range personas_pend_preliquidacion {
-				personas_pend_preliquidacion[x].NombreCompleto, _, personas_pend_preliquidacion[x].Documento, error_consulta_informacion_agora= InformacionPersona(v.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
+				personas_pend_preliquidacion[x].NombreCompleto, _, personas_pend_preliquidacion[x].Documento, error_consulta_informacion_agora= InformacionPersona(v.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
 				personas_pend_preliquidacion[x].Preliquidacion = Consultar_datos_preliq(dato.Preliquidacion.Id)
 			}
 
@@ -110,20 +110,24 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidarPendie
 
 }
 
-func ListaContratosDocentesDVE(objeto_nom models.Nomina)(arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error){
+func ListaContratosDocentesDVE(objeto_nom models.Preliquidacion)(arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error){
 
 	var temp map[string]interface{}
 	var tipo_nom string
 	var temp_docentes models.ObjetoFuncionarioContrato
 	var control_error error
+	var ano = strconv.Itoa(objeto_nom.Ano);
+	var mes = strconv.Itoa(objeto_nom.Mes);
 
-	if(objeto_nom.TipoNomina.Nombre == "HCH") {
+	fmt.Println("ano", ano, mes)
+
+	if(objeto_nom.Nomina.TipoNomina.Nombre == "HCH") {
 		tipo_nom = "3"
 	}else {
 		tipo_nom = "2"
 	}
 
-	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/"+tipo_nom+"/2018-07/2018-07", &temp); err == nil && temp != nil {
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/"+tipo_nom+"/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
@@ -145,13 +149,17 @@ func ListaContratosDocentesDVE(objeto_nom models.Nomina)(arreglo_contratos model
 
 }
 
-func ListaContratosContratistas(objeto_nom models.Nomina)(arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error){
+func ListaContratosContratistas(objeto_nom models.Preliquidacion)(arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error){
 
 	var temp map[string]interface{}
 	var temp_docentes models.ObjetoFuncionarioContrato
 	var control_error error
+	var ano = strconv.Itoa(objeto_nom.Ano);
+	var mes = strconv.Itoa(objeto_nom.Mes);
 
-	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/2018-07/2018-07", &temp); err == nil && temp != nil {
+	fmt.Println("ano", ano, mes)
+
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
