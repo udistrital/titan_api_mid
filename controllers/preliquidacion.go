@@ -134,7 +134,7 @@ func (c *PreliquidacionController) Preliquidar() {
 func CargarReglasBase(dominio string) (reglas string) {
 	//carga de reglas desde el ruler
 	var reglasbase string = ``
-
+	fmt.Println("dominio", dominio)
 	var v []models.Predicado
 	var datos_conceptos []models.ConceptoNomina
 
