@@ -24,13 +24,13 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 
 	lista_descuentos,total_devengado_no_novedad = CalcularConceptosCT(idProveedor,periodo,reglas, tipoPreliquidacion_string)
 	lista_novedades = ManejarNovedadesCT(reglas,idProveedor, tipoPreliquidacion_string,periodo)
-	fmt.Println("retefuente")
+
 	lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos);
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
 	total_calculos = append(total_calculos, lista_retefuente...)
 	resultado = GuardarConceptosCT(reglas,total_calculos)
-	fmt.Println("estoy guardando")
+
 	total_calculos = []models.ConceptosResumen{}
 	ibc = 0;
 
@@ -253,7 +253,7 @@ func GuardarConceptosCT (reglas string,lista_descuentos []models.ConceptosResume
 
 
 func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, periodo string) (rest []models.ConceptosResumen){
-	fmt.Println("novedades")
+
 	var lista_novedades []models.ConceptosResumen
 
 	f := NewMachine().Consult(reglas)
@@ -262,7 +262,7 @@ func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, peri
 	novedades := f.ProveAll("info_concepto(" + idProveedorString + ",T,"+periodo+",N,R).")
 
 	for _, solution := range novedades {
-		fmt.Println("soluchon")
+
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
 			Valor: fmt.Sprintf("%.0f", Valor),
@@ -278,7 +278,7 @@ func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, peri
 		lista_novedades = append(lista_novedades, temp_conceptos)
 
 	}
-	fmt.Println("terminé novedades")
+	
 	return lista_novedades
 
 }

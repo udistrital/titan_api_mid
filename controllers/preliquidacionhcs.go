@@ -60,13 +60,22 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 							verificacion_pago_pendientes=verificacion_pago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, pos.VigenciaContrato,resultado)
 							pos.EstadoDisponibilidad = &models.EstadoDisponibilidad{Id: verificacion_pago_pendientes}
 							if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/"+strconv.Itoa(pos.Id), "PUT", &respuesta, pos); err == nil  {
-								fmt.Println("preliquidaciones actualizadas")
+
 							} else {
 								beego.Debug("error al actualizar detalle de preliquidación: ", err)
 							}
 						}
 
 					}else{
+
+
+		objeto_datos_contrato.ContratoEstado.ValorContrato = "3500000"
+		objeto_datos_contrato.ContratoEstado.Vigencia = strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
+		objeto_datos_contrato.ContratoEstado.NumeroContrato = datos.PersonasPreLiquidacion[i].NumeroContrato
+
+
+		//objeto_datos_acta.ActaInicio.FechaInicioTemp = "2018-02-01";
+		//objeto_datos_acta.ActaInicio.FechaFinTemp = "2018-06-15";
 
 		objeto_datos_contrato, error_consulta_contrato = ContratosDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 		objeto_datos_acta, error_consulta_acta = ActaInicioDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
@@ -76,12 +85,12 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 
 				datos_contrato := objeto_datos_contrato.ContratoEstado
 				datos_acta := objeto_datos_acta.ActaInicio
-				fmt.Println(datos_contrato, datos_acta)
+
 				layout := "2006-01-02"
-				FechaInicio, _ = time.Parse(layout , "2018-02-01")
-				FechaFin, _ = time.Parse(layout , "2018-06-15")
-				//FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
-				//FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
+				//FechaInicio, _ = time.Parse(layout , "2018-02-01")
+				//FechaFin, _ = time.Parse(layout , "2018-06-15")
+				FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
+				FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
 				a,m,d := diff(FechaInicio,FechaFin)
 
 			FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
@@ -112,12 +121,10 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 			}else{
 				predicados = append(predicados,models.Predicado{Nombre:"fin_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+",no). "} )
 			}
-			fmt.Println(vigencia_contrato, meses_contrato)
+		
 			predicados = append(predicados,models.Predicado{Nombre:"dias_liquidados("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(periodo_liquidacion, 'f', -1, 64)+"). "} )
 			predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+datos_contrato.ValorContrato+"). "} )
 			predicados = append(predicados,models.Predicado{Nombre:"duracion_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(meses_contrato, 'f', -1, 64)+","+vigencia_contrato+"). "} )
-			fmt.Println("valor contrato",datos_contrato.ValorContrato)
-			fmt.Println("duracion",periodo_liquidacion)
 			reglasinyectadas = FormatoReglas(predicados)
 
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
