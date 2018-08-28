@@ -131,7 +131,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 				fmt.Println("retefuente")
 			predicados_retefuente = CargarDatosRetefuente(datos.PersonasPreLiquidacion[i].NumDocumento)
 			reglas =  reglasinyectadas + reglasbase + predicados_retefuente
-			fmt.Println("reglas", reglas)
+			
 			temp := golog.CargarReglasHCS(datos.PersonasPreLiquidacion[i].IdPersona,reglas,vigencia_contrato)
 
 			resultado := temp[len(temp)-1]
