@@ -25,8 +25,24 @@ func init() {
 
 	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"],
 		beego.ControllerComments{
+			Method: "DesagregadoNominaPorFacultad",
+			Router: `/desagregado_nomina_por_facultad/`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"],
+		beego.ControllerComments{
 			Method: "TotalNominaPorFacultad",
 			Router: `/total_nomina_por_facultad/`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"],
+		beego.ControllerComments{
+			Method: "TotalNominaPorProyecto",
+			Router: `/total_nomina_por_proyecto/`,
 			AllowHTTPMethods: []string{"post"},
 			MethodParams: param.Make(),
 			Params: nil})

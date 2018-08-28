@@ -134,7 +134,7 @@ func (c *PreliquidacionController) Preliquidar() {
 func CargarReglasBase(dominio string) (reglas string) {
 	//carga de reglas desde el ruler
 	var reglasbase string = ``
-	
+
 	var v []models.Predicado
 	var datos_conceptos []models.ConceptoNomina
 
@@ -286,6 +286,7 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 	var v []models.InformacionPersonaNatural
 	reglas = ""
 	query := "Id:"+strconv.Itoa(cedula)
+  fmt.Println("ruta de consulta1","https://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query)
 	if err := getJson("https://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
 		if v != nil {
 

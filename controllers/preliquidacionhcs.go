@@ -121,13 +121,14 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 			}else{
 				predicados = append(predicados,models.Predicado{Nombre:"fin_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+",no). "} )
 			}
-		
+
 			predicados = append(predicados,models.Predicado{Nombre:"dias_liquidados("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(periodo_liquidacion, 'f', -1, 64)+"). "} )
 			predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+datos_contrato.ValorContrato+"). "} )
 			predicados = append(predicados,models.Predicado{Nombre:"duracion_contrato("+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)+","+strconv.FormatFloat(meses_contrato, 'f', -1, 64)+","+vigencia_contrato+"). "} )
 			reglasinyectadas = FormatoReglas(predicados)
-
+			fmt.Println("reglas inyectadas", reglasinyectadas)
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
+				fmt.Println("retefuente")
 			predicados_retefuente = CargarDatosRetefuente(datos.PersonasPreLiquidacion[i].NumDocumento)
 			reglas =  reglasinyectadas + reglasbase + predicados_retefuente
 
