@@ -186,10 +186,9 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 
 	var v models.ObjetoReporte
 	var d []models.DetallePreliquidacion
+	var res []models.DetallePreliquidacion
 	var vinculaciones []models.VinculacionDocente
-	var total float64;
-	var total_descuentos float64;
-	var cont_dev = 0;
+
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
@@ -207,12 +206,9 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:1"
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 					if(d != nil){
-							if(d[0].Concepto.Id == 11) {
-									cont_dev = cont_dev + 1;
-							}
 
-							total = total + d[0].ValorCalculado
-
+							res = append(res,d...)
+							fmt.Println(res)
 					}
 
 					}else{
@@ -224,7 +220,8 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query2, &d); err == nil {
 					if(d != nil){
 
-							total_descuentos = total_descuentos + d[0].ValorCalculado
+						res = append(res,d...)
+
 
 					}
 
@@ -233,10 +230,8 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 					}
 			}
 
-			v.TotalDev = total
-			v.TotalDesc =  total_descuentos
-			v.TotalDocentes = cont_dev
-			c.Data["json"] = v
+
+			c.Data["json"] = res
 		}else{
 			fmt.Println("error en vinculaciones",err)
 		}
