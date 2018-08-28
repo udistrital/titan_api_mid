@@ -318,7 +318,9 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 				reglas = reglas + "intereses_vivienda("+strconv.Itoa(int(v[0].InteresViviendaAfc))+")."
         fmt.Println("resultado pruebas")
 		}
-	}
+	}else{
+    fmt.Println("error",err)
+  }
 
 	return reglas
 }
