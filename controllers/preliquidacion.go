@@ -288,8 +288,9 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 	query := "Id:"+strconv.Itoa(cedula)
   fmt.Println("ruta de consulta1","https://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query)
 	if err := getJson("https://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
+    fmt.Println("error nulo ")
 		if v != nil {
-
+            fmt.Println("reglas retefuente ")
 				if(v[0].PersonasACargo == true){
 					reglas = reglas + "dependiente(si)."
 				}else{
@@ -315,6 +316,7 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 				}
 
 				reglas = reglas + "intereses_vivienda("+strconv.Itoa(int(v[0].InteresViviendaAfc))+")."
+        fmt.Println("resultado pruebas")
 		}
 	}
 
