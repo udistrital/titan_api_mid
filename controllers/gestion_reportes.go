@@ -185,7 +185,8 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 	fmt.Println("funcion")
 
 	var v models.ObjetoReporte
-	var d []models.DetallePreliquidacion
+	var devengos []models.DetallePreliquidacion
+	var descuentos []models.DetallePreliquidacion
 	var res []models.DetallePreliquidacion
 	var vinculaciones []models.VinculacionDocente
 
@@ -198,29 +199,35 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 		id_nomina := strconv.Itoa(v.Preliquidacion.Nomina.Id)
 		facultad := strconv.Itoa(v.Facultad)
 
+
 		query:= "IdResolucion.IdFacultad:"+facultad
 		fmt.Println("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query)
 		if err := getJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
 			fmt.Println("hola soy el total de vinculaciones para ese proyecto", len(vinculaciones))
 			for _, pos := range vinculaciones {
 				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:1"
-				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
-					if(d != nil){
-
-							res = append(res,d...)
-							fmt.Println(res)
+				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &devengos); err == nil {
+					if(devengos != nil){
+						for x, dato := range devengos {
+							 devengos[x].NombreCompleto, _ , devengos[x].Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
+						}
 					}
 
 					}else{
 						fmt.Println("error al traer valor calculado por devengos",err)
 					}
 
+					res = append(res, devengos...)
+
 				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:2"
 
-				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query2, &d); err == nil {
-					if(d != nil){
+				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query2, &descuentos); err == nil {
+					if(descuentos != nil){
 
-						res = append(res,d...)
+						for x, dato := range descuentos {
+							 descuentos[x].NombreCompleto, _ , descuentos[x].Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
+
+						}
 
 
 					}
@@ -228,10 +235,96 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 					}else{
 						fmt.Println("error al traer valor calculado por descuentos",err)
 					}
+
+					res = append(res, descuentos...)
+
 			}
 
 
 			c.Data["json"] = res
+
+		}else{
+			fmt.Println("error en vinculaciones",err)
+		}
+
+		}else{
+			c.Data["json"] = err
+			fmt.Println("error", err)
+		}
+
+	c.ServeJSON()
+
+}
+
+
+// Post ...
+// @Title Create
+// @Description create DesagregadoNominaPorProyectoCurricular
+// @Param	body 	models.DetallePreliquidacion	true		"body for Nomina content"
+// @Success 201 {object}
+// @Failure 403 body is empty
+// @router /desagregado_nomina_por_pc/ [post]
+func (c *GestionReportesController) DesagregadoNominaPorProyectoCurricular() {
+	fmt.Println("funcion")
+
+	var v models.ObjetoReporte
+	var devengos []models.DetallePreliquidacion
+	var descuentos []models.DetallePreliquidacion
+	var res []models.DetallePreliquidacion
+	var vinculaciones []models.VinculacionDocente
+
+
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+
+		fmt.Println("objeto",v)
+		ano:= strconv.Itoa(v.Preliquidacion.Ano)
+		mes := strconv.Itoa(v.Preliquidacion.Mes)
+		id_nomina := strconv.Itoa(v.Preliquidacion.Nomina.Id)
+		proyecto_curricular := strconv.Itoa(v.ProyectoCurricular)
+
+		query:= "IdProyectoCurricular:"+proyecto_curricular
+		fmt.Println("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query)
+		if err := getJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
+			fmt.Println("hola soy el total de vinculaciones para ese proyecto", len(vinculaciones))
+			for _, pos := range vinculaciones {
+				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:1"
+				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &devengos); err == nil {
+					if(devengos != nil){
+						for x, dato := range devengos {
+							 devengos[x].NombreCompleto, _ , devengos[x].Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
+						}
+					}
+
+					}else{
+						fmt.Println("error al traer valor calculado por devengos",err)
+					}
+
+					res = append(res, devengos...)
+
+				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:2"
+
+				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query2, &descuentos); err == nil {
+					if(descuentos != nil){
+
+						for x, dato := range descuentos {
+							 descuentos[x].NombreCompleto, _ , descuentos[x].Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
+
+						}
+
+
+					}
+
+					}else{
+						fmt.Println("error al traer valor calculado por descuentos",err)
+					}
+
+					res = append(res, descuentos...)
+
+			}
+
+
+			c.Data["json"] = res
+
 		}else{
 			fmt.Println("error en vinculaciones",err)
 		}
