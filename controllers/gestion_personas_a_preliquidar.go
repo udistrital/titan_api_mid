@@ -118,11 +118,15 @@ func ListaContratosDocentesDVE(objeto_nom models.Preliquidacion)(arreglo_contrat
 	var temp_docentes models.ObjetoFuncionarioContrato
 	var temp_docentes_tco models.ObjetoFuncionarioContrato
 	var control_error error
-	var ano = "2018";
-	var mes = "09";
+	var mes string
+	var ano = strconv.Itoa(objeto_nom.Ano);
 
-	//var ano = strconv.Itoa(objeto_nom.Ano);
-	//var mes = strconv.Itoa(objeto_nom.Mes);
+	if (objeto_nom.Mes >= 1 && objeto_nom.Mes <= 9){
+		mes = strconv.Itoa(objeto_nom.Mes);
+		mes = "0"+mes
+	}else{
+		mes = strconv.Itoa(objeto_nom.Mes);
+	}
 
 	fmt.Println("ano", ano, mes)
 
@@ -202,11 +206,19 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion)(arreglo_contra
 	var temp map[string]interface{}
 	var temp_docentes models.ObjetoFuncionarioContrato
 	var control_error error
+	var mes string
 	var ano = strconv.Itoa(objeto_nom.Ano);
-	var mes = strconv.Itoa(objeto_nom.Mes);
 
+	if (objeto_nom.Mes >= 1 && objeto_nom.Mes <= 9){
+		mes = strconv.Itoa(objeto_nom.Mes);
+		mes = "0"+mes
+	}else{
+		mes = strconv.Itoa(objeto_nom.Mes);
+	}
+
+	
 	fmt.Println("ano", ano, mes)
-
+	fmt.Println("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes)
 	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 

@@ -168,7 +168,7 @@ func ContratosContratistas(id_contrato string, vigencia int)(datos models.Objeto
 	var temp map[string]interface{}
 	var temp_docentes models.ObjetoContratoEstado
 	var control_error error
-
+	fmt.Println("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_estado/"+id_contrato+"/"+strconv.Itoa(vigencia))
 	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
