@@ -266,7 +266,7 @@ func consultar_estado_pago(num_cont string, vigencia, ano, mes int)(disponibilid
 		var respuesta_servicio string
 		var dispo int
 		fmt.Println("URL ARGO")
-		fmt.Println("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/")
+		fmt.Println("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+strconv.Itoa(vigencia)+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
 		if err :=getJson("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+strconv.Itoa(vigencia)+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
 
 			if(respuesta_servicio == "True"){
