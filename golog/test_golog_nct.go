@@ -20,7 +20,6 @@ func CargarReglasCT(idProveedor int, reglas string, periodo string) (rest []mode
 
 	reglas = reglas + "cargo(0)."
 	reglas = reglas + "periodo("+periodo+")."
-	//reglas = reglas + "nomina("+periodo+")."
 
 	lista_descuentos,total_devengado_no_novedad = CalcularConceptosCT(idProveedor,periodo,reglas, tipoPreliquidacion_string)
 	lista_novedades = ManejarNovedadesCT(reglas,idProveedor, tipoPreliquidacion_string,periodo)
@@ -93,7 +92,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 	}
 
-	//Estampila UD
+	/*Estampila UD - Se elimina porque a partir de 2018 
 
 	descuento_estampilla := m.ProveAll("calcular_estampilla("+salarioBase_string+", "+periodo+", R).")
 
@@ -118,7 +117,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 
 
 	}
-
+	*/
 	//proCultura
 
 	descuento_procultura := m.ProveAll("calcular_procultura("+salarioBase_string+", "+periodo+", R).")
@@ -278,7 +277,7 @@ func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, peri
 		lista_novedades = append(lista_novedades, temp_conceptos)
 
 	}
-	
+
 	return lista_novedades
 
 }

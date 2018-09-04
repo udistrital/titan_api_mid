@@ -92,6 +92,7 @@ func (c *PreliquidacionController) Preliquidar() {
 		}
 
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
+      fmt.Println("CTTTTTT")
 			var n *PreliquidacioncthchController //aca se esta creando un objeto del controlador especico
 			resumen := n.Preliquidar(&v, reglasbase)
 			c.Data["json"] = resumen
