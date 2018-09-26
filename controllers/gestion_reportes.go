@@ -364,7 +364,7 @@ func (c *GestionReportesController) TotalNominaPorDependencia() {
 		fmt.Println("objeto",v)
 		ano:= strconv.Itoa(v.Preliquidacion.Ano)
 		mes := strconv.Itoa(v.Preliquidacion.Mes)
-		id_nomina := strconv.Itoa(v.Preliquidacion.Nomina.Id)
+		id_nomina := "3"
 		dependencia := v.Dependencia
 
 				fmt.Println("Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina, "dependencia "+dependencia)
@@ -447,7 +447,7 @@ func (c *GestionReportesController) DesagregadoNominaPorDependencia() {
 		fmt.Println("objeto",v)
 		ano:= strconv.Itoa(v.Preliquidacion.Ano)
 		mes := strconv.Itoa(v.Preliquidacion.Mes)
-		id_nomina := strconv.Itoa(v.Preliquidacion.Nomina.Id)
+		id_nomina := "3"
 		dependencia := v.Dependencia
 
 				fmt.Println("Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina, "dependencia "+dependencia)
