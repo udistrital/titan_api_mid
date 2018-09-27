@@ -33,6 +33,11 @@ func init() {
 			),
 		),
 
+		beego.NSNamespace("/concepto_nomina_por_persona",
+			beego.NSInclude(
+				&controllers.Concepto_nomina_por_personaController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
