@@ -27,24 +27,18 @@ func (c *Concepto_nomina_por_personaController) URLMapping() {
 // @router /tr_registro_incapacidades [post]
 func (c *Concepto_nomina_por_personaController) TrRegistroIncapacidades() {
 	var (
-		// incapacidades                                    TrConceptosNomPersona // parámetro
 		incapacidades map[string][]map[string]interface{} // parámetro
-		// titanCrudResponse, ssCrudReponse map[string]interface{}              // respuesta del api de titan y seguridad social respectivamente
-		// apiResponse    map[string]interface{} // respuesta del api de titan y seguridad social respectivamente
-		apiResponse interface{} // respuesta del api de titan y seguridad social respectivamente
-		// deleteResponse string
+		apiResponse   interface{}                         // respuesta del api de titan y seguridad social respectivamente
 	)
 	try.This(func() {
 		json.Unmarshal(c.Ctx.Input.RequestBody, &incapacidades)
 		err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
 			"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/TrConceptosPorPersona", "POST", &apiResponse, &incapacidades)
 		if err != nil {
-			beego.Error("titanCrudResponse: ")
 			panic(apiResponse)
 		}
 
 		idNovedades := apiResponse.(map[string]interface{})["Body"].([]interface{})
-		beego.Info("idNovedades: ", idNovedades)
 		for i, id := range idNovedades {
 			incapacidades["Conceptos"][i]["Id"] = int(id.(float64))
 		}
@@ -55,16 +49,12 @@ func (c *Concepto_nomina_por_personaController) TrRegistroIncapacidades() {
 		if err != nil {
 			for _, id := range idNovedades {
 				aux := int(id.(float64))
-				beego.Info("aux:", aux)
-				beego.Info("http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") +
-					"/" + beego.AppConfig.String("Nscrud") + "/concepto_nomina_por_persona/" + strconv.Itoa(aux))
 				err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
 					"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/"+strconv.Itoa(aux), "DELETE", &apiResponse, nil)
 				if err != nil {
 					panic(err.Error())
 				}
 			}
-			beego.Info("registros eliminados de titan...")
 			panic(err.Error())
 		}
 
