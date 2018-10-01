@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/astaxie/beego"
 	"github.com/manucorporat/try"
@@ -27,45 +28,51 @@ func (c *Concepto_nomina_por_personaController) URLMapping() {
 func (c *Concepto_nomina_por_personaController) TrRegistroIncapacidades() {
 	var (
 		// incapacidades                                    TrConceptosNomPersona // parámetro
-		incapacidades                    map[string][]map[string]interface{} // parámetro
-		titanCrudResponse, ssCrudReponse map[string]interface{}              // respuesta del api de titan y seguridad social respectivamente
+		incapacidades map[string][]map[string]interface{} // parámetro
+		// titanCrudResponse, ssCrudReponse map[string]interface{}              // respuesta del api de titan y seguridad social respectivamente
+		// apiResponse    map[string]interface{} // respuesta del api de titan y seguridad social respectivamente
+		apiResponse interface{} // respuesta del api de titan y seguridad social respectivamente
+		// deleteResponse string
 	)
 	try.This(func() {
 		json.Unmarshal(c.Ctx.Input.RequestBody, &incapacidades)
 		err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
-			"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/TrConceptosPorPersona", "POST", &titanCrudResponse, &incapacidades)
+			"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/TrConceptosPorPersona", "POST", &apiResponse, &incapacidades)
 		if err != nil {
-			beego.Error()
-			panic(titanCrudResponse)
+			beego.Error("titanCrudResponse: ")
+			panic(apiResponse)
 		}
 
-		idNovedades := titanCrudResponse["Body"].([]interface{})
+		idNovedades := apiResponse.(map[string]interface{})["Body"].([]interface{})
 		beego.Info("idNovedades: ", idNovedades)
 		for i, id := range idNovedades {
 			incapacidades["Conceptos"][i]["Id"] = int(id.(float64))
 		}
 		infoNovedades := incapacidades["Conceptos"]
-		beego.Info(infoNovedades)
 
 		err = sendJson("http://"+beego.AppConfig.String("UrlSScrud")+":"+beego.AppConfig.String("PortSS")+
-			"/"+beego.AppConfig.String("NSSS")+"/detalle_novedad_seguridad_social/tr_registrar_detalle", "POST", &ssCrudReponse, &infoNovedades)
+			"/"+beego.AppConfig.String("NSSS")+"/detalle_novedad_seguridad_social/tr_registrar_detalle", "POST", &apiResponse, &infoNovedades)
 		if err != nil {
-			beego.Error("ss_crud_api error")
 			for _, id := range idNovedades {
+				aux := int(id.(float64))
+				beego.Info("aux:", aux)
+				beego.Info("http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") +
+					"/" + beego.AppConfig.String("Nscrud") + "/concepto_nomina_por_persona/" + strconv.Itoa(aux))
 				err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
-					"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona", "DELETE", &titanCrudResponse, &id)
+					"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/"+strconv.Itoa(aux), "DELETE", &apiResponse, nil)
 				if err != nil {
-					panic(titanCrudResponse)
+					panic(err.Error())
 				}
 			}
-			panic(ssCrudReponse)
+			beego.Info("registros eliminados de titan...")
+			panic(err.Error())
 		}
 
-		c.Data["json"] = ssCrudReponse
+		c.Data["json"] = apiResponse
 
 	}).Catch(func(e try.E) {
 		beego.Error("error en TrRegistroIncapacidades: ", e)
-		c.Data["json"] = incapacidades
+		c.Data["json"] = e
 	})
 
 	c.ServeJSON()
