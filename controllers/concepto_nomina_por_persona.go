@@ -35,7 +35,7 @@ func (c *Concepto_nomina_por_personaController) TrRegistroIncapacidades() {
 		err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
 			"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/TrConceptosPorPersona", "POST", &apiResponse, &incapacidades)
 		if err != nil {
-			panic(apiResponse)
+			panic(err.Error())
 		}
 
 		idNovedades := apiResponse.(map[string]interface{})["Body"].([]interface{})
