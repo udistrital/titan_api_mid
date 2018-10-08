@@ -20,7 +20,7 @@ var dias_liquidar_prima_semestral  string
 var total_calculos []models.ConceptosResumen
 var ingresos float64
 
-func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string, idProveedor int, numero_contrato string, vigencia_contrato int, informacion_cargo []models.FuncionarioCargo, dias_laborados float64, porcentajePT int, tipoPreliquidacion int) (rest []models.Respuesta) {
+func CargarReglasFP(dias_a_liq string, MesPreliquidacion int, AnoPreliquidacion int, reglas string, idProveedor int, numero_contrato string, vigencia_contrato int, informacion_cargo []models.FuncionarioCargo, dias_laborados float64, porcentajePT int, tipoPreliquidacion int) (rest []models.Respuesta) {
 
 	//--- Creación de variables
 	var resultado []models.Respuesta
@@ -41,8 +41,13 @@ func CargarReglasFP(MesPreliquidacion int, AnoPreliquidacion int, reglas string,
 	if tipoPreliquidacion_string  == "0" || tipoPreliquidacion_string  == "1" {
 		dias_a_liquidar = "15"
 
-	} else {
+	}
+
+	if tipoPreliquidacion_string  == "2" {
 		dias_a_liquidar = "30"
+
+	}	else {
+		dias_a_liquidar = dias_a_liq
 	}
 
 	nombre_archivo = "reglas" + strconv.Itoa(idProveedor) + ".txt"

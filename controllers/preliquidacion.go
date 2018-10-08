@@ -72,6 +72,73 @@ func (c *PreliquidacionController) Resumen() {
 // @Param	body		body 	models.Preliquidacion	true		"body for Preliquidacion content"
 // @Success 201 {object} models.Preliquidacion
 // @Failure 403 body is empty
+// @router /preliquidacion_prueba [post]
+func (c *PreliquidacionController) Preliquidar_Prueba() {
+	var v models.DatosPreliquidacion
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+
+		//carga de reglas desde el ruler
+		reglasbase := CargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
+
+		//-----------------------------
+
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
+			var n *PreliquidacionHcSController
+			resumen := n.Preliquidar(&v, reglasbase)
+
+			c.Data["json"] = resumen
+			c.ServeJSON()
+
+		}
+
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
+      fmt.Println("CTTTTTT")
+			var n *PreliquidacioncthchController //aca se esta creando un objeto del controlador especico
+			resumen := n.Preliquidar(&v, reglasbase)
+			c.Data["json"] = resumen
+			c.ServeJSON()
+		}
+
+
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "FP" {
+
+			var n *PreliquidacionFpController
+			resumen := n.Preliquidar_Planta_Prueba(&v, reglasbase)
+	 		c.Data["json"] = resumen
+			c.ServeJSON()
+
+		}
+		/*
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "DP"  {
+			var n *PreliquidaciondpController
+			resumen := n.Preliquidar(&v, reglasbase)
+			c.Data["json"] = resumen
+			c.ServeJSON()
+		}
+
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "PE" {
+			var n *PreliquidacionpeController
+			resumen := n.Preliquidar(&v, reglasbase)
+			c.Data["json"] = resumen
+			c.ServeJSON()
+*/
+
+
+
+
+
+	}else {
+		fmt.Println("error al leer datos de preliquidacion ", err)
+	}
+
+}
+
+// Post ...
+// @Title Create
+// @Description create Preliquidacion
+// @Param	body		body 	models.Preliquidacion	true		"body for Preliquidacion content"
+// @Success 201 {object} models.Preliquidacion
+// @Failure 403 body is empty
 // @router / [post]
 func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
