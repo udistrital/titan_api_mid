@@ -17,7 +17,7 @@ func CargarReglasHCS(idProveedor int, reglas string, periodo string) (rest []mod
 
 	reglas = reglas + "cargo(0)."
 	reglas = reglas + "periodo("+periodo+")."
-
+  fmt.Println("reglas", reglas)
   lista_descuentos,total_devengado_no_novedad = CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string)
 	lista_novedades = ManejarNovedadesHCS(reglas,idProveedor, tipoPreliquidacion_string,periodo)
   lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos);
@@ -39,7 +39,7 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
 	m := NewMachine().Consult(reglas)
 
 
-    valor_pago := m.ProveAll("valor_pago(X,V,"+periodo+",T).")
+    valor_pago := m.ProveAll("valor_pago(X,"+periodo+",T).")
     for _, solution := range valor_pago {
 
       Valor,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
@@ -128,7 +128,7 @@ func ManejarNovedadesHCS(reglas string, idProveedor int, tipoPreliquidacion, per
 	novedades := f.ProveAll("info_concepto(" + idProveedorString + ",T,"+periodo+",N,R).")
 
 	for _, solution := range novedades {
-
+    fmt.Println("novedades",solution)
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
 			Valor: fmt.Sprintf("%.0f", Valor),
