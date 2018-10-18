@@ -16,9 +16,10 @@ type Concepto_nomina_por_personaController struct {
 // URLMapping ...
 func (c *Concepto_nomina_por_personaController) URLMapping() {
 	c.Mapping("TrRegistroIncapacidades", c.TrRegistroIncapacidades)
+	c.Mapping("TrRegistroProrrogaIncapacidad", c.TrRegistroProrrogaIncapacidad)
 }
 
-// Post ...
+// TrRegistroIncapacidades ...
 // @Title tr_registro_incapacidades
 // @Description create tr_registro_incapacidades
 // @Param	body		body 	[]map[string]interface{}	true		"body for Concepto_nomina_por_persona content"
@@ -65,5 +66,38 @@ func (c *Concepto_nomina_por_personaController) TrRegistroIncapacidades() {
 		c.Data["json"] = e
 	})
 
+	c.ServeJSON()
+}
+
+// TrRegistroProrrogaIncapacidad ...
+// @Title TrRegistroProrrogaIncapacidad
+// @Description Recibe un objeto con la estructura de concepto_nomina_por_persona,
+// lo envía a una transacción del crud que se encarga de cambiar el estado del registro y también crea uno nuevo,
+// si la transacción del crud es correcta, se envía a un servicio del ss_crud_api que se encarga de registrar
+// una nueva información en la tabla detalle_novedad_seguridad_social. En caso de que ésta última sea correcta
+// finaliza la transacción, de lo contarió lo envía a una transacción del crud que se encarga de devolver el estado
+// al concepto_nomina_por_persona anterior y luego elimina el nuevo registro realizado al comienzo.
+// @Param	body		body 	map[string]interface{}	true		"body for Concepto_nomina_por_persona content"
+// @Success 201 {int} models.Concepto_nomina_por_persona
+// @Failure 403 body is empty
+// @router /tr_registro_prorroga_incapacidad [post]
+func (c *Concepto_nomina_por_personaController) TrRegistroProrrogaIncapacidad() {
+	var (
+		incapacidad map[string]interface{}
+		apiResponse interface{}
+	)
+	try.This(func() {
+		json.Unmarshal(c.Ctx.Input.RequestBody, &incapacidad)
+		aux := make(map[string][]map[string]interface{})
+		aux["Conceptos"] = append(aux["Conceptos"], incapacidad)
+		err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
+			"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/TrActualizarIncapacidadProrroga", "POST", &apiResponse, &aux)
+		if err != nil {
+			panic(err.Error())
+		}
+	}).Catch(func(e try.E) {
+		beego.Error("Error en TrRegistroProrrogaIncapacidad(): ", e)
+		c.Data["json"] = e
+	})
 	c.ServeJSON()
 }

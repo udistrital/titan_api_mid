@@ -15,6 +15,14 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
+	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:Concepto_nomina_por_personaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:Concepto_nomina_por_personaController"],
+		beego.ControllerComments{
+			Method: "TrRegistroProrrogaIncapacidad",
+			Router: `/tr_registro_prorroga_incapacidad`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
 	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionPersonasAPreliquidarController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionPersonasAPreliquidarController"],
 		beego.ControllerComments{
 			Method: "ListarPersonasAPreliquidar",
