@@ -8,7 +8,7 @@ type ObjetoFuncionarioContrato struct {
 			NumDocumento    string `json:"num_documento"`
 			NumeroContrato  string  `json:"numero_contrato"`
 			VigenciaContrato  string  `json:"vigencia"`
-
+			Preliquidado     string 
 		} `json:"contrato_tipo"`
 	} `json:"contratos_tipo"`
 }

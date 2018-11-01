@@ -189,7 +189,6 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 	var devengos []interface{}
 	var descuentos []interface{}
 	var res []interface{}
-	//var res []models.DetallePreliquidacion
 	var vinculaciones []models.VinculacionDocente
 
 
@@ -276,9 +275,9 @@ func (c *GestionReportesController) DesagregadoNominaPorProyectoCurricular() {
 	fmt.Println("funcion")
 
 	var v models.ObjetoReporte
-	var devengos []models.DetallePreliquidacion
-	var descuentos []models.DetallePreliquidacion
-	var res []models.DetallePreliquidacion
+	var devengos []interface{}
+	var descuentos []interface{}
+	var res []interface{}
 	var vinculaciones []models.VinculacionDocente
 
 
@@ -298,8 +297,12 @@ func (c *GestionReportesController) DesagregadoNominaPorProyectoCurricular() {
 				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:1"
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &devengos); err == nil {
 					if(devengos != nil){
-						for x, dato := range devengos {
-							 devengos[x].NombreCompleto, _ , devengos[x].Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
+						for _, dato := range devengos {
+							aux := models.DetallePreliquidacion{}
+							if err := formatdata.FillStruct(dato, &aux); err == nil{
+								aux.NombreCompleto, _ , aux.Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,aux.NumeroContrato, aux.VigenciaContrato)
+							 res = append(res, aux)
+							}
 						}
 					}
 
@@ -307,16 +310,19 @@ func (c *GestionReportesController) DesagregadoNominaPorProyectoCurricular() {
 						fmt.Println("error al traer valor calculado por devengos",err)
 					}
 
-					res = append(res, devengos...)
+					
 
 				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:2"
 
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query2, &descuentos); err == nil {
 					if(descuentos != nil){
 
-						for x, dato := range descuentos {
-							 descuentos[x].NombreCompleto, _ , descuentos[x].Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
-
+						for _, dato := range descuentos {
+							aux := models.DetallePreliquidacion{}
+							if err := formatdata.FillStruct(dato, &aux); err == nil{
+								aux.NombreCompleto, _ , aux.Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,aux.NumeroContrato, aux.VigenciaContrato)
+							 res = append(res, aux)
+							}
 						}
 
 
@@ -326,7 +332,7 @@ func (c *GestionReportesController) DesagregadoNominaPorProyectoCurricular() {
 						fmt.Println("error al traer valor calculado por descuentos",err)
 					}
 
-					res = append(res, descuentos...)
+
 
 			}
 
