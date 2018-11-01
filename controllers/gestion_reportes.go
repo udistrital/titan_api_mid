@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"github.com/udistrital/titan_api_mid/models"
+	"github.com/udistrital/utils_oas/formatdata"
 	//"time"
 	"github.com/astaxie/beego"
 )
@@ -185,15 +186,16 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 	fmt.Println("funcion")
 
 	var v models.ObjetoReporte
-	var devengos []models.DetallePreliquidacion
-	var descuentos []models.DetallePreliquidacion
-	var res []models.DetallePreliquidacion
+	var devengos []interface{}
+	var descuentos []interface{}
+	var res []interface{}
+	//var res []models.DetallePreliquidacion
 	var vinculaciones []models.VinculacionDocente
 
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
-		fmt.Println("objeto",v)
+
 		ano:= strconv.Itoa(v.Preliquidacion.Ano)
 		mes := strconv.Itoa(v.Preliquidacion.Mes)
 		id_nomina := strconv.Itoa(v.Preliquidacion.Nomina.Id)
@@ -205,11 +207,18 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 		if err := getJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
 			fmt.Println("hola soy el total de vinculaciones para ese proyecto", len(vinculaciones))
 			for _, pos := range vinculaciones {
+
+
 				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:1"
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &devengos); err == nil {
 					if(devengos != nil){
-						for x, dato := range devengos {
-							 devengos[x].NombreCompleto, _ , devengos[x].Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
+
+						for _, dato := range devengos {
+							 aux := models.DetallePreliquidacion{}
+							 if err := formatdata.FillStruct(dato, &aux); err == nil{
+								 aux.NombreCompleto, _ , aux.Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,aux.NumeroContrato, aux.VigenciaContrato)
+								res = append(res, aux)
+							 }
 						}
 					}
 
@@ -217,28 +226,27 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 						fmt.Println("error al traer valor calculado por devengos",err)
 					}
 
-					res = append(res, devengos...)
+
 
 				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:2"
 
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query2, &descuentos); err == nil {
 					if(descuentos != nil){
 
-						for x, dato := range descuentos {
-							 descuentos[x].NombreCompleto, _ , descuentos[x].Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
-
+						for _, dato := range descuentos {
+							aux := models.DetallePreliquidacion{}
+							if err := formatdata.FillStruct(dato, &aux); err == nil{
+								aux.NombreCompleto, _ , aux.Documento, _ = InformacionPersona(v.Preliquidacion.Nomina.TipoNomina.Nombre,aux.NumeroContrato, aux.VigenciaContrato)
+							 res = append(res, aux)
+							}
 						}
-
-
 					}
 
 					}else{
 						fmt.Println("error al traer valor calculado por descuentos",err)
 					}
-
-					res = append(res, descuentos...)
-
 			}
+
 
 
 			c.Data["json"] = res

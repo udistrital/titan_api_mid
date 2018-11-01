@@ -216,7 +216,7 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion)(arreglo_contra
 		mes = strconv.Itoa(objeto_nom.Mes);
 	}
 
-	
+
 	fmt.Println("ano", ano, mes)
 	fmt.Println("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes)
 	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
