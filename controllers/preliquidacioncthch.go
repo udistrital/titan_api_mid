@@ -72,8 +72,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 		if(datos.Preliquidacion.Nomina.TipoNomina.Nombre == "CT"){
 			objeto_datos_contrato, error_consulta_contrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
-			fmt.Println("hola")
-			fmt.Println(objeto_datos_contrato)
+
 			objeto_datos_acta, error_consulta_acta = ActaInicioContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
 		}else{
@@ -118,7 +117,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 				predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + datos_contrato.ValorContrato+ "). "})
 				predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(dias_contrato, 'f', -1, 64) + "," + vigencia_contrato + "). "})
 				predicados = append(predicados, models.Predicado{Nombre: "pensionado(no)."})
-				fmt.Println("predicados", predicados)
+
 				reglasinyectadas = FormatoReglas(predicados)
 
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
@@ -130,21 +129,27 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
 
 				disp=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato,resultado)
-				fmt.Println("verificacion pago")
-				for _, descuentos := range *resultado.Conceptos {
 
-					valor, _ := strconv.ParseFloat(descuentos.Valor,64)
-					dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
-					tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
-					detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: disp}}
+				//Solo se realiza al usuario añadir a la preliquidacion
+				fmt.Println("definitivaaaa",)
+				if datos.Preliquidacion.Definitiva == true {
+					for _, descuentos := range *resultado.Conceptos {
 
-					if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil && idDetaPre != nil {
+						valor, _ := strconv.ParseFloat(descuentos.Valor,64)
+						dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
+						tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
+						detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: disp}}
 
-					} else {
-						beego.Debug("error al insertar detalle de preliquidación: ", err)
+						if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil && idDetaPre != nil {
+
+						} else {
+							beego.Debug("error al insertar detalle de preliquidación: ", err)
+						}
 					}
 				}
 
+				//
+				resumen_preliqu = append(resumen_preliqu, resultado)
 				predicados = nil
 				objeto_datos_contrato = models.ObjetoContratoEstado{}
 				reglas = ""
@@ -159,7 +164,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 		}
 	}
 }
-
+	fmt.Println(resumen_preliqu)
 	return resumen_preliqu
 }
 
@@ -168,7 +173,6 @@ func ContratosContratistas(id_contrato string, vigencia int)(datos models.Objeto
 	var temp map[string]interface{}
 	var temp_docentes models.ObjetoContratoEstado
 	var control_error error
-	fmt.Println("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_estado/"+id_contrato+"/"+strconv.Itoa(vigencia))
 	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 

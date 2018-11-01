@@ -7,6 +7,7 @@ import (
 	"github.com/udistrital/titan_api_mid/golog"
 	"fmt"
 	"time"
+	"github.com/udistrital/utils_oas/request"
 
 )
 
@@ -69,6 +70,29 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 					}else{
 
 
+
+		//ELIMINAR REGISTROS SI ESE CONTRATO YA HA SIDO PRELIQUIDADO PARA ESTA PRELIQUIDACION
+		if datos.Preliquidacion.Definitiva == true {
+		var d []models.DetallePreliquidacion
+		query := "Preliquidacion.Id:"+strconv.Itoa(datos.Preliquidacion.Id)+",NumeroContrato:"+datos.PersonasPreLiquidacion[i].NumeroContrato+",VigenciaContrato:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
+
+						if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
+							if len(d) != 0 {
+							for _, dato :=  range d {
+									urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/detalle_preliquidacion/" + strconv.Itoa(dato.Id)
+									var res string
+									if err := request.SendJson(urlcrud, "DELETE", &res, nil); err == nil {
+										fmt.Println("borrado correctamente")
+									}else{
+										fmt.Println("error", err)
+									}
+								}
+							}
+
+						}else{
+							fmt.Println("error de detalle",err)
+						}
+		}
 		objeto_datos_contrato.ContratoEstado.ValorContrato = "3500000"
 		objeto_datos_contrato.ContratoEstado.Vigencia = strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 		objeto_datos_contrato.ContratoEstado.NumeroContrato = datos.PersonasPreLiquidacion[i].NumeroContrato
@@ -140,6 +164,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 			dispo=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato,resultado)
 
 			//se guardan los conceptos calculados en la nomina
+			if datos.Preliquidacion.Definitiva == true {
 			for _, descuentos := range *resultado.Conceptos{
 				valor, _ := strconv.ParseFloat(descuentos.Valor,64)
 				dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
@@ -152,6 +177,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos *models.DatosPreliquidac
 					beego.Debug("error1: ", err)
 				}
 			}
+		}
 			//------------------------------------------------
 			resumen_preliqu = append(resumen_preliqu, resultado)
 			predicados = nil;
