@@ -6,7 +6,7 @@ import (
 
 	"github.com/udistrital/titan_api_mid/golog"
 	"github.com/udistrital/titan_api_mid/models"
-
+	"github.com/udistrital/utils_oas/request"
 	"time"
 	"github.com/astaxie/beego"
 	"encoding/json"
@@ -70,6 +70,29 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 		}else{
 
+			if datos.Preliquidacion.Definitiva == true {
+			var d []models.DetallePreliquidacion
+			query := "Preliquidacion.Id:"+strconv.Itoa(datos.Preliquidacion.Id)+",NumeroContrato:"+datos.PersonasPreLiquidacion[i].NumeroContrato+",VigenciaContrato:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
+
+							if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
+								if len(d) != 0 {
+								for _, dato :=  range d {
+										urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/detalle_preliquidacion/" + strconv.Itoa(dato.Id)
+										var res string
+										if err := request.SendJson(urlcrud, "DELETE", &res, nil); err == nil {
+											fmt.Println("borrado correctamente")
+										}else{
+											fmt.Println("error", err)
+										}
+									}
+								}
+
+							}else{
+								fmt.Println("error de detalle",err)
+							}
+			}
+			
+
 		if(datos.Preliquidacion.Nomina.TipoNomina.Nombre == "CT"){
 			objeto_datos_contrato, error_consulta_contrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
@@ -130,23 +153,23 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 				disp=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato,resultado)
 
-				//Solo se realiza al usuario añadir a la preliquidacion
+
 				fmt.Println("definitivaaaa",)
+				//ELIMINAR REGISTROS SI ESE CONTRATO YA HA SIDO PRELIQUIDADO PARA ESTA PRELIQUIDACION
 				if datos.Preliquidacion.Definitiva == true {
-					for _, descuentos := range *resultado.Conceptos {
+				for _, descuentos := range *resultado.Conceptos{
+					valor, _ := strconv.ParseFloat(descuentos.Valor,64)
+					dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
+					tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
+					detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: disp}}
 
-						valor, _ := strconv.ParseFloat(descuentos.Valor,64)
-						dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
-						tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
-						detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: disp}}
+					if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
 
-						if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil && idDetaPre != nil {
-
-						} else {
-							beego.Debug("error al insertar detalle de preliquidación: ", err)
-						}
+					}else{
+						beego.Debug("error1: ", err)
 					}
 				}
+			}
 
 				//
 				resumen_preliqu = append(resumen_preliqu, resultado)
