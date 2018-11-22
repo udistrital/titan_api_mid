@@ -38,12 +38,12 @@ func CalcularDiasNovedades(MesPreliq, AnoPreliq int,  AnoDesde float64, MesDesde
 }
 
 func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados float64) {
-	fmt.Println("khé")
+
 	var a, m, d int
 	var meses_contrato float64
 	var dias_contrato float64
 	if FechaFin.IsZero() {
-		fmt.Println("calculo dias",a,m,d)
+
 		var FechaFin2 time.Time
 		FechaFin2 = time.Now()
 		a, m, d = diff(FechaInicio, FechaFin2)
@@ -52,7 +52,7 @@ func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados flo
 
 	} else {
 		a, m, d = diff(FechaInicio, FechaFin)
-		fmt.Println("calculo dias",a,m,d)
+
 		meses_contrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
 		dias_contrato = meses_contrato * 30
 
@@ -399,4 +399,57 @@ func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descu
 	}
 fmt.Println("terminé sal")
 	return lista_retefuente
+}
+
+
+func CalcularPeriodoLiquidacion(preliquidacion *models.Preliquidacion, objeto_datos_acta models.ObjetoActaInicio) (periodoLiquidacion, mesesContrato string) {
+
+	var FechaInicioContrato time.Time
+	var FechaFinContrato time.Time
+	var FechaControl time.Time
+	var FechaInicio time.Time
+	var FechaFin time.Time
+	var periodo_liquidacion float64
+	var meses_contrato float64
+
+	layout := "2006-01-02"
+	//FechaInicio, _ = time.Parse(layout , "2018-02-01")
+	//FechaFin, _ = time.Parse(layout , "2018-06-15")
+
+	datos_acta := objeto_datos_acta.ActaInicio
+
+	FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
+	FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
+	a,m,d := diff(FechaInicio,FechaFin)
+
+	fmt.Println("Fecha inicio",FechaInicio)
+	fmt.Println("Fecha fin",FechaFin)
+FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
+FechaFinContrato = time.Date(FechaFin.Year(), FechaFin.Month(), FechaFin.Day(), 0, 0, 0, 0, time.UTC)
+
+if int(FechaInicioContrato.Month()) == preliquidacion.Mes && int(FechaInicioContrato.Year()) == preliquidacion.Ano {
+	FechaControl = time.Date(preliquidacion.Ano, time.Month(preliquidacion.Mes), 30, 0, 0, 0, 0, time.UTC)
+	periodo_liquidacion = CalcularDias(FechaInicioContrato, FechaControl) + 1
+
+
+} else if int(FechaFinContrato.Month()) == preliquidacion.Mes && int(FechaFinContrato.Year()) == preliquidacion.Ano {
+
+	FechaControl = time.Date(preliquidacion.Ano, time.Month(preliquidacion.Mes), 1, 0, 0, 0, 0, time.UTC)
+	periodo_liquidacion = CalcularDias(FechaControl, FechaFinContrato) + 1
+
+} else {
+	periodo_liquidacion = 30
+
+}
+
+	fmt.Println("a", a, "m",m , "d",d)
+	if (FechaFin.Day() != FechaInicio.Day()){
+		d = d+1;
+	}
+	//meses_contrato = 4.5;
+	meses_contrato = (float64(a*12))+float64(m)+(float64(d)/30)
+	periodo := strconv.Itoa(int(periodo_liquidacion))
+	meses := strconv.FormatFloat(meses_contrato, 'E', -1, 64)
+
+	return periodo,meses
 }

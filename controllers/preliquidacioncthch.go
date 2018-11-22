@@ -59,7 +59,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 			resultado := CrearResultado(detalles_a_mod)
 			for _, pos := range detalles_a_mod {
 
-				verificacion_pago_pendientes=verificacion_pago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, pos.VigenciaContrato,resultado)
+				verificacion_pago_pendientes=verificacion_pago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, strconv.Itoa(pos.VigenciaContrato),resultado)
 				pos.EstadoDisponibilidad = &models.EstadoDisponibilidad{Id: verificacion_pago_pendientes}
 				if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/"+strconv.Itoa(pos.Id), "PUT", &respuesta, pos); err == nil  {
 					fmt.Println("preliquidaciones actualizadas")
@@ -91,7 +91,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 								fmt.Println("error de detalle",err)
 							}
 			}
-			
+
 
 		if(datos.Preliquidacion.Nomina.TipoNomina.Nombre == "CT"){
 			objeto_datos_contrato, error_consulta_contrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
@@ -99,8 +99,8 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 			objeto_datos_acta, error_consulta_acta = ActaInicioContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
 		}else{
-			objeto_datos_contrato, error_consulta_contrato = ContratosDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
-			objeto_datos_acta, error_consulta_acta = ActaInicioDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
+			objeto_datos_contrato, error_consulta_contrato = ContratosDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato) )
+			objeto_datos_acta, error_consulta_acta = ActaInicioDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato) )
 
 		}
 
@@ -143,15 +143,15 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 				reglasinyectadas = FormatoReglas(predicados)
 
-				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.Preliquidacion)
+				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato), datos.Preliquidacion)
 				reglas = reglasinyectadas + reglasbase
 
-				temp := golog.CargarReglasCT(datos.PersonasPreLiquidacion[i].IdPersona, reglas, vigencia_contrato)
+				temp := golog.CargarReglasCT(datos.PersonasPreLiquidacion[i].IdPersona, reglas, datos.Preliquidacion , vigencia_contrato, objeto_datos_acta)
 
 				resultado := temp[len(temp)-1]
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
 
-				disp=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato,resultado)
+				disp=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato),resultado)
 
 
 				fmt.Println("definitivaaaa",)

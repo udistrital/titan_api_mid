@@ -134,14 +134,14 @@ func WriteStringToFile(filepath, s string) error {
 }
 
 
-func ContratosDVE(id_contrato string, vigencia int)(datos models.ObjetoContratoEstado,  err error){
+func ContratosDVE(id_contrato , vigencia string)(datos models.ObjetoContratoEstado,  err error){
 
 	var temp map[string]interface{}
 	var temp_docentes models.ObjetoContratoEstado
 	var control_error error
 
-	fmt.Println("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_elaborado_estado/"+id_contrato+"/"+strconv.Itoa(vigencia))
-	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_elaborado_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+	fmt.Println("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_elaborado_estado/"+id_contrato+"/"+vigencia)
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_elaborado_estado/"+id_contrato+"/"+vigencia, &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
@@ -162,13 +162,13 @@ func ContratosDVE(id_contrato string, vigencia int)(datos models.ObjetoContratoE
 		return temp_docentes, control_error;
 }
 
-func ActaInicioDVE(id_contrato string, vigencia int)(datos models.ObjetoActaInicio,  err error){
+func ActaInicioDVE(id_contrato, vigencia string)(datos models.ObjetoActaInicio,  err error){
 
 	var temp map[string]interface{}
 	var temp_docentes models.ObjetoActaInicio
 	var control_error error
 
-	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio_elaborado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio_elaborado/"+id_contrato+"/"+vigencia, &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
 		if error_json == nil {
@@ -189,7 +189,7 @@ func ActaInicioDVE(id_contrato string, vigencia int)(datos models.ObjetoActaInic
 		return temp_docentes, control_error;
 }
 
-func verificacion_pago(id_proveedor,ano, mes int, num_cont string, vig int, resultado models.Respuesta)(estado int){
+func verificacion_pago(id_proveedor,ano, mes int, num_cont, vig string,  resultado models.Respuesta)(estado int){
 
 	estado_pago := consultar_estado_pago(num_cont, vig, ano, mes);
 	//disponibilidad := calcular_disponibilidad(id_proveedor,vig,resultado)
@@ -260,14 +260,14 @@ func calcular_disponibilidad(id_proveedor, vigencia int,respuesta models.Respues
 	return disponibilidad
 }
 
-func consultar_estado_pago(num_cont string, vigencia, ano, mes int)(disponibilidad int){
+func consultar_estado_pago(num_cont, vigencia string,  ano, mes int)(disponibilidad int){
 
 		//if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorActualRp/"+id_registro_pre, &saldo_rp); err == nil {
 		var respuesta_servicio string
 		var dispo int
 		fmt.Println("URL ARGO")
-		fmt.Println("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+strconv.Itoa(vigencia)+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
-		if err :=getJson("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+strconv.Itoa(vigencia)+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
+		fmt.Println("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
+		if err :=getJson("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
 
 			if(respuesta_servicio == "True"){
 				dispo = 2;

@@ -72,73 +72,6 @@ func (c *PreliquidacionController) Resumen() {
 // @Param	body		body 	models.Preliquidacion	true		"body for Preliquidacion content"
 // @Success 201 {object} models.Preliquidacion
 // @Failure 403 body is empty
-// @router /preliquidacion_prueba [post]
-func (c *PreliquidacionController) Preliquidar_Prueba() {
-	var v models.DatosPreliquidacion
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-
-		//carga de reglas desde el ruler
-		reglasbase := CargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
-
-		//-----------------------------
-
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
-			var n *PreliquidacionHcSController
-			resumen := n.Preliquidar(&v, reglasbase)
-
-			c.Data["json"] = resumen
-			c.ServeJSON()
-
-		}
-
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
-      fmt.Println("CTTTTTT")
-			var n *PreliquidacioncthchController //aca se esta creando un objeto del controlador especico
-			resumen := n.Preliquidar(&v, reglasbase)
-			c.Data["json"] = resumen
-			c.ServeJSON()
-		}
-
-
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "FP" {
-
-			var n *PreliquidacionFpController
-			resumen := n.Preliquidar_Planta_Prueba(&v, reglasbase)
-	 		c.Data["json"] = resumen
-			c.ServeJSON()
-
-		}
-		/*
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "DP"  {
-			var n *PreliquidaciondpController
-			resumen := n.Preliquidar(&v, reglasbase)
-			c.Data["json"] = resumen
-			c.ServeJSON()
-		}
-
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "PE" {
-			var n *PreliquidacionpeController
-			resumen := n.Preliquidar(&v, reglasbase)
-			c.Data["json"] = resumen
-			c.ServeJSON()
-*/
-
-
-
-
-
-	}else {
-		fmt.Println("error al leer datos de preliquidacion ", err)
-	}
-
-}
-
-// Post ...
-// @Title Create
-// @Description create Preliquidacion
-// @Param	body		body 	models.Preliquidacion	true		"body for Preliquidacion content"
-// @Success 201 {object} models.Preliquidacion
-// @Failure 403 body is empty
 // @router / [post]
 func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
@@ -151,21 +84,26 @@ func (c *PreliquidacionController) Preliquidar() {
 
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
 			var n *PreliquidacionHcSController
-			resumen := n.Preliquidar(&v, reglasbase)
+			resumen := n.Preliquidar(v, reglasbase)
 
 			c.Data["json"] = resumen
 			c.ServeJSON()
 
 		}
 
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
-      fmt.Println("CTTTTTT")
-			var n *PreliquidacioncthchController //aca se esta creando un objeto del controlador especico
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" {
+  		var n *PreliquidacioncthchController //aca se esta creando un objeto del controlador especico
 			resumen := n.Preliquidar(&v, reglasbase)
 			c.Data["json"] = resumen
 			c.ServeJSON()
 		}
 
+    if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
+  		var n *PreliquidacionhchController //aca se esta creando un objeto del controlador especico
+			resumen := n.Preliquidar(v, reglasbase)
+			c.Data["json"] = resumen
+			c.ServeJSON()
+		}
 
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "FP" {
 
@@ -199,6 +137,7 @@ func (c *PreliquidacionController) Preliquidar() {
 	}
 
 }
+
 func CargarReglasBase(dominio string) (reglas string) {
 	//carga de reglas desde el ruler
 	var reglasbase string = ``
@@ -240,13 +179,13 @@ func FormatoReglas(v []models.Predicado) (reglas string) {
 	return
 }
 
-func CargarNovedadesPersona(id_persona int, numero_contrato string, vigencia int, datos_preliqu *models.Preliquidacion) (reglas string) {
+func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, datos_preliqu *models.Preliquidacion) (reglas string) {
 
 	//consulta de la(s) novedades que pueda tener la persona para la pre-liquidacion
 	var v []models.ConceptoNominaPorPersona
 	reglas_nov_dev = ""
 	reglas = ""//inicializacion de la variable donde se inyectaran las novedades como reglas
-	query := "Activo:true,NumeroContrato:"+numero_contrato+",VigenciaContrato:"+strconv.Itoa(vigencia)
+	query := "Activo:true,NumeroContrato:"+numero_contrato+",VigenciaContrato:"+vigencia
 	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona?limit=-1&query="+query, &v); err == nil {
 		if v != nil {
 			for i := 0; i < len(v); i++ {
@@ -321,18 +260,18 @@ func validarNovedades_segSocial(Mes, Ano int, FechaDesde, FechaHasta time.Time) 
 
 }
 
-func cuotasPagas(numero_contrato string, vigencia,idConcepto int)(cuotas_pagas int){
+func cuotasPagas(numero_contrato, vigencia string, idConcepto int)(cuotas_pagas int){
 
-	var vigencia_string string
+
 	var idConcepto_string string
 
-	vigencia_string = strconv.Itoa(vigencia)
+
 	idConcepto_string = strconv.Itoa(idConcepto)
 
 	var numero_cuotas_pagas int
 
 	var detalle_preliquidacion []models.DetallePreliquidacion
-	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada,VigenciaContrato:"+vigencia_string+",NumeroContrato:"+numero_contrato+",Concepto.Id:"+idConcepto_string+"", &detalle_preliquidacion); err == nil {
+	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion.EstadoPreliquidacion.Nombre:Cerrada,VigenciaContrato:"+vigencia+",NumeroContrato:"+numero_contrato+",Concepto.Id:"+idConcepto_string+"", &detalle_preliquidacion); err == nil {
 		numero_cuotas_pagas = len(detalle_preliquidacion)
   }
 
@@ -388,6 +327,11 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 		}
 	}else{
     fmt.Println("error",err)
+    reglas = reglas + "dependiente(no)."
+    reglas = reglas + "declarante(no)."
+    reglas = reglas + "medicina_prepagada(no)."
+    reglas = reglas + "pensionado(no)."
+    reglas = reglas + "intereses_vivienda(0)."
   }
 
 	return reglas

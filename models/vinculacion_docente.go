@@ -1,7 +1,7 @@
 package models
 
 
-import (	
+import (
 
 	"database/sql"
 
@@ -14,5 +14,6 @@ type VinculacionDocente struct {
 	Vigencia             sql.NullInt64                 `orm:"column(vigencia);null"`
 	IdProyectoCurricular int16                         `orm:"column(id_proyecto_curricular)"`
 	DependenciaAcademica int                           `orm:"column(dependencia_academica)"`
-	
+	IdResolucion         *Resolucion									 `orm:"column(id_resolucion)"`
+	ValorContrato	float64
 }

@@ -2,7 +2,8 @@ package models
 
 type Respuesta struct {
 	Id           int
-	Nombre_Cont  string
+	NumeroContrato string
+	VigenciaContrato string
 	NumDocumento float64
 	Saldo_RP     float64
 	Valor_bruto  string

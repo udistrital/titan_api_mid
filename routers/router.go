@@ -27,6 +27,12 @@ func init() {
 			),
 		),
 
+		beego.NSNamespace("/gestion_contratos",
+			beego.NSInclude(
+				&controllers.GestionContratosController{},
+			),
+		),
+
 		beego.NSNamespace("/gestion_reportes",
 			beego.NSInclude(
 				&controllers.GestionReportesController{},

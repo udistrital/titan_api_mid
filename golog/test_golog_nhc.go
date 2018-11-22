@@ -7,16 +7,60 @@ import (
   . "github.com/udistrital/golog"
 )
 
-func CargarReglasHCS(idProveedor int, reglas string, periodo string) (rest []models.Respuesta) {
+func CargarReglasHCS(idProveedor int, reglas string, preliquidacion *models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio) (rest []models.Respuesta) {
 
   var resultado []models.Respuesta
 	var lista_descuentos []models.ConceptosResumen
 	var lista_novedades []models.ConceptosResumen
   var lista_retefuente []models.ConceptosResumen
 	var tipoPreliquidacion_string = "2";
-
+  var ano,_ =  strconv.Atoi(periodo)
 	reglas = reglas + "cargo(0)."
 	reglas = reglas + "periodo("+periodo+")."
+
+  //llamar funcion que calculaDias
+  dias_a_liquidar, meses := CalcularPeriodoLiquidacion(preliquidacion,objeto_datos_acta)
+  fmt.Println("dias liquidados", dias_a_liquidar)
+  fmt.Println("meses", meses)
+
+  reglas = reglas + "duracion_contrato("+strconv.Itoa(idProveedor)+","+meses+","+periodo+")."
+
+  m := NewMachine().Consult(reglas)
+  novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
+
+
+	for _, solution := range novedades_seg_social {
+
+		fmt.Println("aqui nov")
+
+		novedad := fmt.Sprintf("%s", solution.ByName_("N"))
+		AnoDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
+		MesDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
+		DiaDesde,_:= strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("D")), 64)
+		AnoHasta,_:= strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("AA")), 64)
+		MesHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
+		DiaHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
+
+		afectacion_seg_social := m.ProveAll("afectacion_seguridad("+novedad+").")
+		for _, solution := range afectacion_seg_social {
+
+				fmt.Println(solution)
+				dias_novedad := CalcularDiasNovedades(preliquidacion.Mes,ano,AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
+				dias_a_liquidar = strconv.Itoa(int(30 - dias_novedad))
+				dias_novedad_string = strconv.Itoa(int(dias_novedad))
+        reglas = reglas + "dias_liquidados("+strconv.Itoa(idProveedor)+","+dias_novedad_string+")."
+				_,total_devengado_novedad =  CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string)
+				ibc = 0;
+		}
+
+      if (len(novedades_seg_social) == 1){
+        reglas = reglas + "dias_liquidados("+strconv.Itoa(idProveedor)+","+dias_a_liquidar+")."
+      }
+
+		}
+
+
+
 
   lista_descuentos,total_devengado_no_novedad = CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string)
 	lista_novedades = ManejarNovedadesHCS(reglas,idProveedor, tipoPreliquidacion_string,periodo)
@@ -128,7 +172,7 @@ func ManejarNovedadesHCS(reglas string, idProveedor int, tipoPreliquidacion, per
 	novedades := f.ProveAll("info_concepto(" + idProveedorString + ",T,"+periodo+",N,R).")
 
 	for _, solution := range novedades {
-  
+
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)
 		temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
 			Valor: fmt.Sprintf("%.0f", Valor),
