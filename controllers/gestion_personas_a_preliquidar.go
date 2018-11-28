@@ -187,7 +187,7 @@ func ListarPersonasHCS(objeto_nom models.Preliquidacion)(arreglo_contratos model
 
 	var d []models.DetallePreliquidacion
 	for x, dato := range temp_docentes.ContratosTipo.ContratoTipo {
-		query := "Preliquidacion.Id:"+strconv.Itoa(objeto_nom.Id)+",NumeroContrato:"+dato.NumeroContrato+",VigenciaContrato:"+dato.VigenciaContrato
+		query := "Preliquidacion.Id:"+strconv.Itoa(objeto_nom.Id)+",Persona:"+dato.Id
 		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 			if len(d) == 0 {
 				temp_docentes.ContratosTipo.ContratoTipo[x].Preliquidado = "no"

@@ -10,4 +10,5 @@ type ConceptosResumen struct {
 	DiasLiquidados  			string
 	TipoPreliquidacion 		string
 	NaturalezaConcepto		int
+	AliasConcepto         string
 }

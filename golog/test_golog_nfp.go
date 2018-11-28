@@ -257,18 +257,7 @@ func GuardarConceptos (reglas string,lista_descuentos []models.ConceptosResumen)
 		return resultado
 }
 
-//Función que calcula IBC, basado en hechos de golog
-func CalcularIBC(reglas string){
 
-	e := NewMachine().Consult(reglas)
-
-	valor_ibc := e.ProveAll("calcular_ibc(V).")
-	for _, solution := range valor_ibc {
-		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-		ibc = ibc + Valor
-
-		}
-}
 
 //Función que gestiona las novedades de la persona
 func ManejarNovedades(reglas string, idProveedor int, tipoPreliquidacion, periodo string) (rest []models.ConceptosResumen){

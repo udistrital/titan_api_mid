@@ -37,6 +37,19 @@ func CalcularDiasNovedades(MesPreliq, AnoPreliq int,  AnoDesde float64, MesDesde
 
 }
 
+//Función que calcula IBC, basado en hechos de golog
+func CalcularIBC(reglas string){
+
+	e := NewMachine().Consult(reglas)
+
+	valor_ibc := e.ProveAll("calcular_ibc(V).")
+	for _, solution := range valor_ibc {
+		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
+		ibc = ibc + Valor
+
+		}
+}
+
 func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados float64) {
 
 	var a, m, d int
@@ -386,9 +399,10 @@ func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descu
 		}
 
 
-		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N).")
+		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			 temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 			temp_conceptos.DiasLiquidados = dias_a_liquidar
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
