@@ -249,22 +249,22 @@ func ListarPersonasHCH(objeto_nom models.Preliquidacion)(arreglo_contratos model
 	}
 
  //SABER SI YA FUE PRELIQUIDADO O NO
-	var d []models.DetallePreliquidacion
-	for x, dato := range temp_docentes.ContratosTipo.ContratoTipo {
-		query := "Preliquidacion.Id:"+strconv.Itoa(objeto_nom.Id)+",NumeroContrato:"+dato.NumeroContrato+",VigenciaContrato:"+dato.VigenciaContrato
-		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
-			if len(d) == 0 {
-				temp_docentes.ContratosTipo.ContratoTipo[x].Preliquidado = "no"
+ var d []models.DetallePreliquidacion
+ for x, dato := range temp_docentes.ContratosTipo.ContratoTipo {
+	 query := "Preliquidacion.Id:"+strconv.Itoa(objeto_nom.Id)+",Persona:"+dato.Id
+	 if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
+		 if len(d) == 0 {
+			 temp_docentes.ContratosTipo.ContratoTipo[x].Preliquidado = "no"
 
-			}else{
-				temp_docentes.ContratosTipo.ContratoTipo[x].Preliquidado = "si"
+		 }else{
+			 temp_docentes.ContratosTipo.ContratoTipo[x].Preliquidado = "si"
 
-			}
-		//	fmt.Println("respuesta - ", d)
-		}
+		 }
+
+	 }
 
 
-	}
+ }
 
 
 	return temp_docentes, control_error;

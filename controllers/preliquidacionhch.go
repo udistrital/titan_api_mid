@@ -50,32 +50,33 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 
 		}else{
 
-			if datos.Preliquidacion.Definitiva == true {
-			var d []models.DetallePreliquidacion
-			query := "Preliquidacion.Id:"+strconv.Itoa(datos.Preliquidacion.Id)+",NumeroContrato:"+datos.PersonasPreLiquidacion[i].NumeroContrato+",VigenciaContrato:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
-
-							if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
-								if len(d) != 0 {
-								for _, dato :=  range d {
-										urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/detalle_preliquidacion/" + strconv.Itoa(dato.Id)
-										var res string
-										if err := request.SendJson(urlcrud, "DELETE", &res, nil); err == nil {
-											fmt.Println("borrado correctamente")
-										}else{
-											fmt.Println("error", err)
-										}
-									}
-								}
-
-							}else{
-								fmt.Println("error de detalle",err)
-							}
-			}else{
 
 				temp_docentes, control_error = GetContratosPorPersonaHCH(datos)
 
 				//AGRUPAR PARA CALCULAR SOBRE VALORES TOTALES
 				if control_error == nil {
+
+					if datos.Preliquidacion.Definitiva == true {
+					var d []models.DetallePreliquidacion
+						query := "Preliquidacion.Id:"+strconv.Itoa(datos.Preliquidacion.Id)+",Persona:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)
+
+										if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
+											if len(d) != 0 {
+											for _, dato :=  range d {
+													urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/detalle_preliquidacion/" + strconv.Itoa(dato.Id)
+													var res string
+													if err := request.SendJson(urlcrud, "DELETE", &res, nil); err == nil {
+														fmt.Println("borrado correctamente")
+													}else{
+														fmt.Println("error", err)
+													}
+												}
+											}
+
+										}else{
+											fmt.Println("error de detalle",err)
+										}
+				   }
 
 				  //temp_agrupar := make(map[string]interface{}) // este mapa tiene la siguiente estructura: temp_agrupar[numero_cedula_docente][id_resolucion][valor_total] (cada resolucion tiene un único tipo de nivel académico, por lo tanto los valores totales se van sumando de acuerdo a la resolución )
 				  info_resolucion := make(map[string]string)
@@ -119,7 +120,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 				    for key,_ := range info_resoluciones {
 				      aux := models.ListaContratos{}
 				     if err := formatdata.FillStruct(info_resoluciones[key], &aux); err == nil{
-				       resumen_preliqu = append(resumen_preliqu,LiquidarContratoHCH(reglasbase,datos.PersonasPreLiquidacion[i].NumDocumento,datos.Preliquidacion,aux)...);
+				       resumen_preliqu = append(resumen_preliqu,LiquidarContratoHCH(reglasbase,datos.PersonasPreLiquidacion[i].NumDocumento,datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion,aux)...);
 				     }else{
 				       fmt.Println("error al guardar información agrupada",err)
 				     }
@@ -130,13 +131,13 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 
 
 
-			}
+
 }
 }
 	return resumen_preliqu
 }
 
-func LiquidarContratoHCH(reglasbase string, IdPersona int, preliquidacion *models.Preliquidacion,informacionContrato models.ListaContratos)(res []models.Respuesta){
+func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquidacion *models.Preliquidacion,informacionContrato models.ListaContratos)(res []models.Respuesta){
 	var predicados []models.Predicado //variable para inyectar reglas
 	var objeto_datos_acta models.ObjetoActaInicio
 	var error_consulta_acta error
@@ -146,9 +147,9 @@ func LiquidarContratoHCH(reglasbase string, IdPersona int, preliquidacion *model
 	var reglas string
 	var FechaInicio time.Time
 	var FechaFin time.Time
-	//var disp int
+	var dispo int
 
-	//var idDetaPre interface{}
+	var idDetaPre interface{}
 
 	objeto_datos_acta, error_consulta_acta = ActaInicioDVE(informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato)
 
@@ -162,41 +163,41 @@ func LiquidarContratoHCH(reglasbase string, IdPersona int, preliquidacion *model
 
 		 dias_contrato := CalcularDias(FechaInicio, FechaFin)
 	  vigencia_contrato := informacionContrato.VigenciaContrato
-	 	predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(IdPersona)+","+informacionContrato.Total+"). "} )
+	 	predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(Persona)+","+informacionContrato.Total+"). "} )
 	  predicados = append(predicados, models.Predicado{Nombre: "pensionado(no)."})
-		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(IdPersona) + "," + strconv.FormatFloat(dias_contrato, 'f', -1, 64) + "," + informacionContrato.VigenciaContrato+ "). "})
+		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(Persona) + "," + strconv.FormatFloat(dias_contrato, 'f', -1, 64) + "," + informacionContrato.VigenciaContrato+ "). "})
 
 	  reglasinyectadas = FormatoReglas(predicados)
 
-	  reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(IdPersona, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato, preliquidacion)
+	  reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(Persona, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato, preliquidacion)
 	  reglas = reglasinyectadas + reglasbase
 
-	  temp := golog.CargarReglasCT(IdPersona, reglas,preliquidacion,vigencia_contrato,datos_acta)
+	  temp := golog.CargarReglasCT(Persona, reglas,preliquidacion,vigencia_contrato,datos_acta)
 
 	  resultado := temp[len(temp)-1]
-		resultado.NumDocumento = float64(IdPersona)
+		resultado.NumDocumento = float64(NumDocumento)
 		resultado.NumeroContrato = informacionContrato.NumeroContrato
 		resultado.VigenciaContrato = informacionContrato.VigenciaContrato
 
-	 // disp=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato),resultado)
+		dispo=verificacion_pago(NumDocumento,preliquidacion.Ano, preliquidacion.Mes,informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato,resultado)
 
-	  //ELIMINAR REGISTROS SI ESE CONTRATO YA HA SIDO PRELIQUIDADO PARA ESTA PRELIQUIDACION
-		/*
-	  if datos.Preliquidacion.Definitiva == true {
-	  for _, descuentos := range *resultado.Conceptos{
-	    valor, _ := strconv.ParseFloat(descuentos.Valor,64)
-	    dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
-	    tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
-	    detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: disp}}
+		//se guardan los conceptos calculados en la nomina
 
-	    if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
+	 if preliquidacion.Definitiva == true {
 
-	    }else{
-	      beego.Debug("error1: ", err)
-	    }
-	  }
-	}
-	*/
+	 for _, descuentos := range *resultado.Conceptos{
+		 valor, _ := strconv.ParseFloat(descuentos.Valor,64)
+		 dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
+		 tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
+		 detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: preliquidacion.Id}, ValorCalculado: valor, Persona: Persona, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: dispo}}
+
+		 if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
+			 fmt.Println(idDetaPre)
+		 }else{
+			 beego.Debug("error1: ", err)
+		 }
+	 }
+ }
 
 	  //
 	  resumen_preliqu = append(resumen_preliqu, resultado)
