@@ -7,12 +7,6 @@ import (
 
 func init() {
 
-<<<<<<< HEAD
-	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionContratosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionContratosController"],
-		beego.ControllerComments{
-			Method: "ListarContratosAgrupadosPorPersona",
-			Router: `/listar_contratos_agrupados_por_persona/`,
-=======
 	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:Concepto_nomina_por_personaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:Concepto_nomina_por_personaController"],
 		beego.ControllerComments{
 			Method: "TrRegistroIncapacidades",
@@ -25,7 +19,14 @@ func init() {
 		beego.ControllerComments{
 			Method: "TrRegistroProrrogaIncapacidad",
 			Router: `/tr_registro_prorroga_incapacidad`,
->>>>>>> incapacidades
+			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionContratosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionContratosController"],
+		beego.ControllerComments{
+			Method: "ListarContratosAgrupadosPorPersona",
+			Router: `/listar_contratos_agrupados_por_persona/`,
 			AllowHTTPMethods: []string{"post"},
 			MethodParams: param.Make(),
 			Params: nil})
