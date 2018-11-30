@@ -98,6 +98,7 @@ func (c *PreliquidacionController) ResumenConceptos() {
                 info_detalle[strconv.Itoa(dato.Concepto.Id)] =  strconv.Itoa(temp_valor)
                 info_detalle_temp["NombreConcepto"] =  dato.Concepto.AliasConcepto
                 info_detalle_temp["NaturalezaConcepto"] =  dato.Concepto.NaturalezaConcepto.Nombre
+                info_detalle_temp["NaturalezaConceptoId"] =  strconv.Itoa(dato.Concepto.NaturalezaConcepto.Id)
                 info_detalle_temp["Total"] =  info_detalle[strconv.Itoa(dato.Concepto.Id)]
                 info_detalles[strconv.Itoa(dato.Concepto.Id)] = info_detalle_temp
 
@@ -108,6 +109,7 @@ func (c *PreliquidacionController) ResumenConceptos() {
                 info_detalle[strconv.Itoa(dato.Concepto.Id)] =  strconv.Itoa(temp_valor)
                 info_detalle_temp["NombreConcepto"] =  dato.Concepto.AliasConcepto
                 info_detalle_temp["NaturalezaConcepto"] =  dato.Concepto.NaturalezaConcepto.Nombre
+                info_detalle_temp["NaturalezaConceptoId"] =  strconv.Itoa(dato.Concepto.NaturalezaConcepto.Id)
                 info_detalle_temp["Total"] =  info_detalle[strconv.Itoa(dato.Concepto.Id)]
                 info_detalles[strconv.Itoa(dato.Concepto.Id)] = info_detalle_temp
 

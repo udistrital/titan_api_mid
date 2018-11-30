@@ -3,6 +3,7 @@ package models
 type Resumen struct {
 	NombreConcepto  string
 	NaturalezaConcepto string
+	NaturalezaConceptoId string
   Total           string
 }
 
