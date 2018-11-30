@@ -363,7 +363,7 @@ func BuscarValorConcepto(lista_descuentos []models.ConceptosResumen,codigo_conce
 		return temp
 }
 
-func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
+func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen, dias_a_liq string)(rest []models.ConceptosResumen){
 	fmt.Println("entre acá a rete")
 	var lista_retefuente []models.ConceptosResumen
 	var ingresos int
@@ -403,11 +403,11 @@ func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descu
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			 temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
-			temp_conceptos.DiasLiquidados = dias_a_liquidar
+			temp_conceptos.DiasLiquidados = dias_a_liq
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
-
+		fmt.Println("dias a liq rete", dias_a_liq)
 		lista_retefuente = append(lista_retefuente, temp_conceptos)
 
 	}

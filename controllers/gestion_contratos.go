@@ -94,8 +94,6 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion)(arreglo_contra
 	}
 
 
-	fmt.Println("ano", ano, mes)
-	fmt.Println("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes)
 	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
 		jsonDocentes, error_json := json.Marshal(temp)
 
@@ -113,7 +111,7 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion)(arreglo_contra
 
 
 	}
-	fmt.Println("temp",temp_docentes)
+
 	return temp_docentes, control_error;
 
 }

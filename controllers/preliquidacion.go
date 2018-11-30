@@ -79,7 +79,7 @@ func (c *PreliquidacionController) Preliquidar() {
 
 		//carga de reglas desde el ruler
 		reglasbase := CargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
-
+    reglasbase = reglasbase + CargarReglasSS();
 		//-----------------------------
 
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
@@ -150,7 +150,6 @@ func CargarReglasBase(dominio string) (reglas string) {
 			reglasbase = reglasbase + "codigo_concepto("+datos.NombreConcepto + "," + strconv.Itoa(datos.Id) + "," + strconv.Itoa(datos.NaturalezaConcepto.Id)+",'"+datos.AliasConcepto+"')." + "\n"
 		}
 	} else {
-		fmt.Println("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina?limit=-1")
 		fmt.Println("error al cargar conceptos como reglas")
 	}
 
@@ -164,6 +163,24 @@ func CargarReglasBase(dominio string) (reglas string) {
 
 	//-----------------------------
 	return reglasbase
+}
+
+
+func CargarReglasSS() (reglas string) {
+	//carga de reglas de SS desde el ruler
+	var reglasSS string = ``
+	var v []models.Predicado
+
+	if err := getJson("http://"+beego.AppConfig.String("Urlruler")+":"+beego.AppConfig.String("Portruler")+"/"+beego.AppConfig.String("Nsruler")+"/predicado?limit=-1&query=Dominio.Nombre:SeguridadSocial", &v); err == nil {
+
+		reglasSS = FormatoReglas(v) //funcion general para dar formato a reglas cargadas desde el ruler
+	} else {
+		fmt.Println("error al cargar reglas base: ", err)
+	}
+
+
+	//-----------------------------
+	return reglasSS
 }
 
 func FormatoReglas(v []models.Predicado) (reglas string) {
@@ -234,7 +251,7 @@ func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, da
 	 }else{
 		 fmt.Println("Error al traer novedades",err)
 	 }
-	 fmt.Println("reglas de novedades",reglas)
+
 	//------------------------------------------------------------------------------
 	return reglas
 
@@ -294,11 +311,10 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 	var v []models.InformacionPersonaNatural
 	reglas = ""
 	query := "Id:"+strconv.Itoa(cedula)
-  fmt.Println("ruta de consulta1","http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query)
 	if err := getJson("http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
-    fmt.Println("error nulo ")
+
 		if v != nil {
-            fmt.Println("reglas retefuente ")
+
 				if(v[0].PersonasACargo == true){
 					reglas = reglas + "dependiente(si)."
 				}else{
@@ -324,7 +340,7 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 				}
 
 				reglas = reglas + "intereses_vivienda("+strconv.Itoa(int(v[0].InteresViviendaAfc))+")."
-        fmt.Println("resultado pruebas")
+
 		}
 	}else{
     fmt.Println("error",err)

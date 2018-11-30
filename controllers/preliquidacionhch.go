@@ -104,7 +104,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 
 				                    info_resolucion_temp := make(map[string]string)
 				                    temp_valor := int(vinculaciones[0].ValorContrato)
-				                    fmt.Println("valor temp", temp_valor, strconv.Itoa(vinculaciones[0].IdResolucion.Id))
+
 				                    info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] =  strconv.Itoa(temp_valor)
 				                    info_resolucion_temp["NumeroContrato"] =  dato.NumeroContrato
 				                    info_resolucion_temp["VigenciaContrato"] =  dato.VigenciaContrato
@@ -192,7 +192,7 @@ func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 		 detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: preliquidacion.Id}, ValorCalculado: valor, Persona: Persona, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: dispo}}
 
 		 if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
-			 fmt.Println(idDetaPre)
+
 		 }else{
 			 beego.Debug("error1: ", err)
 		 }
@@ -211,7 +211,7 @@ func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 
 
 
-	fmt.Println(resumen_preliqu)
+
  return resumen_preliqu
 
 }

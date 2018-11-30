@@ -59,9 +59,9 @@
 "procultura(2018,0.005)."
 "arl(2018,1,0.522)."
 "adulto_mayor(2018,0.02)."
-"calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y."
-"concepto_ibc(salarioBase)."
-seg_social(prueba,1,1,1,1,1,1).
+"calcular_ibc(V):- concepto_ibc(X,activo), sumar_ibc(X,Y), V is Y."
+"concepto_ibc(salarioBase, activo)."
+"seg_social(prueba,1,1,1,1,1,1)."
 "afectacion_seguridad(comision_norem)."
 "afectacion_seguridad(licencia_norem)."
 "afectacion_seguridad(incapacidad_laboral)."

@@ -14,6 +14,7 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion *models.Prel
 	var lista_novedades []models.ConceptosResumen
   var lista_retefuente []models.ConceptosResumen
 	var tipoPreliquidacion_string = "2";
+
   var ano,_ =  strconv.Atoi(periodo)
 	reglas = reglas + "cargo(0)."
 	reglas = reglas + "periodo("+periodo+")."
@@ -46,7 +47,7 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion *models.Prel
 
 				fmt.Println("solution",solution)
 				dias_novedad := CalcularDiasNovedades(preliquidacion.Mes,ano,AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
-				dias_a_liquidar = strconv.Itoa(int(30 - dias_novedad))
+      	dias_a_liquidar = strconv.Itoa(int(30 - dias_novedad))
 				dias_novedad_string = strconv.Itoa(int(dias_novedad))
        	_,total_devengado_novedad =  CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string,dias_novedad_string)
         fmt.Println("dias_a_liq",  dias_a_liquidar)
@@ -63,11 +64,11 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion *models.Prel
 
   lista_descuentos,total_devengado_no_novedad = CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string,dias_a_liquidar)
 	lista_novedades = ManejarNovedadesHCS(reglas,idProveedor, tipoPreliquidacion_string,periodo)
-  lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos);
+  lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos,dias_a_liquidar);
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
   total_calculos = append(total_calculos, lista_retefuente...)
-	resultado = GuardarConceptosHCS(reglas,total_calculos)
+	resultado = GuardarConceptosHCS(reglas,total_calculos,dias_a_liquidar,dias_novedad_string)
 
 	total_calculos = []models.ConceptosResumen{}
   ibc = 0;
@@ -97,7 +98,7 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
         temp_conceptos.Id , _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
         temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
         temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
-        temp_conceptos.DiasLiquidados = dias_a_liquidar
+        temp_conceptos.DiasLiquidados = dias_liq
 				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
        }
       lista_descuentos = append(lista_descuentos,temp_conceptos)
@@ -125,6 +126,7 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
         temp_conceptos.Id , _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
         temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
         temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+        temp_conceptos.DiasLiquidados = dias_liq
         temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
        }
 
@@ -138,7 +140,7 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
 
 }
 
-func GuardarConceptosHCS (reglas string,lista_descuentos []models.ConceptosResumen)(rest []models.Respuesta){
+func GuardarConceptosHCS (reglas string,lista_descuentos []models.ConceptosResumen, dias_a_liq_no_nov, dias_a_liq_nov string)(rest []models.Respuesta){
 		temp := models.Respuesta{}
 		var resultado []models.Respuesta
     m := NewMachine().Consult(reglas)
@@ -153,7 +155,7 @@ func GuardarConceptosHCS (reglas string,lista_descuentos []models.ConceptosResum
       temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
       temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
       temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
-      temp_conceptos.DiasLiquidados = dias_a_liquidar
+      temp_conceptos.DiasLiquidados =  dias_a_liq_no_nov
     }
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -166,7 +168,7 @@ func GuardarConceptosHCS (reglas string,lista_descuentos []models.ConceptosResum
 
 		for _, cod := range codigo_1 {
 			temp_conceptos_1.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-			temp_conceptos_1.DiasLiquidados = dias_a_liquidar
+			temp_conceptos_1.DiasLiquidados = dias_a_liq_nov //DIAS NOVEDAD
 			temp_conceptos_1.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 			temp_conceptos_1.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 

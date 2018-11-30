@@ -140,7 +140,7 @@ func ListarPersonasHCS(objeto_nom models.Preliquidacion)(arreglo_contratos model
 		mes = strconv.Itoa(objeto_nom.Mes);
 	}
 
-	fmt.Println("ano", ano, mes)
+
 
 	tipo_nom = "2"
 
@@ -228,7 +228,7 @@ func ListarPersonasHCH(objeto_nom models.Preliquidacion)(arreglo_contratos model
 		mes = strconv.Itoa(objeto_nom.Mes);
 	}
 
-	fmt.Println("ano", ano, mes)
+
 
 	tipo_nom = "3"
 

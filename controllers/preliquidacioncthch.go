@@ -113,7 +113,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 				FechaInicio, _ = time.Parse(layout , datos_acta.FechaInicioTemp)
 				FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
-				fmt.Println("fechas de contrato", FechaInicio, FechaFin)
+
 				FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
 				FechaFinContrato = time.Date(FechaFin.Year(), FechaFin.Month(), FechaFin.Day(), 0, 0, 0, 0, time.UTC)
 
@@ -154,7 +154,6 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 				disp=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato),resultado)
 
 
-				fmt.Println("definitivaaaa",)
 				//ELIMINAR REGISTROS SI ESE CONTRATO YA HA SIDO PRELIQUIDADO PARA ESTA PRELIQUIDACION
 				if datos.Preliquidacion.Definitiva == true {
 				for _, descuentos := range *resultado.Conceptos{
@@ -187,7 +186,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 		}
 	}
 }
-	fmt.Println(resumen_preliqu)
+
 	return resumen_preliqu
 }
 

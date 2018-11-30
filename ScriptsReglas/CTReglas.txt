@@ -55,7 +55,7 @@
 "arl(2018,1,0.522)."
 "adulto_mayor(2018,0.02)."
 "calcular_ibc(V):- concepto_ibc(X), sumar_ibc(X,Y), V is Y."
-"concepto_ibc(salarioBase)."
+"concepto_ibc(salarioBase, activo)."
 "calcular_salud_retencion(si,B,V,VS) :- salud(V,PS), X is (B * (PS/100) rnd 0), Y is ((X+50) / 100 int 0), VS is Y * 100."
 "calcular_pension_retencion(si,B,V,VP) :- pension(V, PP), X is (B * (PP/100) rnd 0), Y is ((X+50) / 100 int 0), VP is Y * 100."
 "base_estampillas(B,BE):- BE is B."
