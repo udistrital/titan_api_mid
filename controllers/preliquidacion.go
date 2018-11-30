@@ -35,7 +35,7 @@ func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/personas_x_preliquidacion", "POST", &personas_preliquidacion, &v); err == nil {
-      
+
 			for x, dato := range personas_preliquidacion {
 
 				personas_preliquidacion[x].NombreCompleto, personas_preliquidacion[x].NumDocumento, error_consulta_informacion_agora= InformacionPersonaProveedor(dato.IdPersona)
@@ -79,6 +79,8 @@ func (c *PreliquidacionController) ResumenConceptos() {
 	var v models.Preliquidacion
   info_detalle := make(map[string]string)
   info_detalles := make(map[string]interface{})
+  var total_devengos float64;
+  var total_descuentos float64;
   var detalle_preliquidacion []models.DetallePreliquidacion
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
@@ -95,6 +97,7 @@ func (c *PreliquidacionController) ResumenConceptos() {
                 temp_valor = temp_valor + int(dato.ValorCalculado)
                 info_detalle[strconv.Itoa(dato.Concepto.Id)] =  strconv.Itoa(temp_valor)
                 info_detalle_temp["NombreConcepto"] =  dato.Concepto.AliasConcepto
+                info_detalle_temp["NaturalezaConcepto"] =  dato.Concepto.NaturalezaConcepto.Nombre
                 info_detalle_temp["Total"] =  info_detalle[strconv.Itoa(dato.Concepto.Id)]
                 info_detalles[strconv.Itoa(dato.Concepto.Id)] = info_detalle_temp
 
@@ -104,9 +107,18 @@ func (c *PreliquidacionController) ResumenConceptos() {
                 temp_valor := int(dato.ValorCalculado)
                 info_detalle[strconv.Itoa(dato.Concepto.Id)] =  strconv.Itoa(temp_valor)
                 info_detalle_temp["NombreConcepto"] =  dato.Concepto.AliasConcepto
+                info_detalle_temp["NaturalezaConcepto"] =  dato.Concepto.NaturalezaConcepto.Nombre
                 info_detalle_temp["Total"] =  info_detalle[strconv.Itoa(dato.Concepto.Id)]
                 info_detalles[strconv.Itoa(dato.Concepto.Id)] = info_detalle_temp
 
+        }
+
+        if dato.Concepto.NaturalezaConcepto.Nombre == "devengo" {
+          total_devengos = total_devengos + dato.ValorCalculado
+        }
+
+        if dato.Concepto.NaturalezaConcepto.Nombre == "descuento" {
+          total_descuentos = total_descuentos + dato.ValorCalculado
         }
       }
 
@@ -123,7 +135,11 @@ func (c *PreliquidacionController) ResumenConceptos() {
        }
       }
 
-      c.Data["json"] = resumen_conceptos
+      var resumen_total models.ResumentCompleto
+      resumen_total.TotalDevengos = int(total_devengos)
+      resumen_total.TotalDescuentos = int(total_descuentos)
+      resumen_total.ResumenTotalConceptos = resumen_conceptos
+      c.Data["json"] = resumen_total
 
 		} else {
 
