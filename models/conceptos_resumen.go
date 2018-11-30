@@ -1,7 +1,5 @@
 package models
 
-
-
 type ConceptosResumen struct {
 	Id                    int                    `pk;orm:"column(id)"`
 	Nombre                string                 `orm:"column(nombre);null"`

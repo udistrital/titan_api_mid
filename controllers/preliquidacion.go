@@ -7,6 +7,7 @@ import (
 	"github.com/udistrital/titan_api_mid/models"
 	"time"
 	"github.com/astaxie/beego"
+  "github.com/udistrital/utils_oas/formatdata"
 )
 
 // PreliquidacionController operations for Preliquidacion
@@ -20,30 +21,30 @@ func (c *PreliquidacionController) URLMapping() {
 	c.Mapping("Preliquidar", c.Preliquidar)
 }
 
-// Resumen ...
+// PersonasPorPreliquidacion ...
 // @Title Create
-// @Description create Resumen
+// @Description create PersonasPorPreliquidacion
 // @Param	body		body 	var v models.Preliquidacion	true		"body for Preliquidacion content"
 // @Success 201 {object}  []models.InformePreliquidacion
 // @Failure 403 body is empty
-// @router /resumen/ [post]
-func (c *PreliquidacionController) Resumen() {
+// @router /personas_x_preliquidacion/ [post]
+func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 	var v models.Preliquidacion
-	var datos_preliquidacion []models.InformePreliquidacion
+	var personas_preliquidacion []models.PersonasPreliquidacion
 	var error_consulta_informacion_agora error
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
-		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/resumen", "POST", &datos_preliquidacion, &v); err == nil {
+		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/personas_x_preliquidacion", "POST", &personas_preliquidacion, &v); err == nil {
+      
+			for x, dato := range personas_preliquidacion {
 
-			for x, dato := range datos_preliquidacion {
-
-				datos_preliquidacion[x].NombreCompleto, datos_preliquidacion[x].NumeroContrato, datos_preliquidacion[x].Documento, error_consulta_informacion_agora= InformacionPersona(v.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.Vigencia)
+				personas_preliquidacion[x].NombreCompleto, personas_preliquidacion[x].NumDocumento, error_consulta_informacion_agora= InformacionPersonaProveedor(dato.IdPersona)
 
 			}
 
 			if(error_consulta_informacion_agora == nil){
 
-				c.Data["json"] = datos_preliquidacion
+				c.Data["json"] = personas_preliquidacion
 			}else{
 				c.Data["json"] = error_consulta_informacion_agora
 				fmt.Println("error al consultar información en Agora")
@@ -65,6 +66,81 @@ func (c *PreliquidacionController) Resumen() {
 	c.ServeJSON()
 
 }
+
+
+// ResumenConceptos ...
+// @Title Create
+// @Description create ResumenConceptos
+// @Param	body		body 	var v models.Preliquidacion	true		"body for Preliquidacion content"
+// @Success 201 {object}  []models.InformePreliquidacion
+// @Failure 403 body is empty
+// @router /resumen_conceptos/ [post]
+func (c *PreliquidacionController) ResumenConceptos() {
+	var v models.Preliquidacion
+  info_detalle := make(map[string]string)
+  info_detalles := make(map[string]interface{})
+  var detalle_preliquidacion []models.DetallePreliquidacion
+
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+    query:= "?limit=-1&query=Preliquidacion.Id:"+strconv.Itoa(v.Id)
+    if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion"+query, &detalle_preliquidacion); err == nil && detalle_preliquidacion !=nil {
+
+      for _, dato := range detalle_preliquidacion {
+
+        _, ok := info_detalle[strconv.Itoa(dato.Concepto.Id)]
+        if ok {
+
+                info_detalle_temp := make(map[string]string)
+                temp_valor,_ := strconv.Atoi(info_detalle[strconv.Itoa(dato.Concepto.Id)])
+                temp_valor = temp_valor + int(dato.ValorCalculado)
+                info_detalle[strconv.Itoa(dato.Concepto.Id)] =  strconv.Itoa(temp_valor)
+                info_detalle_temp["NombreConcepto"] =  dato.Concepto.AliasConcepto
+                info_detalle_temp["Total"] =  info_detalle[strconv.Itoa(dato.Concepto.Id)]
+                info_detalles[strconv.Itoa(dato.Concepto.Id)] = info_detalle_temp
+
+        } else {
+
+                info_detalle_temp := make(map[string]string)
+                temp_valor := int(dato.ValorCalculado)
+                info_detalle[strconv.Itoa(dato.Concepto.Id)] =  strconv.Itoa(temp_valor)
+                info_detalle_temp["NombreConcepto"] =  dato.Concepto.AliasConcepto
+                info_detalle_temp["Total"] =  info_detalle[strconv.Itoa(dato.Concepto.Id)]
+                info_detalles[strconv.Itoa(dato.Concepto.Id)] = info_detalle_temp
+
+        }
+      }
+
+
+
+      var resumen_conceptos  []models.Resumen
+      for key,_ := range info_detalles {
+
+        aux := models.Resumen{}
+       if err := formatdata.FillStruct(info_detalles[key], &aux); err == nil{
+          resumen_conceptos = append(resumen_conceptos, aux)
+       }else{
+         fmt.Println("error al guardar información agrupada",err)
+       }
+      }
+
+      c.Data["json"] = resumen_conceptos
+
+		} else {
+
+			fmt.Println("error al traer resumen de preliquidacion")
+			c.Data["json"] = err
+		}
+
+	}else{
+		c.Data["json"] = err
+
+		fmt.Println("error al leer datos de preliquidación a listar")
+	}
+
+	c.ServeJSON()
+
+}
+
 
 // Post ...
 // @Title Create

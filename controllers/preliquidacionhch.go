@@ -157,6 +157,7 @@ func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 
 	   datos_acta := objeto_datos_acta
 		 layout := "2006-01-02"
+		 vigencia_contrato_string, _ := strconv.Atoi(informacionContrato.VigenciaContrato)
 
 		 FechaInicio, _ = time.Parse(layout , datos_acta.ActaInicio.FechaInicioTemp)
 		 FechaFin, _ = time.Parse(layout , datos_acta.ActaInicio.FechaFinTemp)
@@ -189,7 +190,7 @@ func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 		 valor, _ := strconv.ParseFloat(descuentos.Valor,64)
 		 dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
 		 tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
-		 detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: preliquidacion.Id}, ValorCalculado: valor, Persona: Persona, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: dispo}}
+		 detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: informacionContrato.NumeroContrato,VigenciaContrato: vigencia_contrato_string, Persona: Persona, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: dispo}}
 
 		 if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
 

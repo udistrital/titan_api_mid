@@ -285,6 +285,17 @@ func consultar_estado_pago(num_cont, vigencia string,  ano, mes int)(disponibili
 
 }
 
+func InformacionPersonaProveedor(idPersona int)(Nom string, doc int,  err error){
+
+		nombre_persona := "Pepito"
+		documento := 1234
+		var control_error error
+		return nombre_persona, documento,control_error;
+
+
+
+}
+
 func InformacionPersona(tipoNomina string, NumeroContrato string, VigenciaContrato int)(Nom, cont, doc string,  err error){
 
 
