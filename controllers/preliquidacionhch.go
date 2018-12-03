@@ -51,11 +51,12 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 		}else{
 
 
-				temp_docentes, control_error = GetContratosPorPersonaHCH(datos)
-
+				temp_docentes, control_error = GetContratosPorPersonaHCH(datos,datos.PersonasPreLiquidacion[i])
+				
 				//AGRUPAR PARA CALCULAR SOBRE VALORES TOTALES
 				if control_error == nil {
 
+					//BORRAR LO YA PRELIQUIDADO ANTERIORMENTE
 					if datos.Preliquidacion.Definitiva == true {
 					var d []models.DetallePreliquidacion
 						query := "Preliquidacion.Id:"+strconv.Itoa(datos.Preliquidacion.Id)+",Persona:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona)
@@ -83,7 +84,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 				  info_resoluciones := make(map[string]interface{})
 
 				  for _,dato := range temp_docentes.ContratosTipo.ContratoTipo {
-
+									fmt.Println("dato contratos",dato)
 				          var vinculaciones []models.VinculacionDocente
 				          query:= "NumeroContrato:"+dato.NumeroContrato+",Vigencia:"+dato.VigenciaContrato
 				          if err := getJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
@@ -120,7 +121,8 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 				    for key,_ := range info_resoluciones {
 				      aux := models.ListaContratos{}
 				     if err := formatdata.FillStruct(info_resoluciones[key], &aux); err == nil{
-				       resumen_preliqu = append(resumen_preliqu,LiquidarContratoHCH(reglasbase,datos.PersonasPreLiquidacion[i].NumDocumento,datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion,aux)...);
+							 fmt.Println("contratish",aux)
+							 resumen_preliqu = append(resumen_preliqu,LiquidarContratoHCH(reglasbase,datos.PersonasPreLiquidacion[i].NumDocumento,datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion,aux)...);
 				     }else{
 				       fmt.Println("error al guardar información agrupada",err)
 				     }

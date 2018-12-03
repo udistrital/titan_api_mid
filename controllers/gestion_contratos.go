@@ -38,9 +38,9 @@ func (c *GestionContratosController) ListarContratosAgrupadosPorPersona() {
 
 		//Buscar contratos vigentes en ese periodo para esa persona
 		if(v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH") {
-			temp_docentes, control_error = GetContratosPorPersonaHCH(v)
+			temp_docentes, control_error = GetContratosPorPersonaHCH(v, v.PersonasPreLiquidacion[0])
 		}else {
-			temp_docentes, control_error = GetContratosPorPersonaHCS(v)
+			temp_docentes, control_error = GetContratosPorPersonaHCS(v,v.PersonasPreLiquidacion[0])
 		}
 
 		if (control_error == nil){
@@ -127,7 +127,7 @@ func ListaContratosFuncionariosPlanta()(arreglo_contratos []models.Funcionario_x
 	return datos_planta, err
 }
 
-func GetContratosPorPersonaHCH(v models.DatosPreliquidacion) (arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error){
+func GetContratosPorPersonaHCH(v models.DatosPreliquidacion,docente models.PersonasPreliquidacion) (arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error){
 
 	var temp map[string]interface{}
 
@@ -139,7 +139,7 @@ func GetContratosPorPersonaHCH(v models.DatosPreliquidacion) (arreglo_contratos 
 	var persona string
 
 	ano = strconv.Itoa(v.Preliquidacion.Ano);
-  persona = strconv.Itoa(v.PersonasPreLiquidacion[0].NumDocumento)
+  persona = strconv.Itoa(docente.NumDocumento)
 
 	if (v.Preliquidacion.Mes >= 1 && v.Preliquidacion.Mes <= 9){
 				mes = strconv.Itoa(v.Preliquidacion.Mes);
@@ -171,7 +171,7 @@ func GetContratosPorPersonaHCH(v models.DatosPreliquidacion) (arreglo_contratos 
 }
 
 
-func GetContratosPorPersonaHCS(v models.DatosPreliquidacion) (arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error){
+func GetContratosPorPersonaHCS(v models.DatosPreliquidacion,docente models.PersonasPreliquidacion) (arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error){
 
 	var temp map[string]interface{}
 
@@ -184,7 +184,7 @@ func GetContratosPorPersonaHCS(v models.DatosPreliquidacion) (arreglo_contratos 
 	var persona string
 
 	ano = strconv.Itoa(v.Preliquidacion.Ano);
-  persona = strconv.Itoa(v.PersonasPreLiquidacion[0].NumDocumento)
+  persona = strconv.Itoa(docente.NumDocumento)
 
 	if (v.Preliquidacion.Mes >= 1 && v.Preliquidacion.Mes <= 9){
 				mes = strconv.Itoa(v.Preliquidacion.Mes);

@@ -17,6 +17,7 @@ func CargarReglasCT(idProveedor int, reglas string,preliquidacion *models.Preliq
 	var lista_novedades []models.ConceptosResumen
 	var lista_retefuente []models.ConceptosResumen
 	var tipoPreliquidacion_string = "2";
+	var dias_novedad_string = "0"
 	var ano,_ =  strconv.Atoi(periodo)
 
 	reglas = reglas + "cargo(0)."

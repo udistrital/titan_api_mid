@@ -52,7 +52,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 
 		//BUSCAR CONTRATOS PARA ESA PERSONA
 
-		temp_docentes, control_error = GetContratosPorPersonaHCS(datos)
+		temp_docentes, control_error = GetContratosPorPersonaHCS(datos,datos.PersonasPreLiquidacion[i])
 
 		//AGRUPAR PARA CALCULAR SOBRE VALORES TOTALES
 		if control_error == nil {
@@ -121,6 +121,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 				for key,_ := range info_resoluciones {
 					aux := models.ListaContratos{}
 				 if err := formatdata.FillStruct(info_resoluciones[key], &aux); err == nil{
+
 					 resumen_preliqu = append(resumen_preliqu,LiquidarContratoHCS(reglasbase,datos.PersonasPreLiquidacion[i].NumDocumento,datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion,aux)...);
 				 }else{
 					 fmt.Println("error al guardar información agrupada",err)

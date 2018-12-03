@@ -14,7 +14,7 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion *models.Prel
 	var lista_novedades []models.ConceptosResumen
   var lista_retefuente []models.ConceptosResumen
 	var tipoPreliquidacion_string = "2";
-
+  var dias_novedad_string = "0"
   var ano,_ =  strconv.Atoi(periodo)
 	reglas = reglas + "cargo(0)."
 	reglas = reglas + "periodo("+periodo+")."
@@ -60,7 +60,9 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion *models.Prel
 		}
 
 
-
+    fmt.Println("dias_a_liq",  dias_a_liquidar)
+  fmt.Println("dias_novedad_string",  dias_novedad_string)
+    fmt.Println("total novedad", total_devengado_novedad)
 
   lista_descuentos,total_devengado_no_novedad = CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string,dias_a_liquidar)
 	lista_novedades = ManejarNovedadesHCS(reglas,idProveedor, tipoPreliquidacion_string,periodo)

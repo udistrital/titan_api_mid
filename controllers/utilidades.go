@@ -265,8 +265,6 @@ func consultar_estado_pago(num_cont, vigencia string,  ano, mes int)(disponibili
 		//if err := getJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorActualRp/"+id_registro_pre, &saldo_rp); err == nil {
 		var respuesta_servicio string
 		var dispo int
-		fmt.Println("URL ARGO")
-		fmt.Println("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
 		if err :=getJson("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
 
 			if(respuesta_servicio == "True"){
@@ -287,9 +285,21 @@ func consultar_estado_pago(num_cont, vigencia string,  ano, mes int)(disponibili
 
 func InformacionPersonaProveedor(idPersona int)(Nom string, doc int,  err error){
 
-		nombre_persona := "Pepito"
-		documento := 1234
+		var nombre_persona string
+		var documento int
+		var respuesta_servicio []models.InformacionProveedor
 		var control_error error
+		if control_error :=getJson("http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona), &respuesta_servicio); control_error == nil {
+			nombre_persona = respuesta_servicio[0].NomProveedor;
+			documento,_ = strconv.Atoi(respuesta_servicio[0].NumDocumento);
+			
+		}else{
+			nombre_persona = "No encontrado"
+			nombre_persona = "0"
+			fmt.Println("error en consulta de información de persona", control_error)
+
+		}
+
 		return nombre_persona, documento,control_error;
 
 
