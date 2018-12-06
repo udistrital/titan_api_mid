@@ -141,7 +141,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 	resultado_desc := CalcularDescuentosTotales(reglasbase, datos.Preliquidacion, resumen_preliqu);
 	var idDetaPre interface{}
 	if datos.Preliquidacion.Definitiva == true {
-
+	fmt.Println("resultado fondo", resultado_desc)
 	for _, descuentos := range resultado_desc{
 		valor, _ := strconv.ParseFloat(descuentos.Valor,64)
 		dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
@@ -200,6 +200,7 @@ func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 	  temp := golog.CargarReglasCT(Persona, reglas,preliquidacion,vigencia_contrato,datos_acta)
 
 	  resultado := temp[len(temp)-1]
+		resultado.Id = Persona
 		resultado.NumDocumento = float64(NumDocumento)
 		resultado.NumeroContrato = informacionContrato.NumeroContrato
 		resultado.VigenciaContrato = informacionContrato.VigenciaContrato

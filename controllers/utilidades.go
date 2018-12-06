@@ -292,6 +292,7 @@ func InformacionPersonaProveedor(idPersona int)(Nom string, doc int,  err error)
 		var respuesta_servicio []models.InformacionProveedor
 		var control_error error
 		if control_error :=getJson("http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona), &respuesta_servicio); control_error == nil {
+			fmt.Println(idPersona)
 			nombre_persona = respuesta_servicio[0].NomProveedor;
 			documento,_ = strconv.Atoi(respuesta_servicio[0].NumDocumento);
 
