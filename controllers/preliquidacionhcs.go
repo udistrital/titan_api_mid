@@ -123,7 +123,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 				 if err := formatdata.FillStruct(info_resoluciones[key], &aux); err == nil{
 
 					 resumen_preliqu = append(resumen_preliqu,LiquidarContratoHCS(reglasbase,datos.PersonasPreLiquidacion[i].NumDocumento,datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion,aux)...);
-					 fmt.Println("resumen_preliqu", resumen_preliqu)
+
 				 }else{
 					 fmt.Println("error al guardar información agrupada",err)
 				 }
@@ -134,7 +134,26 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 	}
 
 	//CALCULAR FONDO DE SOLIDARIDAD Y RETEFUENTE
-	//CalcularDescuentosTotales(resumen_preliqu);
+	resultado_desc := CalcularDescuentosTotales(reglasbase, datos.Preliquidacion, resumen_preliqu);
+	var idDetaPre interface{}
+	if datos.Preliquidacion.Definitiva == true {
+
+	for _, descuentos := range resultado_desc{
+		valor, _ := strconv.ParseFloat(descuentos.Valor,64)
+		dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
+		tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
+		detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, Persona: descuentos.IdPersona, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}}
+
+		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
+
+		}else{
+			beego.Debug("error1: ", err)
+		}
+	}
+} else{
+		*resumen_preliqu[0].Conceptos = append(*resumen_preliqu[0].Conceptos, resultado_desc...)
+}
+
 
 }
 
@@ -182,6 +201,7 @@ func LiquidarContratoHCS(reglasbase string, NumDocumento,Persona int, preliquida
 		temp := golog.CargarReglasHCS(Persona,reglas,preliquidacion, informacionContrato.VigenciaContrato,datos_acta)
 
 	  resultado := temp[len(temp)-1]
+		resultado.Id = Persona
 	  resultado.NumDocumento = float64(NumDocumento)
 		resultado.NumeroContrato = informacionContrato.NumeroContrato
 		resultado.VigenciaContrato = informacionContrato.VigenciaContrato

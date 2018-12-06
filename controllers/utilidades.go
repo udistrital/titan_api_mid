@@ -11,6 +11,8 @@ import (
 	"github.com/udistrital/titan_api_mid/models"
 	"strconv"
 	 "fmt"
+	 "github.com/udistrital/titan_api_mid/golog"
+	 	"github.com/udistrital/utils_oas/formatdata"
 )
 
 
@@ -411,3 +413,56 @@ func CalcularTotalesPorPersona(conceptos  []models.ConceptosResumen)(total_dev, 
 	total_a_pagar = total_devengos - total_descuentos
 	return int(total_devengos), int(total_descuentos), int(total_a_pagar)
 }
+
+
+func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidacion, resumen  []models.Respuesta)(concepto []models.ConceptosResumen){
+
+	info_total_persona := make(map[string]string)
+	info_total_personas := make(map[string]interface{})
+
+	for _,dato_resumen := range resumen {
+
+
+	for _,dato_conceptos := range *dato_resumen.Conceptos {
+
+			if(dato_conceptos.NaturalezaConcepto == 1) {
+
+					_, ok := info_total_persona[strconv.Itoa(dato_resumen.Id)]
+					if ok {
+
+									info_total_persona_temp := make(map[string]string)
+									temp_valor_actual,_ := strconv.Atoi(info_total_persona[strconv.Itoa(dato_resumen.Id)])
+									temp_valor_a_sumar,_ := strconv.Atoi(dato_conceptos.Valor)
+									temp_valor := temp_valor_actual + temp_valor_a_sumar
+									info_total_persona[strconv.Itoa(dato_resumen.Id)] =  strconv.Itoa(temp_valor)
+									info_total_persona_temp["Total"] =  info_total_persona[strconv.Itoa(dato_resumen.Id)]
+									info_total_personas[strconv.Itoa(dato_resumen.Id)] = info_total_persona_temp
+
+					} else {
+
+									info_total_persona_temp := make(map[string]string)
+									temp_valor,_ := strconv.Atoi(dato_conceptos.Valor)
+									info_total_persona[strconv.Itoa(dato_resumen.Id)] =  strconv.Itoa(temp_valor)
+									info_total_persona_temp["Total"] =  info_total_persona[strconv.Itoa(dato_resumen.Id)]
+									info_total_personas[strconv.Itoa(dato_resumen.Id)] = info_total_persona_temp
+
+					}
+
+					}
+				}
+			}
+
+			fmt.Println("info_total_personas",info_total_personas, len(info_total_personas))
+			var temp  []models.ConceptosResumen
+			for key,_ := range info_total_personas {
+				aux := models.TotalPersona{}
+			 if err := formatdata.FillStruct(info_total_personas [key], &aux); err == nil{
+				 temp = append(temp,golog.CalcularDescuentosTotalesHCS(key, aux.Total ,aux.Id,reglas,preliquidacion, strconv.Itoa(preliquidacion.Ano))...)
+				fmt.Println("fondo soliwis",temp)
+			 }else{
+				 fmt.Println("error al guardar información agrupada",err)
+			 }
+			}
+
+			return temp;
+		}

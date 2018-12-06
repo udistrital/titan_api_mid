@@ -219,3 +219,37 @@ func ManejarNovedadesHCS(reglas string, idProveedor int, tipoPreliquidacion, per
 	return lista_novedades
 
 }
+
+func CalcularDescuentosTotalesHCS(IdPersona , valor_total string, idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string) (rest []models.ConceptosResumen) {
+
+  var lista_descuentos []models.ConceptosResumen
+
+
+	m := NewMachine().Consult(reglas)
+
+
+    fondo_sol := m.ProveAll("calcular_fondo_sol(X,"+valor_total+","+periodo+",V).")
+    for _, solution := range fondo_sol {
+
+      Valor,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
+      temp_conceptos := models.ConceptosResumen {Nombre : "fondoSolidaridad" ,
+                                                 Valor : fmt.Sprintf("%.0f", Valor),
+                                                                       }
+
+      codigo := m.ProveAll(`codigo_concepto(`+temp_conceptos.Nombre+`,C,N,D).`)
+
+      for _, cod := range codigo{
+        temp_conceptos.Id , _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+        temp_conceptos.IdPersona,_ = strconv.Atoi(IdPersona);
+        temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
+        temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+        temp_conceptos.DiasLiquidados = "0"
+				temp_conceptos.TipoPreliquidacion = "0"
+       }
+      lista_descuentos = append(lista_descuentos,temp_conceptos)
+
+    }
+
+
+  return lista_descuentos
+}

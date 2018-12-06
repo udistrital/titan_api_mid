@@ -15,3 +15,8 @@ type FormatoPreliqu struct {
 	//Contrato   *ContratoGeneral
 	Respuesta *Respuesta
 }
+
+type TotalPersona struct {
+	Id        int
+	Total     string
+}
