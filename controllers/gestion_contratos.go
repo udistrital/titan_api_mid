@@ -44,7 +44,7 @@ func (c *GestionContratosController) ListarContratosAgrupadosPorPersona() {
 			temp_docentes, control_error = GetContratosPorPersonaHCH(v, v.PersonasPreLiquidacion[0])
 		}
 
-		if(v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH") {
+		if(v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS") {
 			temp_docentes, control_error = GetContratosPorPersonaHCS(v,v.PersonasPreLiquidacion[0])
 		}
 

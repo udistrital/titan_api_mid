@@ -121,7 +121,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 				    for key,_ := range info_resoluciones {
 				      aux := models.ListaContratos{}
 				     if err := formatdata.FillStruct(info_resoluciones[key], &aux); err == nil{
-							 fmt.Println("contratish",aux)
+							 
 							 resumen_preliqu = append(resumen_preliqu,LiquidarContratoHCH(reglasbase,datos.PersonasPreLiquidacion[i].NumDocumento,datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion,aux)...);
 				     }else{
 				       fmt.Println("error al guardar información agrupada",err)
