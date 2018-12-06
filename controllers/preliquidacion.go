@@ -346,7 +346,7 @@ func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, da
 	 }else{
 		 fmt.Println("Error al traer novedades",err)
 	 }
-   fmt.Println("reglas",reglas)
+   
 	//------------------------------------------------------------------------------
 	return reglas
 

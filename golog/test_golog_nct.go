@@ -75,7 +75,7 @@ func CargarReglasCT(idProveedor int, reglas string,preliquidacion models.Preliqu
 }
 
 func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_string, dias_liq string)(rest []models.ConceptosResumen, total_dev float64){
-	fmt.Println("reglas", reglas)
+	
 	var lista_descuentos []models.ConceptosResumen
 
 	var salarioBase float64
