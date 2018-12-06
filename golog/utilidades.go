@@ -416,7 +416,7 @@ fmt.Println("terminé sal")
 }
 
 
-func CalcularPeriodoLiquidacion(preliquidacion *models.Preliquidacion, objeto_datos_acta models.ObjetoActaInicio) (periodoLiquidacion, mesesContrato string) {
+func CalcularPeriodoLiquidacion(preliquidacion models.Preliquidacion, objeto_datos_acta models.ObjetoActaInicio) (periodoLiquidacion, mesesContrato string) {
 
 	var FechaInicioContrato time.Time
 	var FechaFinContrato time.Time

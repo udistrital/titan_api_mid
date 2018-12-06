@@ -10,7 +10,7 @@ import (
 
 
 
-func CargarReglasCT(idProveedor int, reglas string,preliquidacion *models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio) (rest []models.Respuesta) {
+func CargarReglasCT(idProveedor int, reglas string,preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio) (rest []models.Respuesta) {
 
 	var resultado []models.Respuesta
 	var lista_descuentos []models.ConceptosResumen
@@ -43,6 +43,7 @@ func CargarReglasCT(idProveedor int, reglas string,preliquidacion *models.Preliq
 		MesHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
 		DiaHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
 
+
 		afectacion_seg_social := m.ProveAll("afectacion_seguridad("+novedad+").")
 		for _, solution := range afectacion_seg_social {
 
@@ -74,7 +75,7 @@ func CargarReglasCT(idProveedor int, reglas string,preliquidacion *models.Preliq
 }
 
 func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_string, dias_liq string)(rest []models.ConceptosResumen, total_dev float64){
-
+	fmt.Println("reglas", reglas)
 	var lista_descuentos []models.ConceptosResumen
 
 	var salarioBase float64
@@ -87,6 +88,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 	valor_pago := m.ProveAll("valor_pago(X,"+periodo+",P).")
 
 	for _, solution := range valor_pago {
+		fmt.Println("pagooo paquito")
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("P")), 64)
 		Nom_Concepto := "salarioBase"
 		salarioBase = Valor
@@ -202,7 +204,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 		}
 
 		reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
-		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N,d).`)
+		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N,D).`)
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))

@@ -292,7 +292,7 @@ func InformacionPersonaProveedor(idPersona int)(Nom string, doc int,  err error)
 		if control_error :=getJson("http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona), &respuesta_servicio); control_error == nil {
 			nombre_persona = respuesta_servicio[0].NomProveedor;
 			documento,_ = strconv.Atoi(respuesta_servicio[0].NumDocumento);
-			
+
 		}else{
 			nombre_persona = "No encontrado"
 			nombre_persona = "0"
@@ -389,4 +389,25 @@ func CrearResultado(detalles_a_totalizar []models.DetallePreliquidacion)(respues
 	res.Conceptos = &conceptos;
 	return res
 
+}
+
+func CalcularTotalesPorPersona(conceptos  []models.ConceptosResumen)(total_dev, total_des, total_pag int){
+
+	var total_devengos float64;
+	var total_descuentos float64
+	var total_a_pagar float64;
+
+	for _, descuentos := range conceptos{
+		valor, _ := strconv.ParseFloat(descuentos.Valor,64)
+		if descuentos.NaturalezaConcepto == 1 {
+			total_devengos = total_devengos + valor;
+		}
+
+		if descuentos.NaturalezaConcepto == 2 {
+			total_descuentos = total_descuentos + valor;
+		}
+	}
+
+	total_a_pagar = total_devengos - total_descuentos
+	return int(total_devengos), int(total_descuentos), int(total_a_pagar)
 }

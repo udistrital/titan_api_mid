@@ -7,7 +7,7 @@ import (
   . "github.com/udistrital/golog"
 )
 
-func CargarReglasHCS(idProveedor int, reglas string, preliquidacion *models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio) (rest []models.Respuesta) {
+func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio) (rest []models.Respuesta) {
 
   var resultado []models.Respuesta
 	var lista_descuentos []models.ConceptosResumen
@@ -27,12 +27,13 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion *models.Prel
   reglas = reglas + "duracion_contrato("+strconv.Itoa(idProveedor)+","+meses+","+periodo+")."
 
   m := NewMachine().Consult(reglas)
+
   novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
 
 
 	for _, solution := range novedades_seg_social {
 
-		fmt.Println("aqui nov")
+		fmt.Println("existe novedad de SS")
 
 		novedad := fmt.Sprintf("%s", solution.ByName_("N"))
 		AnoDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
@@ -50,9 +51,9 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion *models.Prel
       	dias_a_liquidar = strconv.Itoa(int(30 - dias_novedad))
 				dias_novedad_string = strconv.Itoa(int(dias_novedad))
        	_,total_devengado_novedad =  CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string,dias_novedad_string)
-        fmt.Println("dias_a_liq",  dias_a_liquidar)
-        fmt.Println("dias_novedad_string",  dias_novedad)
-        fmt.Println("total novedad", total_devengado_novedad)
+        fmt.Println("- dias_a_liq",  dias_a_liquidar)
+        fmt.Println("- dias_novedad_string",  dias_novedad)
+        fmt.Println("- total novedad", total_devengado_novedad)
 				ibc = 0;
 		}
 

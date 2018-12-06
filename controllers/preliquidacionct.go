@@ -12,12 +12,12 @@ import (
 	"encoding/json"
 )
 
-// operations for Preliquidacioncthch
-type PreliquidacioncthchController struct {
+// operations for Preliquidacionct
+type PreliquidacionctController struct {
 	beego.Controller
 }
 
-func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
+func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
 	//declaracion de variables
 
 	var predicados []models.Predicado //variable para inyectar reglas
@@ -93,16 +93,13 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 			}
 
 
-		if(datos.Preliquidacion.Nomina.TipoNomina.Nombre == "CT"){
+			fmt.Println(datos.PersonasPreLiquidacion[i].NumeroContrato)
+
 			objeto_datos_contrato, error_consulta_contrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
 			objeto_datos_acta, error_consulta_acta = ActaInicioContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
-		}else{
-			objeto_datos_contrato, error_consulta_contrato = ContratosDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato) )
-			objeto_datos_acta, error_consulta_acta = ActaInicioDVE(datos.PersonasPreLiquidacion[i].NumeroContrato,strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato) )
 
-		}
 
 		if(error_consulta_contrato == nil){
 			if(error_consulta_acta == nil){
@@ -150,6 +147,8 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 
 				resultado := temp[len(temp)-1]
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
+				resultado.NumeroContrato = datos.PersonasPreLiquidacion[i].NumeroContrato
+				resultado.VigenciaContrato = strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 
 				disp=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato),resultado)
 
@@ -160,7 +159,7 @@ func (c *PreliquidacioncthchController) Preliquidar(datos *models.DatosPreliquid
 					valor, _ := strconv.ParseFloat(descuentos.Valor,64)
 					dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
 					tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
-					detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: disp}}
+					detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato,Persona: datos.PersonasPreLiquidacion[i].IdPersona, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: disp}}
 
 					if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
 

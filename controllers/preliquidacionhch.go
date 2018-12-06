@@ -52,7 +52,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 
 
 				temp_docentes, control_error = GetContratosPorPersonaHCH(datos,datos.PersonasPreLiquidacion[i])
-				
+
 				//AGRUPAR PARA CALCULAR SOBRE VALORES TOTALES
 				if control_error == nil {
 
@@ -139,7 +139,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 	return resumen_preliqu
 }
 
-func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquidacion *models.Preliquidacion,informacionContrato models.ListaContratos)(res []models.Respuesta){
+func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquidacion models.Preliquidacion,informacionContrato models.ListaContratos)(res []models.Respuesta){
 	var predicados []models.Predicado //variable para inyectar reglas
 	var objeto_datos_acta models.ObjetoActaInicio
 	var error_consulta_acta error

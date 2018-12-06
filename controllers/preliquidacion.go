@@ -36,6 +36,7 @@ func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 
 		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/personas_x_preliquidacion", "POST", &personas_preliquidacion, &v); err == nil {
 
+
 			for x, dato := range personas_preliquidacion {
 
 				personas_preliquidacion[x].NombreCompleto, personas_preliquidacion[x].NumDocumento, error_consulta_informacion_agora= InformacionPersonaProveedor(dato.IdPersona)
@@ -186,7 +187,7 @@ func (c *PreliquidacionController) Preliquidar() {
 		}
 
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" {
-  		var n *PreliquidacioncthchController //aca se esta creando un objeto del controlador especico
+  		var n *PreliquidacionctController //aca se esta creando un objeto del controlador especico
 			resumen := n.Preliquidar(&v, reglasbase)
 			c.Data["json"] = resumen
 			c.ServeJSON()
@@ -291,7 +292,7 @@ func FormatoReglas(v []models.Predicado) (reglas string) {
 	return
 }
 
-func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, datos_preliqu *models.Preliquidacion) (reglas string) {
+func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, datos_preliqu models.Preliquidacion) (reglas string) {
 
 	//consulta de la(s) novedades que pueda tener la persona para la pre-liquidacion
 	var v []models.ConceptoNominaPorPersona
@@ -345,7 +346,7 @@ func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, da
 	 }else{
 		 fmt.Println("Error al traer novedades",err)
 	 }
-
+   fmt.Println("reglas",reglas)
 	//------------------------------------------------------------------------------
 	return reglas
 

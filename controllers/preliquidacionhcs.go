@@ -123,6 +123,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 				 if err := formatdata.FillStruct(info_resoluciones[key], &aux); err == nil{
 
 					 resumen_preliqu = append(resumen_preliqu,LiquidarContratoHCS(reglasbase,datos.PersonasPreLiquidacion[i].NumDocumento,datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion,aux)...);
+					 fmt.Println("resumen_preliqu", resumen_preliqu)
 				 }else{
 					 fmt.Println("error al guardar información agrupada",err)
 				 }
@@ -132,6 +133,9 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 
 	}
 
+	//CALCULAR FONDO DE SOLIDARIDAD Y RETEFUENTE
+	//CalcularDescuentosTotales(resumen_preliqu);
+
 }
 
 
@@ -139,7 +143,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 		return resumen_preliqu
 }
 
-func LiquidarContratoHCS(reglasbase string, NumDocumento,Persona int, preliquidacion *models.Preliquidacion,informacionContrato models.ListaContratos)(res []models.Respuesta){
+func LiquidarContratoHCS(reglasbase string, NumDocumento,Persona int, preliquidacion models.Preliquidacion,informacionContrato models.ListaContratos)(res []models.Respuesta){
 
 
 	var objeto_datos_acta models.ObjetoActaInicio
@@ -168,7 +172,7 @@ func LiquidarContratoHCS(reglasbase string, NumDocumento,Persona int, preliquida
 	    predicados = append(predicados,models.Predicado{Nombre:"fin_contrato("+strconv.Itoa(Persona)+",no)."} )
 	  }
 
-
+		fmt.Println("valor_contrato", informacionContrato.Total)
 	  predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(Persona)+","+informacionContrato.Total+")."} )
 	  reglasinyectadas = FormatoReglas(predicados)
 		reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(Persona, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato, preliquidacion)
@@ -183,7 +187,7 @@ func LiquidarContratoHCS(reglasbase string, NumDocumento,Persona int, preliquida
 		resultado.VigenciaContrato = informacionContrato.VigenciaContrato
 	  dispo=verificacion_pago(NumDocumento,preliquidacion.Ano, preliquidacion.Mes,informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato,resultado)
 
-
+		resultado.TotalDevengos, resultado.TotalDescuentos, resultado.TotalAPagar = CalcularTotalesPorPersona(*resultado.Conceptos);
 	  //se guardan los conceptos calculados en la nomina
 	  if preliquidacion.Definitiva == true {
 
