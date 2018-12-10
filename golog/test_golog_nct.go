@@ -75,7 +75,7 @@ func CargarReglasCT(idProveedor int, reglas string,preliquidacion models.Preliqu
 }
 
 func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_string, dias_liq string)(rest []models.ConceptosResumen, total_dev float64){
-	
+
 	var lista_descuentos []models.ConceptosResumen
 
 	var salarioBase float64
@@ -88,7 +88,7 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 	valor_pago := m.ProveAll("valor_pago(X,"+periodo+",P).")
 
 	for _, solution := range valor_pago {
-		fmt.Println("pagooo paquito")
+
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("P")), 64)
 		Nom_Concepto := "salarioBase"
 		salarioBase = Valor

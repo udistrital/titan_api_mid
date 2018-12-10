@@ -285,6 +285,26 @@ func consultar_estado_pago(num_cont, vigencia string,  ano, mes int)(disponibili
 
 }
 
+func GetIdProveedor(Documento string)(IdProveedor int){
+
+
+		var idProveedor int
+
+		var respuesta_servicio []models.InformacionProveedor
+		if control_error :=getJson("http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=NumDocumento:"+Documento, &respuesta_servicio); control_error == nil {
+			idProveedor = respuesta_servicio[0].Id;
+		}else{
+			idProveedor= 0
+			fmt.Println("error en consulta id de persona", control_error)
+
+		}
+
+		return idProveedor;
+
+
+
+}
+
 func InformacionPersonaProveedor(idPersona int)(Nom string, doc int,  err error){
 
 		var nombre_persona string
@@ -292,7 +312,7 @@ func InformacionPersonaProveedor(idPersona int)(Nom string, doc int,  err error)
 		var respuesta_servicio []models.InformacionProveedor
 		var control_error error
 		if control_error :=getJson("http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona), &respuesta_servicio); control_error == nil {
-			fmt.Println(idPersona)
+
 			nombre_persona = respuesta_servicio[0].NomProveedor;
 			documento,_ = strconv.Atoi(respuesta_servicio[0].NumDocumento);
 

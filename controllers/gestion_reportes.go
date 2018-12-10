@@ -46,11 +46,12 @@ func (c *GestionReportesController) TotalNominaPorProyecto() {
 		proyecto_curricular := strconv.Itoa(v.ProyectoCurricular)
 
 		query:= "IdProyectoCurricular:"+proyecto_curricular
-		fmt.Println("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query)
 		if err := getJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
 			fmt.Println("hola soy el total de vinculaciones para ese proyecto", len(vinculaciones))
 			for _, pos := range vinculaciones {
-				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:1"
+
+				IdProveedor := GetIdProveedor(pos.IdPersona)
+				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",Persona:"+strconv.Itoa(IdProveedor)+",Concepto.NaturalezaConcepto.Id:1"
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 					if(d != nil){
 							if(d[0].Concepto.Id == 11) {
@@ -65,11 +66,9 @@ func (c *GestionReportesController) TotalNominaPorProyecto() {
 						fmt.Println("error al traer valor calculado por devengos",err)
 					}
 
-				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:2"
-
+				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",Persona:"+strconv.Itoa(IdProveedor)+",Concepto.NaturalezaConcepto.Id:2"
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query2, &d); err == nil {
 					if(d != nil){
-
 							total_descuentos = total_descuentos + d[0].ValorCalculado
 
 					}
@@ -125,25 +124,23 @@ func (c *GestionReportesController) TotalNominaPorFacultad() {
 		query:= "IdResolucion.IdFacultad:"+facultad
 		fmt.Println("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query)
 		if err := getJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
-			fmt.Println("hola soy el total de vinculaciones para ese proyecto", len(vinculaciones))
+			fmt.Println("hola soy el total de vinculaciones para esa facultad", len(vinculaciones))
 			for _, pos := range vinculaciones {
-				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:1"
+
+				IdProveedor := GetIdProveedor(pos.IdPersona)
+				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",Persona:"+strconv.Itoa(IdProveedor)+",Concepto.NaturalezaConcepto.Id:1"
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 					if(d != nil){
 							if(d[0].Concepto.Id == 11) {
 									cont_dev = cont_dev + 1;
 							}
-
 							total = total + d[0].ValorCalculado
-
 					}
 
 					}else{
 						fmt.Println("error al traer valor calculado por devengos",err)
 					}
-
-				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:2"
-
+				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",Persona:"+strconv.Itoa(IdProveedor)+",Concepto.NaturalezaConcepto.Id:2"
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query2, &d); err == nil {
 					if(d != nil){
 
@@ -202,13 +199,12 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 
 
 		query:= "IdResolucion.IdFacultad:"+facultad
-		fmt.Println("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query)
 		if err := getJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
 			fmt.Println("hola soy el total de vinculaciones para ese proyecto", len(vinculaciones))
 			for _, pos := range vinculaciones {
 
-
-				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:1"
+				IdProveedor := GetIdProveedor(pos.IdPersona)
+				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",Persona:"+strconv.Itoa(IdProveedor)+",Concepto.NaturalezaConcepto.Id:1"
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &devengos); err == nil {
 					if(devengos != nil){
 
@@ -227,7 +223,7 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 
 
 
-				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:2"
+				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",Persona:"+strconv.Itoa(IdProveedor)+",Concepto.NaturalezaConcepto.Id:2"
 
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query2, &descuentos); err == nil {
 					if(descuentos != nil){
@@ -290,11 +286,12 @@ func (c *GestionReportesController) DesagregadoNominaPorProyectoCurricular() {
 		proyecto_curricular := strconv.Itoa(v.ProyectoCurricular)
 
 		query:= "IdProyectoCurricular:"+proyecto_curricular
-		fmt.Println("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query)
 		if err := getJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
 			fmt.Println("hola soy el total de vinculaciones para ese proyecto", len(vinculaciones))
 			for _, pos := range vinculaciones {
-				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:1"
+
+				IdProveedor := GetIdProveedor(pos.IdPersona)
+				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",Persona:"+strconv.Itoa(IdProveedor)+",Concepto.NaturalezaConcepto.Id:1"
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &devengos); err == nil {
 					if(devengos != nil){
 						for _, dato := range devengos {
@@ -310,9 +307,9 @@ func (c *GestionReportesController) DesagregadoNominaPorProyectoCurricular() {
 						fmt.Println("error al traer valor calculado por devengos",err)
 					}
 
-					
 
-				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",NumeroContrato:"+pos.NumeroContrato.String+",VigenciaContrato:"+strconv.Itoa(int(pos.Vigencia.Int64))+",Concepto.NaturalezaConcepto.Id:2"
+
+				query2 := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",Persona:"+strconv.Itoa(IdProveedor)+",Concepto.NaturalezaConcepto.Id:2"
 
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query2, &descuentos); err == nil {
 					if(descuentos != nil){

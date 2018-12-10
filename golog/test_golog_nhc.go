@@ -94,6 +94,7 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
       temp_conceptos := models.ConceptosResumen {Nombre : "salarioBase" ,
                                                  Valor : fmt.Sprintf("%.0f", Valor),
                                                                        }
+      fmt.Println("salario ->", Valor)
     	reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
       codigo := m.ProveAll(`codigo_concepto(`+temp_conceptos.Nombre+`,C,N,D).`)
 

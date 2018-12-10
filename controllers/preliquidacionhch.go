@@ -188,6 +188,7 @@ func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 
 		 dias_contrato := CalcularDias(FechaInicio, FechaFin)
 	  vigencia_contrato := informacionContrato.VigenciaContrato
+		fmt.Println("valor_contrato->", informacionContrato.Total)
 	 	predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(Persona)+","+informacionContrato.Total+"). "} )
 	  predicados = append(predicados, models.Predicado{Nombre: "pensionado(no)."})
 		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(Persona) + "," + strconv.FormatFloat(dias_contrato, 'f', -1, 64) + "," + informacionContrato.VigenciaContrato+ "). "})

@@ -10,6 +10,7 @@ import (
 
 type VinculacionDocente struct {
 	Id                   int                           `orm:"column(id);pk;auto"`
+  IdPersona            string                        `orm:"column(id_persona);"`
 	NumeroContrato       sql.NullString                `orm:"column(numero_contrato);null"`
 	Vigencia             sql.NullInt64                 `orm:"column(vigencia);null"`
 	IdProyectoCurricular int16                         `orm:"column(id_proyecto_curricular)"`

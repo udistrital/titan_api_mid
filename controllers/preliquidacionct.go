@@ -90,7 +90,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 			}
 
 
-			fmt.Println(datos.PersonasPreLiquidacion[i].NumeroContrato)
+			
 
 			objeto_datos_contrato, error_consulta_contrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
