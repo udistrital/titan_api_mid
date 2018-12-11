@@ -4,9 +4,6 @@ import (
 	"time"
 	"github.com/udistrital/titan_api_mid/models"
 	. "github.com/udistrital/golog"
-	"io"
-	"os"
-	"strings"
 	"strconv"
 	"github.com/astaxie/beego"
 	"encoding/json"
@@ -115,20 +112,7 @@ func diff(a, b time.Time) (year, month, day int) {
 
     return
 }
-func WriteStringToFile(filepath, s string) error {
-	fo, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer fo.Close()
 
-	_, err = io.Copy(fo, strings.NewReader(s))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 
 func ConsultarValoresBonServPS(mesPreliq, anoPreliq int, numero_contrato string, vigencia_contrato int, codigo_concepto string, periodo string ) (valor_con float64){

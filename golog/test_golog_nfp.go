@@ -56,11 +56,6 @@ func CargarReglasFP(dias_a_liq string, MesPreliquidacion int, AnoPreliquidacion 
 	reglas = reglas + "porcentaje_pt("+porcentaje_PT_string+")."
 	reglas = reglas + "cargo("+id_cargo_string+")."
 
-	if err := WriteStringToFile(nombre_archivo, reglas); err != nil {
-      panic(err)
-  }
-
-
 	m := NewMachine().Consult(reglas)
 		//-- NOVEDADES DE SEGURIDAD SOCIAL --
 	novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")

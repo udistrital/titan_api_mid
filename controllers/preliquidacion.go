@@ -298,7 +298,7 @@ func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, da
 	var v []models.ConceptoNominaPorPersona
 	reglas_nov_dev = ""
 	reglas = ""//inicializacion de la variable donde se inyectaran las novedades como reglas
-	query := "Activo:true,Persona:"+strconv.Itoa(id_persona)
+	query := "Activo:true,NumeroContrato:"+numero_contrato+",VigenciaContrato:"+vigencia
   fmt.Println("nove","http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona?limit=-1&query="+query)
 	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona?limit=-1&query="+query, &v); err == nil {
 		if v != nil {
