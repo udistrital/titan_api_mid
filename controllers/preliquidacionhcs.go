@@ -198,7 +198,7 @@ func LiquidarContratoHCS(reglasbase string, NumDocumento,Persona int, preliquida
 		reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(Persona, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato, preliquidacion)
 		predicados_retefuente = CargarDatosRetefuente(NumDocumento)
 	  reglas =  reglasinyectadas + predicados_retefuente + reglasbase
-
+		
 		temp := golog.CargarReglasHCS(Persona,reglas,preliquidacion, informacionContrato.VigenciaContrato,datos_acta)
 
 	  resultado := temp[len(temp)-1]

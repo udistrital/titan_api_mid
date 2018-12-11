@@ -60,7 +60,7 @@ func CargarReglasCT(idProveedor int, reglas string,preliquidacion models.Preliqu
 		}
 
 	lista_descuentos,total_devengado_no_novedad = CalcularConceptosCT(idProveedor,periodo,reglas, tipoPreliquidacion_string, dias_a_liquidar)
-	lista_novedades = ManejarNovedadesCT(reglas,idProveedor, tipoPreliquidacion_string,periodo)
+	lista_novedades = ManejarNovedadesCT(reglas,idProveedor, tipoPreliquidacion_string,periodo, dias_a_liquidar)
 	lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos,dias_a_liquidar);
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
@@ -90,10 +90,10 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacion_st
 	for _, solution := range valor_pago {
 
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("P")), 64)
-		Nom_Concepto := "salarioBase"
+		Nom_Concepto := "honorarios"
 		salarioBase = Valor
 		salarioBase_string = strconv.Itoa(int(salarioBase))
-		temp_conceptos := models.ConceptosResumen{Nombre: "salarioBase",
+		temp_conceptos := models.ConceptosResumen{Nombre: "honorarios",
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
@@ -323,9 +323,10 @@ func GuardarConceptosCT (reglas string,lista_descuentos []models.ConceptosResume
 }
 
 
-func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, periodo string) (rest []models.ConceptosResumen){
+func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, periodo, dias_a_liq string) (rest []models.ConceptosResumen){
 
 	var lista_novedades []models.ConceptosResumen
+	 reglas = reglas + "dias_liquidados("+strconv.Itoa(idProveedor)+","+dias_a_liq+")."
 
 	f := NewMachine().Consult(reglas)
 

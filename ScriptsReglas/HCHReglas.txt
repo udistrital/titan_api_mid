@@ -24,6 +24,7 @@
 "dias_liquidados(prueba,30)."
 "info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z))."
 "info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentual)->(valor_pago(X,P,V),R is V * (Z/100)))."
+"info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==seguridad_social)->(R is 0))."
 "concepto(prueb, devengo, fijo, s, 1000000, 2017)."
 "valor_pago(X,V,P):-valor_contrato(X,Y), duracion_contrato(X,D,V), R is Y / D, dias_liquidados(X,DL),P is ((DL * R) rnd 0)."
 "reteica(2016, 9.66)."

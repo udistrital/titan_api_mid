@@ -54,7 +54,8 @@ func (c *GestionReportesController) TotalNominaPorProyecto() {
 				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",Persona:"+strconv.Itoa(IdProveedor)+",Concepto.NaturalezaConcepto.Id:1"
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 					if(d != nil){
-							if(d[0].Concepto.Id == 11) {
+							if(d[0].Concepto.Id == 11 || d[0].Concepto.Id == 10) {
+
 									cont_dev = cont_dev + 1;
 							}
 
@@ -131,7 +132,7 @@ func (c *GestionReportesController) TotalNominaPorFacultad() {
 				query := "Preliquidacion.Ano:"+ano+",Preliquidacion.Mes:"+mes+",Preliquidacion.Nomina.Id:"+id_nomina+",Persona:"+strconv.Itoa(IdProveedor)+",Concepto.NaturalezaConcepto.Id:1"
 				if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 					if(d != nil){
-							if(d[0].Concepto.Id == 11) {
+							if(d[0].Concepto.Id == 11 || d[0].Concepto.Id == 10) {
 									cont_dev = cont_dev + 1;
 							}
 							total = total + d[0].ValorCalculado
@@ -404,7 +405,7 @@ func (c *GestionReportesController) TotalNominaPorDependencia() {
 							for _, dato := range arreglo_total {
 								 if(dato.Concepto.NaturalezaConcepto.CodigoAbreviacion == "NCN_001"){
 									 total = 	total + dato.ValorCalculado
-									 if(dato.Concepto.Id == 11) {
+									 if(dato.Concepto.Id == 11 || d[0].Concepto.Id == 10) {
 		 									cont_dev = cont_dev + 1;
 		 								}
 								 }
