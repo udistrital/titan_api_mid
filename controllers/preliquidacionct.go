@@ -90,7 +90,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 			}
 
 
-			
+
 
 			objeto_datos_contrato, error_consulta_contrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
@@ -109,7 +109,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 				FechaFin, _ = time.Parse(layout , datos_acta.FechaFinTemp)
 
 				dias_contrato := CalcularDias(FechaInicio, FechaFin)
-
+				fmt.Println("valor del contarto ", datos_contrato.ValorContrato)
 				vigencia_contrato := strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 				predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + datos_contrato.ValorContrato+ "). "})
 				predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(dias_contrato, 'f', -1, 64) + "," + vigencia_contrato + "). "})
@@ -126,7 +126,8 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
 				resultado.NumeroContrato = datos.PersonasPreLiquidacion[i].NumeroContrato
 				resultado.VigenciaContrato = strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
-
+				resultado.TotalDevengos, resultado.TotalDescuentos, resultado.TotalAPagar = CalcularTotalesPorPersona(*resultado.Conceptos);
+				
 				disp=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato),resultado)
 
 

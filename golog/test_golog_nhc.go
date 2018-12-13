@@ -44,9 +44,9 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preli
 		DiaHasta,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
 
 		afectacion_seg_social := m.ProveAll("afectacion_seguridad("+novedad+").")
-		for _, solution := range afectacion_seg_social {
+		for _, _ = range afectacion_seg_social {
 
-				fmt.Println("solution",solution)
+
 				dias_novedad := CalcularDiasNovedades(preliquidacion.Mes,ano,AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
       	dias_a_liquidar = strconv.Itoa(int(30 - dias_novedad))
 				dias_novedad_string = strconv.Itoa(int(dias_novedad))
@@ -62,12 +62,11 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preli
 
 
     fmt.Println("dias_a_liq",  dias_a_liquidar)
-  fmt.Println("dias_novedad_string",  dias_novedad_string)
+    fmt.Println("dias_novedad_string",  dias_novedad_string)
     fmt.Println("total novedad", total_devengado_novedad)
 
   lista_descuentos,total_devengado_no_novedad = CalcularConceptosHCS(idProveedor,periodo,reglas, tipoPreliquidacion_string,dias_a_liquidar)
 	lista_novedades = ManejarNovedadesHCS(reglas,idProveedor, tipoPreliquidacion_string,periodo, dias_a_liquidar)
-  fmt.Println("Lista de novedades", lista_novedades)
   lista_retefuente = CalcularReteFuenteSal(tipoPreliquidacion_string,reglas, lista_descuentos,dias_a_liquidar);
 	total_calculos = append(total_calculos, lista_descuentos...)
 	total_calculos = append(total_calculos, lista_novedades...)
@@ -199,7 +198,6 @@ func ManejarNovedadesHCS(reglas string, idProveedor int, tipoPreliquidacion, per
 
 	idProveedorString := strconv.Itoa(idProveedor)
 	novedades := f.ProveAll("info_concepto(" + idProveedorString + ",T,"+periodo+",N,R).")
-  fmt.Println("nove", novedades)
 	for _, solution := range novedades {
 
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("R")), 64)

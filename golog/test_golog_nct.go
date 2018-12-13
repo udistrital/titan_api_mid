@@ -33,7 +33,7 @@ func CargarReglasCT(idProveedor int, reglas string,preliquidacion models.Preliqu
 
 	for _, solution := range novedades_seg_social {
 
-		fmt.Println("aqui nov")
+		fmt.Println("existe novedad de SS")
 
 		novedad := fmt.Sprintf("%s", solution.ByName_("N"))
 		AnoDesde,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)

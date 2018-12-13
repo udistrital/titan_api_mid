@@ -205,7 +205,8 @@ func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 		resultado.NumDocumento = float64(NumDocumento)
 		resultado.NumeroContrato = informacionContrato.NumeroContrato
 		resultado.VigenciaContrato = informacionContrato.VigenciaContrato
-
+		resultado.TotalDevengos, resultado.TotalDescuentos, resultado.TotalAPagar = CalcularTotalesPorPersona(*resultado.Conceptos);
+		
 		dispo=verificacion_pago(NumDocumento,preliquidacion.Ano, preliquidacion.Mes,informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato,resultado)
 
 		//se guardan los conceptos calculados en la nomina

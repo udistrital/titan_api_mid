@@ -135,6 +135,21 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion)(arreglo_contra
 
 	}
 
+	var d []models.DetallePreliquidacion
+	for x, dato := range temp_docentes.ContratosTipo.ContratoTipo {
+		query := "Preliquidacion.Id:"+strconv.Itoa(objeto_nom.Id)+",Persona:"+dato.Id
+		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
+			if len(d) == 0 {
+				temp_docentes.ContratosTipo.ContratoTipo[x].Preliquidado = "no"
+
+			}else{
+				temp_docentes.ContratosTipo.ContratoTipo[x].Preliquidado = "si"
+
+			}
+
+		}
+	}
+
 	return temp_docentes, control_error;
 
 }
