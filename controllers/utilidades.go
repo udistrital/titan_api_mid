@@ -81,7 +81,7 @@ func diff(a, b time.Time) (year, month, day int) {
 
     year = int(y2 - y1)
     month = int(M2 - M1)
-    day = int(d2 - d1) + 1
+    day = int(d2 - d1)
 
 
     // Normalize negative values
@@ -93,8 +93,14 @@ func diff(a, b time.Time) (year, month, day int) {
     }*/
     if day < 0 {
         // days in month:
-        t := time.Date(y1, M1, 32, 0, 0, 0, 0, time.UTC)
-        day += 32 - t.Day()
+				/*
+        t := time.Date(y1, M1, -(day), 0, 0, 0, 0, time.UTC)
+				fmt.Println("day", day)
+        day += 31 - t.Day()
+				fmt.Println("day", day)
+				*/
+				
+				day = (30 - d1) + d2
         month--
     }
     if month < 0 {

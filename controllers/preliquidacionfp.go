@@ -170,6 +170,8 @@ func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados flo
 
 	}
 
+	fmt.Println("dias de contFP", dias_contrato)
+
 	return dias_contrato
 
 }

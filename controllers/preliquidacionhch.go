@@ -186,7 +186,7 @@ func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 		 FechaInicio, _ = time.Parse(layout , datos_acta.ActaInicio.FechaInicioTemp)
 		 FechaFin, _ = time.Parse(layout , datos_acta.ActaInicio.FechaFinTemp)
 
-		 dias_contrato := CalcularDias(FechaInicio, FechaFin)
+		 dias_contrato := CalcularDias(FechaInicio, FechaFin) + 1 //Suma uno para día inclusive
 	  vigencia_contrato := informacionContrato.VigenciaContrato
 		fmt.Println("valor_contrato->", informacionContrato.Total)
 	 	predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(Persona)+","+informacionContrato.Total+"). "} )
@@ -206,7 +206,7 @@ func LiquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 		resultado.NumeroContrato = informacionContrato.NumeroContrato
 		resultado.VigenciaContrato = informacionContrato.VigenciaContrato
 		resultado.TotalDevengos, resultado.TotalDescuentos, resultado.TotalAPagar = CalcularTotalesPorPersona(*resultado.Conceptos);
-		
+
 		dispo=verificacion_pago(NumDocumento,preliquidacion.Ano, preliquidacion.Mes,informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato,resultado)
 
 		//se guardan los conceptos calculados en la nomina

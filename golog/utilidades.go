@@ -101,8 +101,7 @@ func diff(a, b time.Time) (year, month, day int) {
     }*/
     if day < 0 {
         // days in month:
-        t := time.Date(y1, M1, 32, 0, 0, 0, 0, time.UTC)
-        day += 32 - t.Day()
+				day = (30 - d1) + d2
         month--
     }
     if month < 0 {
@@ -411,8 +410,8 @@ func CalcularPeriodoLiquidacion(preliquidacion models.Preliquidacion, objeto_dat
 	var meses_contrato float64
 
 	layout := "2006-01-02"
-	//FechaInicio, _ = time.Parse(layout , "2018-02-01")
-	//FechaFin, _ = time.Parse(layout , "2018-06-15")
+	//FechaInicio, _ = time.Parse(layout , "2018-08-01")
+	//FechaFin, _ = time.Parse(layout , "2018-12-15")
 
 	datos_acta := objeto_datos_acta.ActaInicio
 
@@ -440,7 +439,7 @@ if int(FechaInicioContrato.Month()) == preliquidacion.Mes && int(FechaInicioCont
 
 }
 
-	fmt.Println("a", a, "m",m , "d",d)
+	fmt.Println("aaaaaaaa", a, "m",m , "d",d)
 	if (FechaFin.Day() != FechaInicio.Day()){
 		d = d+1;
 	}
