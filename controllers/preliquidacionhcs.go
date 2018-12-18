@@ -122,7 +122,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 					aux := models.ListaContratos{}
 				 if err := formatdata.FillStruct(info_resoluciones[key], &aux); err == nil{
 
-					 resumen_preliqu = append(resumen_preliqu,LiquidarContratoHCS(reglasbase,datos.PersonasPreLiquidacion[i].NumDocumento,datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion,aux)...);
+					 resumen_preliqu = append(resumen_preliqu,LiquidarContratoHCS(reglasbase,datos.Novedad, datos.PersonasPreLiquidacion[i].NumDocumento,datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion,aux)...);
 
 				 }else{
 					 fmt.Println("error al guardar información agrupada",err)
@@ -163,7 +163,7 @@ for _, descuentos := range resultado_desc{
 		return resumen_preliqu
 }
 
-func LiquidarContratoHCS(reglasbase string, NumDocumento,Persona int, preliquidacion models.Preliquidacion,informacionContrato models.ListaContratos)(res []models.Respuesta){
+func LiquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento,Persona int, preliquidacion models.Preliquidacion,informacionContrato models.ListaContratos)(res []models.Respuesta){
 
 
 	var objeto_datos_acta models.ObjetoActaInicio
@@ -195,10 +195,18 @@ func LiquidarContratoHCS(reglasbase string, NumDocumento,Persona int, preliquida
 		fmt.Println("valor_contrato", informacionContrato.Total)
 	  predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(Persona)+","+informacionContrato.Total+")."} )
 	  reglasinyectadas = FormatoReglas(predicados)
-		reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(Persona, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato, preliquidacion)
+
+		fmt.Println("novedad inyectada", novedadInyectada)
+		if (novedadInyectada == "") {
+			fmt.Println("no hay")
+			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(Persona, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato, preliquidacion)
+		}else{
+			fmt.Println("sí hay")
+			reglasinyectadas = reglasinyectadas + novedadInyectada
+		}
 		predicados_retefuente = CargarDatosRetefuente(NumDocumento)
 	  reglas =  reglasinyectadas + predicados_retefuente + reglasbase
-		
+
 		temp := golog.CargarReglasHCS(Persona,reglas,preliquidacion, informacionContrato.VigenciaContrato,datos_acta)
 
 	  resultado := temp[len(temp)-1]

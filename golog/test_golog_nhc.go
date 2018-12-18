@@ -147,6 +147,7 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacion_str
 func GuardarConceptosHCS (reglas string,lista_descuentos []models.ConceptosResumen, dias_a_liq_no_nov, dias_a_liq_nov string)(rest []models.Respuesta){
 		temp := models.Respuesta{}
 		var resultado []models.Respuesta
+    fmt.Println("lista de descuentos", lista_descuentos)
     m := NewMachine().Consult(reglas)
 
     temp_conceptos := models.ConceptosResumen{Nombre: "ibc_liquidado",
@@ -208,7 +209,7 @@ func ManejarNovedadesHCS(reglas string, idProveedor int, tipoPreliquidacion, per
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
       temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
-			temp_conceptos.DiasLiquidados = dias_a_liquidar
+			temp_conceptos.DiasLiquidados =  dias_a_liq 
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion
       temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}

@@ -164,7 +164,7 @@ func (c *PreliquidacionController) ResumenConceptos() {
 // Post ...
 // @Title Create
 // @Description create Preliquidacion
-// @Param	body		body 	models.Preliquidacion	true		"body for Preliquidacion content"
+// @Param	body		body 	models.DatosPreliquidacion	true		"body for DatosPreliquidacion content"
 // @Success 201 {object} models.Preliquidacion
 // @Failure 403 body is empty
 // @router / [post]
