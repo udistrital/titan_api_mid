@@ -157,9 +157,12 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion)(arreglo_contra
 func ListaContratosFuncionariosPlanta()(arreglo_contratos []models.Funcionario_x_Proveedor, e error){
 	var err error
 	var datos_planta []models.Funcionario_x_Proveedor
+	fmt.Println("listar personas de planta")
 	if err = getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_proveedor/get_funcionarios_planta", &datos_planta); err == nil && datos_planta !=nil {
 		fmt.Println("funcionario")
-		fmt.Println(datos_planta)
+		
+	}else{
+		fmt.Println("error al traer personas de planta", err)
 	}
 
 	return datos_planta, err

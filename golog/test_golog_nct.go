@@ -342,7 +342,7 @@ func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, peri
 		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-			  temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
+			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 			temp_conceptos.DiasLiquidados = dias_a_liq
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))

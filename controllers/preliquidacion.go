@@ -160,6 +160,78 @@ func (c *PreliquidacionController) ResumenConceptos() {
 
 }
 
+// Post ...
+// @Title Create
+// @Description create get_ibc_novedad
+// @Param	body		body 	models.IBCPorNovedad	true		"body for models.IBCPorNovedad content"
+// @Success 201 {object}
+// @Failure 403 body is empty
+// @router /get_ibc_novedad/ [post]
+func (c *PreliquidacionController) GetIBCPorNovedad() {
+	var v models.IBCPorNovedad
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+		//carga de reglas desde el ruler
+		reglasbase := CargarReglasBase(v.NombreNomina) //funcion general para dar formato a reglas cargadas desde el ruler
+    reglasbase = reglasbase + CargarReglasSS();
+		//-----------------------------
+
+		if v.NombreNomina == "HCS" {
+			var n *PreliquidacionHcSController
+			resumen := n.GetIBCPorNovedad(v.Ano, v.Mes, v.NumDocumento, v.IdPersona, reglasbase, v.Novedad)
+  		c.Data["json"] = resumen
+			c.ServeJSON()
+
+		}
+
+    /*
+
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" {
+  		var n *PreliquidacionctController //aca se esta creando un objeto del controlador especico
+			resumen := n.Preliquidar(&v, reglasbase)
+			c.Data["json"] = resumen
+			c.ServeJSON()
+		}
+
+    if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
+  		var n *PreliquidacionhchController //aca se esta creando un objeto del controlador especico
+			resumen := n.Preliquidar(v, reglasbase)
+			c.Data["json"] = resumen
+			c.ServeJSON()
+		}
+
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "FP" {
+
+			var n *PreliquidacionFpController
+			resumen := n.Preliquidar(&v, reglasbase)
+	 		c.Data["json"] = resumen
+			c.ServeJSON()
+
+		}
+		/*
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "DP"  {
+			var n *PreliquidaciondpController
+			resumen := n.Preliquidar(&v, reglasbase)
+			c.Data["json"] = resumen
+			c.ServeJSON()
+		}
+
+		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "PE" {
+			var n *PreliquidacionpeController
+			resumen := n.Preliquidar(&v, reglasbase)
+			c.Data["json"] = resumen
+			c.ServeJSON()
+*/
+
+
+
+
+
+	}else {
+		fmt.Println("error al leer datos para calcular ibc", err)
+	}
+
+}
+
 
 // Post ...
 // @Title Create
@@ -171,7 +243,7 @@ func (c *PreliquidacionController) ResumenConceptos() {
 func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-
+    fmt.Println("vvvvv",v)
 		//carga de reglas desde el ruler
 		reglasbase := CargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
     reglasbase = reglasbase + CargarReglasSS();
@@ -305,6 +377,7 @@ func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, da
 			for i := 0; i < len(v); i++ {
 				esActiva := validarNovedades_segSocial(datos_preliqu.Mes,datos_preliqu.Ano , v[i].FechaDesde, v[i].FechaHasta)
 				if esActiva == 1 {
+          fmt.Println("soy super activa")
 					//todo debe estar dentro de este if para que se verifiquen fechas siempre
 					if (v[i].Concepto.NaturalezaConcepto.Nombre == "seguridad_social"){
 
@@ -359,21 +432,20 @@ func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, da
 
 func validarNovedades_segSocial(Mes, Ano int, FechaDesde, FechaHasta time.Time) (flag int) {
 
-	if FechaDesde.Month() == time.Month(Mes) && FechaDesde.Year() == Ano {
-		flag = 1
+  /*
+  Se verifica si el año de la novedad es mayor (mas no igual) a la fecha final de la novedad
+  ya que de ser así, ya es valida
+  Si no, se verifica que las fechas desde y hasta cubren el mes de Liquidacion
+  */
 
-	} else if FechaHasta.Month() == time.Month(Mes) && FechaHasta.Year() == Ano {
-		flag = 1
+  	if(FechaHasta.Year() > Ano){
+  		return 1
+  	}else if (FechaDesde.Year() <= Ano && FechaHasta.Year() >= Ano && int(FechaDesde.Month()) <= Mes && int(FechaHasta.Month()) >= Mes ){
+  		return 1
+  	}else {
 
-	} else if FechaHasta.Month() == time.Month(Mes) && FechaHasta.Year() == Ano {
-		flag = 1
-
-	} else{
-		flag = 0
-
-	}
-
-	return flag
+  		return 0
+  	}
 
 }
 

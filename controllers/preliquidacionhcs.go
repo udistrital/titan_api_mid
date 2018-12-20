@@ -16,6 +16,87 @@ type PreliquidacionHcSController struct {
 	beego.Controller
 }
 
+func (c *PreliquidacionHcSController) GetIBCPorNovedad(ano, mes , numDocumento, idPersona int, reglasbase, novedad string)(res int){
+
+  var resumen_preliqu []models.Respuesta
+	var temp_docentes models.ObjetoFuncionarioContrato
+	var ibc_novedad int
+	var control_error error
+
+	preliquidacion := models.Preliquidacion {Ano: ano, Mes:mes}
+	datos := models.DatosPreliquidacion {Preliquidacion: preliquidacion}
+	persona :=  models.PersonasPreliquidacion{NumDocumento : numDocumento}
+	temp_docentes, control_error = GetContratosPorPersonaHCS(datos,persona)
+
+	if control_error == nil {
+
+	//temp_agrupar := make(map[string]interface{}) // este mapa tiene la siguiente estructura: temp_agrupar[numero_cedula_docente][id_resolucion][valor_total] (cada resolucion tiene un único tipo de nivel académico, por lo tanto los valores totales se van sumando de acuerdo a la resolución )
+		info_resolucion := make(map[string]string)
+		info_resoluciones := make(map[string]interface{})
+
+		for _,dato := range temp_docentes.ContratosTipo.ContratoTipo {
+
+						var vinculaciones []models.VinculacionDocente
+						query:= "NumeroContrato:"+dato.NumeroContrato+",Vigencia:"+dato.VigenciaContrato
+						if err := getJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
+
+							_, ok := info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
+							if ok {
+
+											info_resolucion_temp := make(map[string]string)
+											temp_valor,_ := strconv.Atoi(info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)])
+											temp_valor = temp_valor + int(vinculaciones[0].ValorContrato)
+											info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] =  strconv.Itoa(temp_valor)
+											info_resolucion_temp["NumeroContrato"] =  dato.NumeroContrato
+											info_resolucion_temp["VigenciaContrato"] =  dato.VigenciaContrato
+											info_resolucion_temp["Total"] =  info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
+											info_resoluciones[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] = info_resolucion_temp
+
+							} else {
+
+											info_resolucion_temp := make(map[string]string)
+											temp_valor := int(vinculaciones[0].ValorContrato)
+											info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] =  strconv.Itoa(temp_valor)
+											info_resolucion_temp["NumeroContrato"] =  dato.NumeroContrato
+											info_resolucion_temp["VigenciaContrato"] =  dato.VigenciaContrato
+											info_resolucion_temp["Total"] =  info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
+											info_resoluciones[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] = info_resolucion_temp
+
+							}
+						}
+
+			}
+
+		//CALCULAR PRELIQUIDACIÓN PARA CADA VALOR AGRUPADO
+			for key,_ := range info_resoluciones {
+				aux := models.ListaContratos{}
+			 if err := formatdata.FillStruct(info_resoluciones[key], &aux); err == nil{
+
+				resumen_preliqu = append(resumen_preliqu,LiquidarContratoHCS(reglasbase,novedad, numDocumento,idPersona,preliquidacion,aux)...);
+
+			 }else{
+				 fmt.Println("error al guardar información agrupada",err)
+			 }
+			}
+
+
+			for _, res := range resumen_preliqu {
+				for _,concepto := range *res.Conceptos{
+					if(concepto.Id == 311){
+						temp, _ := strconv.Atoi(concepto.Valor)
+						ibc_novedad = ibc_novedad + temp
+					}
+				}
+			}
+
+
+		}
+
+	 return ibc_novedad
+
+}
+
+
 func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidacion , reglasbase string) (res []models.Respuesta) {
 	//declaracion de variables
 	var resumen_preliqu []models.Respuesta
@@ -23,6 +104,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 	var control_error error
 	//-----------------------
 
+	fmt.Println("json", datos)
 	//carga de informacion de los empleados a partir del id de persona Natural (en este momento id proveedor)
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
@@ -179,7 +261,6 @@ func LiquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento,Perso
 
 	objeto_datos_acta, error_consulta_acta = ActaInicioDVE(informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato)
 
-
 	  if(error_consulta_acta == nil){
 
 	   datos_acta := objeto_datos_acta
@@ -195,13 +276,10 @@ func LiquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento,Perso
 		fmt.Println("valor_contrato", informacionContrato.Total)
 	  predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(Persona)+","+informacionContrato.Total+")."} )
 	  reglasinyectadas = FormatoReglas(predicados)
-
-		fmt.Println("novedad inyectada", novedadInyectada)
+		/* If para permitir incluir regla en servicio get_ibc_novedad  */
 		if (novedadInyectada == "") {
-			fmt.Println("no hay")
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(Persona, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato, preliquidacion)
 		}else{
-			fmt.Println("sí hay")
 			reglasinyectadas = reglasinyectadas + novedadInyectada
 		}
 		predicados_retefuente = CargarDatosRetefuente(NumDocumento)

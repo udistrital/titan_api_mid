@@ -20,14 +20,41 @@ func CalcularDiasNovedades(MesPreliq, AnoPreliq int,  AnoDesde float64, MesDesde
 	FechaDesde = time.Date(int(AnoDesde), time.Month(int(MesDesde)), int(DiaDesde), 0, 0, 0, 0, time.UTC)
 	FechaHasta = time.Date(int(AnoHasta), time.Month(int(MesHasta)), int(DiaHasta), 0, 0, 0, 0, time.UTC)
 
-	if int(FechaDesde.Month()) == MesPreliq && int(FechaDesde.Year()) == AnoPreliq {
-		FechaControl = time.Date(AnoPreliq, time.Month(MesPreliq), 30, 0, 0, 0, 0, time.UTC)
-		periodo_liquidacion = CalcularDias(FechaDesde, FechaControl) + 1
-	} else if int(FechaHasta.Month()) == MesPreliq && int(FechaHasta.Year()) == AnoPreliq {
-		FechaControl = time.Date(AnoPreliq, time.Month(MesPreliq), 1, 0, 0, 0, 0, time.UTC)
-		periodo_liquidacion = CalcularDias(FechaControl, FechaHasta) + 1
-	} else if FechaHasta.Month() == FechaDesde.Month() && FechaHasta.Year() == FechaDesde.Year() {
-		periodo_liquidacion = CalcularDias(FechaDesde, FechaHasta) + 1
+	esActiva := validarNovedades_segSocial(MesPreliq,AnoPreliq , FechaDesde, FechaHasta)
+	if esActiva == 1 {
+		fmt.Println("novedad activa")
+		//Si la fechas de las novedades son del mismo año y del mismo mes se debe calcular los dias entre ambas fechas
+		if FechaHasta.Month() == FechaDesde.Month() && FechaHasta.Year() == FechaDesde.Year() {
+			periodo_liquidacion = CalcularDias(FechaDesde, FechaHasta) + 1
+		}else{
+			/*En caso de que la novedad no empiece y termine el mismo mes,
+			la novedad cubre varios meses, por lo que se deben calcular los dias de ese mes en que afectó la novedad.
+			Si la novedad comienza en el mes y el año de la preliquidacion a realizar, se calculan los dias a partir de ella hasta el día 30 del mes
+			*/
+			if (int(FechaDesde.Month()) == MesPreliq && int(FechaDesde.Year()) == AnoPreliq ){
+				FechaControl = time.Date(AnoPreliq, time.Month(MesPreliq), 30, 0, 0, 0, 0, time.UTC)
+				fmt.Println("fecha cont",FechaControl, FechaDesde)
+				periodo_liquidacion = CalcularDias(FechaDesde, FechaControl) + 1
+			}else if int(FechaHasta.Month()) == MesPreliq && int(FechaHasta.Year()) == AnoPreliq {
+				/*
+				Si la novedad termina en el mes y el año de la preliquidacion a realizar, se calculan los dias a
+				partir del primero hasta el dia que comienza la novedad
+				*/
+				FechaControl = time.Date(AnoPreliq, time.Month(MesPreliq), 1, 0, 0, 0, 0, time.UTC)
+				periodo_liquidacion = CalcularDias(FechaControl, FechaHasta) + 1
+			} else{
+				/*
+				Si no se cumple que las novedades comiencen o terminen el mes de la preliquidacion
+				significa que afectó a todo el mes completo, por lo que los dias de la novedad son 30
+				*/
+				periodo_liquidacion = 30
+			}
+
+		}
+	}else{
+		fmt.Println("soy inactiva")
+
+		periodo_liquidacion = 0;
 	}
 
 	return periodo_liquidacion
@@ -318,11 +345,12 @@ func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas,periodo string, 
 		}
 
 
-		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N).")
+		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.DiasLiquidados = dias_a_liquidar
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
+			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
@@ -347,7 +375,7 @@ func BuscarValorConcepto(lista_descuentos []models.ConceptosResumen,codigo_conce
 }
 
 func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen, dias_a_liq string)(rest []models.ConceptosResumen){
-	fmt.Println("entre acá a rete")
+
 	var lista_retefuente []models.ConceptosResumen
 	var ingresos int
 	var deduccion_salud int
@@ -394,7 +422,7 @@ func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descu
 		lista_retefuente = append(lista_retefuente, temp_conceptos)
 
 	}
-fmt.Println("terminé sal")
+
 	return lista_retefuente
 }
 
@@ -449,4 +477,22 @@ if int(FechaInicioContrato.Month()) == preliquidacion.Mes && int(FechaInicioCont
 	meses := strconv.FormatFloat(meses_contrato, 'E', -1, 64)
 
 	return periodo,meses
+}
+
+func validarNovedades_segSocial(Mes, Ano int, FechaDesde, FechaHasta time.Time) (flag int) {
+
+/*
+Se verifica si el año de la novedad es mayor (mas no igual) a la fecha final de la novedad
+ya que de ser así, ya es valida
+Si no, se verifica que las fechas desde y hasta cubren el mes de Liquidacion
+*/
+
+	if(FechaHasta.Year() > Ano){
+		return 1
+	}else if (FechaDesde.Year() <= Ano && FechaHasta.Year() >= Ano && int(FechaDesde.Month()) <= Mes && int(FechaHasta.Month()) >= Mes ){
+		return 1
+	}else {
+
+		return 0
+	}
 }

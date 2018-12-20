@@ -99,7 +99,7 @@ func diff(a, b time.Time) (year, month, day int) {
         day += 31 - t.Day()
 				fmt.Println("day", day)
 				*/
-				
+
 				day = (30 - d1) + d2
         month--
     }
@@ -142,34 +142,6 @@ func WriteStringToFile(filepath, s string) error {
 }
 
 
-func ContratosDVE(id_contrato , vigencia string)(datos models.ObjetoContratoEstado,  err error){
-
-	var temp map[string]interface{}
-	var temp_docentes models.ObjetoContratoEstado
-	var control_error error
-
-	fmt.Println("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_elaborado_estado/"+id_contrato+"/"+vigencia)
-	if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_elaborado_estado/"+id_contrato+"/"+vigencia, &temp); err == nil && temp != nil {
-		jsonDocentes, error_json := json.Marshal(temp)
-
-		if error_json == nil {
-
-			json.Unmarshal(jsonDocentes, &temp_docentes)
-			fmt.Println(temp_docentes)
-		} else {
-			control_error = error_json
-			fmt.Println("error al traer contratos docentes DVE")
-		}
-	} else {
-		control_error = err
-		fmt.Println("Error al unmarshal datos de nómina",err)
-
-
-	}
-
-		return temp_docentes, control_error;
-}
-
 func ActaInicioDVE(id_contrato, vigencia string)(datos models.ObjetoActaInicio,  err error){
 
 	var temp map[string]interface{}
@@ -210,7 +182,8 @@ func verificacion_pago(id_proveedor,ano, mes int, num_cont, vig string,  resulta
 	}
 
 }
-func consultar_rp (id_proveedor, vigencia int) (saldo float64){
+
+func consultar_rp(id_proveedor, vigencia int) (saldo float64){
 		var registro_presupuestal []models.RegistroPresupuestal
 		var saldo_rp float64
 		var id_proveedor_string = strconv.Itoa(id_proveedor)
@@ -479,13 +452,13 @@ func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidaci
 				}
 			}
 
-			fmt.Println("info_total_personas",info_total_personas, len(info_total_personas))
+
 			var temp  []models.ConceptosResumen
 			for key,_ := range info_total_personas {
 				aux := models.TotalPersona{}
 			 if err := formatdata.FillStruct(info_total_personas [key], &aux); err == nil{
 				 temp = append(temp,golog.CalcularDescuentosTotalesHCS(key, aux.Total ,aux.Id,reglas,preliquidacion, strconv.Itoa(preliquidacion.Ano))...)
-				fmt.Println("fondo soliwis",temp)
+				fmt.Println("fondo solidaridad total",temp)
 			 }else{
 				 fmt.Println("error al guardar información agrupada",err)
 			 }

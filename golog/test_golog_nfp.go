@@ -56,6 +56,7 @@ func CargarReglasFP(dias_a_liq string, MesPreliquidacion int, AnoPreliquidacion 
 	reglas = reglas + "porcentaje_pt("+porcentaje_PT_string+")."
 	reglas = reglas + "cargo("+id_cargo_string+")."
 
+
 	m := NewMachine().Consult(reglas)
 		//-- NOVEDADES DE SEGURIDAD SOCIAL --
 	novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
@@ -166,10 +167,11 @@ func CargarReglasFP(dias_a_liq string, MesPreliquidacion int, AnoPreliquidacion 
 			}
 
 			reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
-			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C, N).")
+			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C, N, D).")
 
 			for _, cod := range codigo {
 				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+				 temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 				temp_conceptos.DiasLiquidados = dias_a_liquidar
 				temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
@@ -187,19 +189,22 @@ func CargarReglasFP(dias_a_liq string, MesPreliquidacion int, AnoPreliquidacion 
 
 		valor_descuentos := m.ProveAll("desc_obli_planta(CON, "+total_devengado_string+", "+periodo+","+tipoPreliquidacion_string+", V).")
 		for _, solution := range valor_descuentos {
-			fmt.Println("descuentos")
 			Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
+			fmt.Println("valor", Valor)
 			Nom_Concepto := fmt.Sprintf("%s", solution.ByName_("CON"))
+			fmt.Println(Nom_Concepto)
 			temp_conceptos := models.ConceptosResumen{Nombre: Nom_Concepto,
 			Valor: fmt.Sprintf("%.0f", Valor),
 			}
 
 			reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
-			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C, N).")
+			codigo := m.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C, N,D).")
 
 			for _, cod := range codigo {
 				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+				temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 				temp_conceptos.DiasLiquidados = dias_a_liquidar
+				temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 			}
 
@@ -222,11 +227,13 @@ func GuardarConceptos (reglas string,lista_descuentos []models.ConceptosResumen)
 		  	Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
 		}
 
-		codigo := m.ProveAll(`codigo_concepto(ibc_liquidado,C, N).`)
+		codigo := m.ProveAll(`codigo_concepto(ibc_liquidado,C, N,D).`)
 
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 			temp_conceptos.DiasLiquidados = dias_a_liquidar
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_descuentos = append(lista_descuentos, temp_conceptos)
@@ -235,10 +242,12 @@ func GuardarConceptos (reglas string,lista_descuentos []models.ConceptosResumen)
 			Valor: fmt.Sprintf("%.0f", total_devengado_no_novedad),
 		}
 
-		codigo_1 := m.ProveAll(`codigo_concepto(ibc_novedad,C, N).`)
+		codigo_1 := m.ProveAll(`codigo_concepto(ibc_novedad,C, N,D).`)
 
 		for _, cod := range codigo_1 {
 			temp_conceptos_1.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 			temp_conceptos_1.DiasLiquidados = dias_a_liquidar
 		}
 
@@ -270,11 +279,13 @@ func ManejarNovedades(reglas string, idProveedor int, tipoPreliquidacion, period
 		temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
-		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N).")
+		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 			temp_conceptos.DiasLiquidados = dias_a_liquidar
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_novedades = append(lista_novedades, temp_conceptos)
@@ -318,11 +329,13 @@ func CalcularDoceavaBonServDic(reglas string,tipoPreliquidacion_string string, n
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
-		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N).")
+		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 			temp_conceptos.DiasLiquidados = dias_a_liquidar
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
 		lista_doceavas = append(lista_doceavas, temp_conceptos)
@@ -360,10 +373,12 @@ func CalcularDoceavaBonServPS(reglas string,tipoPreliquidacion_string string, nu
 				Valor: fmt.Sprintf("%.0f", Valor),
 			}
 
-			codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N).")
+			codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 			for _, cod := range codigo {
 				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			  temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 				temp_conceptos.DiasLiquidados = dias_a_liquidar
+				temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 			}
 
@@ -392,10 +407,12 @@ func CalcularDoceavaPSDic(reglas string,tipoPreliquidacion_string string, numero
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
 
-		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N).")
+		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 			temp_conceptos.DiasLiquidados = dias_a_liquidar
+		  temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 		}
 
@@ -430,10 +447,12 @@ func CalcularDoceavaPV(reglas string, tipoPreliquidacion_string string, total_ca
 				Valor: fmt.Sprintf("%.0f", Valor),
 			}
 
-			codigo := e.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N).")
+			codigo := e.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 			for _, cod := range codigo {
 				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			  temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 				temp_conceptos.DiasLiquidados = dias_a_liquidar
+				temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 				temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
 			}
 

@@ -57,6 +57,7 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 						fmt.Println("error : ", err)
 					}
 				}else if v.Nomina.TipoNomina.Nombre == "FP" {
+					fmt.Println("Planta")
 					if listaContratos, err := ListaContratosFuncionariosPlanta(); err == nil {
 						c.Ctx.Output.SetStatus(201)
 						c.Data["json"] = listaContratos
@@ -271,7 +272,7 @@ func ListarPersonasHCH(objeto_nom models.Preliquidacion)(arreglo_contratos model
 
 }
 
-
+//Considerar ubicarlo en otro controlador
 func  Consultar_datos_preliq(id_pre int)(preliq *models.Preliquidacion){
 	var datos_preliquidacion []models.Preliquidacion
 	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/?query=Id:"+strconv.Itoa(id_pre), &datos_preliquidacion); err == nil && datos_preliquidacion !=nil {

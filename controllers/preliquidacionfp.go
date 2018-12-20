@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"github.com/udistrital/titan_api_mid/golog"
 	"github.com/udistrital/titan_api_mid/models"
-	"encoding/json"
+	//"encoding/json"
 	"github.com/astaxie/beego"
   "fmt"
 	"time"
@@ -17,7 +17,7 @@ type PreliquidacionFpController struct {
 
 func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
 
-	fmt.Println("holaaa")
+
 	//declaracion de variables
 	var reglasinyectadas string
 	var reglas string
@@ -27,12 +27,10 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 	var porcentajePT int
 	var tipoNom int;
-	var arreglo_pruebas []models.PruebaGo
-	arreglo_pruebas = make([]models.PruebaGo, len(datos.PersonasPreLiquidacion))
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
-		fmt.Println("hellouuu")
+
 		var informacion_cargo []models.FuncionarioCargo
 		filtrodatos := models.FuncionarioCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
 		tipoNom = 2
@@ -58,34 +56,40 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
-			resumen_preliqu = append(resumen_preliqu, resultado)
+			fmt.Println(resultado.Conceptos)
+			resultado.TotalDevengos, resultado.TotalDescuentos, resultado.TotalAPagar = CalcularTotalesPorPersona(*resultado.Conceptos);
 
-			for _, descuentos := range *resultado.Conceptos {
-				valor, _ := strconv.ParseFloat(descuentos.Valor,64)
-				dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
-				tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
-				detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}}
-				if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
+			if datos.Preliquidacion.Definitiva == true {
 
-				} else {
-					beego.Debug("error1: ", err)
-				}
-			}
+		  for _, descuentos := range *resultado.Conceptos{
+		    valor, _ := strconv.ParseFloat(descuentos.Valor,64)
+		    dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
+		    tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
+				detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, Persona: datos.PersonasPreLiquidacion[i].IdPersona,DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}}
 
+				//detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: informacionContrato.NumeroContrato,VigenciaContrato: vigencia_contrato, Persona: Persona, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: dispo}}
+
+		    if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
+					fmt.Println(idDetaPre)
+		    }else{
+		      beego.Debug("error1: ", err)
+		    }
+		  }
+		}
+
+		resumen_preliqu = append(resumen_preliqu, resultado)
+		reglas = ""
+		reglasinyectadas = ""
+
+
+
+		}else{
+			fmt.Println("error al consultar Asignacion_basica", err)
 		}
 		reglasinyectadas = "";
 	}
 
-	data, err := json.Marshal(arreglo_pruebas)
-	if err != nil {
-			fmt.Println("error en json")
-		}
-	str := fmt.Sprintf("%s", data)
-	mes := strconv.Itoa(datos.Preliquidacion.Mes)
-	ano := strconv.Itoa(datos.Preliquidacion.Ano)
-	if err := WriteStringToFile("pruebaFuncionarios"+ano+mes+".txt", str); err != nil {
-			panic(err)
-	}
+
 	return resumen_preliqu
 
 }
