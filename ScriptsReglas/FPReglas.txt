@@ -23,7 +23,7 @@
 "afectacion_seguridad(licencia_norem)."
 "seg_social(prueba,1,1,1,1,1,1)."
 "salud_fun(TD,P,M,V):- \+(seg_social(comision_estudio,_,_,_,_,_,_)) -> periodo_liq_salud(M),porcentaje_salud(P,PF), V is (TD * PF rnd 0)."
-"novedades_devengos(X):- devengo(V,N), concepto_ibc(N), X is V."
+"novedades_devengos(X):- devengo(V,N), concepto_ibc(N,activo), X is V."
 "calcular_ibc(V):- concepto_ibc(X,activo), sumar_ibc(X,Y), V is Y."
 "periodo_liq_salud(1)."
 "periodo_liq_salud(2)."
@@ -196,4 +196,3 @@
 "p_salud(exterior_familia, 2018,0.015)."
 "concepto(prueba, devengo, porcentaje, salud,0.5 , 2018)."
 "p_salud(otro, 2018,0.04)."
-""
