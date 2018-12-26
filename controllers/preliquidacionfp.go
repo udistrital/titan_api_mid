@@ -4,17 +4,21 @@ import (
 	"strconv"
 	"github.com/udistrital/titan_api_mid/golog"
 	"github.com/udistrital/titan_api_mid/models"
+	"github.com/udistrital/utils_oas/request"
 	//"encoding/json"
 	"github.com/astaxie/beego"
   "fmt"
 	"time"
 )
 
-// PreliquidacionHcController operations for PreliquidacionHc
+// PreliquidacionFpController operations for PreliquidacionHc
 type PreliquidacionFpController struct {
 	beego.Controller
 }
 
+// Preliquidar ...
+// @Title Preliquidar
+// @Description Funcion encargada de Preliquidar
 func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
 
 
@@ -22,7 +26,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 	var reglasinyectadas string
 	var reglas string
 	var idDetaPre interface{}
-	var resumen_preliqu []models.Respuesta
+	var resumenPreliqu []models.Respuesta
 
 
 	var porcentajePT int
@@ -35,11 +39,11 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 		filtrodatos := models.FuncionarioCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
 		tipoNom = 2
 
-		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_primatec", "POST", &porcentajePT, datos.PersonasPreLiquidacion[i].IdPersona); err != nil {
+		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_primatec", "POST", &porcentajePT, datos.PersonasPreLiquidacion[i].IdPersona); err != nil {
 			porcentajePT = 0
 		}
 
-		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo/get_asignacion_basica", "POST", &informacion_cargo, &filtrodatos); err == nil {
+		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo/get_asignacion_basica", "POST", &informacion_cargo, &filtrodatos); err == nil {
 
 			dias_laborados := CalcularDias(informacion_cargo[0].FechaInicio, informacion_cargo[0].FechaFin)
 			//reglasNominasEspeciales := crearHechosNominasEspeciales(datos.Preliquidacion,datos.PersonasPreLiquidacion[i].IdPersona)
@@ -63,13 +67,13 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 		  for _, descuentos := range *resultado.Conceptos{
 		    valor, _ := strconv.ParseFloat(descuentos.Valor,64)
-		    dias_liquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
-		    tipo_preliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
-				detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, Persona: datos.PersonasPreLiquidacion[i].IdPersona,DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}}
+		    diasLiquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
+		    tipoPreliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
+				detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: datos.PersonasPreLiquidacion[i].NumeroContrato,VigenciaContrato: datos.PersonasPreLiquidacion[i].VigenciaContrato, Persona: datos.PersonasPreLiquidacion[i].IdPersona,DiasLiquidados: diasLiquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipoPreliquidacion}}
 
-				//detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: informacionContrato.NumeroContrato,VigenciaContrato: vigencia_contrato, Persona: Persona, DiasLiquidados: dias_liquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipo_preliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: dispo}}
+				//detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: informacionContrato.NumeroContrato,VigenciaContrato: vigenciaContrato, Persona: Persona, DiasLiquidados: diasLiquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipoPreliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: dispo}}
 
-		    if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
+		    if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
 					fmt.Println(idDetaPre)
 		    }else{
 		      beego.Debug("error1: ", err)
@@ -77,7 +81,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 		  }
 		}
 
-		resumen_preliqu = append(resumen_preliqu, resultado)
+		resumenPreliqu = append(resumenPreliqu, resultado)
 		reglas = ""
 		reglasinyectadas = ""
 
@@ -90,9 +94,10 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 	}
 
 
-	return resumen_preliqu
+	return resumenPreliqu
 
 }
+
 
 func (c *PreliquidacionFpController) Preliquidar_Planta_Prueba(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
 
@@ -101,7 +106,7 @@ func (c *PreliquidacionFpController) Preliquidar_Planta_Prueba(datos *models.Dat
 	//declaracion de variables
 	var reglasinyectadas string
 	var reglas string
-	var resumen_preliqu []models.Respuesta
+	var resumenPreliqu []models.Respuesta
 
 	var arreglo_porcentajePT []int
 	var porcentajePT int
@@ -115,7 +120,7 @@ func (c *PreliquidacionFpController) Preliquidar_Planta_Prueba(datos *models.Dat
 		tipoNom = 3
 		fmt.Println("filtro datos",filtrodatos)
 
-		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_primatec", "POST", &arreglo_porcentajePT, datos.PersonasPreLiquidacion[i].IdPersona); err == nil {
+		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_primatec", "POST", &arreglo_porcentajePT, datos.PersonasPreLiquidacion[i].IdPersona); err == nil {
 			if(arreglo_porcentajePT == nil){
 					porcentajePT = 0
 			}else{
@@ -127,7 +132,7 @@ func (c *PreliquidacionFpController) Preliquidar_Planta_Prueba(datos *models.Dat
 			fmt.Println("erro pt",err)
 		}
 
-		if err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo/get_asignacion_basica", "POST", &informacion_cargo, &filtrodatos); err == nil {
+		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo/get_asignacion_basica", "POST", &informacion_cargo, &filtrodatos); err == nil {
 			fmt.Println("Asignacion_basica")
 			dias_laborados := CalcularDias(informacion_cargo[0].FechaInicio, informacion_cargo[0].FechaFin)
 			//reglasNominasEspeciales := crearHechosNominasEspeciales(datos.Preliquidacion,datos.PersonasPreLiquidacion[i].IdPersona)
@@ -144,39 +149,39 @@ func (c *PreliquidacionFpController) Preliquidar_Planta_Prueba(datos *models.Dat
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
-			resumen_preliqu = append(resumen_preliqu, resultado)
+			resumenPreliqu = append(resumenPreliqu, resultado)
 
 
 		}
 		reglasinyectadas = "";
 	}
 
-	fmt.Println(resumen_preliqu)
-	return resumen_preliqu
+	fmt.Println(resumenPreliqu)
+	return resumenPreliqu
 
 }
 
 func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados float64) {
 	var a, m, d int
 	var meses_contrato float64
-	var dias_contrato float64
+	var diasContrato float64
 	if FechaFin.IsZero() {
 		var FechaFin2 time.Time
 		FechaFin2 = time.Now()
 		a, m, d = diff(FechaInicio, FechaFin2)
 		meses_contrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
-		dias_contrato = meses_contrato * 30
+		diasContrato = meses_contrato * 30
 
 	} else {
 		a, m, d = diff(FechaInicio, FechaFin)
 		meses_contrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
-		dias_contrato = meses_contrato * 30
+		diasContrato = meses_contrato * 30
 
 	}
 
-	fmt.Println("dias de contFP", dias_contrato)
+	fmt.Println("dias de contFP", diasContrato)
 
-	return dias_contrato
+	return diasContrato
 
 }
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/manucorporat/try"
+	"github.com/udistrital/utils_oas/request"
 )
 
 //  Concepto_nomina_por_personaController operations for Concepto_nomina_por_persona
@@ -33,7 +34,7 @@ func (c *Concepto_nomina_por_personaController) TrRegistroIncapacidades() {
 	)
 	try.This(func() {
 		json.Unmarshal(c.Ctx.Input.RequestBody, &incapacidades)
-		err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
+		err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
 			"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/TrConceptosPorPersona", "POST", &apiResponse, &incapacidades)
 		if err != nil {
 			panic(err.Error())
@@ -45,12 +46,12 @@ func (c *Concepto_nomina_por_personaController) TrRegistroIncapacidades() {
 		}
 		infoNovedades := incapacidades["Conceptos"]
 
-		err = sendJson("http://"+beego.AppConfig.String("UrlSScrud")+":"+beego.AppConfig.String("PortSS")+
+		err = request.SendJson("http://"+beego.AppConfig.String("UrlSScrud")+":"+beego.AppConfig.String("PortSS")+
 			"/"+beego.AppConfig.String("NSSS")+"/detalle_novedad_seguridad_social/tr_registrar_detalle", "POST", &apiResponse, &infoNovedades)
 		if err != nil {
 			for _, id := range idNovedades {
 				aux := int(id.(float64))
-				err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
+				err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
 					"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/"+strconv.Itoa(aux), "DELETE", &apiResponse, nil)
 				if err != nil {
 					panic(err.Error())
@@ -91,7 +92,7 @@ func (c *Concepto_nomina_por_personaController) TrRegistroProrrogaIncapacidad() 
 		json.Unmarshal(c.Ctx.Input.RequestBody, &incapacidad)
 		aux := make(map[string][]map[string]interface{})
 		aux["Conceptos"] = append(aux["Conceptos"], incapacidad)
-		err := sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
+		err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
 			"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/TrActualizarIncapacidadProrroga", "POST", &apiResponse, &aux)
 		if err != nil {
 			panic(apiResponse)
@@ -100,11 +101,11 @@ func (c *Concepto_nomina_por_personaController) TrRegistroProrrogaIncapacidad() 
 		apiResponse["Body"].(map[string]interface{})["Descripcion"] = aux["Conceptos"][0]["Descripcion"]
 		detalleNovedad = append(detalleNovedad, apiResponse["Body"].(map[string]interface{}))
 
-		err = sendJson("http://"+beego.AppConfig.String("UrlSScrud")+":"+beego.AppConfig.String("PortSS")+
+		err = request.SendJson("http://"+beego.AppConfig.String("UrlSScrud")+":"+beego.AppConfig.String("PortSS")+
 			"/"+beego.AppConfig.String("NSSS")+"/detalle_novedad_seguridad_social/tr_registrar_detalle", "POST", &apiResponse, &detalleNovedad)
 		if err != nil {
 
-			sendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
+			request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+
 				"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona/TrEliminarIncapacidadProrroga", "POST", &apiResponse, &detalleNovedad)
 			if err != nil {
 				panic(apiResponse)

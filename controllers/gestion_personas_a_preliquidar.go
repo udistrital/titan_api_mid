@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"github.com/udistrital/titan_api_mid/models"
+	"github.com/udistrital/utils_oas/request"
 	//"time"
 	"github.com/astaxie/beego"
 )
@@ -19,7 +20,7 @@ func (c *GestionPersonasAPreliquidarController) URLMapping() {
 	c.Mapping("ListarPersonasAPreliquidar", c.ListarPersonasAPreliquidar)
 }
 
-// Post ...
+// ListarPersonasAPreliquidar ...
 // @Title Create
 // @Description create ListarPersonasAPreliquidar: Lista a las personas que tienen vinculaciones activas para ese periodo y que por consiguiente pueden ser preliquidadas
 // @Param	body 	models.Preliquidacion	true		"body for Nomina content"
@@ -30,7 +31,7 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 	var v models.Preliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if v.Nomina.TipoNomina.Nombre == "CT" {
-
+			fmt.Println("preliq",v)
 			if listaContratos, err := ListaContratosContratistas(v); err == nil {
 				c.Ctx.Output.SetStatus(201)
 				c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
@@ -75,7 +76,7 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 
 }
 
-// Post ...
+// ListarPersonasAPreliquidarPendientes ...
 // @Title Create
 // @Description create ListarPersonasAPreliquidar: Lista a las personas pendientes de periodos anteriores para que puedan ser tenidas en cuenta el presente mes
 // @Param	body 	models.Preliquidacion	true		"body for Nomina content"
@@ -84,23 +85,23 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 // @router /listar_personas_a_preliquidar_pendientes/ [post]
 func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidarPendientes() {
 	var v models.Preliquidacion
-	var personas_pend_preliquidacion []models.DetallePreliquidacion
-	var error_consulta_informacion_agora error
+	var personasPendPreliquidacion []models.DetallePreliquidacion
+	var errorConsultaInformacionAgora error
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/get_personas_pago_pendiente?idNomina="+strconv.Itoa(v.Nomina.Id), &personas_pend_preliquidacion); err == nil && personas_pend_preliquidacion !=nil {
+		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/get_personas_pago_pendiente?idNomina="+strconv.Itoa(v.Nomina.Id), &personasPendPreliquidacion); err == nil && personasPendPreliquidacion !=nil {
 
 
 
-			for x, dato := range personas_pend_preliquidacion {
-				personas_pend_preliquidacion[x].NombreCompleto, _, personas_pend_preliquidacion[x].Documento, error_consulta_informacion_agora= InformacionPersona(v.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
-				personas_pend_preliquidacion[x].Preliquidacion = Consultar_datos_preliq(dato.Preliquidacion.Id)
+			for x, dato := range personasPendPreliquidacion {
+				personasPendPreliquidacion[x].NombreCompleto, _, personasPendPreliquidacion[x].Documento, errorConsultaInformacionAgora= InformacionPersona(v.Nomina.TipoNomina.Nombre,dato.NumeroContrato, dato.VigenciaContrato)
+				personasPendPreliquidacion[x].Preliquidacion = ConsultarDatosPreliq(dato.Preliquidacion.Id)
 			}
 
-			if(error_consulta_informacion_agora == nil){
-				c.Data["json"] = personas_pend_preliquidacion
+			if(errorConsultaInformacionAgora == nil){
+				c.Data["json"] = personasPendPreliquidacion
 			}else{
-				c.Data["json"] = error_consulta_informacion_agora
+				c.Data["json"] = errorConsultaInformacionAgora
 				fmt.Println("error al consultar información en Agora")
 			}
 
@@ -121,16 +122,15 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidarPendie
 
 // ListarPersonasHCS ...
 // @Title  ListarPersonasHCS
-// @Description create ListarPersonasHCS: Trae las personas que tienen contratos vigentes para ese mes en Hora Cátedra Salarios
-
+// @Description ListarPersonasHCS: Trae las personas que tienen contratos vigentes para ese mes en Hora Cátedra Salarios
 func ListarPersonasHCS(objeto_nom models.Preliquidacion)(arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error){
 
 	var temp map[string]interface{}
 
-	var tipo_nom string
-	var temp_docentes models.ObjetoFuncionarioContrato
-	var temp_docentes_tco models.ObjetoFuncionarioContrato
-	var control_error error
+	var tipoNom string
+	var tempDocentes models.ObjetoFuncionarioContrato
+	var tempDocentesTco models.ObjetoFuncionarioContrato
+	var controlError error
 	var mes string
 	var ano = strconv.Itoa(objeto_nom.Ano);
 
@@ -143,58 +143,58 @@ func ListarPersonasHCS(objeto_nom models.Preliquidacion)(arreglo_contratos model
 
 
 
-	tipo_nom = "2"
+	tipoNom = "2"
 
-		if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_personas/"+tipo_nom+"/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
-			jsonDocentes, error_json := json.Marshal(temp)
+		if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_personas/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
+			jsonDocentes, errorJSON := json.Marshal(temp)
 
-			if error_json == nil {
+			if errorJSON == nil {
 
-				json.Unmarshal(jsonDocentes, &temp_docentes)
+				json.Unmarshal(jsonDocentes, &tempDocentes)
 
 			} else {
-				control_error = error_json
+				controlError = errorJSON
 				fmt.Println("error al traer contratos docentes DVE")
 			}
 		} else {
-			control_error = err
+			controlError = err
 			fmt.Println("Error al unmarshal datos de nómina",err)
 
 
 		}
 
-		tipo_nom = "18"
+		tipoNom = "18"
 
-		if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_personas/"+tipo_nom+"/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
-			jsonDocentes, error_json := json.Marshal(temp)
+		if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_personas/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
+			jsonDocentes, errorJSON := json.Marshal(temp)
 
-			if error_json == nil {
+			if errorJSON == nil {
 
-				json.Unmarshal(jsonDocentes, &temp_docentes_tco)
+				json.Unmarshal(jsonDocentes, &tempDocentesTco)
 
 			} else {
-				control_error = error_json
+				controlError = errorJSON
 				fmt.Println("error al traer contratos docentes DVE")
 			}
 		} else {
-			control_error = err
+			controlError = err
 			fmt.Println("Error al unmarshal datos de nómina",err)
 
 
 		}
 
-    temp_docentes.ContratosTipo.ContratoTipo = append(temp_docentes.ContratosTipo.ContratoTipo, temp_docentes_tco.ContratosTipo.ContratoTipo...)
+    tempDocentes.ContratosTipo.ContratoTipo = append(tempDocentes.ContratosTipo.ContratoTipo, tempDocentesTco.ContratosTipo.ContratoTipo...)
 
 
 	var d []models.DetallePreliquidacion
-	for x, dato := range temp_docentes.ContratosTipo.ContratoTipo {
+	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
 		query := "Preliquidacion.Id:"+strconv.Itoa(objeto_nom.Id)+",Persona:"+dato.Id
-		if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
+		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 			if len(d) == 0 {
-				temp_docentes.ContratosTipo.ContratoTipo[x].Preliquidado = "no"
+				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "no"
 
 			}else{
-				temp_docentes.ContratosTipo.ContratoTipo[x].Preliquidado = "si"
+				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "si"
 
 			}
 
@@ -204,21 +204,20 @@ func ListarPersonasHCS(objeto_nom models.Preliquidacion)(arreglo_contratos model
 	}
 
 
-	return temp_docentes, control_error;
+	return tempDocentes, controlError;
 
 }
 
 // ListarPersonasHCH ...
 // @Title  ListarPersonasHCH
-// @Description create ListarPersonasHCH: Trae las personas que tienen contratos vigentes para ese mes en Hora Cátedra Honorarios
-
+// @Description ListarPersonasHCH: Trae las personas que tienen contratos vigentes para ese mes en Hora Cátedra Honorarios
 func ListarPersonasHCH(objeto_nom models.Preliquidacion)(arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error){
 
 	var temp map[string]interface{}
 
-	var tipo_nom string
-	var temp_docentes models.ObjetoFuncionarioContrato
-  var control_error error
+	var tipoNom string
+	var tempDocentes models.ObjetoFuncionarioContrato
+  var controlError error
 	var mes string
 	var ano = strconv.Itoa(objeto_nom.Ano);
 
@@ -231,34 +230,34 @@ func ListarPersonasHCH(objeto_nom models.Preliquidacion)(arreglo_contratos model
 
 
 
-	tipo_nom = "3"
+	tipoNom = "3"
 
-		if err := getJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_personas/"+tipo_nom+"/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
-			jsonDocentes, error_json := json.Marshal(temp)
+		if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_personas/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
+			jsonDocentes, errorJSON := json.Marshal(temp)
 
-			if error_json == nil {
+			if errorJSON == nil {
 
-				json.Unmarshal(jsonDocentes, &temp_docentes)
+				json.Unmarshal(jsonDocentes, &tempDocentes)
 
 			} else {
-				control_error = error_json
+				controlError = errorJSON
 				fmt.Println("error al traer contratos docentes DVE")
 			}
 		} else {
-			control_error = err
+			controlError = err
 			fmt.Println("Error al unmarshal datos de nómina",err)
 	}
 
  //SABER SI YA FUE PRELIQUIDADO O NO
  var d []models.DetallePreliquidacion
- for x, dato := range temp_docentes.ContratosTipo.ContratoTipo {
+ for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
 	 query := "Preliquidacion.Id:"+strconv.Itoa(objeto_nom.Id)+",Persona:"+dato.Id
-	 if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
+	 if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 		 if len(d) == 0 {
-			 temp_docentes.ContratosTipo.ContratoTipo[x].Preliquidado = "no"
+			 tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "no"
 
 		 }else{
-			 temp_docentes.ContratosTipo.ContratoTipo[x].Preliquidado = "si"
+			 tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "si"
 
 		 }
 
@@ -268,15 +267,17 @@ func ListarPersonasHCH(objeto_nom models.Preliquidacion)(arreglo_contratos model
  }
 
 
-	return temp_docentes, control_error;
+	return tempDocentes, controlError;
 
 }
 
-//Considerar ubicarlo en otro controlador
-func  Consultar_datos_preliq(id_pre int)(preliq *models.Preliquidacion){
-	var datos_preliquidacion []models.Preliquidacion
-	if err := getJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/?query=Id:"+strconv.Itoa(id_pre), &datos_preliquidacion); err == nil && datos_preliquidacion !=nil {
-		preliq := &models.Preliquidacion {Id: datos_preliquidacion[0].Id, Descripcion: datos_preliquidacion[0].Descripcion, Mes: datos_preliquidacion[0].Mes,Ano:datos_preliquidacion[0].Ano }
+// ConsultarDatosPreliq ...
+// @Title ConsultarDatosPreliq
+// @Description Trae los datos de una preliquidacion dado su ID
+func  ConsultarDatosPreliq(id_pre int)(preliq *models.Preliquidacion){
+	var datosPreliquidacion []models.Preliquidacion
+	if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/?query=Id:"+strconv.Itoa(id_pre), &datosPreliquidacion); err == nil && datosPreliquidacion !=nil {
+		preliq := &models.Preliquidacion {Id: datosPreliquidacion[0].Id, Descripcion: datosPreliquidacion[0].Descripcion, Mes: datosPreliquidacion[0].Mes,Ano:datosPreliquidacion[0].Ano }
 
 		return preliq
 
