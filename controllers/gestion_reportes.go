@@ -11,7 +11,7 @@ import (
 	"github.com/astaxie/beego"
 )
 
-// GestionReportesController operations for Preliquidacion
+// GestionReportesController operations for GestionReportes
 type GestionReportesController struct {
 	beego.Controller
 }
@@ -29,12 +29,11 @@ func (c *GestionReportesController) URLMapping() {
 }
 
 // GetOrdenadoresGasto ...
-// @Title Create
+// @Title create GetOrdenadoresGasto
 // @Description create GetOrdenadoresGasto
-// @Param	body 	models.Preliquidacion	true		"body for Nomina content"
-// @Success 201 {object}
+// @Success 201
 // @Failure 403 body is empty
-// @router /get_ordenadores_gasto/ [post]
+// @router /get_ordenadores_gasto [post]
 func (c *GestionReportesController) GetOrdenadoresGasto() {
 	fmt.Println("funcion ordenadores")
 
@@ -68,12 +67,12 @@ func (c *GestionReportesController) GetOrdenadoresGasto() {
 
 }
 // TotalNominaPorProyecto ...
-// @Title Create
+// @Title create TotalNominaPorProyecto
 // @Description create TotalNominaPorProyecto
-// @Param	body 	models.DetallePreliquidacion	true		"body for Nomina content"
-// @Success 201 {object}
+// @Param	body 	body models.ObjetoReporte	true		"body for models.ObjetoReporte	true content"
+// @Success 201
 // @Failure 403 body is empty
-// @router /total_nomina_por_proyecto/ [post]
+// @router /total_nomina_por_proyecto [post]
 func (c *GestionReportesController) TotalNominaPorProyecto() {
 	fmt.Println("funcion")
 
@@ -145,12 +144,12 @@ func (c *GestionReportesController) TotalNominaPorProyecto() {
 
 
 // TotalNominaPorFacultad ...
-// @Title Create
+// @Title create TotalNominaPorFacultad
 // @Description create TotalNominaPorFacultad
-// @Param	body 	models.DetallePreliquidacion	true		"body for Nomina content"
-// @Success 201 {object}
+// @Param	body 	body models.ObjetoReporte	true		"body for models.ObjetoReporte content"
+// @Success 201
 // @Failure 403 body is empty
-// @router /total_nomina_por_facultad/ [post]
+// @router /total_nomina_por_facultad [post]
 func (c *GestionReportesController) TotalNominaPorFacultad() {
 	fmt.Println("funcion")
 
@@ -221,12 +220,12 @@ func (c *GestionReportesController) TotalNominaPorFacultad() {
 
 
 // DesagregadoNominaPorFacultad ...
-// @Title Create
+// @Title create DesagregadoNominaPorFacultad
 // @Description create DesagregadoNominaPorFacultad
-// @Param	body 	models.DetallePreliquidacion	true		"body for Nomina content"
-// @Success 201 {object}
+// @Param	body  body models.ObjetoReporte	true		"body for models.ObjetoReporte content"
+// @Success 201
 // @Failure 403 body is empty
-// @router /desagregado_nomina_por_facultad/ [post]
+// @router /desagregado_nomina_por_facultad [post]
 func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 	fmt.Println("funcion")
 
@@ -309,12 +308,12 @@ func (c *GestionReportesController) DesagregadoNominaPorFacultad() {
 
 
 // DesagregadoNominaPorProyectoCurricular ...
-// @Title Create
+// @Title create DesagregadoNominaPorProyectoCurricular
 // @Description create DesagregadoNominaPorProyectoCurricular
-// @Param	body 	models.DetallePreliquidacion	true		"body for Nomina content"
-// @Success 201 {object}
+// @Param	body 	body models.ObjetoReporte	true		"body for models.ObjetoReporte content"
+// @Success 201
 // @Failure 403 body is empty
-// @router /desagregado_nomina_por_pc/ [post]
+// @router /desagregado_nomina_por_pc [post]
 func (c *GestionReportesController) DesagregadoNominaPorProyectoCurricular() {
 	fmt.Println("funcion")
 
@@ -399,12 +398,12 @@ func (c *GestionReportesController) DesagregadoNominaPorProyectoCurricular() {
 
 
 // TotalNominaPorDependencia ...
-// @Title Create
+// @Title create TotalNominaPorDependencia
 // @Description create TotalNominaPorFacultad
-// @Param	body 	models.DetallePreliquidacion	true		"body for Nomina content"
-// @Success 201 {object}
+// @Param	body 	body models.ObjetoReporte	true		"body for models.ObjetoReporte content"
+// @Success 201
 // @Failure 403 body is empty
-// @router /total_nomina_por_dependencia/ [post]
+// @router /total_nomina_por_dependencia [post]
 func (c *GestionReportesController) TotalNominaPorDependencia() {
 	fmt.Println("funcion dependencia")
 
@@ -485,12 +484,12 @@ func (c *GestionReportesController) TotalNominaPorDependencia() {
 
 
 // DesagregadoNominaPorDependencia ...
-// @Title Create
+// @Title create DesagregadoNominaPorDependencia
 // @Description create TotalNominaPorFacultad
-// @Param	body 	models.DetallePreliquidacion	true		"body for Nomina content"
-// @Success 201 {object}
+// @Param	body 	body models.ObjetoReporte	true		"body for models.ObjetoReporte content"
+// @Success 201
 // @Failure 403 body is empty
-// @router /desagregado_nomina_por_dependencia/ [post]
+// @router /desagregado_nomina_por_dependencia [post]
 func (c *GestionReportesController) DesagregadoNominaPorDependencia() {
 	fmt.Println("funcion dependencia")
 
@@ -551,12 +550,12 @@ func (c *GestionReportesController) DesagregadoNominaPorDependencia() {
 
 
 // TotalNominaPorOrdenador ...
-// @Title Create
+// @Title create TotalNominaPorOrdenador
 // @Description create TotalNominaPorDependencia
-// @Param	body 	models.Preliquidacion	true		"body for Nomina content"
-// @Success 201 {object}
+// @Param	body 	body models.ObjetoReporte	true		"body for models.ObjetoReporte content"
+// @Success 201 
 // @Failure 403 body is empty
-// @router /total_nomina_por_ordenador/ [post]
+// @router /total_nomina_por_ordenador [post]
 func (c *GestionReportesController) TotalNominaPorOrdenador() {
 	fmt.Println("funcion odenador total")
 

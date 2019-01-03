@@ -10,7 +10,7 @@ import (
 	"github.com/astaxie/beego"
 )
 
-// GestionContratosController operations for Preliquidacion
+// GestionContratosController operations for GestionContratos
 type GestionContratosController struct {
 	beego.Controller
 }
@@ -24,11 +24,11 @@ func (c *GestionContratosController) URLMapping() {
 
 // ListarContratosAgrupadosPorPersona ...
 // @Title Create ListarContratosAgrupadosPorPersona
-// @Description ListarContratosAgrupadosPorPersona: Lista por persona los contratos que tiene vigentes. Para el caso de los docentes HC, agrupará los que sean de la misma resolución
-// @Param	body 	models.DatosPreliquidacion	true		"body for Nomina content"
-// @Success 201 map[string]interface{}
+// @Description Lista por persona los contratos que tiene vigentes. Para el caso de los docentes HC, agrupará los que sean de la misma resolución
+// @Param	body		body  models.DatosPreliquidacion	true		"body for models.DatosPreliquidacion content"
+// @Success 201 
 // @Failure 403 body is empty
-// @router /listar_contratos_agrupados_por_persona/ [post]
+// @router /listar_contratos_agrupados_por_persona [post]
 func (c *GestionContratosController) ListarContratosAgrupadosPorPersona() {
 	var v models.DatosPreliquidacion;
 	var controlError error

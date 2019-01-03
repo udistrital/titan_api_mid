@@ -11,12 +11,282 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 basePath: /v1
 paths:
+  /concepto_nomina_por_persona/tr_registro_incapacidades:
+    post:
+      tags:
+      - concepto_nomina_por_persona
+      description: create tr_registro_incapacidades
+      operationId: Concepto_nomina_por_personaController.tr_registro_incapacidades
+      parameters:
+      - in: body
+        name: body
+        description: body for Concepto_nomina_por_persona content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ConceptoNominaPorPersona'
+      responses:
+        "201":
+          description: '{int} models.Concepto_nomina_por_persona'
+        "403":
+          description: body is empty
+  /concepto_nomina_por_persona/tr_registro_prorroga_incapacidad:
+    post:
+      tags:
+      - concepto_nomina_por_persona
+      description: Recibe un objeto con la estructura de concepto_nomina_por_persona,
+      operationId: Concepto_nomina_por_personaController.TrRegistroProrrogaIncapacidad
+      parameters:
+      - in: body
+        name: body
+        description: body for Concepto_nomina_por_persona content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ConceptoNominaPorPersona'
+      responses:
+        "201":
+          description: '{int} models.Concepto_nomina_por_persona'
+        "403":
+          description: body is empty
+  /gestion_contratos/listar_contratos_agrupados_por_persona:
+    post:
+      tags:
+      - gestion_contratos
+      description: Lista por persona los contratos que tiene vigentes. Para el caso
+        de los docentes HC, agrupará los que sean de la misma resolución
+      operationId: GestionContratosController.Create ListarContratosAgrupadosPorPersona
+      parameters:
+      - in: body
+        name: body
+        description: body for models.DatosPreliquidacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.DatosPreliquidacion'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_personas_a_liquidar/listar_personas_a_preliquidar_argo:
+    post:
+      tags:
+      - gestion_personas_a_liquidar
+      description: 'create ListarPersonasAPreliquidar: Lista a las personas que tienen
+        vinculaciones activas para ese periodo y que por consiguiente pueden ser preliquidadas'
+      operationId: GestionPersonasAPreliquidarController.create ListarPersonasAPreliquidar
+      parameters:
+      - in: body
+        name: body
+        description: body for models.Preliquidacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Preliquidacion'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_personas_a_liquidar/listar_personas_a_preliquidar_pendientes:
+    post:
+      tags:
+      - gestion_personas_a_liquidar
+      description: 'create ListarPersonasAPreliquidar: Lista a las personas pendientes
+        de periodos anteriores para que puedan ser tenidas en cuenta el presente mes'
+      operationId: GestionPersonasAPreliquidarController.create ListarPersonasAPreliquidarPendientes
+      parameters:
+      - in: body
+        name: body
+        description: body for models.Preliquidacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Preliquidacion'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.DetallePreliquidacion'
+        "403":
+          description: body is empty
+  /gestion_reportes/desagregado_nomina_por_dependencia:
+    post:
+      tags:
+      - gestion_reportes
+      description: create TotalNominaPorFacultad
+      operationId: GestionReportesController.create DesagregadoNominaPorDependencia
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/desagregado_nomina_por_facultad:
+    post:
+      tags:
+      - gestion_reportes
+      description: create DesagregadoNominaPorFacultad
+      operationId: GestionReportesController.create DesagregadoNominaPorFacultad
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/desagregado_nomina_por_pc:
+    post:
+      tags:
+      - gestion_reportes
+      description: create DesagregadoNominaPorProyectoCurricular
+      operationId: GestionReportesController.create DesagregadoNominaPorProyectoCurricular
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/get_ordenadores_gasto:
+    post:
+      tags:
+      - gestion_reportes
+      description: create GetOrdenadoresGasto
+      operationId: GestionReportesController.create GetOrdenadoresGasto
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/total_nomina_por_dependencia:
+    post:
+      tags:
+      - gestion_reportes
+      description: create TotalNominaPorFacultad
+      operationId: GestionReportesController.create TotalNominaPorDependencia
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/total_nomina_por_facultad:
+    post:
+      tags:
+      - gestion_reportes
+      description: create TotalNominaPorFacultad
+      operationId: GestionReportesController.create TotalNominaPorFacultad
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/total_nomina_por_ordenador:
+    post:
+      tags:
+      - gestion_reportes
+      description: create TotalNominaPorDependencia
+      operationId: GestionReportesController.create TotalNominaPorOrdenador
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/total_nomina_por_proyecto:
+    post:
+      tags:
+      - gestion_reportes
+      description: create TotalNominaPorProyecto
+      operationId: GestionReportesController.create TotalNominaPorProyecto
+      parameters:
+      - in: body
+        name: body
+        description: "body for models.ObjetoReporte\ttrue content"
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
   /preliquidacion/:
     post:
       tags:
       - preliquidacion
       description: create Preliquidacion
-      operationId: PreliquidacionController.Create
+      operationId: PreliquidacionController.create Preliquidar
+      parameters:
+      - in: body
+        name: body
+        description: body for DatosPreliquidacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.DatosPreliquidacion'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Preliquidacion'
+        "403":
+          description: body is empty
+  /preliquidacion/get_ibc_novedad:
+    post:
+      tags:
+      - preliquidacion
+      description: create GetIBCPorNovedad
+      operationId: PreliquidacionController.create GetIBCPorNovedad
+      parameters:
+      - in: body
+        name: body
+        description: body for models.IBCPorNovedad content
+        required: true
+        schema:
+          $ref: '#/definitions/models.IBCPorNovedad'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /preliquidacion/personas_x_preliquidacion:
+    post:
+      tags:
+      - preliquidacion
+      description: create PersonasPorPreliquidacion
+      operationId: PreliquidacionController.create PersonasPorPreliquidacion
       parameters:
       - in: body
         name: body
@@ -26,13 +296,187 @@ paths:
           $ref: '#/definitions/models.Preliquidacion'
       responses:
         "201":
+          description: ""
           schema:
-            $ref: '#/definitions/models.Preliquidacion'
+            type: array
+            items:
+              $ref: '#/definitions/models.PersonasPreliquidacion'
+        "403":
+          description: body is empty
+  /preliquidacion/resumen_conceptos:
+    post:
+      tags:
+      - preliquidacion
+      description: create ResumenConceptos
+      operationId: PreliquidacionController.create ResumenConceptos
+      parameters:
+      - in: body
+        name: body
+        description: body for Preliquidacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Preliquidacion'
+      responses:
+        "201":
+          description: ""
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.ResumentCompleto'
         "403":
           description: body is empty
 definitions:
+  models.ConceptoNomina:
+    title: ConceptoNomina
+    type: object
+    properties:
+      AliasConcepto:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      NaturalezaConcepto:
+        $ref: '#/definitions/models.NaturalezaConceptoNomina'
+      NombreConcepto:
+        type: string
+      TipoConcepto:
+        $ref: '#/definitions/models.TipoConceptoNomina'
+  models.ConceptoNominaPorPersona:
+    title: ConceptoNominaPorPersona
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      Concepto:
+        $ref: '#/definitions/models.ConceptoNomina'
+      FechaDesde:
+        type: string
+        format: string
+      FechaHasta:
+        type: string
+        format: string
+      FechaRegistro:
+        type: string
+        format: string
+      Id:
+        type: integer
+        format: int64
+      Nomina:
+        $ref: '#/definitions/models.Nomina'
+      NumCuotas:
+        type: integer
+        format: int64
+      Persona:
+        type: integer
+        format: int64
+      ValorNovedad:
+        type: number
+        format: double
+  models.DatosPreliquidacion:
+    title: DatosPreliquidacion
+    type: object
+    properties:
+      DiasALiquidar:
+        type: string
+      Novedad:
+        type: string
+      PersonasPreLiquidacion:
+        type: array
+        items:
+          $ref: '#/definitions/models.PersonasPreliquidacion'
+      Preliquidacion:
+        $ref: '#/definitions/models.Preliquidacion'
+  models.DetallePreliquidacion:
+    title: DetallePreliquidacion
+    type: object
+    properties:
+      Concepto:
+        $ref: '#/definitions/models.ConceptoNomina'
+      DiasLiquidados:
+        type: number
+        format: double
+      Documento:
+        type: string
+      EstadoDisponibilidad:
+        $ref: '#/definitions/models.EstadoDisponibilidad'
+      Id:
+        type: integer
+        format: int64
+      NombreCompleto:
+        type: string
+      NumeroContrato:
+        type: string
+      Persona:
+        type: integer
+        format: int64
+      Preliquidacion:
+        $ref: '#/definitions/models.Preliquidacion'
+      TipoPreliquidacion:
+        $ref: '#/definitions/models.TipoPreliquidacion'
+      ValorCalculado:
+        type: number
+        format: double
+      VigenciaContrato:
+        type: integer
+        format: int64
+  models.EstadoDisponibilidad:
+    title: EstadoDisponibilidad
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      CodigoAbreviacion:
+        type: string
+      Descripcion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      Nombre:
+        type: string
+      NumeroOrden:
+        type: number
+        format: double
   models.EstadoPreliquidacion:
     title: EstadoPreliquidacion
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      CodigoAbreviacion:
+        type: string
+      Descripcion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      Nombre:
+        type: string
+      NumeroOrden:
+        type: number
+        format: double
+  models.IBCPorNovedad:
+    title: IBCPorNovedad
+    type: object
+    properties:
+      Ano:
+        type: integer
+        format: int64
+      IdPersona:
+        type: integer
+        format: int64
+      Mes:
+        type: integer
+        format: int64
+      NombreNomina:
+        type: string
+      Novedad:
+        type: string
+      NumDocumento:
+        type: integer
+        format: int64
+  models.NaturalezaConceptoNomina:
+    title: NaturalezaConceptoNomina
     type: object
     properties:
       Activo:
@@ -62,6 +506,53 @@ definitions:
         format: int64
       TipoNomina:
         $ref: '#/definitions/models.TipoNomina'
+  models.ObjetoReporte:
+    title: ObjetoReporte
+    type: object
+    properties:
+      Dependencia:
+        type: string
+      Facultad:
+        type: integer
+        format: int64
+      Ordenador:
+        type: string
+      Preliquidacion:
+        $ref: '#/definitions/models.Preliquidacion'
+      ProyectoCurricular:
+        type: integer
+        format: int64
+      TotalDesc:
+        type: number
+        format: double
+      TotalDev:
+        type: number
+        format: double
+      TotalDocentes:
+        type: integer
+        format: int64
+  models.PersonasPreliquidacion:
+    title: PersonasPreliquidacion
+    type: object
+    properties:
+      IdPersona:
+        type: integer
+        format: int64
+      NombreCompleto:
+        type: string
+      NumDocumento:
+        type: integer
+        format: int64
+      NumeroContrato:
+        type: string
+      Pendiente:
+        type: string
+      Preliquidacion:
+        type: integer
+        format: int64
+      VigenciaContrato:
+        type: integer
+        format: int64
   models.Preliquidacion:
     title: Preliquidacion
     type: object
@@ -69,6 +560,8 @@ definitions:
       Ano:
         type: integer
         format: int64
+      Definitiva:
+        type: boolean
       Descripcion:
         type: string
       EstadoPreliquidacion:
@@ -84,6 +577,50 @@ definitions:
         format: int64
       Nomina:
         $ref: '#/definitions/models.Nomina'
+  models.Resumen:
+    title: Resumen
+    type: object
+    properties:
+      NaturalezaConcepto:
+        type: string
+      NaturalezaConceptoId:
+        type: string
+      NombreConcepto:
+        type: string
+      Total:
+        type: string
+  models.ResumentCompleto:
+    title: ResumentCompleto
+    type: object
+    properties:
+      ResumenTotalConceptos:
+        type: array
+        items:
+          $ref: '#/definitions/models.Resumen'
+      TotalDescuentos:
+        type: integer
+        format: int64
+      TotalDevengos:
+        type: integer
+        format: int64
+  models.TipoConceptoNomina:
+    title: TipoConceptoNomina
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      CodigoAbreviacion:
+        type: string
+      Descripcion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      Nombre:
+        type: string
+      NumeroOrden:
+        type: number
+        format: double
   models.TipoNomina:
     title: TipoNomina
     type: object
@@ -93,13 +630,37 @@ definitions:
         format: int64
       Nombre:
         type: string
+  models.TipoPreliquidacion:
+    title: TipoPreliquidacion
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      CodigoAbreviacion:
+        type: string
+      Descripcion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      Nombre:
+        type: string
+      NumeroOrden:
+        type: number
+        format: double
 tags:
 - name: preliquidacion
   description: |
     PreliquidacionController operations for Preliquidacion
-- name: liquidacion
+- name: gestion_personas_a_liquidar
   description: |
-    operations for Liquidar
-- name: detalle_liquidacion
+    GestionPersonasAPreliquidarController operations for GestionPersonasAPreliquidar
+- name: gestion_contratos
   description: |
-    operations for Liquidar
+    GestionContratosController operations for GestionContratos
+- name: gestion_reportes
+  description: |
+    GestionReportesController operations for GestionReportes
+- name: concepto_nomina_por_persona
+  description: |
+    Concepto_nomina_por_personaController operations for Concepto_nomina_por_persona

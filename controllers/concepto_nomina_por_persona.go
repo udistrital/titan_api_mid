@@ -9,7 +9,7 @@ import (
 	"github.com/udistrital/utils_oas/request"
 )
 
-//  Concepto_nomina_por_personaController operations for Concepto_nomina_por_persona
+// Concepto_nomina_por_personaController operations for Concepto_nomina_por_persona
 type Concepto_nomina_por_personaController struct {
 	beego.Controller
 }
@@ -23,7 +23,7 @@ func (c *Concepto_nomina_por_personaController) URLMapping() {
 // TrRegistroIncapacidades ...
 // @Title tr_registro_incapacidades
 // @Description create tr_registro_incapacidades
-// @Param	body		body 	[]map[string]interface{}	true		"body for Concepto_nomina_por_persona content"
+// @Param	body		body 	models.ConceptoNominaPorPersona	true		"body for Concepto_nomina_por_persona content"
 // @Success 201 {int} models.Concepto_nomina_por_persona
 // @Failure 403 body is empty
 // @router /tr_registro_incapacidades [post]
@@ -78,7 +78,7 @@ func (c *Concepto_nomina_por_personaController) TrRegistroIncapacidades() {
 // una nueva información en la tabla detalle_novedad_seguridad_social. En caso de que ésta última sea correcta
 // finaliza la transacción, de lo contarió lo envía a una transacción del crud que se encarga de devolver el estado
 // al concepto_nomina_por_persona anterior y luego elimina el nuevo registro realizado al comienzo.
-// @Param	body		body 	map[string]interface{}	true		"body for Concepto_nomina_por_persona content"
+// @Param	body		body 	models.ConceptoNominaPorPersona   	true		"body for Concepto_nomina_por_persona content"
 // @Success 201 {int} models.Concepto_nomina_por_persona
 // @Failure 403 body is empty
 // @router /tr_registro_prorroga_incapacidad [post]

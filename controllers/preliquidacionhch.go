@@ -16,9 +16,6 @@ type PreliquidacionhchController struct {
 	beego.Controller
 }
 
-// Preliquidar ...
-// @Title Preliquidar
-// @Description Funcion encargada de Preliquidar
 func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
 	//declaracion de variables
 

@@ -19,9 +19,6 @@ type PreliquidaciondpController struct {
 	beego.Controller
 }
 
-// Preliquidar ...
-// @Title Preliquidar
-// @Description Funcion encargada de Preliquidar
 func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
 	var resumenPreliqu []models.Respuesta
 	var idDetaPre interface{}

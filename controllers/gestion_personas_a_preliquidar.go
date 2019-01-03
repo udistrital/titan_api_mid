@@ -10,7 +10,7 @@ import (
 	"github.com/astaxie/beego"
 )
 
-// GestionPersonasAPreliquidarController operations for Preliquidacion
+// GestionPersonasAPreliquidarController operations for GestionPersonasAPreliquidar
 type GestionPersonasAPreliquidarController struct {
 	beego.Controller
 }
@@ -21,12 +21,12 @@ func (c *GestionPersonasAPreliquidarController) URLMapping() {
 }
 
 // ListarPersonasAPreliquidar ...
-// @Title Create
+// @Title create ListarPersonasAPreliquidar
 // @Description create ListarPersonasAPreliquidar: Lista a las personas que tienen vinculaciones activas para ese periodo y que por consiguiente pueden ser preliquidadas
-// @Param	body 	models.Preliquidacion	true		"body for Nomina content"
-// @Success 201 {object}
+// @Param	body 	body    models.Preliquidacion	true		"body for models.Preliquidacion content"
+// @Success 201
 // @Failure 403 body is empty
-// @router /listar_personas_a_preliquidar_argo/ [post]
+// @router /listar_personas_a_preliquidar_argo [post]
 func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 	var v models.Preliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
@@ -77,12 +77,12 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 }
 
 // ListarPersonasAPreliquidarPendientes ...
-// @Title Create
+// @Title create ListarPersonasAPreliquidarPendientes
 // @Description create ListarPersonasAPreliquidar: Lista a las personas pendientes de periodos anteriores para que puedan ser tenidas en cuenta el presente mes
-// @Param	body 	models.Preliquidacion	true		"body for Nomina content"
-// @Success 201 {object}
+// @Param	body 	body models.Preliquidacion	true		"body for models.Preliquidacion content"
+// @Success 201 {object} models.DetallePreliquidacion
 // @Failure 403 body is empty
-// @router /listar_personas_a_preliquidar_pendientes/ [post]
+// @router /listar_personas_a_preliquidar_pendientes [post]
 func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidarPendientes() {
 	var v models.Preliquidacion
 	var personasPendPreliquidacion []models.DetallePreliquidacion
@@ -270,6 +270,7 @@ func ListarPersonasHCH(objeto_nom models.Preliquidacion)(arreglo_contratos model
 	return tempDocentes, controlError;
 
 }
+
 
 // ConsultarDatosPreliq ...
 // @Title ConsultarDatosPreliq

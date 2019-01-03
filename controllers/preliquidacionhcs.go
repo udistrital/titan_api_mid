@@ -16,9 +16,6 @@ type PreliquidacionHcSController struct {
 	beego.Controller
 }
 
-// Preliquidar ...
-// @Title Preliquidar
-// @Description Funcion encargada de Preliquidar
 func (c *PreliquidacionHcSController) GetIBCPorNovedad(ano, mes , numDocumento, idPersona int, reglasbase, novedad string)(res int){
 
   var resumenPreliqu []models.Respuesta

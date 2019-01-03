@@ -16,19 +16,19 @@ type PreliquidacionController struct {
 	beego.Controller
 }
 
-var reglasNovDev string = ``
+var reglasNovDev string = ""
 // URLMapping ...
 func (c *PreliquidacionController) URLMapping() {
 	c.Mapping("Preliquidar", c.Preliquidar)
 }
 
 // PersonasPorPreliquidacion ...
-// @Title Create
+// @Title create PersonasPorPreliquidacion
 // @Description create PersonasPorPreliquidacion
-// @Param	body		body 	var v models.Preliquidacion	true		"body for Preliquidacion content"
-// @Success 201 {object}  []models.InformePreliquidacion
+// @Param	body		body 	models.Preliquidacion	true		"body for Preliquidacion content"
+// @Success 201 {object}  []models.PersonasPreliquidacion
 // @Failure 403 body is empty
-// @router /personas_x_preliquidacion/ [post]
+// @router /personas_x_preliquidacion [post]
 func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 	var v models.Preliquidacion
 	var personasPreliquidacion []models.PersonasPreliquidacion
@@ -71,12 +71,12 @@ func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 
 
 // ResumenConceptos ...
-// @Title Create
+// @Title create ResumenConceptos
 // @Description create ResumenConceptos
-// @Param	body		body 	var v models.Preliquidacion	true		"body for Preliquidacion content"
-// @Success 201 {object}  []models.InformePreliquidacion
+// @Param	body		body 	 models.Preliquidacion	true		"body for Preliquidacion content"
+// @Success 201 {object}  []models.ResumentCompleto
 // @Failure 403 body is empty
-// @router /resumenConceptos/ [post]
+// @router /resumen_conceptos [post]
 func (c *PreliquidacionController) ResumenConceptos() {
 	var v models.Preliquidacion
   infoDetalle := make(map[string]string)
@@ -162,12 +162,12 @@ func (c *PreliquidacionController) ResumenConceptos() {
 }
 
 // GetIBCPorNovedad ...
-// @Title Create
-// @Description create get_ibc_novedad
+// @Title create GetIBCPorNovedad
+// @Description create GetIBCPorNovedad
 // @Param	body		body 	models.IBCPorNovedad	true		"body for models.IBCPorNovedad content"
-// @Success 201 {object}
+// @Success 201
 // @Failure 403 body is empty
-// @router /get_ibc_novedad/ [post]
+// @router /get_ibc_novedad [post]
 func (c *PreliquidacionController) GetIBCPorNovedad() {
 	var v models.IBCPorNovedad
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
@@ -235,7 +235,7 @@ func (c *PreliquidacionController) GetIBCPorNovedad() {
 
 
 // Preliquidar ...
-// @Title Create
+// @Title create Preliquidar
 // @Description create Preliquidacion
 // @Param	body		body 	models.DatosPreliquidacion	true		"body for DatosPreliquidacion content"
 // @Success 201 {object} models.Preliquidacion
@@ -306,9 +306,6 @@ func (c *PreliquidacionController) Preliquidar() {
 
 }
 
-// cargarReglasBase
-// @Title cargarReglasBase
-// @Description Carga las reglas por dominio dado
 func cargarReglasBase(dominio string) (reglas string) {
 	//carga de reglas desde el ruler
 	var reglasbase string = ``
@@ -336,9 +333,6 @@ func cargarReglasBase(dominio string) (reglas string) {
 	return reglasbase
 }
 
-// cargarReglasSS ...
-// @Title cargarReglasSS
-// @Description Se cargan las reglas relacionadas a Seguridad Social
 func cargarReglasSS() (reglas string) {
 	//carga de reglas de SS desde el ruler
 	var reglasSS string = ``
@@ -356,9 +350,6 @@ func cargarReglasSS() (reglas string) {
 	return reglasSS
 }
 
-// FormatoReglas ...
-// @Title FormatoReglas
-// @Description Recibe un objeto predicado y devuelve un string concatenado que contiene todas las reglas a utilizar
 func FormatoReglas(v []models.Predicado) (reglas string) {
 	var arregloReglas = make([]string, len(v))
 	reglas = ""
@@ -373,9 +364,6 @@ func FormatoReglas(v []models.Predicado) (reglas string) {
 	return
 }
 
-// CargarNovedadesPersona ...
-// @Title CargarNovedadesPersona
-// @Description Carga las novedades por persona
 func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, datos_preliqu models.Preliquidacion) (reglas string) {
 
 	//consulta de la(s) novedades que pueda tener la persona para la pre-liquidacion
@@ -488,9 +476,6 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona){
 	}
 }
 
-// CargarDatosRetefuente ...
-// @Title CargarDatosRetefuente
-// @Description Carga lo necesario para liquidar la retefuente
 func CargarDatosRetefuente(cedula int) (reglas string) {
 
 	var v []models.InformacionPersonaNatural
