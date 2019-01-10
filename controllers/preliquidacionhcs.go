@@ -16,11 +16,14 @@ type PreliquidacionHcSController struct {
 	beego.Controller
 }
 
+// GetIBCPorNovedad ...
+// @Title GetIBCPorNovedad
+// @Description Funcion para calcular IBC para una novedad específica
 func (c *PreliquidacionHcSController) GetIBCPorNovedad(ano, mes , numDocumento, idPersona int, reglasbase, novedad string)(res int){
 
   var resumenPreliqu []models.Respuesta
 	var tempDocentes models.ObjetoFuncionarioContrato
-	var ibc_novedad int
+	var ibcNovedad int
 	var controlError error
 
 	preliquidacion := models.Preliquidacion {Ano: ano, Mes:mes}
@@ -31,8 +34,8 @@ func (c *PreliquidacionHcSController) GetIBCPorNovedad(ano, mes , numDocumento, 
 	if controlError == nil {
 
 	//tempAgrupar := make(map[string]interface{}) // este mapa tiene la siguiente estructura: tempAgrupar[numero_cedula_docente][id_resolucion][valor_total] (cada resolucion tiene un único tipo de nivel académico, por lo tanto los valores totales se van sumando de acuerdo a la resolución )
-		info_resolucion := make(map[string]string)
-		info_resoluciones := make(map[string]interface{})
+		infoResolucion := make(map[string]string)
+		infoResoluciones := make(map[string]interface{})
 
 		for _,dato := range tempDocentes.ContratosTipo.ContratoTipo {
 
@@ -40,27 +43,27 @@ func (c *PreliquidacionHcSController) GetIBCPorNovedad(ano, mes , numDocumento, 
 						query:= "NumeroContrato:"+dato.NumeroContrato+",Vigencia:"+dato.VigenciaContrato
 						if err := request.GetJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
 
-							_, ok := info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
+							_, ok := infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
 							if ok {
 
-											info_resolucion_temp := make(map[string]string)
-											tempValor,_ := strconv.Atoi(info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)])
+											infoResolucionTemp := make(map[string]string)
+											tempValor,_ := strconv.Atoi(infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)])
 											tempValor = tempValor + int(vinculaciones[0].ValorContrato)
-											info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] =  strconv.Itoa(tempValor)
-											info_resolucion_temp["NumeroContrato"] =  dato.NumeroContrato
-											info_resolucion_temp["VigenciaContrato"] =  dato.VigenciaContrato
-											info_resolucion_temp["Total"] =  info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
-											info_resoluciones[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] = info_resolucion_temp
+											infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] =  strconv.Itoa(tempValor)
+											infoResolucionTemp["NumeroContrato"] =  dato.NumeroContrato
+											infoResolucionTemp["VigenciaContrato"] =  dato.VigenciaContrato
+											infoResolucionTemp["Total"] =  infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
+											infoResoluciones[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] = infoResolucionTemp
 
 							} else {
 
-											info_resolucion_temp := make(map[string]string)
+											infoResolucionTemp := make(map[string]string)
 											tempValor := int(vinculaciones[0].ValorContrato)
-											info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] =  strconv.Itoa(tempValor)
-											info_resolucion_temp["NumeroContrato"] =  dato.NumeroContrato
-											info_resolucion_temp["VigenciaContrato"] =  dato.VigenciaContrato
-											info_resolucion_temp["Total"] =  info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
-											info_resoluciones[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] = info_resolucion_temp
+											infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] =  strconv.Itoa(tempValor)
+											infoResolucionTemp["NumeroContrato"] =  dato.NumeroContrato
+											infoResolucionTemp["VigenciaContrato"] =  dato.VigenciaContrato
+											infoResolucionTemp["Total"] =  infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
+											infoResoluciones[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] = infoResolucionTemp
 
 							}
 						}
@@ -68,11 +71,11 @@ func (c *PreliquidacionHcSController) GetIBCPorNovedad(ano, mes , numDocumento, 
 			}
 
 		//CALCULAR PRELIQUIDACIÓN PARA CADA VALOR AGRUPADO
-			for key,_ := range info_resoluciones {
+			for key := range infoResoluciones {
 				aux := models.ListaContratos{}
-			 if err := formatdata.FillStruct(info_resoluciones[key], &aux); err == nil{
+			 if err := formatdata.FillStruct(infoResoluciones[key], &aux); err == nil{
 
-				resumenPreliqu = append(resumenPreliqu,LiquidarContratoHCS(reglasbase,novedad, numDocumento,idPersona,preliquidacion,aux)...);
+				resumenPreliqu = append(resumenPreliqu,liquidarContratoHCS(reglasbase,novedad, numDocumento,idPersona,preliquidacion,aux)...);
 
 			 }else{
 				 fmt.Println("error al guardar información agrupada",err)
@@ -84,7 +87,7 @@ func (c *PreliquidacionHcSController) GetIBCPorNovedad(ano, mes , numDocumento, 
 				for _,concepto := range *res.Conceptos{
 					if(concepto.Id == 311){
 						temp, _ := strconv.Atoi(concepto.Valor)
-						ibc_novedad = ibc_novedad + temp
+						ibcNovedad = ibcNovedad + temp
 					}
 				}
 			}
@@ -92,11 +95,13 @@ func (c *PreliquidacionHcSController) GetIBCPorNovedad(ano, mes , numDocumento, 
 
 		}
 
-	 return ibc_novedad
+	 return ibcNovedad
 
 }
 
-
+// Preliquidar ...
+// @Title Preliquidar
+// @Description Preliquidacion de Salarios
 func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidacion , reglasbase string) (res []models.Respuesta) {
 	//declaracion de variables
 	var resumenPreliqu []models.Respuesta
@@ -119,7 +124,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 						resultado := CrearResultado(detallesAMod)
 						for _, pos := range detallesAMod {
 
-							verificacionPagoPendientes=verificacion_pago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato,  strconv.Itoa(pos.VigenciaContrato),resultado)
+							verificacionPagoPendientes=verificacionPago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato,  strconv.Itoa(pos.VigenciaContrato),resultado)
 							pos.EstadoDisponibilidad = &models.EstadoDisponibilidad{Id: verificacionPagoPendientes}
 							if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/"+strconv.Itoa(pos.Id), "PUT", &respuesta, pos); err == nil  {
 
@@ -163,8 +168,8 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 	   }
 
 			//tempAgrupar := make(map[string]interface{}) // este mapa tiene la siguiente estructura: tempAgrupar[numero_cedula_docente][id_resolucion][valor_total] (cada resolucion tiene un único tipo de nivel académico, por lo tanto los valores totales se van sumando de acuerdo a la resolución )
-			info_resolucion := make(map[string]string)
-			info_resoluciones := make(map[string]interface{})
+			infoResolucion := make(map[string]string)
+			infoResoluciones := make(map[string]interface{})
 
 			for _,dato := range tempDocentes.ContratosTipo.ContratoTipo {
 
@@ -172,27 +177,27 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 							query:= "NumeroContrato:"+dato.NumeroContrato+",Vigencia:"+dato.VigenciaContrato
 							if err := request.GetJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
 
-								_, ok := info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
+								_, ok := infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
 								if ok {
 
-												info_resolucion_temp := make(map[string]string)
-												tempValor,_ := strconv.Atoi(info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)])
+												infoResolucionTemp := make(map[string]string)
+												tempValor,_ := strconv.Atoi(infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)])
 												tempValor = tempValor + int(vinculaciones[0].ValorContrato)
-												info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] =  strconv.Itoa(tempValor)
-												info_resolucion_temp["NumeroContrato"] =  dato.NumeroContrato
-												info_resolucion_temp["VigenciaContrato"] =  dato.VigenciaContrato
-												info_resolucion_temp["Total"] =  info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
-												info_resoluciones[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] = info_resolucion_temp
+												infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] =  strconv.Itoa(tempValor)
+												infoResolucionTemp["NumeroContrato"] =  dato.NumeroContrato
+												infoResolucionTemp["VigenciaContrato"] =  dato.VigenciaContrato
+												infoResolucionTemp["Total"] =  infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
+												infoResoluciones[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] = infoResolucionTemp
 
 								} else {
 
-												info_resolucion_temp := make(map[string]string)
+												infoResolucionTemp := make(map[string]string)
 												tempValor := int(vinculaciones[0].ValorContrato)
-												info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] =  strconv.Itoa(tempValor)
-												info_resolucion_temp["NumeroContrato"] =  dato.NumeroContrato
-												info_resolucion_temp["VigenciaContrato"] =  dato.VigenciaContrato
-												info_resolucion_temp["Total"] =  info_resolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
-												info_resoluciones[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] = info_resolucion_temp
+												infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] =  strconv.Itoa(tempValor)
+												infoResolucionTemp["NumeroContrato"] =  dato.NumeroContrato
+												infoResolucionTemp["VigenciaContrato"] =  dato.VigenciaContrato
+												infoResolucionTemp["Total"] =  infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
+												infoResoluciones[strconv.Itoa(vinculaciones[0].IdResolucion.Id)] = infoResolucionTemp
 
 								}
 							}
@@ -200,11 +205,11 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 				}
 
 			//CALCULAR PRELIQUIDACIÓN PARA CADA VALOR AGRUPADO
-				for key,_ := range info_resoluciones {
+				for key := range infoResoluciones {
 					aux := models.ListaContratos{}
-				 if err := formatdata.FillStruct(info_resoluciones[key], &aux); err == nil{
+				 if err := formatdata.FillStruct(infoResoluciones[key], &aux); err == nil{
 
-					 resumenPreliqu = append(resumenPreliqu,LiquidarContratoHCS(reglasbase,datos.Novedad, datos.PersonasPreLiquidacion[i].NumDocumento,datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion,aux)...);
+					 resumenPreliqu = append(resumenPreliqu,liquidarContratoHCS(reglasbase,datos.Novedad, datos.PersonasPreLiquidacion[i].NumDocumento,datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion,aux)...);
 
 				 }else{
 					 fmt.Println("error al guardar información agrupada",err)
@@ -221,11 +226,11 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 }
 
 //CALCULAR FONDO DE SOLIDARIDAD Y RETEFUENTE
-resultado_desc := CalcularDescuentosTotales(reglasbase, datos.Preliquidacion, resumenPreliqu);
+resultadoDesc := CalcularDescuentosTotales(reglasbase, datos.Preliquidacion, resumenPreliqu);
 var idDetaPre interface{}
 if datos.Preliquidacion.Definitiva == true {
 
-for _, descuentos := range resultado_desc{
+for _, descuentos := range resultadoDesc{
 	valor, _ := strconv.ParseFloat(descuentos.Valor,64)
 	diasLiquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados,64)
 	tipoPreliquidacion,_ := strconv.Atoi(descuentos.TipoPreliquidacion)
@@ -238,14 +243,14 @@ for _, descuentos := range resultado_desc{
 	}
 }
 } else{
-	*resumenPreliqu[0].Conceptos = append(*resumenPreliqu[0].Conceptos, resultado_desc...)
+	*resumenPreliqu[0].Conceptos = append(*resumenPreliqu[0].Conceptos, resultadoDesc...)
 }
 
 		//-----------------------------
 		return resumenPreliqu
 }
 
-func LiquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento,Persona int, preliquidacion models.Preliquidacion,informacionContrato models.ListaContratos)(res []models.Respuesta){
+func liquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento,Persona int, preliquidacion models.Preliquidacion,informacionContrato models.ListaContratos)(res []models.Respuesta){
 
 
 	var objetoDatosActa models.ObjetoActaInicio
@@ -254,7 +259,7 @@ func LiquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento,Perso
 	var dispo int
 	var reglasinyectadas string
   var reglas string
-	var predicados_retefuente string
+	var  predicadosRetefuente string
 	var idDetaPre interface{}
 	var resumenPreliqu []models.Respuesta
 
@@ -276,14 +281,14 @@ func LiquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento,Perso
 		fmt.Println("valor_contrato", informacionContrato.Total)
 	  predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(Persona)+","+informacionContrato.Total+")."} )
 	  reglasinyectadas = FormatoReglas(predicados)
-		/* If para permitir incluir regla en servicio get_ibc_novedad  */
+		/* If para permitir incluir regla en servicio get_ibcNovedad  */
 		if (novedadInyectada == "") {
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(Persona, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato, preliquidacion)
 		}else{
 			reglasinyectadas = reglasinyectadas + novedadInyectada
 		}
-		predicados_retefuente = CargarDatosRetefuente(NumDocumento)
-	  reglas =  reglasinyectadas + predicados_retefuente + reglasbase
+		 predicadosRetefuente = CargarDatosRetefuente(NumDocumento)
+	  reglas =  reglasinyectadas +  predicadosRetefuente + reglasbase
 
 		temp := golog.CargarReglasHCS(Persona,reglas,preliquidacion, informacionContrato.VigenciaContrato,datosActa)
 
@@ -292,7 +297,7 @@ func LiquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento,Perso
 	  resultado.NumDocumento = float64(NumDocumento)
 		resultado.NumeroContrato = informacionContrato.NumeroContrato
 		resultado.VigenciaContrato = informacionContrato.VigenciaContrato
-	  dispo=verificacion_pago(NumDocumento,preliquidacion.Ano, preliquidacion.Mes,informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato,resultado)
+	  dispo=verificacionPago(NumDocumento,preliquidacion.Ano, preliquidacion.Mes,informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato,resultado)
 
 		resultado.TotalDevengos, resultado.TotalDescuentos, resultado.TotalAPagar = CalcularTotalesPorPersona(*resultado.Conceptos);
 	  //se guardan los conceptos calculados en la nomina
@@ -317,7 +322,7 @@ func LiquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento,Perso
 	  predicados = nil;
   	reglas = ""
 	  reglasinyectadas = ""
-	  predicados_retefuente = "";
+	   predicadosRetefuente = "";
 
 	  }else{
 	    fmt.Println("error al traer acta de inicio")

@@ -217,9 +217,9 @@ func ConsultarValoresPriServDic(numero_contrato string, vigencia_contrato int, p
 }
 
 
-func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas,periodo string, lista_descuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
+func CalcularReteFuentePlanta(tipoPreliquidacionString, reglas,periodo string, listaDescuentos []models.ConceptosResumen)(rest []models.ConceptosResumen){
 	fmt.Println("retefuente",periodo)
-	var lista_retefuente []models.ConceptosResumen
+	var listaRetefuente []models.ConceptosResumen
 
 	var ingresos int
 	var deduccion_salud int
@@ -229,7 +229,7 @@ func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas,periodo string, 
 	var Valor_alivio_vivienda float64
 	var Valor_alivio_salud_prepagada float64
 	var definitivo_deduccion int
-	fmt.Println(lista_descuentos)
+	fmt.Println(listaDescuentos)
 	temp_reglas := reglas
 	temp_reglas = temp_reglas + "beneficiario(no)."
 	temp_reglas = temp_reglas + "intereses_vivienda(0)."
@@ -242,25 +242,25 @@ func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas,periodo string, 
 	consultar_conceptos_ingresos_retencion := m.ProveAll("aplica_ingreso_retencion(X).")
 	 for _, solution := range consultar_conceptos_ingresos_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
-		ingresos = ingresos + BuscarValorConcepto(lista_descuentos, codigo_concepto)
+		ingresos = ingresos + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
 
 	consultar_conceptos_deduccion_retencion := m.ProveAll("aplica_deduccion_retencion(X).")
 	 for _, solution := range consultar_conceptos_deduccion_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
-		deduccion_salud = deduccion_salud + BuscarValorConcepto(lista_descuentos, codigo_concepto)
+		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
 
 	consultar_conceptos_deduccionpenvol_retencion := m.ProveAll("aplica_deduccion_penvol_retencion(X).")
 	 for _, solution := range consultar_conceptos_deduccionpenvol_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
-		deduccion_pen_vol = deduccion_pen_vol + BuscarValorConcepto(lista_descuentos, codigo_concepto)
+		deduccion_pen_vol = deduccion_pen_vol + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
 
 	consultar_gastos_rep := m.ProveAll("aplica_gastos_rep(X).")
  	for _, solution := range consultar_gastos_rep {
  	 codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
- 	 valor_gastos_rep = valor_gastos_rep + BuscarValorConcepto(lista_descuentos, codigo_concepto)
+ 	 valor_gastos_rep = valor_gastos_rep + BuscarValorConcepto(listaDescuentos, codigo_concepto)
   }
 
 	temp_reglas = temp_reglas + "ingreso_retencion("+strconv.Itoa(ingresos)+")."
@@ -330,23 +330,23 @@ func CalcularReteFuentePlanta(tipoPreliquidacion_string, reglas,periodo string, 
 		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-			temp_conceptos.DiasLiquidados = dias_a_liquidar
-			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
+			temp_conceptos.DiasLiquidados = diasALiquidar
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacionString
 			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
-		lista_retefuente = append(lista_retefuente, temp_conceptos)
+		listaRetefuente = append(listaRetefuente, temp_conceptos)
 
 	}
 
 
-	return lista_retefuente
+	return listaRetefuente
 }
 
-func BuscarValorConcepto(lista_descuentos []models.ConceptosResumen,codigo_concepto string)(valor int){
+func BuscarValorConcepto(listaDescuentos []models.ConceptosResumen,codigo_concepto string)(valor int){
 	var temp int
-	 for _, solution := range lista_descuentos {
+	 for _, solution := range listaDescuentos {
 				if(strconv.Itoa(solution.Id) == codigo_concepto ){
 							temp,_ = strconv.Atoi(solution.Valor)
 
@@ -356,9 +356,9 @@ func BuscarValorConcepto(lista_descuentos []models.ConceptosResumen,codigo_conce
 		return temp
 }
 
-func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descuentos []models.ConceptosResumen, dias_a_liq string)(rest []models.ConceptosResumen){
+func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq string)(rest []models.ConceptosResumen){
 
-	var lista_retefuente []models.ConceptosResumen
+	var listaRetefuente []models.ConceptosResumen
 	var ingresos int
 	var deduccion_salud int
 
@@ -368,7 +368,7 @@ func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descu
 	consultar_conceptos_ingresos_retencion := m.ProveAll("aplica_ingreso_retencion(X).")
 	 for _, solution := range consultar_conceptos_ingresos_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
-		ingresos = ingresos + BuscarValorConcepto(lista_descuentos, codigo_concepto)
+		ingresos = ingresos + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
 
 	temp_reglas = temp_reglas + "ingresos("+strconv.Itoa(ingresos)+")."
@@ -376,7 +376,7 @@ func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descu
 	consultar_conceptos_deduccion_retencion := m.ProveAll("aplica_deduccion_retencion(X).")
 	 for _, solution := range consultar_conceptos_deduccion_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
-		deduccion_salud = deduccion_salud + BuscarValorConcepto(lista_descuentos, codigo_concepto)
+		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
 
 
@@ -397,15 +397,15 @@ func CalcularReteFuenteSal(tipoPreliquidacion_string, reglas string, lista_descu
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			 temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 			temp_conceptos.DiasLiquidados = dias_a_liq
-			temp_conceptos.TipoPreliquidacion = tipoPreliquidacion_string
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacionString
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 		fmt.Println("dias a liq rete", dias_a_liq)
-		lista_retefuente = append(lista_retefuente, temp_conceptos)
+		listaRetefuente = append(listaRetefuente, temp_conceptos)
 
 	}
 
-	return lista_retefuente
+	return listaRetefuente
 }
 
 

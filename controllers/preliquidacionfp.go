@@ -16,6 +16,9 @@ type PreliquidacionFpController struct {
 	beego.Controller
 }
 
+// Preliquidar ...
+// @Title Preliquidar
+// @Description Preliquidacion para administrativos
 func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
 
 
@@ -32,7 +35,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
 
-		var informacion_cargo []models.FuncionarioCargo
+		var informacionCargo []models.FuncionarioCargo
 		filtrodatos := models.FuncionarioCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
 		tipoNom = 2
 
@@ -40,20 +43,20 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 			porcentajePT = 0
 		}
 
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo/get_asignacion_basica", "POST", &informacion_cargo, &filtrodatos); err == nil {
+		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo/get_asignacion_basica", "POST", &informacionCargo, &filtrodatos); err == nil {
 
-			dias_laborados := CalcularDias(informacion_cargo[0].FechaInicio, informacion_cargo[0].FechaFin)
+			diasLaborados := CalcularDias(informacionCargo[0].FechaInicio, informacionCargo[0].FechaFin)
 			//reglasNominasEspeciales := crearHechosNominasEspeciales(datos.Preliquidacion,datos.PersonasPreLiquidacion[i].IdPersona)
-			esAnual := esAnual(datos.Preliquidacion.Mes, informacion_cargo[0].FechaInicio)
+			esAnual := esAnual(datos.Preliquidacion.Mes, informacionCargo[0].FechaInicio)
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato), datos.Preliquidacion)
 			reglas = reglasinyectadas + reglasbase + esAnual// + reglasNominasEspeciales
 
-			//fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
+			//fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacionCargo, diasLaborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
 
 
 
 
-			temp := golog.CargarReglasFP("",datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,reglas, datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, informacion_cargo, dias_laborados, porcentajePT,tipoNom)
+			temp := golog.CargarReglasFP("",datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,reglas, datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, informacionCargo, diasLaborados, porcentajePT,tipoNom)
 
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
@@ -95,84 +98,24 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 }
 
-
-func (c *PreliquidacionFpController) Preliquidar_Planta_Prueba(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
-
-	fmt.Println("holaaa")
-
-	//declaracion de variables
-	var reglasinyectadas string
-	var reglas string
-	var resumenPreliqu []models.Respuesta
-
-	var arreglo_porcentajePT []int
-	var porcentajePT int
-	var tipoNom int;
-
-	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
-
-		fmt.Println("hellouuu prueba planta")
-		var informacion_cargo []models.FuncionarioCargo
-		filtrodatos := models.FuncionarioCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
-		tipoNom = 3
-		fmt.Println("filtro datos",filtrodatos)
-
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_primatec", "POST", &arreglo_porcentajePT, datos.PersonasPreLiquidacion[i].IdPersona); err == nil {
-			if(arreglo_porcentajePT == nil){
-					porcentajePT = 0
-			}else{
-					porcentajePT = arreglo_porcentajePT[0]
-			}
-
-			fmt.Println("no pt", porcentajePT)
-		}else{
-			fmt.Println("erro pt",err)
-		}
-
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo/get_asignacion_basica", "POST", &informacion_cargo, &filtrodatos); err == nil {
-			fmt.Println("Asignacion_basica")
-			dias_laborados := CalcularDias(informacion_cargo[0].FechaInicio, informacion_cargo[0].FechaFin)
-			//reglasNominasEspeciales := crearHechosNominasEspeciales(datos.Preliquidacion,datos.PersonasPreLiquidacion[i].IdPersona)
-			esAnual := esAnual(datos.Preliquidacion.Mes, informacion_cargo[0].FechaInicio)
-			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato), datos.Preliquidacion)
-			reglas = reglasinyectadas + reglasbase + esAnual// + reglasNominasEspeciales
-
-			//fmt.Println(datos.Preliquidacion.Fecha, datos.PersonasPreLiquidacion[i].IdPersona, informacion_cargo, dias_laborados, datos.Preliquidacion.Nomina.Periodo, esAnual, porcentajePT,tipoNom)
-
-
-
-
-			 temp := golog.CargarReglasFP(datos.DiasALiquidar,datos.Preliquidacion.Mes, datos.Preliquidacion.Ano,reglas, datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, informacion_cargo, dias_laborados, porcentajePT,tipoNom)
-
-			resultado := temp[len(temp)-1]
-			resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].IdPersona)
-			resumenPreliqu = append(resumenPreliqu, resultado)
-
-
-		}
-		reglasinyectadas = "";
-	}
-
-	fmt.Println(resumenPreliqu)
-	return resumenPreliqu
-
-}
-
-func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados float64) {
+// CalcularDias ...
+// @Title CalcularDias
+// @Description Dada una fecha inicio y una fecha fin, indicar los días transcurridos
+func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (diasLaborados float64) {
 	var a, m, d int
-	var meses_contrato float64
+	var mesesContrato float64
 	var diasContrato float64
 	if FechaFin.IsZero() {
 		var FechaFin2 time.Time
 		FechaFin2 = time.Now()
 		a, m, d = diff(FechaInicio, FechaFin2)
-		meses_contrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
-		diasContrato = meses_contrato * 30
+		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
+		diasContrato = mesesContrato * 30
 
 	} else {
 		a, m, d = diff(FechaInicio, FechaFin)
-		meses_contrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
-		diasContrato = meses_contrato * 30
+		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
+		diasContrato = mesesContrato * 30
 
 	}
 

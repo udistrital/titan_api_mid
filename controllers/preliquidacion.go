@@ -350,6 +350,9 @@ func cargarReglasSS() (reglas string) {
 	return reglasSS
 }
 
+// FormatoReglas ...
+// @Title FormatoReglas
+// @Description Convierte las reglas en objeto Predicado a string
 func FormatoReglas(v []models.Predicado) (reglas string) {
 	var arregloReglas = make([]string, len(v))
 	reglas = ""
@@ -364,6 +367,9 @@ func FormatoReglas(v []models.Predicado) (reglas string) {
 	return
 }
 
+// CargarNovedadesPersona ...
+// @Title CargarNovedadesPersona
+// @Description Carga las novedades para una persona y las valida para esa preliquidacion
 func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, datos_preliqu models.Preliquidacion) (reglas string) {
 
 	//consulta de la(s) novedades que pueda tener la persona para la pre-liquidacion
@@ -476,6 +482,9 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona){
 	}
 }
 
+// CargarDatosRetefuente ...
+// @Title CargarDatosRetefuente
+// @Description Carga lo referente al calculo de la retefuente según cédula de la persona
 func CargarDatosRetefuente(cedula int) (reglas string) {
 
 	var v []models.InformacionPersonaNatural

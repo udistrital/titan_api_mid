@@ -1,4 +1,5 @@
 package controllers
+
 import (
 	"encoding/json"
 	"github.com/astaxie/beego"
@@ -26,13 +27,13 @@ func diff(a, b time.Time) (year, month, day int) {
 
 
 
-    year = int(y2 - y1)
+    year = y2 - y1
     month = int(M2 - M1)
-    day = int(d2 - d1)
+    day = d2 - d1
 
 
     if day < 0 {
-      
+
 				day = (30 - d1) + d2
         month--
     }
@@ -44,7 +45,9 @@ func diff(a, b time.Time) (year, month, day int) {
     return
 }
 
-
+// ActaInicioDVE ...
+// @Title ActaInicioDVE
+// @Description Trae el acta de inicio segun contrato y vigencia
 func ActaInicioDVE(id_contrato, vigencia string)(datos models.ObjetoActaInicio,  err error){
 
 	var temp map[string]interface{}
@@ -72,13 +75,13 @@ func ActaInicioDVE(id_contrato, vigencia string)(datos models.ObjetoActaInicio, 
 		return tempDocentes, controlError;
 }
 
-func verificacion_pago(id_proveedor,ano, mes int, num_cont, vig string,  resultado models.Respuesta)(estado int){
+func verificacionPago(id_proveedor,ano, mes int, num_cont, vig string,  resultado models.Respuesta)(estado int){
 
-	estado_pago := consultar_estado_pago(num_cont, vig, ano, mes);
+	estadoPago := consultarEstadoPago(num_cont, vig, ano, mes);
 	//disponibilidad := calcular_disponibilidad(id_proveedor,vig,resultado)
 	disponibilidad := 2;
 
-	if(estado_pago == 2 && disponibilidad == 2){
+	if(estadoPago == 2 && disponibilidad == 2){
 		return 2
 	}else{
 		return 1
@@ -86,20 +89,20 @@ func verificacion_pago(id_proveedor,ano, mes int, num_cont, vig string,  resulta
 
 }
 
-func consultar_rp(id_proveedor, vigencia int) (saldo float64){
-		var registro_presupuestal []models.RegistroPresupuestal
-		var saldo_rp float64
-		var id_proveedor_string = strconv.Itoa(id_proveedor)
-		var vigencia_string = strconv.Itoa(vigencia)
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal?limit=-1&query=Beneficiario:"+id_proveedor_string+",Vigencia:"+vigencia_string, &registro_presupuestal); err == nil && registro_presupuestal != nil {
-			var id_registro_pre = strconv.Itoa(registro_presupuestal[0].Id)
-			if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorActualRp/"+id_registro_pre, &saldo_rp); err == nil {
+func consultarRp(id_proveedor, vigencia int) (saldo float64){
+		var registroPresupuestal []models.RegistroPresupuestal
+		var saldoRP float64
+		var IDProveedorString = strconv.Itoa(id_proveedor)
+		var vigenciaString = strconv.Itoa(vigencia)
+		if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registroPresupuestal?limit=-1&query=Beneficiario:"+IDProveedorString+",Vigencia:"+vigenciaString, &registroPresupuestal); err == nil && registroPresupuestal != nil {
+			var id_registro_pre = strconv.Itoa(registroPresupuestal[0].Id)
+			if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registroPresupuestal/ValorActualRp/"+id_registro_pre, &saldoRP); err == nil {
 				fmt.Println("saldo rp")
-				fmt.Println(saldo_rp)
+				fmt.Println(saldoRP)
 			}else{
 				fmt.Println("error al consultar saldo de rp")
 				fmt.Println(err)
-				saldo_rp = 0;
+				saldoRP = 0;
 			}
 
 
@@ -107,14 +110,14 @@ func consultar_rp(id_proveedor, vigencia int) (saldo float64){
 		}else{
 			fmt.Println("error en consulta de rp")
 			fmt.Println(err)
-			saldo_rp = 0;
+			saldoRP = 0;
 		}
 
-		return saldo_rp
+		return saldoRP
 }
 
 
-func total_a_pagar(respuesta models.Respuesta)(total float64){
+func totalAPagar(respuesta models.Respuesta)(total float64){
 	var total_dev float64
 	for _, descuentos := range *respuesta.Conceptos {
 		if(descuentos.NaturalezaConcepto == 1){
@@ -127,13 +130,13 @@ func total_a_pagar(respuesta models.Respuesta)(total float64){
  return total_dev
 }
 
-func calcular_disponibilidad(id_proveedor, vigencia int,respuesta models.Respuesta)(disp int){
-	var valor_a_pagar float64
-	var saldo_rp float64
+func calcularDisponibilidad(id_proveedor, vigencia int,respuesta models.Respuesta)(disp int){
+	var valorAPagar float64
+	var saldoRP float64
 	var disponibilidad int
-	saldo_rp = consultar_rp(id_proveedor, vigencia)
-	valor_a_pagar = total_a_pagar(respuesta)
-	if(valor_a_pagar > saldo_rp){
+	saldoRP = consultarRp(id_proveedor, vigencia)
+	valorAPagar = totalAPagar(respuesta)
+	if(valorAPagar > saldoRP){
 		disponibilidad = 1;
 		fmt.Println("no hay dinero")
 	}else{
@@ -144,9 +147,9 @@ func calcular_disponibilidad(id_proveedor, vigencia int,respuesta models.Respues
 	return disponibilidad
 }
 
-func consultar_estado_pago(num_cont, vigencia string,  ano, mes int)(disponibilidad int){
+func consultarEstadoPago(num_cont, vigencia string,  ano, mes int)(disponibilidad int){
 
-		//if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registro_presupuestal/ValorActualRp/"+id_registro_pre, &saldo_rp); err == nil {
+		//if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registroPresupuestal/ValorActualRp/"+id_registro_pre, &saldoRP); err == nil {
 		var respuesta_servicio string
 		var dispo int
 		if err :=request.GetJson("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
@@ -167,6 +170,7 @@ func consultar_estado_pago(num_cont, vigencia string,  ano, mes int)(disponibili
 
 }
 
+// GetIDProveedor ...
 func GetIDProveedor(Documento string)(IDProveedor int){
 
 
@@ -187,6 +191,7 @@ func GetIDProveedor(Documento string)(IDProveedor int){
 
 }
 
+// InformacionPersonaProveedor ...
 func InformacionPersonaProveedor(idPersona int)(Nom string, doc int,  err error){
 
 		var nombre_persona string

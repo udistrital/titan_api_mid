@@ -17,6 +17,9 @@ type PreliquidacionctController struct {
 	beego.Controller
 }
 
+// Preliquidar ...
+// @Title Preliquidar
+// @Description Preliquidacion para contratistas
 func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
 	//declaracion de variables
 
@@ -56,7 +59,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 			resultado := CrearResultado(detallesAMod)
 			for _, pos := range detallesAMod {
 
-				verificacionPagoPendientes=verificacion_pago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, strconv.Itoa(pos.VigenciaContrato),resultado)
+				verificacionPagoPendientes=verificacionPago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, strconv.Itoa(pos.VigenciaContrato),resultado)
 				pos.EstadoDisponibilidad = &models.EstadoDisponibilidad{Id: verificacionPagoPendientes}
 				if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/"+strconv.Itoa(pos.Id), "PUT", &respuesta, pos); err == nil  {
 					fmt.Println("preliquidaciones actualizadas")
@@ -130,7 +133,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 				resultado.VigenciaContrato = strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 				resultado.TotalDevengos, resultado.TotalDescuentos, resultado.TotalAPagar = CalcularTotalesPorPersona(*resultado.Conceptos);
 
-				disp=verificacion_pago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato),resultado)
+				disp=verificacionPago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato),resultado)
 
 
 				//ELIMINAR REGISTROS SI ESE CONTRATO YA HA SIDO PRELIQUIDADO PARA ESTA PRELIQUIDACION
@@ -169,6 +172,9 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 	return resumenPreliqu
 }
 
+// ContratosContratistas ...
+// @Title ContratosContratistas
+// @Description Trae de Argo la informacion del contrato por su número y su vigencia
 func ContratosContratistas(id_contrato string, vigencia int)(datos models.ObjetoContratoEstado,  err error){
 
 	var temp map[string]interface{}
@@ -195,6 +201,9 @@ func ContratosContratistas(id_contrato string, vigencia int)(datos models.Objeto
 		return tempDocentes, controlError;
 }
 
+// ActaInicioContratistas ...
+// @Title ActaInicioContratistas
+// @Description Trae el acta de inicio por contrato y vigencia
 func ActaInicioContratistas(id_contrato string, vigencia int)(datos models.ObjetoActaInicio,  err error){
 
 	var temp map[string]interface{}
@@ -222,6 +231,9 @@ func ActaInicioContratistas(id_contrato string, vigencia int)(datos models.Objet
 		return tempDocentes, controlError;
 }
 
+// ConsultarDetalleAModificar ...
+// @Title ConsultarDetalleAModificar
+// @Description Consultar los detalles por contrato, vigencia y preliquidacion
 func ConsultarDetalleAModificar(id_contrato string, vigencia, preliquidacion int)(det []models.DetallePreliquidacion){
 	var v []models.DetallePreliquidacion
 	query := "NumeroContrato:"+id_contrato+",VigenciaContrato:"+strconv.Itoa(vigencia)+",Preliquidacion.Id:"+strconv.Itoa(preliquidacion)
