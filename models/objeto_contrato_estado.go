@@ -14,3 +14,13 @@ type Estado struct {
 	Id           int
 	NombreEstado string
 }
+
+type ListaContratos struct {
+
+
+			VigenciaContrato  string
+			Total    				   string
+			NumeroContrato      string
+
+
+}

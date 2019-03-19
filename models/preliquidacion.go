@@ -12,4 +12,5 @@ type Preliquidacion struct {
 	Ano                  int                   `orm:"column(ano)"`
 	FechaRegistro        time.Time             `orm:"column(fecha_registro);type(timestamp with time zone)"`
 	EstadoPreliquidacion *EstadoPreliquidacion `orm:"column(estado_preliquidacion);rel(fk)"`
+	Definitiva           bool
 }

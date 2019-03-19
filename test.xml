@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+	<testsuite tests="1" failures="0" time="5.007" name="github.com/udistrital/titan_api_mid">
+		<properties>
+			<property name="go.version" value="go1.6.3"></property>
+		</properties>
+		<testcase classname="titan_api_mid" name="TestDev" time="5.000"></testcase>
+	</testsuite>
+	<testsuite tests="1" failures="0" time="0.295" name="github.com/udistrital/titan_api_mid/ScriptsReglas">
+		<properties>
+			<property name="go.version" value="go1.6.3"></property>
+		</properties>
+		<testcase classname="ScriptsReglas" name="Test1" time="0.280"></testcase>
+	</testsuite>
+	<testsuite tests="1" failures="0" time="0.004" name="github.com/udistrital/titan_api_mid/controllers">
+		<properties>
+			<property name="go.version" value="go1.6.3"></property>
+		</properties>
+		<testcase classname="controllers" name="TestURLMapping" time="0.000"></testcase>
+	</testsuite>
+	<testsuite tests="1" failures="0" time="0.006" name="github.com/udistrital/titan_api_mid/golog">
+		<properties>
+			<property name="go.version" value="go1.6.3"></property>
+		</properties>
+		<testcase classname="golog" name="Test1" time="0.000"></testcase>
+	</testsuite>
+	<testsuite tests="0" failures="0" time="0.002" name="github.com/udistrital/titan_api_mid/models">
+		<properties>
+			<property name="go.version" value="go1.6.3"></property>
+		</properties>
+	</testsuite>
+	<testsuite tests="0" failures="0" time="0.005" name="github.com/udistrital/titan_api_mid/routers">
+		<properties>
+			<property name="go.version" value="go1.6.3"></property>
+		</properties>
+	</testsuite>
+</testsuites>

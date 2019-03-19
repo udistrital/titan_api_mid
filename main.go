@@ -2,8 +2,10 @@ package main
 
 import (
 	_ "github.com/udistrital/titan_api_mid/routers"
+	"github.com/udistrital/utils_oas/apiStatusLib"
   "github.com/astaxie/beego/plugins/cors"
 	"github.com/astaxie/beego"
+	
 )
 
 func main() {
@@ -23,5 +25,7 @@ func main() {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	}
+
+	apistatus.Init()
 	beego.Run()
 }

@@ -2,14 +2,21 @@ package models
 
 type Respuesta struct {
 	Id           int
-	Nombre_Cont  string
+	NumeroContrato string
+	VigenciaContrato string
 	NumDocumento float64
 	Saldo_RP     float64
-	Valor_bruto  string
-	Valor_neto   string
+	TotalDevengos int
+	TotalDescuentos  int
+	TotalAPagar    int
 	Conceptos    *[]ConceptosResumen
 }
 type FormatoPreliqu struct {
 	//Contrato   *ContratoGeneral
 	Respuesta *Respuesta
+}
+
+type TotalPersona struct {
+	Id        int
+	Total     string
 }

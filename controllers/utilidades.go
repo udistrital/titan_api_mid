@@ -1,66 +1,16 @@
 package controllers
+
 import (
-	"net/http"
-	"bytes"
 	"encoding/json"
 	"github.com/astaxie/beego"
 	"time"
-	"io"
-	"os"
-	"strings"
 	"github.com/udistrital/titan_api_mid/models"
 	"strconv"
 	 "fmt"
+	 "github.com/udistrital/titan_api_mid/golog"
+	 	"github.com/udistrital/utils_oas/formatdata"
+		"github.com/udistrital/utils_oas/request"
 )
-
-
-
-func sendJson(url string, trequest string, target interface{}, datajson interface{}) error {
-	b := new(bytes.Buffer)
-	if datajson != nil{
-			json.NewEncoder(b).Encode(datajson)
-	}
-	client := &http.Client{}
-	req, err := http.NewRequest(trequest, url, b)
-	r, err:= client.Do(req)
-  //r, err := http.Post(url, "application/json; charset=utf-8", b)
-	if err != nil {
-		beego.Error("error", err)
-		return err
-	}
-	defer r.Body.Close()
-
-	return json.NewDecoder(r.Body).Decode(target)
-}
-
-
-func getJson(url string, target interface{}) error {
-	r, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer r.Body.Close()
-
-	return json.NewDecoder(r.Body).Decode(target)
-}
-
-func getJsonWSO2(urlp string, target interface{}) error {
-	b := new(bytes.Buffer)
-	//proxyUrl, err := url.Parse("http://10.20.4.15:3128")
-	//http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", urlp, b)
-	req.Header.Set("Accept", "application/json")
-	r, err := client.Do(req)
-	//r, err := http.Post(url, "application/json; charset=utf-8", b)
-	if err != nil {
-		beego.Error("error", err)
-		return err
-	}
-	defer r.Body.Close()
-
-	return json.NewDecoder(r.Body).Decode(target)
-}
 
 func diff(a, b time.Time) (year, month, day int) {
     if a.Location() != b.Location() {
@@ -77,22 +27,14 @@ func diff(a, b time.Time) (year, month, day int) {
 
 
 
-    year = int(y2 - y1)
+    year = y2 - y1
     month = int(M2 - M1)
-    day = int(d2 - d1) + 1
+    day = d2 - d1
 
 
-    // Normalize negative values
-		/*if day < 0{
-			day = 0
-		}
-		if month < 0 {
-        month = 0
-    }*/
     if day < 0 {
-        // days in month:
-        t := time.Date(y1, M1, 32, 0, 0, 0, 0, time.UTC)
-        day += 32 - t.Day()
+
+				day = (30 - d1) + d2
         month--
     }
     if month < 0 {
@@ -103,87 +45,332 @@ func diff(a, b time.Time) (year, month, day int) {
     return
 }
 
-func tipoNomina(tipoNomina string)(tipo string){
-	if tipoNomina == "151"  {
-		tipo = "0"
-	}
-
-	if tipoNomina == "152" {
-		tipo = "1"
-	}
-
-	if tipoNomina == "30" {
-		tipo = "2"
-	}
-	 return tipo
-}
-
-func WriteStringToFile(filepath, s string) error {
-	fo, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer fo.Close()
-
-	_, err = io.Copy(fo, strings.NewReader(s))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-
-func ContratosHonorarios(id_contrato string, vigencia int)(datos models.ObjetoContratoEstado,  err error){
+// ActaInicioDVE ...
+// @Title ActaInicioDVE
+// @Description Trae el acta de inicio segun contrato y vigencia
+func ActaInicioDVE(id_contrato, vigencia string)(datos models.ObjetoActaInicio,  err error){
 
 	var temp map[string]interface{}
-	var temp_docentes models.ObjetoContratoEstado
-	var control_error error
+	var tempDocentes models.ObjetoActaInicio
+	var controlError error
 
-	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/contrato_elaborado_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
-		jsonDocentes, error_json := json.Marshal(temp)
+	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio_elaborado/"+id_contrato+"/"+vigencia, &temp); err == nil && temp != nil {
+		jsonDocentes, errorJSON := json.Marshal(temp)
 
-		if error_json == nil {
+		if errorJSON == nil {
 
-			json.Unmarshal(jsonDocentes, &temp_docentes)
+			json.Unmarshal(jsonDocentes, &tempDocentes)
 
 		} else {
-			control_error = error_json
+			controlError = errorJSON
 			fmt.Println("error al traer contratos docentes DVE")
 		}
 	} else {
-		control_error = err
+		controlError = err
 		fmt.Println("Error al unmarshal datos de nómina",err)
 
 
 	}
 
-		return temp_docentes, control_error;
+		return tempDocentes, controlError;
 }
 
-func ActaInicioHonorarios(id_contrato string, vigencia int)(datos models.ObjetoActaInicio,  err error){
+func verificacionPago(id_proveedor,ano, mes int, num_cont, vig string,  resultado models.Respuesta)(estado int){
+
+	estadoPago := consultarEstadoPago(num_cont, vig, ano, mes);
+	//disponibilidad := calcular_disponibilidad(id_proveedor,vig,resultado)
+	disponibilidad := 2;
+
+	if(estadoPago == 2 && disponibilidad == 2){
+		return 2
+	}else{
+		return 1
+	}
+
+}
+
+func consultarRp(id_proveedor, vigencia int) (saldo float64){
+		var registroPresupuestal []models.RegistroPresupuestal
+		var saldoRP float64
+		var IDProveedorString = strconv.Itoa(id_proveedor)
+		var vigenciaString = strconv.Itoa(vigencia)
+		if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registroPresupuestal?limit=-1&query=Beneficiario:"+IDProveedorString+",Vigencia:"+vigenciaString, &registroPresupuestal); err == nil && registroPresupuestal != nil {
+			var id_registro_pre = strconv.Itoa(registroPresupuestal[0].Id)
+			if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registroPresupuestal/ValorActualRp/"+id_registro_pre, &saldoRP); err == nil {
+				fmt.Println("saldo rp")
+				fmt.Println(saldoRP)
+			}else{
+				fmt.Println("error al consultar saldo de rp")
+				fmt.Println(err)
+				saldoRP = 0;
+			}
+
+
+
+		}else{
+			fmt.Println("error en consulta de rp")
+			fmt.Println(err)
+			saldoRP = 0;
+		}
+
+		return saldoRP
+}
+
+
+func totalAPagar(respuesta models.Respuesta)(total float64){
+	var total_dev float64
+	for _, descuentos := range *respuesta.Conceptos {
+		if(descuentos.NaturalezaConcepto == 1){
+			valor, _ := strconv.ParseFloat(descuentos.Valor,64)
+			total_dev = total_dev + valor
+		}
+
+
+}
+ return total_dev
+}
+
+func calcularDisponibilidad(id_proveedor, vigencia int,respuesta models.Respuesta)(disp int){
+	var valorAPagar float64
+	var saldoRP float64
+	var disponibilidad int
+	saldoRP = consultarRp(id_proveedor, vigencia)
+	valorAPagar = totalAPagar(respuesta)
+	if(valorAPagar > saldoRP){
+		disponibilidad = 1;
+		fmt.Println("no hay dinero")
+	}else{
+		disponibilidad = 2;
+		fmt.Println("si hay dinero ")
+	}
+
+	return disponibilidad
+}
+
+func consultarEstadoPago(num_cont, vigencia string,  ano, mes int)(disponibilidad int){
+
+		//if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registroPresupuestal/ValorActualRp/"+id_registro_pre, &saldoRP); err == nil {
+		var respuesta_servicio string
+		var dispo int
+		if err :=request.GetJson("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
+
+			if(respuesta_servicio == "True"){
+				dispo = 2;
+			}else{
+				dispo = 1;
+			}
+
+			fmt.Println("consulta exitosa de aprobación de pago")
+		}else{
+			fmt.Println("error en consulta de aprobación de pago")
+			dispo = 1;
+		}
+
+		return dispo
+
+}
+
+// GetIDProveedor ...
+func GetIDProveedor(Documento string)(IDProveedor int){
+
+
+		var idProveedor int
+
+		var respuesta_servicio []models.InformacionProveedor
+		if controlError :=request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=NumDocumento:"+Documento, &respuesta_servicio); controlError == nil {
+			idProveedor = respuesta_servicio[0].Id;
+		}else{
+			idProveedor= 0
+			fmt.Println("error en consulta id de persona", controlError)
+
+		}
+
+		return idProveedor;
+
+
+
+}
+
+// InformacionPersonaProveedor ...
+func InformacionPersonaProveedor(idPersona int)(Nom string, doc int,  err error){
+
+		var nombre_persona string
+		var documento int
+		var respuesta_servicio []models.InformacionProveedor
+		var controlError error
+		if controlError :=request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona), &respuesta_servicio); controlError == nil {
+
+			nombre_persona = respuesta_servicio[0].NomProveedor;
+			documento,_ = strconv.Atoi(respuesta_servicio[0].NumDocumento);
+
+		}else{
+			nombre_persona = "No encontrado"
+			nombre_persona = "0"
+			fmt.Println("error en consulta de información de persona", controlError)
+
+		}
+
+		return nombre_persona, documento,controlError;
+
+
+
+}
+
+func InformacionPersona(tipoNomina string, NumeroContrato string, VigenciaContrato int)(Nom, cont, doc string,  err error){
+
 
 	var temp map[string]interface{}
-	var temp_docentes models.ObjetoActaInicio
-	var control_error error
+	var tempDocentes models.ObjetoInformacionContratista
+	var nombre_contratista string
+	var contrato string
+	var documento string
+	var endpoint string
 
-	if err := getJsonWSO2("http://jbpm.udistritaloas.edu.co:8280/services/contrato_suscrito_DataService.HTTPEndpoint/acta_inicio_elaborado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
-		jsonDocentes, error_json := json.Marshal(temp)
+	var controlError error
 
-		if error_json == nil {
 
-			json.Unmarshal(jsonDocentes, &temp_docentes)
+	if(tipoNomina == "CT" || tipoNomina == "HCS" || tipoNomina == "HCH"){
 
-		} else {
-			control_error = error_json
-			fmt.Println("error al traer contratos docentes DVE")
+			if(tipoNomina == "CT"){
+				endpoint = "informacion_contrato_contratista"
+			}
+
+			if(tipoNomina == "HCS" || tipoNomina == "HCH"){
+				endpoint = "informacion_contrato_elaborado_contratista"
+			}
+
+			if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/"+endpoint+"/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
+
+				jsonDocentes, errorJSON := json.Marshal(temp)
+
+				if errorJSON == nil {
+
+					json.Unmarshal(jsonDocentes, &tempDocentes)
+					nombre_contratista = tempDocentes.InformacionContratista.NombreCompleto
+					documento = tempDocentes.InformacionContratista.Documento.Numero
+					contrato = tempDocentes.InformacionContratista.Contrato.Numero
+
+
+				} else {
+					controlError = errorJSON
+					fmt.Println("error al traer contratos docentes DVE")
+				}
+			} else {
+				controlError = err
+				fmt.Println("Error al unmarshal datos de nómina",err)
+
+
+			}
 		}
-	} else {
-		control_error = err
-		fmt.Println("Error al unmarshal datos de nómina",err)
 
+		if(tipoNomina == "FP"){
+			fmt.Println("asdafadada1")
+			var datosPlanta []models.Funcionario_x_Proveedor
+			if err = request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/informacion_proveedor/get_informacion_personas_planta?numero_contrato="+NumeroContrato+"&vigencia="+strconv.Itoa(VigenciaContrato), &datosPlanta); err == nil {
+				fmt.Println("asdafadada", datosPlanta)
+				nombre_contratista = datosPlanta[0].NombreProveedor ;
+				contrato = datosPlanta[0].NumeroContrato;
+				documento = strconv.Itoa(datosPlanta[0].NumDocumento);
+				controlError = err;
+			}else{
+				fmt.Println(err)
+			}
+
+
+			}
+
+		return nombre_contratista, contrato, documento,controlError;
+
+
+
+}
+
+func CrearResultado(detalles_a_totalizar []models.DetallePreliquidacion)(respuesta models.Respuesta){
+	var res models.Respuesta
+
+	conceptos := make([]models.ConceptosResumen, len(detalles_a_totalizar))
+
+	for x,pos := range detalles_a_totalizar{
+		conceptos[x].Valor = strconv.FormatFloat(pos.ValorCalculado, 'E', -1, 64)
+		conceptos[x].NaturalezaConcepto = pos.Concepto.NaturalezaConcepto.Id;
 
 	}
 
-		return temp_docentes, control_error;
+	res.Conceptos = &conceptos;
+	return res
+
 }
+
+func CalcularTotalesPorPersona(conceptos  []models.ConceptosResumen)(total_dev, total_des, total_pag int){
+
+	var totalDevengos float64;
+	var totalDescuentos float64
+	var total_a_pagar float64;
+
+	for _, descuentos := range conceptos{
+		valor, _ := strconv.ParseFloat(descuentos.Valor,64)
+		if descuentos.NaturalezaConcepto == 1 {
+			totalDevengos = totalDevengos + valor;
+		}
+
+		if descuentos.NaturalezaConcepto == 2 {
+			totalDescuentos = totalDescuentos + valor;
+		}
+	}
+
+	total_a_pagar = totalDevengos - totalDescuentos
+	return int(totalDevengos), int(totalDescuentos), int(total_a_pagar)
+}
+
+
+func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidacion, resumen  []models.Respuesta)(concepto []models.ConceptosResumen){
+
+	info_total_persona := make(map[string]string)
+	info_total_personas := make(map[string]interface{})
+
+	for _,dato_resumen := range resumen {
+
+
+	for _,dato_conceptos := range *dato_resumen.Conceptos {
+
+			if(dato_conceptos.NaturalezaConcepto == 1) {
+
+					_, ok := info_total_persona[strconv.Itoa(dato_resumen.Id)]
+					if ok {
+
+									info_total_persona_temp := make(map[string]string)
+									tempValor_actual,_ := strconv.Atoi(info_total_persona[strconv.Itoa(dato_resumen.Id)])
+									tempValor_a_sumar,_ := strconv.Atoi(dato_conceptos.Valor)
+									tempValor := tempValor_actual + tempValor_a_sumar
+									info_total_persona[strconv.Itoa(dato_resumen.Id)] =  strconv.Itoa(tempValor)
+									info_total_persona_temp["Total"] =  info_total_persona[strconv.Itoa(dato_resumen.Id)]
+									info_total_personas[strconv.Itoa(dato_resumen.Id)] = info_total_persona_temp
+
+					} else {
+
+									info_total_persona_temp := make(map[string]string)
+									tempValor,_ := strconv.Atoi(dato_conceptos.Valor)
+									info_total_persona[strconv.Itoa(dato_resumen.Id)] =  strconv.Itoa(tempValor)
+									info_total_persona_temp["Total"] =  info_total_persona[strconv.Itoa(dato_resumen.Id)]
+									info_total_personas[strconv.Itoa(dato_resumen.Id)] = info_total_persona_temp
+
+					}
+
+					}
+				}
+			}
+
+
+			var temp  []models.ConceptosResumen
+			for key,_ := range info_total_personas {
+				aux := models.TotalPersona{}
+			 if err := formatdata.FillStruct(info_total_personas [key], &aux); err == nil{
+				 temp = append(temp,golog.CalcularDescuentosTotalesHCS(key, aux.Total ,aux.Id,reglas,preliquidacion, strconv.Itoa(preliquidacion.Ano))...)
+				fmt.Println("fondo solidaridad total",temp)
+			 }else{
+				 fmt.Println("error al guardar información agrupada",err)
+			 }
+			}
+
+			return temp;
+		}
