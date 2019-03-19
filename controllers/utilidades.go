@@ -54,7 +54,7 @@ func ActaInicioDVE(id_contrato, vigencia string)(datos models.ObjetoActaInicio, 
 	var tempDocentes models.ObjetoActaInicio
 	var controlError error
 
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio_elaborado/"+id_contrato+"/"+vigencia, &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2("https://"+beego.AppConfig.String("Urlwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio_elaborado/"+id_contrato+"/"+vigencia, &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {
@@ -239,7 +239,7 @@ func InformacionPersona(tipoNomina string, NumeroContrato string, VigenciaContra
 				endpoint = "informacion_contrato_elaborado_contratista"
 			}
 
-			if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/"+endpoint+"/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
+			if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/"+endpoint+"/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
 
 				jsonDocentes, errorJSON := json.Marshal(temp)
 
