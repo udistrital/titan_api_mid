@@ -10,10 +10,7 @@ pipeline:
   go:
     image: golang:1.9
     commands:
-     - go get -u github.com/astaxie/beego
-     - go get -u github.com/beego/bee
-     - go get github.com/udistrital/utils_oas/request
-     - go get -t
+     - go get -fix
      - GOOS=linux GOARCH=amd64 go build -o main
     when:
       branch: [master, develop]
