@@ -177,7 +177,7 @@ func GetIDProveedor(Documento string)(IDProveedor int){
 		var idProveedor int
 
 		var respuesta_servicio []models.InformacionProveedor
-		if controlError :=request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=NumDocumento:"+Documento, &respuesta_servicio); controlError == nil {
+		if controlError :=request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=NumDocumento:"+Documento, &respuesta_servicio); controlError == nil {
 			idProveedor = respuesta_servicio[0].Id;
 		}else{
 			idProveedor= 0
@@ -198,7 +198,8 @@ func InformacionPersonaProveedor(idPersona int)(Nom string, doc int,  err error)
 		var documento int
 		var respuesta_servicio []models.InformacionProveedor
 		var controlError error
-		if controlError :=request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona), &respuesta_servicio); controlError == nil {
+		fmt.Println("URL ARGO","http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona))
+		if controlError :=request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona), &respuesta_servicio); controlError == nil {
 
 			nombre_persona = respuesta_servicio[0].NomProveedor;
 			documento,_ = strconv.Atoi(respuesta_servicio[0].NumDocumento);
