@@ -490,7 +490,7 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 	var v []models.InformacionPersonaNatural
 	reglas = ""
 	query := "Id:"+strconv.Itoa(cedula)
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
+	if err := request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
 
 		if v != nil {
 
