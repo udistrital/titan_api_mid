@@ -3,7 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"strconv"
-
+	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/manucorporat/try"
 	"github.com/udistrital/utils_oas/request"
@@ -63,7 +63,7 @@ func (c *Concepto_nomina_por_personaController) TrRegistroIncapacidades() {
 		c.Data["json"] = apiResponse
 
 	}).Catch(func(e try.E) {
-		beego.Error("error en TrRegistroIncapacidades: ", e)
+		fmt.Println("error en TrRegistroIncapacidades: ", e)
 		c.Data["json"] = e
 	})
 
@@ -116,7 +116,7 @@ func (c *Concepto_nomina_por_personaController) TrRegistroProrrogaIncapacidad() 
 
 		c.Data["json"] = apiResponse
 	}).Catch(func(e try.E) {
-		beego.Error("Error en TrRegistroProrrogaIncapacidad(): ", e)
+		fmt.Println("Error en TrRegistroProrrogaIncapacidad(): ", e)
 		c.Data["json"] = e
 	})
 	c.ServeJSON()
