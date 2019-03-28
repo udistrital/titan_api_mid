@@ -47,7 +47,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 				if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/"+strconv.Itoa(pos.Id), "PUT", &respuesta, pos); err == nil  {
 					fmt.Println("preliquidaciones actualizadas")
 				} else {
-					beego.Debug("error al actualizar detalle de preliquidación: ", err)
+					fmt.Println("error al actualizar detalle de preliquidación: ", err)
 				}
 			}
 
@@ -154,7 +154,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
 
 		}else{
-			beego.Debug("error1: ", err)
+			fmt.Println("error1: ", err)
 		}
 	}
 	} else{
@@ -225,7 +225,7 @@ func liquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 		 if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
 
 		 }else{
-			 beego.Debug("error1: ", err)
+			 fmt.Println("error1: ", err)
 		 }
 	 }
  }
