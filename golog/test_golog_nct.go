@@ -271,6 +271,31 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacionStr
 
 	}
 
+	descuento_arl:= m.ProveAll("calcular_ARL("+salarioBase_string+", "+periodo+",VARL).")
+
+	for _, solution := range descuento_arl {
+		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("VARL")), 64)
+		Nom_Concepto := "arl"
+		temp_conceptos := models.ConceptosResumen{Nombre: "arl",
+
+			Valor: fmt.Sprintf("%.0f", Valor),
+		}
+
+		reglas = reglas + "sumar_ibc("+Nom_Concepto+","+strconv.Itoa(int(Valor))+")."
+		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N,D).`)
+
+		for _, cod := range codigo {
+			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
+			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+			temp_conceptos.TipoPreliquidacion = tipoPreliquidacionString
+			temp_conceptos.DiasLiquidados = dias_liq
+		}
+
+		listaDescuentos = append(listaDescuentos, temp_conceptos)
+
+}
+
 	CalcularIBC(reglas)
 	return listaDescuentos,ibc
 
