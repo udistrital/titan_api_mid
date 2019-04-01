@@ -66,11 +66,13 @@ func CalcularIBC(reglas string){
 	e := NewMachine().Consult(reglas)
 
 	valor_ibc := e.ProveAll("calcular_ibc(V).")
+
 	for _, solution := range valor_ibc {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 		ibc = ibc + Valor
-
+		
 		}
+
 }
 
 func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (dias_laborados float64) {
