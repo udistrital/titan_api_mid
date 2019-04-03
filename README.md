@@ -4,7 +4,7 @@ Gestor de reglas para el aplicativo [titan_api_crud](https://github.com/udistrit
 
 ## Instalación
 
-  go get github.com/udistrital/titan_api_mid
+    go get github.com/udistrital/titan_api_mid
 
 ## Licencia
 
