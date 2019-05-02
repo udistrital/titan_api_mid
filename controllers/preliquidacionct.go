@@ -47,9 +47,9 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 	//-----------------------
 
 	//carga de informacion de los empleados a partir del id de persona Natural (en este momento id proveedor)
-
+	fmt.Println("holi",datos.PersonasPreLiquidacion)
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
-
+		fmt.Println("contratooos")
 		if(datos.PersonasPreLiquidacion[i].Pendiente == "true"){
 
 			var respuesta string
@@ -94,7 +94,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 
 
 
-
+			fmt.Println("contratooos")
 			objetoDatosContrato, errorConsultaContrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
 			objetoDatosActa, errorConsultaActa = ActaInicioContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )

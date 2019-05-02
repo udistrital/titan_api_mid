@@ -146,10 +146,10 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion)(arreglo_contra
 		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 			if len(d) == 0 {
 				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "no"
-
+				tempDocentes.ContratosTipo.ContratoTipo[x].EstadoPago = "no liquidado"
 			}else{
 				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "si"
-
+				tempDocentes.ContratosTipo.ContratoTipo[x].EstadoPago = d[0].EstadoDisponibilidad.Nombre
 			}
 
 		}
