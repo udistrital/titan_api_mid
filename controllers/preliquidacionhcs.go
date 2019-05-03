@@ -115,7 +115,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
 		//Si la persona está pendiente, calcula el detalle para el mes que quedó pendiente y lo actualiza
-		if(datos.PersonasPreLiquidacion[i].Pendiente == "true"){
+		if(datos.PersonasPreLiquidacion[i].EstadoDisponibilidad == 1){
 
 						var respuesta string
 						var verificacionPagoPendientes = 2
