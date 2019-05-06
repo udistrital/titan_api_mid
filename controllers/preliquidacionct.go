@@ -50,8 +50,9 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
-		if(datos.PersonasPreLiquidacion[i].Pendiente == "true"){
+		if(datos.PersonasPreLiquidacion[i].EstadoDisponibilidad == 1){
 
+			fmt.Println("soy una persona pendiente", datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.PersonasPreLiquidacion[i].Preliquidacion)
 			var respuesta string
 			var verificacionPagoPendientes = 2
 
@@ -70,6 +71,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 
 		}else{
 
+			//eliminar los registros ya existentes en caso de ser definitiva y no solo consulta
 			if datos.Preliquidacion.Definitiva == true {
 			var d []models.DetallePreliquidacion
 			query := "Preliquidacion.Id:"+strconv.Itoa(datos.Preliquidacion.Id)+",NumeroContrato:"+datos.PersonasPreLiquidacion[i].NumeroContrato+",VigenciaContrato:"+strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
@@ -91,9 +93,6 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 								fmt.Println("error de detalle",err)
 							}
 			}
-
-
-
 
 			objetoDatosContrato, errorConsultaContrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
 
@@ -136,7 +135,7 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 				disp=verificacionPago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato),resultado)
 
 
-				//ELIMINAR REGISTROS SI ESE CONTRATO YA HA SIDO PRELIQUIDADO PARA ESTA PRELIQUIDACION
+				//INSERTAR LOS REGISTROS SI LA PRELIQUIDACIÓN ES DEFINITIVA
 				if datos.Preliquidacion.Definitiva == true {
 				for _, descuentos := range *resultado.Conceptos{
 					valor, _ := strconv.ParseFloat(descuentos.Valor,64)
