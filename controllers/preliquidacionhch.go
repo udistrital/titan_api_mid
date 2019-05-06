@@ -33,7 +33,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
-		if(datos.PersonasPreLiquidacion[i].Pendiente == "true"){
+		if(datos.PersonasPreLiquidacion[i].EstadoDisponibilidad == 1){
 
 			var respuesta string
 			var verificacionPagoPendientes = 2

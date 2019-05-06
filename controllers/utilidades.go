@@ -77,6 +77,7 @@ func ActaInicioDVE(id_contrato, vigencia string)(datos models.ObjetoActaInicio, 
 
 func verificacionPago(id_proveedor,ano, mes int, num_cont, vig string,  resultado models.Respuesta)(estado int){
 
+	fmt.Println("verificación de cumplido: ")
 	estadoPago := consultarEstadoPago(num_cont, vig, ano, mes);
 	//disponibilidad := calcular_disponibilidad(id_proveedor,vig,resultado)
 	disponibilidad := 2;
@@ -166,6 +167,7 @@ func consultarEstadoPago(num_cont, vigencia string,  ano, mes int)(disponibilida
 			dispo = 1;
 		}
 
+		fmt.Println("verificación de cumplido:",dispo)
 		return dispo
 
 }

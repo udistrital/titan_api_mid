@@ -7,5 +7,5 @@ type PersonasPreliquidacion struct {
 	NumeroContrato string
 	VigenciaContrato int
 	Preliquidacion  int
-	Pendiente string
+	EstadoDisponibilidad int
 }

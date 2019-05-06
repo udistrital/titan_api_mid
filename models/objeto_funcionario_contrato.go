@@ -9,6 +9,7 @@ type ObjetoFuncionarioContrato struct {
 			NumeroContrato  string  `json:"numero_contrato"` //Puede borrarse
 			VigenciaContrato  string  `json:"vigencia"`      //Puede borrarse
 			Preliquidado     string
+			EstadoPago			string
 		} `json:"contrato_tipo"`
 	} `json:"contratos_tipo"`
 }
