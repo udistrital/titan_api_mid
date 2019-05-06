@@ -168,7 +168,7 @@ func consultarEstadoPago(num_cont, vigencia string,  ano, mes int)(disponibilida
 		}
 
 		fmt.Println("verificación de cumplido:",dispo)
-		return 2
+		return dispo
 
 }
 
