@@ -31,6 +31,14 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
+	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionOpsController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionOpsController"],
+		beego.ControllerComments{
+			Method: "GenerarOrdenPago",
+			Router: `/generar_op`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
 	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionPersonasAPreliquidarController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionPersonasAPreliquidarController"],
 		beego.ControllerComments{
 			Method: "ListarPersonasAPreliquidar",
