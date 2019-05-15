@@ -99,6 +99,23 @@
                 }
             }
         },
+        "/gestion_ops/generar_op": {
+            "post": {
+                "tags": [
+                    "gestion_ops"
+                ],
+                "description": "Lanzar Job para crear órdenes de pago y actualizar estados de disponibilidad de detalles de preliquidación",
+                "operationId": "GestionOpsController.create GenerarOrdenPago",
+                "responses": {
+                    "201": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
         "/gestion_personas_a_liquidar/listar_personas_a_preliquidar_argo": {
             "post": {
                 "tags": [
@@ -797,6 +814,10 @@
             "title": "PersonasPreliquidacion",
             "type": "object",
             "properties": {
+                "EstadoDisponibilidad": {
+                    "type": "integer",
+                    "format": "int64"
+                },
                 "IdPersona": {
                     "type": "integer",
                     "format": "int64"
@@ -809,9 +830,6 @@
                     "format": "int64"
                 },
                 "NumeroContrato": {
-                    "type": "string"
-                },
-                "Pendiente": {
                     "type": "string"
                 },
                 "Preliquidacion": {
@@ -978,6 +996,10 @@
         {
             "name": "gestion_reportes",
             "description": "GestionReportesController operations for GestionReportes\n"
+        },
+        {
+            "name": "gestion_ops",
+            "description": "GestionOpsController operations for GestionOps\n"
         },
         {
             "name": "concepto_nomina_por_persona",
