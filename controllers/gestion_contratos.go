@@ -154,7 +154,7 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion)(arreglo_contra
 
 		}
 	}
-
+	
 	return tempDocentes, controlError;
 
 }

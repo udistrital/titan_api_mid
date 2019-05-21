@@ -27,7 +27,7 @@
 "arl(2016,1,0.522)."
 "calcular_reteica(B,V,R):- base_reteica(B,V,X), reteica(V,RI), R is ((RI * X) / 1000 rnd 0)."
 "calcular_salud(si,B,V,VS) :- salud(V,PS), salario_minimo(V,SM), BA is (B * 0.40 rnd 0), (BA @>= SM -> VS is (BA * (PS/100)) approach 100;  VS is (SM * (PS/100)) approach 100)."
-"calcular_pension(si,B,V,VS) :- pension(V,PS), salario_minimo(V,SM), BA is (B * 0.40 rnd 0), (BA @>= SM -> VS is (BA * (PS/100)) approach 100;  VS is (SM * (PS/100)) approach 100)."
+"calcular_pension(si,B,V,VS) :- pensionado(no),pension(V,PS), salario_minimo(V,SM), BA is (B * 0.40 rnd 0), (BA @>= SM -> VS is (BA * (PS/100)) approach 100;  VS is (SM * (PS/100)) approach 100)."
 "calcular_ARL(B,V,VARL) :- arl(V,1,PARL), X is ((PARL/100)* (B * 0.40) rnd 0), Y is ((X + 50)/ 100 int 0), VARL is Y * 100."
 "base_minimo(B,V,A):- salario_minimo(V,Z), X is B*0.40, (X@=<Z -> A is Z; A is X)."
 "reteica(2017,9.66)."

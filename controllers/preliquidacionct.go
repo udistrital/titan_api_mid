@@ -24,12 +24,8 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 	//declaracion de variables
 
 	var predicados []models.Predicado //variable para inyectar reglas
-	var objetoDatosContrato models.ObjetoContratoEstado
 	var objetoDatosActa models.ObjetoActaInicio
-	var errorConsultaContrato error
-	var errorConsultaActa error
-
-
+  var  predicadosRetefuente string
 	var resumenPreliqu []models.Respuesta
 
 	var reglasinyectadas string
@@ -94,35 +90,32 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 							}
 			}
 
-			objetoDatosContrato, errorConsultaContrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
-
-			objetoDatosActa, errorConsultaActa = ActaInicioContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
-
-
-
-		if(errorConsultaContrato == nil){
-			if(errorConsultaActa == nil){
-				datosContrato := objetoDatosContrato.ContratoEstado
+				valorContrato := datos.PersonasPreLiquidacion[i].ValorContrato
+				objetoDatosActa.ActaInicio.FechaInicioTemp = datos.PersonasPreLiquidacion[i].FechaInicio
+				objetoDatosActa.ActaInicio.FechaFinTemp = datos.PersonasPreLiquidacion[i].FechaFin
 				datosActa := objetoDatosActa.ActaInicio
 
-				layout := "2006-01-02"
+				layout := "2006-01-02-05:00"
 
 				FechaInicio, _ = time.Parse(layout , datosActa.FechaInicioTemp)
 				FechaFin, _ = time.Parse(layout , datosActa.FechaFinTemp)
 
 				diasContrato := CalcularDias(FechaInicio, FechaFin) + 1  //Suma uno para día inclusive
-				fmt.Println("valor del contarto ", datosContrato.ValorContrato)
+				fmt.Println("valor del contarto ", valorContrato)
 				fmt.Println("días contrato ",diasContrato)
 
 				vigenciaContrato := strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
-				predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + datosContrato.ValorContrato+ "). "})
+				predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + valorContrato+ "). "})
 				predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(diasContrato, 'f', -1, 64) + "," + vigenciaContrato + "). "})
-				predicados = append(predicados, models.Predicado{Nombre: "pensionado(no)."})
 
 				reglasinyectadas = FormatoReglas(predicados)
 
+
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato), datos.Preliquidacion)
-				reglas = reglasinyectadas + reglasbase
+
+				predicadosRetefuente = CargarDatosRetefuente(1)
+
+				reglas = reglasinyectadas + reglasbase + predicadosRetefuente
 
 				temp := golog.CargarReglasCT(datos.PersonasPreLiquidacion[i].IdPersona, reglas, datos.Preliquidacion , vigenciaContrato, objetoDatosActa)
 
@@ -154,17 +147,13 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 				//
 				resumenPreliqu = append(resumenPreliqu, resultado)
 				predicados = nil
-				objetoDatosContrato = models.ObjetoContratoEstado{}
+
 				reglas = ""
 				reglasinyectadas = ""
 
-			}else{
-				fmt.Println("error al traer acta de inicio")
-			}
 
-		}else{
-			fmt.Println("error al traer valor del contrato")
-		}
+
+
 	}
 }
 

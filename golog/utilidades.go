@@ -70,7 +70,7 @@ func CalcularIBC(reglas string){
 	for _, solution := range valor_ibc {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 		ibc = ibc + Valor
-		
+
 		}
 
 }

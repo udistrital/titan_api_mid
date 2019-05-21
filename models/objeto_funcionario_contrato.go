@@ -10,6 +10,11 @@ type ObjetoFuncionarioContrato struct {
 			VigenciaContrato  string  `json:"vigencia"`      //Puede borrarse
 			Preliquidado     string
 			EstadoPago			string
+			TipoContrato    string    `json:"tipo_registro"`
+			FechaInicio     string     `json:"fecha_inicio"`
+			FechaFin        string     `json:"fecha_fin"`
+			ValorContrato   string     `json:"valor_contrato"`
+
 		} `json:"contrato_tipo"`
 	} `json:"contratos_tipo"`
 }

@@ -487,12 +487,13 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona){
 // @Description Carga lo referente al calculo de la retefuente según cédula de la persona
 func CargarDatosRetefuente(cedula int) (reglas string) {
 
+  fmt.Println("consulta en Ágora de SS:")
 	var v []models.InformacionPersonaNatural
 	reglas = ""
 	query := "Id:"+strconv.Itoa(cedula)
 	if err := request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
 
-		if v != nil {
+		if  len(v) != 0 {
 
 				if(v[0].PersonasACargo == true){
 					reglas = reglas + "dependiente(si)."
@@ -520,9 +521,16 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 
 				reglas = reglas + "intereses_vivienda("+strconv.Itoa(int(v[0].InteresViviendaAfc))+")."
 
-		}
-	}else{
-    fmt.Println("error",err)
+		}else{
+      fmt.Println("No existen datos sobre esa persona")
+      reglas = reglas + "dependiente(no)."
+      reglas = reglas + "declarante(no)."
+      reglas = reglas + "medicina_prepagada(no)."
+      reglas = reglas + "pensionado(no)."
+      reglas = reglas + "intereses_vivienda(0)."
+    }
+	}else {
+    fmt.Println("error al consultar en Ágora",err)
     reglas = reglas + "dependiente(no)."
     reglas = reglas + "declarante(no)."
     reglas = reglas + "medicina_prepagada(no)."
@@ -530,5 +538,6 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
     reglas = reglas + "intereses_vivienda(0)."
   }
 
+  fmt.Println("reglas SS:", len(v))
 	return reglas
 }

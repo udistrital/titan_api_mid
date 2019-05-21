@@ -193,7 +193,6 @@ func liquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 	  vigenciaContrato := informacionContrato.VigenciaContrato
 		fmt.Println("valor_contrato->", informacionContrato.Total)
 	 	predicados = append(predicados,models.Predicado{Nombre:"valor_contrato("+strconv.Itoa(Persona)+","+informacionContrato.Total+"). "} )
-	  predicados = append(predicados, models.Predicado{Nombre: "pensionado(no)."})
 		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(Persona) + "," + strconv.FormatFloat(diasContrato, 'f', -1, 64) + "," + informacionContrato.VigenciaContrato+ "). "})
 
 	  reglasinyectadas = FormatoReglas(predicados)
