@@ -9,6 +9,7 @@ type Respuesta struct {
 	TotalDevengos int
 	TotalDescuentos  int
 	TotalAPagar    int
+	EstadoPago     string
 	Conceptos    *[]ConceptosResumen
 }
 type FormatoPreliqu struct {

@@ -75,7 +75,7 @@ func ActaInicioDVE(id_contrato, vigencia string)(datos models.ObjetoActaInicio, 
 		return tempDocentes, controlError;
 }
 
-func verificacionPago(id_proveedor,ano, mes int, num_cont, vig string,  resultado models.Respuesta)(estado int){
+func verificacionPago(id_proveedor,ano, mes int, num_cont, vig string)(estado int){
 
 	fmt.Println("verificación de cumplido: ")
 	estadoPago := consultarEstadoPago(num_cont, vig, ano, mes);
@@ -288,21 +288,6 @@ func InformacionPersona(tipoNomina string, NumeroContrato string, VigenciaContra
 
 }
 
-func CrearResultado(detalles_a_totalizar []models.DetallePreliquidacion)(respuesta models.Respuesta){
-	var res models.Respuesta
-
-	conceptos := make([]models.ConceptosResumen, len(detalles_a_totalizar))
-
-	for x,pos := range detalles_a_totalizar{
-		conceptos[x].Valor = strconv.FormatFloat(pos.ValorCalculado, 'E', -1, 64)
-		conceptos[x].NaturalezaConcepto = pos.Concepto.NaturalezaConcepto.Id;
-
-	}
-
-	res.Conceptos = &conceptos;
-	return res
-
-}
 
 func CalcularTotalesPorPersona(conceptos  []models.ConceptosResumen)(total_dev, total_des, total_pag int){
 
@@ -376,4 +361,64 @@ func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidaci
 			}
 
 			return temp;
+		}
+
+
+		// ContratosContratistas ...
+		// @Title ContratosContratistas
+		// @Description Trae de Argo la informacion del contrato por su número y su vigencia
+		func ContratosContratistas(id_contrato string, vigencia int)(datos models.ObjetoContratoEstado,  err error){
+
+			var temp map[string]interface{}
+			var tempDocentes models.ObjetoContratoEstado
+			var controlError error
+			if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+				jsonDocentes, errorJSON := json.Marshal(temp)
+
+				if errorJSON == nil {
+
+					json.Unmarshal(jsonDocentes, &tempDocentes)
+
+				} else {
+					controlError = errorJSON
+					fmt.Println("error al traer contratos docentes DVE")
+				}
+			} else {
+				controlError = err
+				fmt.Println("Error al unmarshal datos de nómina",err)
+
+
+			}
+
+				return tempDocentes, controlError;
+		}
+
+		// ActaInicioContratistas ...
+		// @Title ActaInicioContratistas
+		// @Description Trae el acta de inicio por contrato y vigencia
+		func ActaInicioContratistas(id_contrato string, vigencia int)(datos models.ObjetoActaInicio,  err error){
+
+			var temp map[string]interface{}
+			var tempDocentes models.ObjetoActaInicio
+			var controlError error
+
+			if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+				jsonDocentes, errorJSON := json.Marshal(temp)
+
+				if errorJSON == nil {
+
+					json.Unmarshal(jsonDocentes, &tempDocentes)
+
+				} else {
+					controlError = errorJSON
+					fmt.Println("error al traer contratos docentes DVE")
+				}
+			} else {
+				controlError = err
+				fmt.Println("Error al unmarshal datos de nómina",err)
+
+
+			}
+
+				return tempDocentes, controlError;
 		}

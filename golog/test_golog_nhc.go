@@ -138,7 +138,7 @@ func CalcularConceptosHCS(idProveedor int, periodo,reglas,tipoPreliquidacionStri
       }
 
 
-    CalcularIBC(reglas)
+    CalcularIBC(strconv.Itoa(idProveedor),reglas)
 
   	return listaDescuentos,ibc
 
