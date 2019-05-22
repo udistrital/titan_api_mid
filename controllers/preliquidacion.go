@@ -41,7 +41,11 @@ func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 			for x, dato := range personasPreliquidacion {
 
 				personasPreliquidacion[x].NombreCompleto, personasPreliquidacion[x].NumDocumento, errorConsultaInformacionAgora= InformacionPersonaProveedor(dato.IdPersona)
-
+        objetoActaInicio,_ := ActaInicioContratistas(dato.NumeroContrato, dato.VigenciaContrato)
+        objetoContratoEstado,_ := ContratosContratistas(dato.NumeroContrato, dato.VigenciaContrato)
+        personasPreliquidacion[x].FechaInicio = objetoActaInicio.ActaInicio.FechaInicioTemp
+        personasPreliquidacion[x].FechaFin = objetoActaInicio.ActaInicio.FechaFinTemp
+        personasPreliquidacion[x].ValorContrato = objetoContratoEstado.ContratoEstado.ValorContrato
 			}
 
 			if(errorConsultaInformacionAgora == nil){
@@ -487,7 +491,7 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona){
 // @Description Carga lo referente al calculo de la retefuente según cédula de la persona
 func CargarDatosRetefuente(cedula int) (reglas string) {
 
-  fmt.Println("consulta en Ágora de SS:")
+  fmt.Println("consulta en Ágora de Datos de retefuente:")
 	var v []models.InformacionPersonaNatural
 	reglas = ""
 	query := "Id:"+strconv.Itoa(cedula)

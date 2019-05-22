@@ -39,10 +39,10 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 			var verificacionPagoPendientes = 2
 
 			detallesAMod := ConsultarDetalleAModificar(datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.PersonasPreLiquidacion[i].Preliquidacion)
-			resultado := CrearResultado(detallesAMod)
+			
 			for _, pos := range detallesAMod {
 
-				verificacionPagoPendientes=verificacionPago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, strconv.Itoa(pos.VigenciaContrato),resultado)
+				verificacionPagoPendientes=verificacionPago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, strconv.Itoa(pos.VigenciaContrato))
 				pos.EstadoDisponibilidad = &models.EstadoDisponibilidad{Id: verificacionPagoPendientes}
 				if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/"+strconv.Itoa(pos.Id), "PUT", &respuesta, pos); err == nil  {
 					fmt.Println("preliquidaciones actualizadas")
@@ -209,7 +209,7 @@ func liquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 		resultado.VigenciaContrato = informacionContrato.VigenciaContrato
 		resultado.TotalDevengos, resultado.TotalDescuentos, resultado.TotalAPagar = CalcularTotalesPorPersona(*resultado.Conceptos);
 
-		dispo=verificacionPago(NumDocumento,preliquidacion.Ano, preliquidacion.Mes,informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato,resultado)
+		dispo=verificacionPago(NumDocumento,preliquidacion.Ano, preliquidacion.Mes,informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato)
 
 		//se guardan los conceptos calculados en la nomina
 
