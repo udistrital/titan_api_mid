@@ -295,8 +295,8 @@ func CalcularConceptosCT (idProveedor int, periodo,reglas, tipoPreliquidacionStr
 		listaDescuentos = append(listaDescuentos, temp_conceptos)
 
 }
-
-	CalcularIBC(reglas)
+	fmt.Println("asdasdasdasdad:",strconv.Itoa(idProveedor))
+	CalcularIBC(strconv.Itoa(idProveedor),reglas)
 	return listaDescuentos,ibc
 
 }

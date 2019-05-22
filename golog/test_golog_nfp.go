@@ -183,7 +183,7 @@ func CargarReglasFP(dias_a_liq string, MesPreliquidacion int, AnoPreliquidacion 
 		}
 
 		//Previo a pagos de salud y pensión se calcula el IBC
-		CalcularIBC(reglas)
+		CalcularIBC("whatever",reglas)
 		ManejarNovedadesDevengosFP(reglas, tipoPreliquidacionString)
 		total_devengado_string := strconv.Itoa(int(ibc))
 

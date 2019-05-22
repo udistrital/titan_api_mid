@@ -8,4 +8,8 @@ type PersonasPreliquidacion struct {
 	VigenciaContrato int
 	Preliquidacion  int
 	EstadoDisponibilidad int
+	TipoContrato    string
+	FechaInicio     string
+	FechaFin        string
+	ValorContrato   string    
 }

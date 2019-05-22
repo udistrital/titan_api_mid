@@ -61,16 +61,16 @@ func CalcularDiasNovedades(MesPreliq, AnoPreliq int,  AnoDesde float64, MesDesde
 }
 
 //Función que calcula IBC, basado en hechos de golog
-func CalcularIBC(reglas string){
+func CalcularIBC(persona, reglas string){
 
 	e := NewMachine().Consult(reglas)
 
-	valor_ibc := e.ProveAll("calcular_ibc(V).")
+	valor_ibc := e.ProveAll("calcular_ibc("+persona+",V).")
 
 	for _, solution := range valor_ibc {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
 		ibc = ibc + Valor
-		
+
 		}
 
 }

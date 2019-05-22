@@ -9,7 +9,7 @@ import (
 	"github.com/udistrital/utils_oas/request"
 	"time"
 	"github.com/astaxie/beego"
-	"encoding/json"
+
 )
 
 // PreliquidacionctController operations for Preliquidacionct
@@ -24,12 +24,8 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 	//declaracion de variables
 
 	var predicados []models.Predicado //variable para inyectar reglas
-	var objetoDatosContrato models.ObjetoContratoEstado
 	var objetoDatosActa models.ObjetoActaInicio
-	var errorConsultaContrato error
-	var errorConsultaActa error
-
-
+  var  predicadosRetefuente string
 	var resumenPreliqu []models.Respuesta
 
 	var reglasinyectadas string
@@ -43,11 +39,10 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 
 
 
-	//var al, ml, dl int
+
 	//-----------------------
 
-	//carga de informacion de los empleados a partir del id de persona Natural (en este momento id proveedor)
-
+	
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
 		if(datos.PersonasPreLiquidacion[i].EstadoDisponibilidad == 1){
@@ -57,10 +52,9 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 			var verificacionPagoPendientes = 2
 
 			detallesAMod := ConsultarDetalleAModificar(datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.PersonasPreLiquidacion[i].Preliquidacion)
-			resultado := CrearResultado(detallesAMod)
 			for _, pos := range detallesAMod {
 
-				verificacionPagoPendientes=verificacionPago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, strconv.Itoa(pos.VigenciaContrato),resultado)
+				verificacionPagoPendientes=verificacionPago(0,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,pos.NumeroContrato, strconv.Itoa(pos.VigenciaContrato))
 				pos.EstadoDisponibilidad = &models.EstadoDisponibilidad{Id: verificacionPagoPendientes}
 				if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/"+strconv.Itoa(pos.Id), "PUT", &respuesta, pos); err == nil  {
 					fmt.Println("preliquidaciones actualizadas")
@@ -94,45 +88,46 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 							}
 			}
 
-			objetoDatosContrato, errorConsultaContrato = ContratosContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
-
-			objetoDatosActa, errorConsultaActa = ActaInicioContratistas(datos.PersonasPreLiquidacion[i].NumeroContrato,datos.PersonasPreLiquidacion[i].VigenciaContrato )
-
-
-
-		if(errorConsultaContrato == nil){
-			if(errorConsultaActa == nil){
-				datosContrato := objetoDatosContrato.ContratoEstado
+				valorContrato := datos.PersonasPreLiquidacion[i].ValorContrato
+				objetoDatosActa.ActaInicio.FechaInicioTemp = datos.PersonasPreLiquidacion[i].FechaInicio
+				objetoDatosActa.ActaInicio.FechaFinTemp = datos.PersonasPreLiquidacion[i].FechaFin
 				datosActa := objetoDatosActa.ActaInicio
-
+				fmt.Println("datos acta", datosActa)
 				layout := "2006-01-02"
 
 				FechaInicio, _ = time.Parse(layout , datosActa.FechaInicioTemp)
 				FechaFin, _ = time.Parse(layout , datosActa.FechaFinTemp)
 
 				diasContrato := CalcularDias(FechaInicio, FechaFin) + 1  //Suma uno para día inclusive
-				fmt.Println("valor del contarto ", datosContrato.ValorContrato)
+				fmt.Println("valor del contarto ", valorContrato)
 				fmt.Println("días contrato ",diasContrato)
 
 				vigenciaContrato := strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
-				predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + datosContrato.ValorContrato+ "). "})
+				predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + valorContrato+ "). "})
 				predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(datos.PersonasPreLiquidacion[i].IdPersona) + "," + strconv.FormatFloat(diasContrato, 'f', -1, 64) + "," + vigenciaContrato + "). "})
-				predicados = append(predicados, models.Predicado{Nombre: "pensionado(no)."})
 
 				reglasinyectadas = FormatoReglas(predicados)
 
+
 				reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(datos.PersonasPreLiquidacion[i].IdPersona, datos.PersonasPreLiquidacion[i].NumeroContrato, strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato), datos.Preliquidacion)
-				reglas = reglasinyectadas + reglasbase
+
+				predicadosRetefuente = CargarDatosRetefuente(datos.PersonasPreLiquidacion[i].NumDocumento)
+				disp=verificacionPago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato))
+				reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago("+strconv.Itoa(disp)+")."
 
 				temp := golog.CargarReglasCT(datos.PersonasPreLiquidacion[i].IdPersona, reglas, datos.Preliquidacion , vigenciaContrato, objetoDatosActa)
-
 				resultado := temp[len(temp)-1]
 				resultado.NumDocumento = float64(datos.PersonasPreLiquidacion[i].NumDocumento)
 				resultado.NumeroContrato = datos.PersonasPreLiquidacion[i].NumeroContrato
 				resultado.VigenciaContrato = strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
 				resultado.TotalDevengos, resultado.TotalDescuentos, resultado.TotalAPagar = CalcularTotalesPorPersona(*resultado.Conceptos);
 
-				disp=verificacionPago(datos.PersonasPreLiquidacion[i].IdPersona,datos.Preliquidacion.Ano, datos.Preliquidacion.Mes,datos.PersonasPreLiquidacion[i].NumeroContrato,  strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato),resultado)
+
+				if (disp == 1){
+					resultado.EstadoPago = "Pendiente"
+				}else if (disp == 2){
+					resultado.EstadoPago = "Listo para pago"
+				}
 
 
 				//INSERTAR LOS REGISTROS SI LA PRELIQUIDACIÓN ES DEFINITIVA
@@ -154,81 +149,19 @@ func (c *PreliquidacionctController) Preliquidar(datos *models.DatosPreliquidaci
 				//
 				resumenPreliqu = append(resumenPreliqu, resultado)
 				predicados = nil
-				objetoDatosContrato = models.ObjetoContratoEstado{}
+
 				reglas = ""
 				reglasinyectadas = ""
 
-			}else{
-				fmt.Println("error al traer acta de inicio")
-			}
 
-		}else{
-			fmt.Println("error al traer valor del contrato")
-		}
+
+
 	}
 }
 
 	return resumenPreliqu
 }
 
-// ContratosContratistas ...
-// @Title ContratosContratistas
-// @Description Trae de Argo la informacion del contrato por su número y su vigencia
-func ContratosContratistas(id_contrato string, vigencia int)(datos models.ObjetoContratoEstado,  err error){
-
-	var temp map[string]interface{}
-	var tempDocentes models.ObjetoContratoEstado
-	var controlError error
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
-		jsonDocentes, errorJSON := json.Marshal(temp)
-
-		if errorJSON == nil {
-
-			json.Unmarshal(jsonDocentes, &tempDocentes)
-
-		} else {
-			controlError = errorJSON
-			fmt.Println("error al traer contratos docentes DVE")
-		}
-	} else {
-		controlError = err
-		fmt.Println("Error al unmarshal datos de nómina",err)
-
-
-	}
-
-		return tempDocentes, controlError;
-}
-
-// ActaInicioContratistas ...
-// @Title ActaInicioContratistas
-// @Description Trae el acta de inicio por contrato y vigencia
-func ActaInicioContratistas(id_contrato string, vigencia int)(datos models.ObjetoActaInicio,  err error){
-
-	var temp map[string]interface{}
-	var tempDocentes models.ObjetoActaInicio
-	var controlError error
-
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
-		jsonDocentes, errorJSON := json.Marshal(temp)
-
-		if errorJSON == nil {
-
-			json.Unmarshal(jsonDocentes, &tempDocentes)
-
-		} else {
-			controlError = errorJSON
-			fmt.Println("error al traer contratos docentes DVE")
-		}
-	} else {
-		controlError = err
-		fmt.Println("Error al unmarshal datos de nómina",err)
-
-
-	}
-
-		return tempDocentes, controlError;
-}
 
 // ConsultarDetalleAModificar ...
 // @Title ConsultarDetalleAModificar
