@@ -41,11 +41,7 @@ func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 			for x, dato := range personasPreliquidacion {
 
 				personasPreliquidacion[x].NombreCompleto, personasPreliquidacion[x].NumDocumento, errorConsultaInformacionAgora= InformacionPersonaProveedor(dato.IdPersona)
-        objetoActaInicio,_ := ActaInicioContratistas(dato.NumeroContrato, dato.VigenciaContrato)
-        objetoContratoEstado,_ := ContratosContratistas(dato.NumeroContrato, dato.VigenciaContrato)
-        personasPreliquidacion[x].FechaInicio = objetoActaInicio.ActaInicio.FechaInicioTemp
-        personasPreliquidacion[x].FechaFin = objetoActaInicio.ActaInicio.FechaFinTemp
-        personasPreliquidacion[x].ValorContrato = objetoContratoEstado.ContratoEstado.ValorContrato
+    
 			}
 
 			if(errorConsultaInformacionAgora == nil){
@@ -188,6 +184,14 @@ func (c *PreliquidacionController) GetIBCPorNovedad() {
 
 		}
 
+    if v.NombreNomina == "CT" {
+			var n *PreliquidacionctController
+			resumen := n.GetIBCPorNovedad(v.Ano, v.Mes, v.NumDocumento, v.IdPersona, reglasbase, v.Novedad)
+  		c.Data["json"] = resumen
+			c.ServeJSON()
+
+		}
+
     /*
 
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" {
@@ -265,7 +269,7 @@ func (c *PreliquidacionController) Preliquidar() {
 
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" {
   		var n *PreliquidacionctController //aca se esta creando un objeto del controlador especico
-			resumen := n.Preliquidar(&v, reglasbase)
+			resumen := n.Preliquidar(v, reglasbase)
 			c.Data["json"] = resumen
 			c.ServeJSON()
 		}
@@ -387,7 +391,7 @@ func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, da
 			for i := 0; i < len(v); i++ {
 				esActiva := validarNovedadesSegSocial(datos_preliqu.Mes,datos_preliqu.Ano , v[i].FechaDesde, v[i].FechaHasta)
 				if esActiva == 1 {
-          fmt.Println("soy super activa")
+          fmt.Println("Novedad activa")
 					//todo debe estar dentro de este if para que se verifiquen fechas siempre
 					if (v[i].Concepto.NaturalezaConcepto.Nombre == "seguridad_social"){
 
