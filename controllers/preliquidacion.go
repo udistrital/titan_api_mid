@@ -41,11 +41,7 @@ func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 			for x, dato := range personasPreliquidacion {
 
 				personasPreliquidacion[x].NombreCompleto, personasPreliquidacion[x].NumDocumento, errorConsultaInformacionAgora= InformacionPersonaProveedor(dato.IdPersona)
-        objetoActaInicio,_ := ActaInicioContratistas(dato.NumeroContrato, dato.VigenciaContrato)
-        objetoContratoEstado,_ := ContratosContratistas(dato.NumeroContrato, dato.VigenciaContrato)
-        personasPreliquidacion[x].FechaInicio = objetoActaInicio.ActaInicio.FechaInicioTemp
-        personasPreliquidacion[x].FechaFin = objetoActaInicio.ActaInicio.FechaFinTemp
-        personasPreliquidacion[x].ValorContrato = objetoContratoEstado.ContratoEstado.ValorContrato
+    
 			}
 
 			if(errorConsultaInformacionAgora == nil){
