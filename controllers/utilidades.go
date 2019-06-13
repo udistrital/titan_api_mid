@@ -153,7 +153,6 @@ func consultarEstadoPago(num_cont, vigencia string,  ano, mes int)(disponibilida
 		//if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registroPresupuestal/ValorActualRp/"+id_registro_pre, &saldoRP); err == nil {
 		var respuesta_servicio string
 		var dispo int
-		fmt.Println("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
 		if err :=request.GetJson("http://"+beego.AppConfig.String("Urlargomid")+":"+beego.AppConfig.String("Portargomid")+"/"+beego.AppConfig.String("Nsargomid")+"/aprobacion_pago/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
 
 			if(respuesta_servicio == "True"){

@@ -43,7 +43,6 @@ func (c *GestionContratosController) ListarContratosAgrupadosPorPersona() {
 		//Buscar contratos vigentes en ese periodo para esa persona
 		if(v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH") {
 			tempDocentes, controlError = GetContratosPorPersonaHCH(v, v.PersonasPreLiquidacion[0])
-			fmt.Println("entr a hch")
 		}
 
 		if(v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS") {
