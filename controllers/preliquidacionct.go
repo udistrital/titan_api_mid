@@ -22,24 +22,19 @@ type PreliquidacionctController struct {
 // @Description Funcion para calcular IBC para una novedad específica
 func (c *PreliquidacionctController) GetIBCPorNovedad(ano, mes , numDocumento, idPersona int, reglasbase, novedad string)(res int){
 
-	fmt.Println("hoal como ests")
-  var resumenPreliqu []models.Respuesta
+	var resumenPreliqu []models.Respuesta
 	var ibcNovedad int
-
 
 	preliquidacion := models.Preliquidacion {Ano: ano, Mes:mes}
 	datos := models.DatosPreliquidacion {Preliquidacion: preliquidacion}
 
-
 	arreglo_contratos,_ := GetContratosPorPersonaCT(datos,numDocumento)
 
-	fmt.Println("arreglo de contratos",arreglo_contratos.ContratosTipo)
 	for _,info := range arreglo_contratos.ContratosTipo.ContratoTipo{
 		vigencia,_:= strconv.Atoi(info.VigenciaContrato)
 		persona := models.PersonasPreliquidacion {NumDocumento:numDocumento, IdPersona:idPersona , NumeroContrato: info.NumeroContrato, VigenciaContrato: vigencia }
 		resumenPreliqu = append(resumenPreliqu,liquidarContratoCT(persona,preliquidacion,reglasbase,novedad)...)
 	}
-
 
 
 			for _, res := range resumenPreliqu {
@@ -50,7 +45,6 @@ func (c *PreliquidacionctController) GetIBCPorNovedad(ano, mes , numDocumento, i
 					}
 				}
 			}
-
 
 
 
@@ -71,7 +65,6 @@ func (c *PreliquidacionctController) Preliquidar(datos models.DatosPreliquidacio
 
 		if(datos.PersonasPreLiquidacion[i].EstadoDisponibilidad == 1){
 
-			fmt.Println("soy una persona pendiente", datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.PersonasPreLiquidacion[i].Preliquidacion)
 			var respuesta string
 			var verificacionPagoPendientes = 2
 

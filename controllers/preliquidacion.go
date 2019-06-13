@@ -41,7 +41,7 @@ func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 			for x, dato := range personasPreliquidacion {
 
 				personasPreliquidacion[x].NombreCompleto, personasPreliquidacion[x].NumDocumento, errorConsultaInformacionAgora= InformacionPersonaProveedor(dato.IdPersona)
-    
+
 			}
 
 			if(errorConsultaInformacionAgora == nil){
@@ -252,7 +252,7 @@ func (c *PreliquidacionController) GetIBCPorNovedad() {
 func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-    fmt.Println("vvvvv",v)
+
 		//carga de reglas desde el ruler
 		reglasbase := cargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
     reglasbase = reglasbase + cargarReglasSS();
@@ -385,7 +385,6 @@ func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, da
 	reglasNovDev = ""
 	reglas = ""//inicializacion de la variable donde se inyectaran las novedades como reglas
 	query := "Activo:true,NumeroContrato:"+numero_contrato+",VigenciaContrato:"+vigencia
-  fmt.Println("nove","http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona?limit=-1&query="+query)
 	if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona?limit=-1&query="+query, &v); err == nil {
 		if v != nil {
 			for i := 0; i < len(v); i++ {
@@ -437,7 +436,6 @@ func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, da
 		 fmt.Println("Error al traer novedades",err)
 	 }
 
-   fmt.Println("reglas novedades", reglas)
 	//------------------------------------------------------------------------------
 	return reglas
 
@@ -495,7 +493,6 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona){
 // @Description Carga lo referente al calculo de la retefuente según cédula de la persona
 func CargarDatosRetefuente(cedula int) (reglas string) {
 
-  fmt.Println("consulta en Ágora de Datos de retefuente:")
 	var v []models.InformacionPersonaNatural
 	reglas = ""
 	query := "Id:"+strconv.Itoa(cedula)
