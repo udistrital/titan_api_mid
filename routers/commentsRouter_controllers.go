@@ -151,4 +151,12 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
+	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:ServicesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:ServicesController"],
+		beego.ControllerComments{
+			Method: "DesagregacionContratoHCS",
+			Router: `/desagregacion_contrato_hcs`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
 }

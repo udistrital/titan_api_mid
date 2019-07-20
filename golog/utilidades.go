@@ -451,7 +451,7 @@ if int(FechaInicioContrato.Month()) == preliquidacion.Mes && int(FechaInicioCont
 
 }
 
-	fmt.Println("aaaaaaaa", a, "m",m , "d",d)
+	
 	if (FechaFin.Day() != FechaInicio.Day()){
 		d = d+1;
 	}
