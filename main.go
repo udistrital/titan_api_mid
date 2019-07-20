@@ -5,9 +5,10 @@ import (
 	"github.com/udistrital/utils_oas/apiStatusLib"
   "github.com/astaxie/beego/plugins/cors"
 	"github.com/astaxie/beego"
-	
+	"github.com/udistrital/auditoria"
 
 )
+
 
 func main() {
 	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
@@ -27,6 +28,9 @@ func main() {
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	}
 
+	InitInterceptor();
+	auditoria.InitMiddleware();
 	apistatus.Init()
 	beego.Run()
+
 }
