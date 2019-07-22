@@ -45,6 +45,12 @@ func init() {
 			),
 		),
 
+		beego.NSNamespace("/services",
+			beego.NSInclude(
+				&controllers.ServicesController{},
+			),
+		),
+
 		beego.NSNamespace("/concepto_nomina_por_persona",
 			beego.NSInclude(
 				&controllers.Concepto_nomina_por_personaController{},
