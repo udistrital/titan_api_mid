@@ -85,3 +85,4 @@
 "afectacion_seguridad(exterior_familia)."
 "afectacion_seguridad(licencia_remunerada)."
 "info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==seguridad_social)->(R is 0))."
+"valor_pago_total(X,P,Y):- valor_contrato(X,VC), calcular_prestaciones(P,PC), Y is (VC - PC)."

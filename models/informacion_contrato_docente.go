@@ -1,10 +1,7 @@
 package models
 
 type InformacionContratoDocente struct {
-    Cedula             int
+    NumDocumento       int
     ValorTotalContrato int
     VigenciaContrato   int
-    FechaInicio        string
-    FechaFin           string
-
 }
