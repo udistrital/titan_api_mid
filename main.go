@@ -3,7 +3,7 @@ package main
 import (
 	_ "github.com/udistrital/titan_api_mid/routers"
 	"github.com/udistrital/utils_oas/apiStatusLib"
-  "github.com/astaxie/beego/plugins/cors"
+  	"github.com/astaxie/beego/plugins/cors"
 	"github.com/astaxie/beego"
 	"github.com/udistrital/auditoria"
 

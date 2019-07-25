@@ -221,36 +221,93 @@ func ManejarNovedadesHCS(reglas string, idProveedor int, tipoPreliquidacion, per
 
 }
 
-func CalcularDescuentosTotalesHCS(IdPersona , valor_total string, idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string) (rest []models.ConceptosResumen) {
+func CalcularTotalesContratoHCS(NumDocumento,ValorTotalContrato,VigenciaContrato int,reglas string)(rest []models.ConceptosResumen) {
+  
+    var listaDescuentos []models.ConceptosResumen
+    reglas = reglas + "valor_contrato("+strconv.Itoa(NumDocumento)+","+strconv.Itoa(ValorTotalContrato)+")."
+    reglas = reglas + "fin_contrato("+strconv.Itoa(NumDocumento)+",si)."
+    reglas = reglas + "pensionado(no)."
+    reglas = reglas + "duracion_contrato(12,0,V)."
 
-  var listaDescuentos []models.ConceptosResumen
+    m := NewMachine().Consult(reglas)
+    
+      valor_pago := m.ProveAll("valor_pago_total("+strconv.Itoa(NumDocumento)+","+strconv.Itoa(VigenciaContrato)+",T).")
+      for _, solution := range valor_pago {
+  
+        Valor,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
+        temp_conceptos := models.ConceptosResumen {Nombre : "salarioBase" ,
+                                                   Valor : fmt.Sprintf("%.0f", Valor),
+                                                                         }
+        codigo := m.ProveAll(`codigo_concepto(`+temp_conceptos.Nombre+`,C,N,D).`)
+  
+        for _, cod := range codigo{
+           temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
+        
+         }
+        listaDescuentos = append(listaDescuentos,temp_conceptos)
+  
+      }
+
+      descuentos := m.ProveAll("conceptos_total_contrato(X,Y,"+strconv.Itoa(VigenciaContrato)+",B,N).")
+      for _, solution := range descuentos {
+  
+        Base,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("B")), 64)
+        Valor,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("Y")), 64)
+      
+        temp_conceptos := models.ConceptosResumen {Nombre : fmt.Sprintf("%s", solution.ByName_("N")),
+                                                   Base : fmt.Sprintf("%.0f", Base),
+                                                   Valor : fmt.Sprintf("%.0f", Valor),
+                                                                         }
+      
+        codigo := m.ProveAll(`codigo_concepto(`+temp_conceptos.Nombre+`,C,N,D).`)
+  
+        for _, cod := range codigo{
+  
+          temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
+       
+         }
+  
+        listaDescuentos = append(listaDescuentos,temp_conceptos)
+        }
+  
+  
+   
+      return listaDescuentos
+  
+  }
 
 
-	m := NewMachine().Consult(reglas)
 
-
-    fondo_sol := m.ProveAll("calcular_fondo_sol(X,"+valor_total+","+periodo+",V).")
-    for _, solution := range fondo_sol {
-
-      Valor,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-      temp_conceptos := models.ConceptosResumen {Nombre : "fondoSolidaridad" ,
-                                                 Valor : fmt.Sprintf("%.0f", Valor),
-                                                                       }
-
-      codigo := m.ProveAll(`codigo_concepto(`+temp_conceptos.Nombre+`,C,N,D).`)
-
-      for _, cod := range codigo{
-        temp_conceptos.Id , _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-        temp_conceptos.IdPersona,_ = strconv.Atoi(IdPersona);
-        temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
-        temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
-        temp_conceptos.DiasLiquidados = "0"
-				temp_conceptos.TipoPreliquidacion = "0"
-       }
-      listaDescuentos = append(listaDescuentos,temp_conceptos)
-
+  func CalcularDescuentosTotalesHCS(IdPersona , valor_total string, idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string) (rest []models.ConceptosResumen) {
+    
+      var listaDescuentos []models.ConceptosResumen
+    
+    
+      m := NewMachine().Consult(reglas)
+    
+    
+        fondo_sol := m.ProveAll("calcular_fondo_sol(X,"+valor_total+","+periodo+",V).")
+        for _, solution := range fondo_sol {
+    
+          Valor,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
+          temp_conceptos := models.ConceptosResumen {Nombre : "fondoSolidaridad" ,
+                                                     Valor : fmt.Sprintf("%.0f", Valor),
+                                                                           }
+    
+          codigo := m.ProveAll(`codigo_concepto(`+temp_conceptos.Nombre+`,C,N,D).`)
+    
+          for _, cod := range codigo{
+            temp_conceptos.Id , _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+            temp_conceptos.IdPersona,_ = strconv.Atoi(IdPersona);
+            temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
+            temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+            temp_conceptos.DiasLiquidados = "0"
+            temp_conceptos.TipoPreliquidacion = "0"
+           }
+          listaDescuentos = append(listaDescuentos,temp_conceptos)
+    
+        }
+    
+    
+      return listaDescuentos
     }
-
-
-  return listaDescuentos
-}

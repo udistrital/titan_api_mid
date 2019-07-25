@@ -2,11 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
-	//"strconv"
-	"fmt"
 	"github.com/astaxie/beego"
-	//"github.com/manucorporat/try"
-	"github.com/udistrital/utils_oas/request"
+	"github.com/udistrital/titan_api_mid/golog"
 	"github.com/udistrital/titan_api_mid/models"
 )
 
@@ -30,14 +27,24 @@ func (c *ServicesController) URLMapping() {
 // @router /desagregacion_contrato_hcs [post]
 func (c *ServicesController) DesagregacionContratoHCS() {
 			var v models.InformacionContratoDocente
-				var h []models.ConceptoNominaPorPersona
+			
 			if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-					fmt.Println("info cont doc:", v)
-					if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/concepto_nomina_por_persona?limit=-1", &h); err == nil {
-						fmt.Println("prueba")
-					}
+				
+					// 1. Se cargan reglas para HCS
+					reglasbase := cargarReglasBase("HCS") //funcion general para dar formato a reglas cargadas desde el ruler
+					reglasbase = reglasbase + cargarReglasSS();
+			
+					totales := golog.CalcularTotalesContratoHCS(v.NumDocumento,v.ValorTotalContrato,v.VigenciaContrato,reglasbase)
+					
+					c.Data["json"] = totales
+					
 			}else{
 				var e models.Alert
 				e.Body = err.Error();
+				c.Data["json"] = e
 			}
+	
+	c.ServeJSON()		
 }
+
+
