@@ -514,6 +514,34 @@
                     }
                 }
             }
+        },
+        "/services/desagregacion_contrato_hcs": {
+            "post": {
+                "tags": [
+                    "services"
+                ],
+                "description": "Dado un valor de contrato para docente de hora cátedra salarios, su fecha de inicio y fin y una vigencia, se retorna el valor por concepto que le será pagado en la totalidad de su vinculación con la universidad. Los conceptos a mostrar son: sueldo básico, vacaciones, prima de vacaciones, prima de servicios, intereses sobre cesantías y cesantías.",
+                "operationId": "ServicesController.DesagregadoContratoHCS",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "body for Services content",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.InformacionContratoDocente"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "{int} models.DesagregadoContratoHCS"
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -730,6 +758,24 @@
                 }
             }
         },
+        "models.InformacionContratoDocente": {
+            "title": "InformacionContratoDocente",
+            "type": "object",
+            "properties": {
+                "NumDocumento": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "ValorTotalContrato": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "VigenciaContrato": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
         "models.NaturalezaConceptoNomina": {
             "title": "NaturalezaConceptoNomina",
             "type": "object",
@@ -818,6 +864,12 @@
                     "type": "integer",
                     "format": "int64"
                 },
+                "FechaFin": {
+                    "type": "string"
+                },
+                "FechaInicio": {
+                    "type": "string"
+                },
                 "IdPersona": {
                     "type": "integer",
                     "format": "int64"
@@ -835,6 +887,12 @@
                 "Preliquidacion": {
                     "type": "integer",
                     "format": "int64"
+                },
+                "TipoContrato": {
+                    "type": "string"
+                },
+                "ValorContrato": {
+                    "type": "string"
                 },
                 "VigenciaContrato": {
                     "type": "integer",
@@ -1000,6 +1058,10 @@
         {
             "name": "gestion_ops",
             "description": "GestionOpsController operations for GestionOps\n"
+        },
+        {
+            "name": "services",
+            "description": "ServicesController operations for Services\n"
         },
         {
             "name": "concepto_nomina_por_persona",
