@@ -27,7 +27,7 @@ func main() {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	}
-
+	//Hola cambio
 	InitInterceptor();
 	auditoria.InitMiddleware();
 	apistatus.Init()
