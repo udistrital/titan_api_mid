@@ -248,7 +248,7 @@ func CalcularTotalesContratoHCS(NumDocumento,ValorTotalContrato,VigenciaContrato
   
       }
 
-      descuentos := m.ProveAll("concepto_ley(X,Y,"+strconv.Itoa(VigenciaContrato)+",B,N).")
+      descuentos := m.ProveAll("conceptos_total_contrato(X,Y,"+strconv.Itoa(VigenciaContrato)+",B,N).")
       for _, solution := range descuentos {
   
         Base,_ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("B")), 64)

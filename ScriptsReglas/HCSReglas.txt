@@ -86,3 +86,8 @@
 "afectacion_seguridad(licencia_remunerada)."
 "info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==seguridad_social)->(R is 0))."
 "valor_pago_total(X,P,Y):- valor_contrato(X,VC), calcular_prestaciones(P,PC), Y is (VC - PC)."
+"conceptos_total_contrato(X,Y,P,V,vacaciones):- calcular_prestaciones(P,VP),porcentaje_devengo(P,vacaciones,PDV), R is VP *PDV, Y is (R rnd 0)."
+"conceptos_total_contrato(X,Y,P,V,primaVacaciones):- calcular_prestaciones(P,VP),porcentaje_devengo(P,primaVacaciones,PDV), R is VP *PDV, Y is (R rnd 0)."
+"conceptos_total_contrato(X,Y,P,V,primaNavidad):-  calcular_prestaciones(P,VP),porcentaje_devengo(P,primaNavidad,PDV), R is VP *PDV, Y is (R rnd 0)."
+"conceptos_total_contrato(X,Y,P,V,cesantias):-  calcular_prestaciones(P,VP),porcentaje_devengo(P,cesantias,PDV), R is VP *PDV, Y is (R rnd 0)."
+"conceptos_total_contrato(X,IC,P,V,interesCesantias):- calcular_prestaciones(P,VP),conceptos_total_contrato(X,PV,P,V, primaVacaciones),conceptos_total_contrato(X,PN,P,V,primaNavidad), conceptos_total_contrato(X,C,P,V,cesantias), conceptos_total_contrato(X,VA,P,V,vacaciones), A is (PV+PN+C+VA), B is (VP-A), IC is (B rnd 0)."
