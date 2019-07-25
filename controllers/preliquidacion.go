@@ -255,7 +255,7 @@ func (c *PreliquidacionController) Preliquidar() {
 
 		//carga de reglas desde el ruler
 		reglasbase := cargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
-    reglasbase = reglasbase + cargarReglasSS();
+    	reglasbase = reglasbase + cargarReglasSS();
 		//-----------------------------
 
 		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
