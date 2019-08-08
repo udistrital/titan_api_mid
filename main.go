@@ -5,7 +5,7 @@ import (
 	"github.com/udistrital/utils_oas/apiStatusLib"
   	"github.com/astaxie/beego/plugins/cors"
 	"github.com/astaxie/beego"
-	"github.com/udistrital/auditoria"
+	//"github.com/udistrital/auditoria"
 
 )
 
@@ -28,8 +28,8 @@ func main() {
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	}
 	//Hola cambio
-	InitInterceptor();
-	auditoria.InitMiddleware();
+	//InitInterceptor();
+	//auditoria.InitMiddleware();
 	apistatus.Init()
 	beego.Run()
 

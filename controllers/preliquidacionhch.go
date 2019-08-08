@@ -168,6 +168,7 @@ func liquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 	var predicados []models.Predicado //variable para inyectar reglas
 	var objetoDatosActa models.ObjetoActaInicio
 	var errorConsultaActa error
+	var predicadosRetefuente string
 
 	var resumenPreliqu []models.Respuesta
 	var reglasinyectadas string
@@ -197,8 +198,9 @@ func liquidarContratoHCH(reglasbase string, NumDocumento,Persona int, preliquida
 
 	  reglasinyectadas = FormatoReglas(predicados)
 
-	  reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(Persona, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato, preliquidacion)
-	  reglas = reglasinyectadas + reglasbase
+	  predicadosRetefuente = CargarDatosRetefuente(NumDocumento)
+	  dispo=verificacionPago(Persona,preliquidacion.Ano, preliquidacion.Mes,informacionContrato.NumeroContrato,  informacionContrato.VigenciaContrato)
+	  reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago("+strconv.Itoa(dispo)+")."
 
 	  temp := golog.CargarReglasCT(Persona, reglas,preliquidacion,vigenciaContrato,datosActa)
 

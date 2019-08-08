@@ -117,7 +117,7 @@ func (c *PreliquidacionctController) Preliquidar(datos models.DatosPreliquidacio
 func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion models.Preliquidacion, reglasbase, novedadInyectada string)(res []models.Respuesta){
 
 		var predicados []models.Predicado //variable para inyectar reglas
-	  var predicadosRetefuente string
+	    var predicadosRetefuente string
 		var resumenPreliqu []models.Respuesta
 
 		var reglasinyectadas string
