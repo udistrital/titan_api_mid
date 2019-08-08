@@ -46,5 +46,3 @@ func (c *ServicesController) DesagregacionContratoHCS() {
 	
 	c.ServeJSON()		
 }
-
-
