@@ -12,34 +12,9 @@ pipeline:
     commands:
      - go get -t
      - GOOS=linux GOARCH=amd64 go build -o main
-     - go get -u gopkg.in/alecthomas/gometalinter.v1
-     - gometalinter.v1 --install
-     - go get github.com/axw/gocov/...
-     - go get github.com/AlekSi/gocov-xml
-     - go get -u github.com/jstemmer/go-junit-report
-     #- gometalinter.v1 ./... --deadline=60s --checkstyle > report.xml
-     - gocov test ./... | gocov-xml > coverage.xml
-     - go test -v ./... | go-junit-report > test.xml
     when:
       branch: [master, develop]
-
-  # build and run sonar-scanner
-  # sonar-scanner:
-  #   image: openjdk:8-alpine
-  #   commands:
-  #    - export RELEASE=3.3.0.1492
-  #    - apk add --no-cache  curl grep sed unzip nodejs npm
-  #    - curl --insecure -o ./sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$RELEASE-linux.zip
-  #    - unzip sonarscanner.zip
-  #    - rm sonarscanner.zip
-  #    - rm -rf sonar-scanner-$RELEASE-linux/jre
-  #    - sed -i 's/use_embedded_jre=true/use_embedded_jre=false/g' ./sonar-scanner-$RELEASE-linux/bin/sonar-scanner
-  #    - export PATH=$PATH:/go/src/github.com/udistrital/${DRONE_REPO##udistrital/}/sonar-scanner-$RELEASE-linux/bin
-  #    - cp sonar-project.properties ./sonar-scanner-$RELEASE-linux/conf/sonar-scanner.properties
-  #    - sonar-scanner
-  #   when:
-  #     branch: [master, develop]
-
+            
   # build and push docker image to docker hub
   publish_dockerhub:
     image: plugins/docker
@@ -57,11 +32,16 @@ pipeline:
     secrets: [ aws_access_key_id, aws_secret_access_key ]
     commands:
      - case ${DRONE_BRANCH} in
-         develop) AMBIENTE=preprod ;;
-         master) AMBIENTE=prod ;;
+          test) 
+            AMBIENTE=test 
+            CLUSTER=test
+            ;;
+          master) 
+            AMBIENTE=prod
+            CLUSTER=oas
+            ;;
        esac
      - AWS_REGION=us-east-1
-     - CLUSTER=oas
      - SERVICE=${DRONE_REPO##udistrital/}_$AMBIENTE
      - MYCONTAINER=oas0/${DRONE_REPO##udistrital/}:${DRONE_COMMIT:0:7}
      - container_name=${DRONE_REPO##udistrital/}
