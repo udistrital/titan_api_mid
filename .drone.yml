@@ -13,6 +13,7 @@ pipeline:
      - go get -t
      - GOOS=linux GOARCH=amd64 go build -o main
     when:
+
       branch: [master, test]
   
    # run beego migration
@@ -38,6 +39,7 @@ pipeline:
      # status: [failure]
       #branch: [master]
       
+
   # build and push docker image to docker hub
   publish_dockerhub:
     image: plugins/docker
