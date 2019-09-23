@@ -2,10 +2,10 @@ workspace:
   base: /go
   path: src/github.com/udistrital/${DRONE_REPO##udistrital/}
   when:
-    branch: [master, develop]
+    branch: [master, test]
     
 pipeline:
-
+  
   # build and test the go program
   go:
     image: golang:1.9
@@ -13,8 +13,33 @@ pipeline:
      - go get -t
      - GOOS=linux GOARCH=amd64 go build -o main
     when:
-      branch: [master, develop]
-            
+
+      branch: [master, test]
+  
+   # run beego migration
+  #beego_migrate:
+   # image: golang:1.9
+    #secrets: [ pg_administrativa_url, pg_administrativa_user, pg_administrativa_password, pg_administrativa_dbname]
+    #commands:
+     #- go get -t
+     #- go get -u github.com/beego/bee
+     #- bee migrate -driver=postgres -conn="postgres://$${PG_ADMINISTRATIVA_USER}:$${PG_ADMINISTRATIVA_PASSWORD}@$${PG_ADMINISTRATIVA_URL}:5432/$${PG_ADMINISTRATIVA_DBNAME}?sslmode=disable"
+    #when:
+     # branch: [master]
+
+  # rollback beego migration if it fails
+  #beego_rollback:
+   # image: golang:1.9
+   # secrets: [ pg_administrativa_url, pg_administrativa_user, pg_administrativa_password, pg_administrativa_dbname]
+   # commands:
+   #  - go get -t
+   #  - go get -u github.com/beego/bee
+   #  - bee migrate rollback -driver=postgres -conn="postgres://$${PG_ADMINISTRATIVA_USER}:$${PG_ADMINISTRATIVA_PASSWORD}@$${PG_ADMINISTRATIVA_URL}:5432/$${PG_ADMINISTRATIVA_DBNAME}?sslmode=disable"
+    #when:
+     # status: [failure]
+      #branch: [master]
+      
+
   # build and push docker image to docker hub
   publish_dockerhub:
     image: plugins/docker
@@ -24,7 +49,7 @@ pipeline:
       - ${DRONE_COMMIT:0:7}
       - latest
     when:
-      branch: [master, develop]
+      branch: [master, test]
             
   # Update service ECS (Elastic Container Service) in AWS
   go-awsecs:
@@ -49,7 +74,7 @@ pipeline:
      - AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY} AWS_REGION=$AWS_REGION
        $GOPATH/bin/update-aws-ecs-service -cluster $CLUSTER -service $SERVICE -container-image $container_name=$MYCONTAINER
     when:
-      branch: [master, develop]
+      branch: [master, test]
      
   #Notify results to telegram
   #telegram_token is the bot token and telegram_to is the group id that start with "-" character
@@ -67,4 +92,4 @@ pipeline:
       {{/success}}
     when:
       status: [success, failure]
-      branch: [master, develop]
+      branch: [master, test]
