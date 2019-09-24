@@ -2,7 +2,7 @@ workspace:
   base: /go
   path: src/github.com/udistrital/${DRONE_REPO##udistrital/}
   when:
-    branch: [master, test]
+    branch: [desarollo, test]
     
 pipeline:
   
@@ -14,7 +14,7 @@ pipeline:
      - GOOS=linux GOARCH=amd64 go build -o main
     when:
 
-      branch: [master, test]
+      branch: [desarollo, test]
   
    # run beego migration
   #beego_migrate:
@@ -49,7 +49,7 @@ pipeline:
       - ${DRONE_COMMIT:0:7}
       - latest
     when:
-      branch: [master, test]
+      branch: [desarollo, test]
             
   # Update service ECS (Elastic Container Service) in AWS
   go-awsecs:
@@ -61,7 +61,7 @@ pipeline:
             AMBIENTE=test 
             CLUSTER=test
             ;;
-          master) 
+          desarollo) 
             AMBIENTE=prod
             CLUSTER=oas
             ;;
@@ -74,7 +74,7 @@ pipeline:
      - AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY} AWS_REGION=$AWS_REGION
        $GOPATH/bin/update-aws-ecs-service -cluster $CLUSTER -service $SERVICE -container-image $container_name=$MYCONTAINER
     when:
-      branch: [master, test]
+      branch: [desarollo, test]
      
   #Notify results to telegram
   #telegram_token is the bot token and telegram_to is the group id that start with "-" character
@@ -92,4 +92,4 @@ pipeline:
       {{/success}}
     when:
       status: [success, failure]
-      branch: [master, test]
+      branch: [desarollo, test]
