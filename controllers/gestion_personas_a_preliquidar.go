@@ -181,9 +181,10 @@ func ListarPersonasHCS(objeto_nom models.Preliquidacion) (arreglo_contratos mode
 
 	var d []models.DetallePreliquidacion
 	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
+		d = nil
 		query := "Preliquidacion.Id:" + strconv.Itoa(objeto_nom.Id) + ",Persona:" + dato.Id
 		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
-			if len(d) == 0 {
+			if len(d) == 0 || d[0].Id == 0 {
 				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "No"
 
 			} else {
@@ -240,6 +241,7 @@ func ListarPersonasHCH(objeto_nom models.Preliquidacion) (arreglo_contratos mode
 	//SABER SI YA FUE PRELIQUIDADO O NO
 	var d []models.DetallePreliquidacion
 	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
+		d = nil
 		query := "Preliquidacion.Id:" + strconv.Itoa(objeto_nom.Id) + ",Persona:" + dato.Id
 		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 			if len(d) == 0 || d[0].Id == 0 {
