@@ -309,6 +309,13 @@ func GetContratosPorPersonaHCS(v models.DatosPreliquidacion, docente models.Pers
 
 			json.Unmarshal(jsonDocentes, &tempDocentesTco)
 
+			if len(tempDocentesTco.ContratosTipo.ContratoTipo) > 0 {
+				auxContratoTco := tempDocentesTco.ContratosTipo.ContratoTipo[0]
+
+				tempDocentesTco.ContratosTipo.ContratoTipo = nil
+
+				tempDocentesTco.ContratosTipo.ContratoTipo = append(tempDocentesTco.ContratosTipo.ContratoTipo, auxContratoTco)
+			}
 		} else {
 			controlError = errorJSON
 			fmt.Println("error al traer contratos docentes DVE")
