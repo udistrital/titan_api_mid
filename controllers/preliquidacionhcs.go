@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/astaxie/beego"
@@ -228,24 +229,40 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 	//CALCULAR FONDO DE SOLIDARIDAD Y RETEFUENTE
 	resultadoDesc := CalcularDescuentosTotales(reglasbase, datos.Preliquidacion, resumenPreliqu)
 	var idDetaPre interface{}
-	if datos.Preliquidacion.Definitiva == true {
 
-		for _, descuentos := range resultadoDesc {
-			valor, _ := strconv.ParseFloat(descuentos.Valor, 64)
-			diasLiquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados, 64)
-			tipoPreliquidacion, _ := strconv.Atoi(descuentos.TipoPreliquidacion)
-			detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, Persona: descuentos.IdPersona, DiasLiquidados: diasLiquidados, TipoPreliquidacion: &models.TipoPreliquidacion{Id: tipoPreliquidacion}}
+	if len(resultadoDesc) != 0 {
+		if datos.Preliquidacion.Definitiva == true {
 
-			if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
+			for i, descuentos := range resultadoDesc {
+				valor, _ := strconv.ParseFloat(descuentos.Valor, 64)
+				diasLiquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados, 64)
+				tipoPreliquidacion, _ := strconv.Atoi(descuentos.TipoPreliquidacion)
 
-			} else {
-				fmt.Println("error1: ", err)
+				vigencia, _ := strconv.Atoi(resumenPreliqu[int(math.RoundToEven(float64(i/2)))].VigenciaContrato)
+
+				estadoDisponibilidad := verificacionPago(descuentos.IdPersona, datos.Preliquidacion.Ano, datos.Preliquidacion.Mes, resumenPreliqu[int(math.RoundToEven(float64(i/2)))].NumeroContrato, resumenPreliqu[int(math.RoundToEven(float64(i/2)))].VigenciaContrato)
+
+				detallepreliqu := models.DetallePreliquidacion{NumeroContrato: resumenPreliqu[int(math.RoundToEven(float64(i/2)))].NumeroContrato, VigenciaContrato: vigencia, Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, Persona: descuentos.IdPersona, DiasLiquidados: diasLiquidados, TipoPreliquidacion: &models.TipoPreliquidacion{Id: tipoPreliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad{Id: estadoDisponibilidad}}
+
+				if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
+
+				} else {
+					fmt.Println("error1: ", err)
+				}
+			}
+		} else {
+			for v, _ := range resumenPreliqu {
+
+				var resConceptos []models.ConceptosResumen
+
+				resConceptos = append(resConceptos, resultadoDesc[2*v])
+				resConceptos = append(resConceptos, resultadoDesc[(2*v)+1])
+
+				*resumenPreliqu[v].Conceptos = append(*resumenPreliqu[v].Conceptos, resConceptos...)
 			}
 		}
-	} else {
-		*resumenPreliqu[0].Conceptos = append(*resumenPreliqu[0].Conceptos, resultadoDesc...)
-	}
 
+	}
 	//-----------------------------
 	return resumenPreliqu
 }
