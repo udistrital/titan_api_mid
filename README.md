@@ -1,6 +1,6 @@
 # titan_api_mid
  
-Gestor de reglas para el aplicativo [titan_api_crud](https://github.com/udistrital/titan_api_crud).
+Gestor de reglas para el aplicativo [titan_api_crud](https://github.com/udistrital/titan_api_crud). 
 
 ## Instalación
 
