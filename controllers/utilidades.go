@@ -349,30 +349,44 @@ func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidaci
 
 			temp = nil
 			for _, rPreliq := range resumen {
-				var detallePreliq []models.DetallePreliquidacion
-				if vrefFondoSol != 0 {
-					//Concepto 36 es el IBC
-					if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion:"+strconv.Itoa(preliquidacion.Id)+",VigenciaContrato:"+rPreliq.VigenciaContrato+",NumeroContrato:"+rPreliq.NumeroContrato+",Concepto.Id:36", &detallePreliq); err == nil {
+				//var detallePreliq []models.DetallePreliquidacion
+				//if vrefFondoSol != 0 {
 
-						valorIBC := detallePreliq[0].ValorCalculado
+				auxConceptos := rPreliq.Conceptos
 
-						valorFondoSol := (valorIBC * vrefFondoSol) / vTotal
-						valorFondoSub := (valorIBC * vrefFondoSub) / vTotal
+				//fmt.Println("AUXCONCEPTOS: ", *auxConceptos)
+				var valorIBC float64
 
-						conceptoFondoSol := auxTemp[0]
-						conceptoFondoSub := auxTemp[1]
+				for _, auxConcepto := range *auxConceptos {
 
-						conceptoFondoSol.Valor = fmt.Sprintf("%.0f", valorFondoSol)
-						conceptoFondoSub.Valor = fmt.Sprintf("%.0f", valorFondoSub)
+					if auxConcepto.Nombre == "ibc_liquidado" {
 
-						temp = append(temp, conceptoFondoSol)
-						temp = append(temp, conceptoFondoSub)
-
-					} else {
-						fmt.Println("error al guardar información agrupada", err)
+						valorIBC, _ = strconv.ParseFloat(auxConcepto.Valor, 64)
 					}
 
 				}
+				//Concepto 36 es el IBC
+				//if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion:"+strconv.Itoa(preliquidacion.Id)+",VigenciaContrato:"+rPreliq.VigenciaContrato+",NumeroContrato:"+rPreliq.NumeroContrato+",Concepto.Id:36", &detallePreliq); err == nil {
+
+				//valorIBC := detallePreliq[0].ValorCalculado
+
+				valorFondoSol := (valorIBC * vrefFondoSol) / vTotal
+				valorFondoSub := (valorIBC * vrefFondoSub) / vTotal
+
+				conceptoFondoSol := auxTemp[0]
+				conceptoFondoSub := auxTemp[1]
+
+				conceptoFondoSol.Valor = fmt.Sprintf("%.0f", valorFondoSol)
+				conceptoFondoSub.Valor = fmt.Sprintf("%.0f", valorFondoSub)
+
+				temp = append(temp, conceptoFondoSol)
+				temp = append(temp, conceptoFondoSub)
+
+				//} else {
+				//	fmt.Println("error al guardar información agrupada", err)
+				//}
+
+				//	}
 
 			}
 			fmt.Println("fondo solidaridad total", temp)
