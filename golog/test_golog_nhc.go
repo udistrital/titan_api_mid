@@ -64,7 +64,7 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preli
 
 	listaDescuentos, total_devengado_no_novedad = CalcularConceptosHCS(idProveedor, periodo, reglas, tipoPreliquidacionString, diasALiquidar)
 	listaNovedades = ManejarNovedadesHCS(reglas, idProveedor, tipoPreliquidacionString, periodo, diasALiquidar)
-	listaRetefuente = CalcularReteFuenteSal(tipoPreliquidacionString, reglas, listaDescuentos, diasALiquidar)
+	//listaRetefuente = CalcularReteFuenteSal(tipoPreliquidacionString, reglas, listaDescuentos, diasALiquidar)
 	total_calculos = append(total_calculos, listaDescuentos...)
 	total_calculos = append(total_calculos, listaNovedades...)
 	total_calculos = append(total_calculos, listaRetefuente...)
@@ -73,6 +73,15 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preli
 	total_calculos = []models.ConceptosResumen{}
 	ibc = 0
 	return resultado
+}
+
+func CalcularRetefuenteHCS(reglas string, listaConceptos []models.ConceptosResumen, periodo string) (rest []models.ConceptosResumen) {
+
+	reglas = reglas + "periodo(" + periodo + ")."
+	reglas = reglas + "intereses_vivienda(0)."
+
+	return CalcularReteFuenteSal("2", reglas, listaConceptos, "30")
+
 }
 
 func CalcularConceptosHCS(idProveedor int, periodo, reglas, tipoPreliquidacionString, dias_liq string) (rest []models.ConceptosResumen, total_dev float64) {

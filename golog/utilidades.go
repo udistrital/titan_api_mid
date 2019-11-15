@@ -267,11 +267,11 @@ func CalcularReteFuentePlanta(tipoPreliquidacionString, reglas, periodo string, 
 
 	n := NewMachine().Consult(temp_reglas)
 
-	deduccion_gastos_rep_rector := n.ProveAll("deduccion_gastos_rep_rector(DGR).")
+	/*deduccion_gastos_rep_rector := n.ProveAll("deduccion_gastos_rep_rector(DGR).")
 	for _, solution := range deduccion_gastos_rep_rector {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DGR")), 64)
 		ingresos = int(Valor)
-	}
+	}*/
 
 	alivios := n.ProveAll("calcular_alivios(B,V,SP,D," + periodo + ").")
 	for _, solution := range alivios {
@@ -340,9 +340,10 @@ func BuscarValorConcepto(listaDescuentos []models.ConceptosResumen, codigo_conce
 	var temp int
 	for _, solution := range listaDescuentos {
 		if strconv.Itoa(solution.Id) == codigo_concepto {
-			temp, _ = strconv.Atoi(solution.Valor)
-
+			auxtemp, _ := strconv.Atoi(solution.Valor)
+			temp = temp + auxtemp
 		}
+
 	}
 
 	return temp
