@@ -75,12 +75,12 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preli
 	return resultado
 }
 
-func CalcularRetefuenteHCS(reglas string, listaConceptos []models.ConceptosResumen, periodo string) (rest []models.ConceptosResumen) {
+func CalcularRetefuenteHCS(reglas string, listaConceptos []models.ConceptosResumen, datos models.DatosPreliquidacion) (rest []models.ConceptosResumen) {
 
-	reglas = reglas + "periodo(" + periodo + ")."
+	reglas = reglas + "periodo(" + strconv.Itoa(datos.Preliquidacion.Ano) + ")."
 	reglas = reglas + "intereses_vivienda(0)."
 
-	return CalcularReteFuenteSal("2", reglas, listaConceptos, "30")
+	return CalcularReteFuenteSal("2", reglas, listaConceptos, datos.DiasALiquidar)
 
 }
 
@@ -296,7 +296,7 @@ func CalcularDescuentosTotalesHCS(IdPersona, valor_total string, idProveedor int
 			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 			temp_conceptos.DiasLiquidados = "0"
-			temp_conceptos.TipoPreliquidacion = "0"
+			temp_conceptos.TipoPreliquidacion = "2"
 		}
 		listaDescuentos = append(listaDescuentos, temp_conceptos)
 
@@ -318,7 +318,7 @@ func CalcularDescuentosTotalesHCS(IdPersona, valor_total string, idProveedor int
 			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 			temp_conceptos.DiasLiquidados = "0"
-			temp_conceptos.TipoPreliquidacion = "0"
+			temp_conceptos.TipoPreliquidacion = "2"
 		}
 		listaDescuentos = append(listaDescuentos, temp_conceptos)
 
