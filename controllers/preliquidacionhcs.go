@@ -300,6 +300,8 @@ func liquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento, Pers
 	var predicadosRetefuente string
 	var idDetaPre interface{}
 	var resumenPreliqu []models.Respuesta
+	var mes string
+	var anio string
 
 	objetoDatosActa, errorConsultaActa = ActaInicioDVE(informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato)
 
@@ -308,12 +310,36 @@ func liquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento, Pers
 		datosActa := objetoDatosActa
 		vigenciaContrato, _ := strconv.Atoi(informacionContrato.VigenciaContrato)
 
-		if preliquidacion.Mes == 12 || preliquidacion.Mes == 6 {
-			predicados = append(predicados, models.Predicado{Nombre: "fin_contrato(" + strconv.Itoa(Persona) + ",si)."})
+		if preliquidacion.Mes < 10 {
+
+			mes = "0" + strconv.Itoa(preliquidacion.Mes)
+
 		} else {
-			predicados = append(predicados, models.Predicado{Nombre: "fin_contrato(" + strconv.Itoa(Persona) + ",no)."})
+
+			mes = strconv.Itoa(preliquidacion.Mes)
+
 		}
 
+		anio = strconv.Itoa(preliquidacion.Ano)
+
+		var tempFin map[string]interface{}
+
+		//Se verifica si la vinculación termina en el mes y año de la preliquidación para hacer el calculo de prestaciones
+		if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_finaliza_mes/"+informacionContrato.NumeroContrato+"/"+informacionContrato.VigenciaContrato+"/"+anio+"-"+mes, &tempFin); err == nil {
+
+			auxInterface := tempFin["contratos_fin_mes"]
+
+			strInterface := fmt.Sprintf("%v", auxInterface)
+
+			if strInterface == "map[]" { //significa que para el mes y año dado no termina el contrato
+				predicados = append(predicados, models.Predicado{Nombre: "fin_contrato(" + strconv.Itoa(Persona) + ",no)."})
+
+			} else {
+				predicados = append(predicados, models.Predicado{Nombre: "fin_contrato(" + strconv.Itoa(Persona) + ",si)."})
+
+			}
+
+		}
 		fmt.Println("valor_contrato", informacionContrato.Total)
 		predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(Persona) + "," + informacionContrato.Total + ")."})
 		reglasinyectadas = FormatoReglas(predicados)
