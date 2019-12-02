@@ -232,8 +232,37 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 	var listaConceptos []models.ConceptosResumen
 
 	if len(resultadoDesc) != 0 {
-		if datos.Preliquidacion.Definitiva == true {
 
+		for v, _ := range resumenPreliqu {
+
+			var resConceptos []models.ConceptosResumen
+			resConceptos = append(resConceptos, resultadoDesc[2*v])
+			auxDesc, _ := strconv.Atoi(resultadoDesc[2*v].Valor)
+			resumenPreliqu[v].TotalDescuentos += auxDesc
+			resConceptos = append(resConceptos, resultadoDesc[(2*v)+1])
+			auxDescb, _ := strconv.Atoi(resultadoDesc[2*v].Valor)
+			resumenPreliqu[v].TotalDescuentos += auxDescb
+			*resumenPreliqu[v].Conceptos = append(*resumenPreliqu[v].Conceptos, resConceptos...)
+			listaConceptos = append(listaConceptos, *resumenPreliqu[v].Conceptos...)
+		}
+
+		predicadosRetefuente := CargarDatosRetefuente(datos.PersonasPreLiquidacion[0].NumDocumento)
+		reglasbase = reglasbase + predicadosRetefuente
+
+		reteFuente := golog.CalcularRetefuenteHCS(reglasbase, listaConceptos, datos)
+		//RETEFUENTE
+		for v, _ := range resumenPreliqu {
+
+			auxDescc, _ := strconv.Atoi(reteFuente[v].Valor)
+			resumenPreliqu[v].TotalDescuentos += auxDescc
+
+			resumenPreliqu[v].TotalAPagar = resumenPreliqu[v].TotalDevengos - resumenPreliqu[v].TotalDescuentos
+			*resumenPreliqu[v].Conceptos = append(*resumenPreliqu[v].Conceptos, reteFuente[v])
+			//listaConceptos = append(listaConceptos, *resumenPreliqu[v].Conceptos...)
+		}
+
+		if datos.Preliquidacion.Definitiva == true {
+			//FONDO SOLIDARIDAD
 			for i, descuentos := range resultadoDesc {
 				valor, _ := strconv.ParseFloat(descuentos.Valor, 64)
 				diasLiquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados, 64)
@@ -250,36 +279,32 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 				} else {
 					fmt.Println("error1: ", err)
 				}
+
+			}
+
+			//RETEFUENTE
+
+			for j, retenciones := range reteFuente {
+
+				valorRete, _ := strconv.ParseFloat(retenciones.Valor, 64)
+				diasLiquidadosRete, _ := strconv.ParseFloat(retenciones.DiasLiquidados, 64)
+				tipoPreliquidacionRete, _ := strconv.Atoi(retenciones.TipoPreliquidacion)
+
+				vigenciaRete, _ := strconv.Atoi(resumenPreliqu[j].VigenciaContrato)
+				estadoDisponibilidadRete := verificacionPago(retenciones.IdPersona, datos.Preliquidacion.Ano, datos.Preliquidacion.Mes, resumenPreliqu[j].NumeroContrato, resumenPreliqu[j].VigenciaContrato)
+
+				detallepreliquRete := models.DetallePreliquidacion{NumeroContrato: resumenPreliqu[j].NumeroContrato, VigenciaContrato: vigenciaRete, Concepto: &models.ConceptoNomina{Id: retenciones.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valorRete, Persona: datos.PersonasPreLiquidacion[0].IdPersona, DiasLiquidados: diasLiquidadosRete, TipoPreliquidacion: &models.TipoPreliquidacion{Id: tipoPreliquidacionRete}, EstadoDisponibilidad: &models.EstadoDisponibilidad{Id: estadoDisponibilidadRete}}
+
+				if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliquRete); err == nil {
+
+				} else {
+					fmt.Println("error1: ", err)
+				}
+
 			}
 		} else {
 
-			for v, _ := range resumenPreliqu {
-
-				var resConceptos []models.ConceptosResumen
-				resConceptos = append(resConceptos, resultadoDesc[2*v])
-				auxDesc, _ := strconv.Atoi(resultadoDesc[2*v].Valor)
-				resumenPreliqu[v].TotalDescuentos += auxDesc
-				resConceptos = append(resConceptos, resultadoDesc[(2*v)+1])
-				auxDescb, _ := strconv.Atoi(resultadoDesc[2*v].Valor)
-				resumenPreliqu[v].TotalDescuentos += auxDescb
-				*resumenPreliqu[v].Conceptos = append(*resumenPreliqu[v].Conceptos, resConceptos...)
-				listaConceptos = append(listaConceptos, *resumenPreliqu[v].Conceptos...)
-			}
-
-			predicadosRetefuente := CargarDatosRetefuente(datos.PersonasPreLiquidacion[0].NumDocumento)
-			reglasbase = reglasbase + predicadosRetefuente
-
-			reteFuente := golog.CalcularRetefuenteHCS(reglasbase, listaConceptos, datos)
-			//RETEFUENTE
-			for v, _ := range resumenPreliqu {
-
-				auxDescc, _ := strconv.Atoi(reteFuente[v].Valor)
-				resumenPreliqu[v].TotalDescuentos += auxDescc
-
-				resumenPreliqu[v].TotalAPagar = resumenPreliqu[v].TotalDevengos - resumenPreliqu[v].TotalDescuentos
-				*resumenPreliqu[v].Conceptos = append(*resumenPreliqu[v].Conceptos, reteFuente[v])
-				//listaConceptos = append(listaConceptos, *resumenPreliqu[v].Conceptos...)
-			}
+			//
 
 		}
 
