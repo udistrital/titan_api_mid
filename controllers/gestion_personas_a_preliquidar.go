@@ -181,6 +181,7 @@ func ListarPersonasHCS(objeto_nom models.Preliquidacion) (arreglo_contratos mode
 
 	var d []models.DetallePreliquidacion
 	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
+		tempDocentes.ContratosTipo.ContratoTipo[x].Cumplido, _ = ConsultarCumplidosHCS(mes, ano, dato.NumDocumento)
 		d = nil
 		query := "Preliquidacion.Id:" + strconv.Itoa(objeto_nom.Id) + ",Persona:" + dato.Id
 		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
@@ -275,4 +276,76 @@ func ConsultarDatosPreliq(id_pre int) (preliq *models.Preliquidacion) {
 		fmt.Println("error al consultar preliquidacion")
 		return
 	}
+}
+
+func ConsultarCumplidosHCS(mes string, anio string, numDocumento string) (cumplido string, controlError error) {
+
+	var temp map[string]interface{}
+
+	var tempDocentes models.ObjetoFuncionarioContrato
+	var tempDocentesTco models.ObjetoFuncionarioContrato
+	var tipoNom string
+
+	auxmes, _ := strconv.Atoi(mes)
+	auxanio, _ := strconv.Atoi(anio)
+
+	tipoNom = "2"
+	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+anio+"-"+mes+"/"+anio+"-"+mes+"/"+numDocumento, &temp); err == nil && temp != nil {
+		jsonDocentes, errorJSON := json.Marshal(temp)
+
+		if errorJSON == nil {
+
+			json.Unmarshal(jsonDocentes, &tempDocentes)
+
+		} else {
+			controlError = errorJSON
+			fmt.Println("error al traer contratos docentes DVE")
+		}
+	} else {
+		controlError = err
+		fmt.Println("Error al unmarshal datos de nómina", err)
+
+	}
+
+	tipoNom = "18"
+	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+anio+"-"+mes+"/"+anio+"-"+mes+"/"+numDocumento, &temp); err == nil && temp != nil {
+		jsonDocentes, errorJSON := json.Marshal(temp)
+
+		if errorJSON == nil {
+
+			json.Unmarshal(jsonDocentes, &tempDocentesTco)
+
+			if len(tempDocentesTco.ContratosTipo.ContratoTipo) > 0 {
+				auxContratoTco := tempDocentesTco.ContratosTipo.ContratoTipo[0]
+
+				tempDocentesTco.ContratosTipo.ContratoTipo = nil
+
+				tempDocentesTco.ContratosTipo.ContratoTipo = append(tempDocentesTco.ContratosTipo.ContratoTipo, auxContratoTco)
+			}
+		} else {
+			controlError = errorJSON
+			fmt.Println("error al traer contratos docentes DVE")
+		}
+	} else {
+		controlError = err
+		fmt.Println("Error al unmarshal datos de nómina", err)
+
+	}
+
+	tempDocentes.ContratosTipo.ContratoTipo = append(tempDocentes.ContratosTipo.ContratoTipo, tempDocentesTco.ContratosTipo.ContratoTipo...)
+
+	for _, contrato := range tempDocentes.ContratosTipo.ContratoTipo {
+
+		cumple := consultarEstadoPago(contrato.NumeroContrato, contrato.VigenciaContrato, auxanio, auxmes)
+
+		if cumple == 2 {
+			cumplido = "Si"
+		} else if cumple == 1 {
+			cumplido = "No"
+			break
+		}
+
+	}
+
+	return cumplido, controlError
 }
