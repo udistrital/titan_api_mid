@@ -107,7 +107,6 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion) (arreglo_contr
 	var controlError error
 	var mes string
 	var ano = strconv.Itoa(objeto_nom.Ano)
-
 	if objeto_nom.Mes >= 1 && objeto_nom.Mes <= 9 {
 		mes = strconv.Itoa(objeto_nom.Mes)
 		mes = "0" + mes
@@ -119,7 +118,6 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion) (arreglo_contr
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {
-
 			json.Unmarshal(jsonDocentes, &tempDocentes)
 
 		} else {
@@ -133,6 +131,7 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion) (arreglo_contr
 	}
 
 	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
+
 		var d []models.DetallePreliquidacion
 		query := "Preliquidacion.Id:" + strconv.Itoa(objeto_nom.Id) + ",Persona:" + dato.Id
 		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
@@ -157,6 +156,63 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion) (arreglo_contr
 	}
 
 	return tempDocentes, controlError
+
+}
+
+// ListaContratosContratistasPendientes ...
+// @Title ListaContratosContratistasPendientes
+// @Description Lista los contratos vigentes pendientes para esa preliquidaciones para contratistas
+func ListaContratosContratistasPendientes(objeto_nom models.Preliquidacion) (arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error) {
+
+	var temp map[string]interface{}
+	var tempDocentes models.ObjetoFuncionarioContrato
+	var pendientes models.ObjetoFuncionarioContrato
+	var controlError error
+	var mes string
+	var ano = strconv.Itoa(objeto_nom.Ano)
+	if objeto_nom.Mes >= 1 && objeto_nom.Mes <= 9 {
+		mes = strconv.Itoa(objeto_nom.Mes)
+		mes = "0" + mes
+	} else {
+		mes = strconv.Itoa(objeto_nom.Mes)
+	}
+
+	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
+		jsonDocentes, errorJSON := json.Marshal(temp)
+
+		if errorJSON == nil {
+			json.Unmarshal(jsonDocentes, &tempDocentes)
+
+		} else {
+			controlError = errorJSON
+			fmt.Println("error al traer contratos docentes DVE")
+		}
+	} else {
+		controlError = err
+		fmt.Println("Error al unmarshal datos de nómina", err)
+
+	}
+
+	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
+
+		var d []models.DetallePreliquidacion
+		query := "Preliquidacion.Id:" + strconv.Itoa(objeto_nom.Id) + ",Persona:" + dato.Id + ",EstadoDisponibilidad:3" + ",NumeroContrato:" + dato.NumeroContrato + ",VigenciaContrato:" + dato.VigenciaContrato
+		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
+
+			if d[0].Id == 0 || len(d) == 0 {
+
+				cumple := consultarEstadoPago(dato.NumeroContrato, dato.VigenciaContrato, objeto_nom.Ano, objeto_nom.Mes)
+
+				if cumple == 2 {
+					pendientes.ContratosTipo.ContratoTipo = append(pendientes.ContratosTipo.ContratoTipo, tempDocentes.ContratosTipo.ContratoTipo[x])
+				}
+
+			}
+
+		}
+	}
+
+	return pendientes, controlError
 
 }
 
