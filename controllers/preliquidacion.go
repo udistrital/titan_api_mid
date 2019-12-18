@@ -45,7 +45,6 @@ func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 			fmt.Println("http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/preliquidacion/personas_x_preliquidacion")
 			fmt.Println(&personasPreliquidacion)
 			for x, dato := range personasPreliquidacion {
-
 				personasPreliquidacion[x].NombreCompleto, personasPreliquidacion[x].NumDocumento, errorConsultaInformacionAgora = InformacionPersonaProveedor(dato.IdPersona)
 
 			}
@@ -93,7 +92,7 @@ func (c *PreliquidacionController) ResumenConceptos() {
 	var detallePreliquidacion []models.DetallePreliquidacion
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		query := "?limit=-1&query=Preliquidacion.Id:" + strconv.Itoa(v.Id)
+		query := "?limit=-1&query=Preliquidacion.Id:" + strconv.Itoa(v.Id) + ",EstadoDisponibilidad:2"
 		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion"+query, &detallePreliquidacion); err == nil && detallePreliquidacion != nil {
 
 			for _, dato := range detallePreliquidacion {

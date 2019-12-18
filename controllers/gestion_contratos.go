@@ -139,16 +139,16 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion) (arreglo_contr
 			cumple := consultarEstadoPago(dato.NumeroContrato, dato.VigenciaContrato, objeto_nom.Ano, objeto_nom.Mes)
 
 			if cumple == 2 {
-				tempDocentes.ContratosTipo.ContratoTipo[x].Cumplido = "Si"
+				tempDocentes.ContratosTipo.ContratoTipo[x].Cumplido = "SI"
 			} else if cumple == 1 {
-				tempDocentes.ContratosTipo.ContratoTipo[x].Cumplido = "No"
+				tempDocentes.ContratosTipo.ContratoTipo[x].Cumplido = "NO"
 			}
 
 			if d[0].Id == 0 || len(d) == 0 {
-				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "No"
+				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "NO"
 				tempDocentes.ContratosTipo.ContratoTipo[x].EstadoPago = "No liquidado"
 			} else {
-				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "Sí"
+				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "SI"
 				tempDocentes.ContratosTipo.ContratoTipo[x].EstadoPago = d[0].EstadoDisponibilidad.Nombre
 			}
 
