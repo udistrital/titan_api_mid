@@ -57,7 +57,7 @@ func (c *GestionOpsController) GenerarOrdenPago() {
 		//Servicio que dispara job
 
 		if v.Nomina.TipoNomina.Nombre == "CT" {
-			if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2colas")+":"+beego.AppConfig.String("Portwso2colas")+"/"+beego.AppConfig.String("Nswso2colas")+"/liquidacion/"+strconv.Itoa(v.Ano)+"/"+anno, &temp); err == nil {
+			if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2colas")+":"+beego.AppConfig.String("Portwso2colas")+"/"+beego.AppConfig.String("Nswso2colas")+"/liquidacion/"+anno+"/"+strconv.Itoa(v.Mes), &temp); err == nil {
 
 			} else {
 
