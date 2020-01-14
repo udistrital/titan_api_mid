@@ -33,8 +33,8 @@ func (c *ServicesController) DesagregacionContratoHCS() {
 					// 1. Se cargan reglas para HCS
 					reglasbase := cargarReglasBase("HCS") //funcion general para dar formato a reglas cargadas desde el ruler
 					reglasbase = reglasbase + cargarReglasSS();
-			
-					totales := golog.CalcularTotalesContratoHCS(v.NumDocumento,v.ValorTotalContrato,v.VigenciaContrato,reglasbase)
+				
+					totales := golog.CalcularTotalesContratoHCS(v.NumDocumento,v.MesesContrato,v.VigenciaContrato,v.Categoria,v.TotalHoras,reglasbase)
 					
 					c.Data["json"] = totales
 					
