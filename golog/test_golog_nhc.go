@@ -3,7 +3,7 @@ package golog
 import (
 	"fmt"
 	"strconv"
-	"strings"
+	
 	. "github.com/udistrital/golog"
 	models "github.com/udistrital/titan_api_mid/models"
 )
@@ -221,55 +221,17 @@ func ManejarNovedadesHCS(reglas string, idProveedor int, tipoPreliquidacion, per
 
 }
 
-func CalcularTotalesContratoHCS(NumDocumento, MesesContrato, VigenciaContrato, Categoria,TotalHoras ,reglas string) (rest []models.ConceptosResumen) {
+func CalcularTotalesContratoHCS(NumDocumento, MesesContrato, VigenciaContrato, ValorContrato ,reglas string) (rest []models.ConceptosResumen) {
 
 	var listaDescuentos []models.ConceptosResumen
 
-	cat := strings.ToLower(Categoria) 
-	reglas = reglas + "valor_contrato(" +NumDocumento + ",3677929)."
+	reglas = reglas + "valor_contrato(" +NumDocumento + ","+ValorContrato+")."
 	reglas = reglas + "fin_contrato(" + NumDocumento + ",si)."
-
-	reglas = reglas + "duracion_contrato(12,0,V)."
-
 	reglas = reglas + "pensionado(no)."
-	reglas = reglas + "valor_punto(2019,14210)."
-	reglas = reglas + "factor(auxiliar,1.8,2019)."
-	reglas = reglas + "factor(asistente,2.3,2019)."
-	reglas = reglas + "factor(asociado,2.7,2019)."
-	reglas = reglas + "factor(titular,3,2019)."
-	reglas = reglas + "porcentaje_devengo_v2(2019,prima_servicios,0.0740740929887414)."
-	reglas = reglas + "porcentaje_devengo_v2(2019,prima_vacaciones,0.0414814800000000)."
-	reglas = reglas + "porcentaje_devengo_v2(2019,intereses_cesantias,0.0100000000000000)."
-	reglas = reglas + "porcentaje_devengo_v2(2019,cesantias,0.0833333333333333)."
-	reglas = reglas + "porcentaje_devengo_v2(2019,vacaciones,0.0414814800000000)."
-	reglas = reglas + "porcentaje_devengo_v2(2019,prima_navidad,0.0740740929887414)."
-	reglas = reglas + "valor_pago_total_v2(X,C,V,NHT,T):- valor_punto(V,VP),factor(C,F,P), VH is VP * F, T is VH * NHT."
-	reglas = reglas + "conceptos_total_contrato_v2(X,C,V,NHT,MC,T,prima_servicios):- (MC @> 6 -> valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,prima_servicios,PPV), R is VP *PPV, T is (R rnd 0); T is 0).	"
-	reglas = reglas + "conceptos_total_contrato_v2(X,C,V,NHT,MC,T,prima_vacaciones):- valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,prima_vacaciones,PPV), R is VP *PPV, T is (R rnd 0)."
-	reglas = reglas + "conceptos_total_contrato_v2(X,C,V,NHT,MC,T,intereses_cesantias):- valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,intereses_cesantias,PPV), R is VP *PPV, T is (R rnd 0)."
-	reglas = reglas + "conceptos_total_contrato_v2(X,C,V,NHT,MC,T,cesantias):- valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,cesantias,PPV), R is VP *PPV, T is (R rnd 0)."
-	reglas = reglas + "conceptos_total_contrato_v2(X,C,V,NHT,MC,T,vacaciones):- valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,vacaciones,PPV), R is VP *PPV, T is (R rnd 0)."
-	reglas = reglas + "conceptos_total_contrato_v2(X,C,V,NHT,MC,T,prima_navidad):- valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,prima_navidad,PPV), R is VP *PPV, T is (R rnd 0)."
+	
 	m := NewMachine().Consult(reglas)
 
-	valor_pago_1 := m.ProveAll("valor_pago_total(" +NumDocumento + "," +VigenciaContrato + ",T).")
-	for _, solution := range valor_pago_1 {
-
-		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
-		temp_conceptos := models.ConceptosResumen{Nombre: "salarioBase1",
-			Valor: fmt.Sprintf("%.0f", Valor),
-		}
-		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C,N,D).`)
-
-		for _, cod := range codigo {
-			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
-
-		}
-		listaDescuentos = append(listaDescuentos, temp_conceptos)
-
-	}
-
-	valor_pago := m.ProveAll("valor_pago_total_v2(" + NumDocumento + "," + cat+ "," + VigenciaContrato+","+TotalHoras+",T).")
+	valor_pago := m.ProveAll("valor_pago_total(" +NumDocumento + "," +VigenciaContrato + ",T).")
 	for _, solution := range valor_pago {
 
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
@@ -285,8 +247,8 @@ func CalcularTotalesContratoHCS(NumDocumento, MesesContrato, VigenciaContrato, C
 		listaDescuentos = append(listaDescuentos, temp_conceptos)
 
 	}
-	
-	descuentos := m.ProveAll("conceptos_total_contrato_v2("+NumDocumento + "," +cat+ "," + VigenciaContrato+","+TotalHoras+","+MesesContrato+",T,N).")
+
+	descuentos := m.ProveAll("conceptos_total_contrato("+NumDocumento + "," + VigenciaContrato+","+MesesContrato+",T,N).")
 	for _, solution := range descuentos {
 
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)

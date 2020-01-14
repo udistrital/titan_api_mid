@@ -86,27 +86,22 @@
 "afectacion_seguridad(licencia_remunerada)."
 "info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==seguridad_social)->(R is 0))."
 "valor_pago_total(X,P,Y):- valor_contrato(X,VC), calcular_prestaciones(P,PC), Y is (VC - PC)."
-"conceptos_total_contrato(X,Y,P,V,vacaciones):- calcular_prestaciones(P,VP),porcentaje_devengo(P,vacaciones,PDV), R is VP *PDV, Y is (R rnd 0)."
-"conceptos_total_contrato(X,Y,P,V,primaVacaciones):- calcular_prestaciones(P,VP),porcentaje_devengo(P,primaVacaciones,PDV), R is VP *PDV, Y is (R rnd 0)."
-"conceptos_total_contrato(X,Y,P,V,primaNavidad):-  diciembre(si),calcular_prestaciones(P,VP),porcentaje_devengo(P,primaNavidad,PDV), R is VP *PDV, Y is (R rnd 0)."
-"conceptos_total_contrato(X,Y,P,V,cesantias):-  calcular_prestaciones(P,VP),porcentaje_devengo(P,cesantias,PDV), R is VP *PDV, Y is (R rnd 0)."
-"conceptos_total_contrato(X,IC,P,V,interesCesantias):- calcular_prestaciones(P,VP),conceptos_total_contrato(X,PV,P,V, primaVacaciones),conceptos_total_contrato(X,PN,P,V,primaNavidad), conceptos_total_contrato(X,C,P,V,cesantias), conceptos_total_contrato(X,VA,P,V,vacaciones), A is (PV+PN+C+VA), B is (VP-A), IC is (B rnd 0)."
-
-"valor_punto(2019,14210)."
-"factor(auxiliar,1.8,2019)."
-"factor(asistente,2.3,2019)."
-"factor(asociado,2.7,2019)."
-"factor(titular,3,2019)."
+"conceptos_total_contrato(X,V,MC,T,vacaciones):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,vacaciones,PPV), R is VP *PPV, T is (R rnd 0)."
+"conceptos_total_contrato(X,V,MC,T,primaVacaciones):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,primaVacaciones,PPV), R is VP *PPV, T is (R rnd 0)."
+"conceptos_total_contrato(X,V,MC,T,primaNavidad):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,primaNavidad,PPV), R is VP *PPV, T is (R rnd 0)."
+"conceptos_total_contrato(X,V,MC,T,interesCesantias):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,interesCesantias,PPV), R is VP *PPV, T is (R rnd 0)."
+"conceptos_total_contrato(X,V,MC,T,cesantias):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,cesantias,PPV), R is VP *PPV, T is (R rnd 0)."
+"conceptos_total_contrato_v2(X,V,MC,T,prima_servicios):- (MC @> 6 -> valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,prima_servicios,PPV), R is VP *PPV, T is (R rnd 0); T is 0).	"
 "porcentaje_devengo_v2(2019,prima_servicios,0.0740740929887414)."
-"porcentaje_devengo_v2(2019,prima_vacaciones,0.0414814800000000 )."
-"porcentaje_devengo_v2(2019,intereses_cesantias,0.0100000000000000 )."
+"porcentaje_devengo_v2(2019,primaVacaciones,0.0414814800000000)."
+"porcentaje_devengo_v2(2019,interesCesantias,0.0100000000000000)."
 "porcentaje_devengo_v2(2019,cesantias,0.0833333333333333)."
 "porcentaje_devengo_v2(2019,vacaciones,0.0414814800000000)."
-"porcentaje_devengo_v2(2019,prima_navidad, 0.0740740929887414)."
-"valor_pago_total_v2(X,C,V,NHT,T):- valor_punto(V,VP),factor(C,F,P), VH is VP * F, T is VH * NHT.
-conceptos_total_contrato_v2(X,C,V,NHT,MC,T,prima_servicios):- (MC @> 6 -> valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,prima_servicios,PPV), R is VP *PPV, T is (R rnd 0); T is 0).
-conceptos_total_contrato_v2(X,C,V,NHT,MC,T,prima_vacaciones):- valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,prima_vacaciones,PPV), R is VP *PPV, T is (R rnd 0).
-conceptos_total_contrato_v2(X,C,V,NHT,MC,T,intereses_cesantias):- valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,intereses_cesantias,PPV), R is VP *PPV, T is (R rnd 0).
-conceptos_total_contrato_v2(X,C,V,NHT,MC,T,cesantias):- valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,cesantias,PPV), R is VP *PPV, T is (R rnd 0).
-conceptos_total_contrato_v2(X,C,V,NHT,MC,T,vacaciones):- valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,vacaciones,PPV), R is VP *PPV, T is (R rnd 0).
-conceptos_total_contrato_v2(X,C,V,NHT,MC,T,prima_navidad):- valor_pago_total_v2(X,C,V,NHT,VP), porcentaje_devengo_v2(V,prima_navidad,PPV), R is VP *PPV, T is (R rnd 0).
+"porcentaje_devengo_v2(2019,primaNavidad,0.0740740929887414)."
+"porcentaje_devengo_v2(2020,prima_servicios,0.0740740929887414)."
+"porcentaje_devengo_v2(2020,primaVacaciones,0.0414814800000000)."
+"porcentaje_devengo_v2(2020,interesCesantias,0.0100000000000000)."
+"porcentaje_devengo_v2(2020,cesantias,0.0833333333333333)."
+"porcentaje_devengo_v2(2020,vacaciones,0.0414814800000000)."
+"porcentaje_devengo_v2(2020,primaNavidad,0.0740740929887414)."
+
