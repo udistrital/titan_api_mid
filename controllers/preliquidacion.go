@@ -539,6 +539,7 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 		reglas = reglas + "intereses_vivienda(0)."
 	}
 
-	fmt.Println("reglas SS:", v)
+	fmt.Println("reglas RETEARGO:", v)
+	fmt.Println("reglas RETEFUENTE:", reglas)
 	return reglas
 }
