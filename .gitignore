@@ -16,3 +16,5 @@ swagger/lib/
 main
 \reglas*
 \prueba*
+go.mod
+go.sum
