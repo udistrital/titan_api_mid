@@ -148,7 +148,7 @@ func consultarEstadoPago(num_cont, vigencia string, ano, mes int) (disponibilida
 	fmt.Println("pago:", "http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
 	if err := request.GetJson("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
 		fmt.Println("rea:", respuesta_servicio)
-		if respuesta_servicio == "True" {
+		if respuesta_servicio.pago.contrato.codigo_abrevicion == "AP" {
 			dispo = 2
 		} else {
 			dispo = 1
