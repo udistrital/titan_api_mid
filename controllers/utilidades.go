@@ -143,21 +143,35 @@ func calcularDisponibilidad(id_proveedor, vigencia int, respuesta models.Respues
 
 func consultarEstadoPago(num_cont, vigencia string, ano, mes int) (disponibilidad int) {
 
-	var respuesta_servicio string
+	var temp map[string]interface{}
+	var tempPago models.Pago
+
 	var dispo int
+	var rta string
+
 	fmt.Println("pago:", "http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
-		fmt.Println("rea:", respuesta_servicio)
-		if respuesta_servicio.pago.contrato.codigo_abrevicion == "AP" {
-			dispo = 2
+	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &temp); err == nil && temp != nil {
+		temp2, errorJSON := json.Marshal(temp)
+		if errorJSON == nil {
+
+			json.Unmarshal(temp2, &tempPago)
+			rta = tempPago.Contrato.CodigoAbreviacion
+			if rta == "AP" {
+				dispo = 2
+			} else {
+				dispo = 1
+			}
+
 		} else {
-			dispo = 1
+
+			fmt.Println("error al traer contratos docentes DVE")
 		}
 
 		fmt.Println("consulta exitosa de aprobación de pago")
 	} else {
-		fmt.Println("error en consulta de aprobación de pago")
-		dispo = 1
+
+		fmt.Println("Error al unmarshal datos de pago", err)
+
 	}
 
 	fmt.Println("verificación de cumplido:", dispo)
