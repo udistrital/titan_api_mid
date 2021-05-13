@@ -341,7 +341,7 @@ func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidaci
 	}
 
 	var temp []models.ConceptosResumen
-	for key, _ := range info_total_personas {
+	for key := range info_total_personas {
 		aux := models.TotalPersona{}
 		if err := formatdata.FillStruct(info_total_personas[key], &aux); err == nil {
 
