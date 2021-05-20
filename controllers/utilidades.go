@@ -75,10 +75,10 @@ func ActaInicioDVE(id_contrato, vigencia string) (datos models.ObjetoActaInicio,
 func verificacionPago(id_proveedor, ano, mes int, num_cont, vig string) (estado int) {
 
 	fmt.Println("verificación de cumplido 1: ")
-	//estadoPago := consultarEstadoPago(num_cont, vig, ano, mes)
+	estadoPago := consultarEstadoPago(num_cont, vig, ano, mes)
 	//disponibilidad := calcular_disponibilidad(id_proveedor,vig,resultado)
 	disponibilidad := 2
-	estadoPago := 2
+
 	if estadoPago == 2 && disponibilidad == 2 {
 		return 2
 	} else {
@@ -142,38 +142,37 @@ func calcularDisponibilidad(id_proveedor, vigencia int, respuesta models.Respues
 }
 
 func consultarEstadoPago(num_cont, vigencia string, ano, mes int) (disponibilidad int) {
-
-	var temp map[string]interface{}
-	var tempPago models.Pago
-
 	var dispo int
-	var rta string
+	//var temp map[string]interface{}
+	//var tempPago models.Pago
 
-	fmt.Println("pago:", "http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &temp); err == nil && temp != nil {
-		temp2, errorJSON := json.Marshal(temp)
-		if errorJSON == nil {
+	//var rta string
+	/*
+		fmt.Println("pago:", "http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
+		if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &temp); err == nil && temp != nil {
+			temp2, errorJSON := json.Marshal(temp)
+			if errorJSON == nil {
 
-			json.Unmarshal(temp2, &tempPago)
-			rta = tempPago.Contrato.CodigoAbreviacion
-			if rta == "AP" {
-				dispo = 2
+				json.Unmarshal(temp2, &tempPago)
+				rta = tempPago.Contrato.CodigoAbreviacion
+				if rta == "AP" {
+					dispo = 2
+				} else {
+					dispo = 1
+				}
+
 			} else {
-				dispo = 1
+
+				fmt.Println("error al traer contratos docentes DVE")
 			}
 
+			fmt.Println("consulta exitosa de aprobación de pago")
 		} else {
 
-			fmt.Println("error al traer contratos docentes DVE")
-		}
+			fmt.Println("Error al unmarshal datos de pago", err)
 
-		fmt.Println("consulta exitosa de aprobación de pago")
-	} else {
-
-		fmt.Println("Error al unmarshal datos de pago", err)
-
-	}
-
+		}*/
+	dispo = 2
 	fmt.Println("verificación de cumplido:", dispo)
 	return dispo
 
