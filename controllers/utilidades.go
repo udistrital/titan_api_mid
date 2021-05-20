@@ -75,10 +75,10 @@ func ActaInicioDVE(id_contrato, vigencia string) (datos models.ObjetoActaInicio,
 func verificacionPago(id_proveedor, ano, mes int, num_cont, vig string) (estado int) {
 
 	fmt.Println("verificación de cumplido 1: ")
-	estadoPago := consultarEstadoPago(num_cont, vig, ano, mes)
+	//estadoPago := consultarEstadoPago(num_cont, vig, ano, mes)
 	//disponibilidad := calcular_disponibilidad(id_proveedor,vig,resultado)
 	disponibilidad := 2
-
+	estadoPago := 2
 	if estadoPago == 2 && disponibilidad == 2 {
 		return 2
 	} else {
