@@ -21,43 +21,43 @@ steps:
       event:
       - push
 
-- name: publish_to_ecr_release
-  image: plugins/ecr
-  settings:
-    access_key:
-      from_secret: AWS_ACCESS_KEY_ID
-    secret_key:
-      from_secret: AWS_SECRET_ACCESS_KEY
-    region:
-      from_secret: AWS_REGION
-    repo: ${DRONE_REPO##udistrital/}
-    tags:
-      - ${DRONE_COMMIT:0:7}
-      - release
-  when:
-    branch:
-    - desarrollo
-    event:
-    - push
+  - name: publish_to_ecr_release
+    image: plugins/ecr
+    settings:
+      access_key:
+        from_secret: AWS_ACCESS_KEY_ID
+      secret_key:
+        from_secret: AWS_SECRET_ACCESS_KEY
+      region:
+        from_secret: AWS_REGION
+      repo: ${DRONE_REPO##udistrital/}
+      tags:
+        - ${DRONE_COMMIT:0:7}
+        - release
+    when:
+      branch:
+      - desarrollo
+      event:
+      - push
 
-- name: publish_to_ecr_master
-  image: plugins/ecr
-  settings:
-    access_key:
-      from_secret: AWS_ACCESS_KEY_ID
-    secret_key:
-      from_secret: AWS_SECRET_ACCESS_KEY
-    region:
-      from_secret: AWS_REGION
-    repo: ${DRONE_REPO##udistrital/}
-    tags:
-      - ${DRONE_COMMIT:0:7}
-      - latest
-  when:
-    branch:
-    - master
-    event:
-    - push
+  - name: publish_to_ecr_master
+    image: plugins/ecr
+    settings:
+      access_key:
+        from_secret: AWS_ACCESS_KEY_ID
+      secret_key:
+        from_secret: AWS_SECRET_ACCESS_KEY
+      region:
+        from_secret: AWS_REGION
+      repo: ${DRONE_REPO##udistrital/}
+      tags:
+        - ${DRONE_COMMIT:0:7}
+        - latest
+    when:
+      branch:
+      - master
+      event:
+      - push
   
   - name: go-awsecs
     image: golang:1.9
