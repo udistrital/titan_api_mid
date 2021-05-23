@@ -10,7 +10,7 @@ name: API_deploy
 
 steps: 
   - name: go
-    image: golang:1.12
+    image: golang:1.14
     commands:
      - go get -t
      - GOOS=linux GOARCH=amd64 go build -o main
@@ -60,7 +60,7 @@ steps:
       - push
   
   - name: go-awsecs
-    image: golang:1.9
+    image: golang:1.14
     environment:
       AWS_ACCESS_KEY_ID:
         from_secret: AWS_ACCESS_KEY_ID
