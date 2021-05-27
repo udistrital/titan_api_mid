@@ -134,7 +134,8 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 
 	var FechaInicio time.Time
 	var FechaFin time.Time
-
+	fmt.Println("valor del contrato ", persona.NumeroContrato)
+	fmt.Println("valor del contrato ", persona.VigenciaContrato)
 	objetoDatosContrato, errorConsultaContrato = ContratosContratistas(persona.NumeroContrato, persona.VigenciaContrato)
 
 	objetoDatosActa, errorConsultaActa = ActaInicioContratistas(persona.NumeroContrato, persona.VigenciaContrato)
@@ -168,7 +169,7 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 			predicadosRetefuente = CargarDatosRetefuente(persona.NumDocumento)
 			disp = verificacionPago(persona.IdPersona, preliquidacion.Ano, preliquidacion.Mes, persona.NumeroContrato, strconv.Itoa(persona.VigenciaContrato))
 			reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(" + strconv.Itoa(disp) + ")."
-
+			//reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(2)."
 			temp := golog.CargarReglasCT(persona.IdPersona, reglas, preliquidacion, vigenciaContrato, objetoDatosActa)
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(persona.NumDocumento)

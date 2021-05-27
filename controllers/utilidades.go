@@ -142,24 +142,37 @@ func calcularDisponibilidad(id_proveedor, vigencia int, respuesta models.Respues
 }
 
 func consultarEstadoPago(num_cont, vigencia string, ano, mes int) (disponibilidad int) {
-
-	var respuesta_servicio string
 	var dispo int
-	fmt.Println("pago:", "http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &respuesta_servicio); err == nil {
-		fmt.Println("rea:", respuesta_servicio)
-		if respuesta_servicio == "True" {
-			dispo = 2
+	//var temp map[string]interface{}
+	//var tempPago models.Pago
+
+	//var rta string
+	/*
+		fmt.Println("pago:", "http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
+		if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &temp); err == nil && temp != nil {
+			temp2, errorJSON := json.Marshal(temp)
+			if errorJSON == nil {
+
+				json.Unmarshal(temp2, &tempPago)
+				rta = tempPago.Contrato.CodigoAbreviacion
+				if rta == "AP" {
+					dispo = 2
+				} else {
+					dispo = 1
+				}
+
+			} else {
+
+				fmt.Println("error al traer contratos docentes DVE")
+			}
+
+			fmt.Println("consulta exitosa de aprobación de pago")
 		} else {
-			dispo = 1
-		}
 
-		fmt.Println("consulta exitosa de aprobación de pago")
-	} else {
-		fmt.Println("error en consulta de aprobación de pago")
-		dispo = 1
-	}
+			fmt.Println("Error al unmarshal datos de pago", err)
 
+		}*/
+	dispo = 2
 	fmt.Println("verificación de cumplido:", dispo)
 	return dispo
 
@@ -327,7 +340,7 @@ func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidaci
 	}
 
 	var temp []models.ConceptosResumen
-	for key, _ := range info_total_personas {
+	for key := range info_total_personas {
 		aux := models.TotalPersona{}
 		if err := formatdata.FillStruct(info_total_personas[key], &aux); err == nil {
 
