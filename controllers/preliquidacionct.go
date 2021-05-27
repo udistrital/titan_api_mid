@@ -134,7 +134,8 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 
 	var FechaInicio time.Time
 	var FechaFin time.Time
-
+	fmt.Println("valor del contrato ", persona.NumeroContrato)
+	fmt.Println("valor del contrato ", persona.VigenciaContrato)
 	objetoDatosContrato, errorConsultaContrato = ContratosContratistas(persona.NumeroContrato, persona.VigenciaContrato)
 
 	objetoDatosActa, errorConsultaActa = ActaInicioContratistas(persona.NumeroContrato, persona.VigenciaContrato)
