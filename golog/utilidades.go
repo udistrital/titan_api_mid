@@ -386,7 +386,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	temp_reglas = temp_reglas + "deducciones(" + strconv.Itoa(deduccion_salud) + ")."
 
 	o := NewMachine().Consult(temp_reglas)
-
+	fmt.Println(temp_reglas)
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
 	fmt.Println("valorrete", valor_retencion)
 	for _, solution := range valor_retencion {
