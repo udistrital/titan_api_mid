@@ -368,7 +368,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
 
 		ingresos = ingresos + BuscarValorConcepto(listaDescuentos, codigo_concepto)
-		fmt.Println("valorrete", ingresos)
+		fmt.Println("ingresos", ingresos)
 		if codigo_concepto == "11" {
 			sueldo = sueldo + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 			//sueldos = append(sueldos, BuscarValorConcepto(listaDescuentos, codigo_concepto))
