@@ -384,17 +384,18 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
 
 	temp_reglas = temp_reglas + "deducciones(" + strconv.Itoa(deduccion_salud) + ")."
-	
+
 	o := NewMachine().Consult(temp_reglas)
 
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
-	fmt.Println("valorrete",valor_retencion)
+	fmt.Println("valorrete", valor_retencion)
 	for _, solution := range valor_retencion {
 		val_reten := fmt.Sprintf("%s", solution.ByName_("VR"))
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 			Valor: val_reten,
 		}
 		fmt.Println("dias a liq rete", val_reten)
+		fmt.Println("dias a liq rete", temp_conceptos)
 		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
