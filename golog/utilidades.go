@@ -366,8 +366,9 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	consultar_conceptos_ingresos_retencion := m.ProveAll("aplica_ingreso_retencion(X).")
 	for _, solution := range consultar_conceptos_ingresos_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
-		ingresos = ingresos + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 
+		ingresos = ingresos + BuscarValorConcepto(listaDescuentos, codigo_concepto)
+		fmt.Println("valorrete", ingresos)
 		if codigo_concepto == "11" {
 			sueldo = sueldo + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 			//sueldos = append(sueldos, BuscarValorConcepto(listaDescuentos, codigo_concepto))
