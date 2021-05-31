@@ -412,7 +412,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	}
 
 	for _, solution := range listaDescuentos {
-		if strconv.Itoa(solution.Id) == "11" {
+		if strconv.Itoa(solution.Id) == "10" {
 			auxtemp, _ := strconv.Atoi(solution.Valor)
 
 			sueldos = append(sueldos, auxtemp)
