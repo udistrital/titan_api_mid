@@ -38,7 +38,7 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 		AnoHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("AA")), 64)
 		MesHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
 		DiaHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
-
+		fmt.Println("existe novedad de SS", novedad)
 		afectacion_seg_social := m.ProveAll("afectacion_seguridad(" + novedad + ").")
 		for _, solution := range afectacion_seg_social {
 
