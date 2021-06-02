@@ -61,7 +61,7 @@ func (c *PreliquidacionctController) Preliquidar(datos models.DatosPreliquidacio
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
 		if datos.PersonasPreLiquidacion[i].IdPersona != 0 {
-			fmt.Println("estado disponibilidad ",datos.PersonasPreLiquidacion[i].EstadoDisponibilidad)
+			fmt.Println("estado disponibilidad ", datos.PersonasPreLiquidacion[i].EstadoDisponibilidad)
 			if datos.PersonasPreLiquidacion[i].EstadoDisponibilidad == 1 {
 
 				var respuesta string
@@ -138,17 +138,17 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 	fmt.Println("valor del contrato ", persona.VigenciaContrato)
 	objetoDatosContrato, errorConsultaContrato = ContratosContratistas(persona.NumeroContrato, persona.VigenciaContrato)
 
-	objetoDatosActa, errorConsultaActa = ActaInicioContratistas(persona.NumeroContrato, persona.VigenciaContrato)
+	//objetoDatosActa, errorConsultaActa = ActaInicioContratistas(persona.NumeroContrato, persona.VigenciaContrato)
 
 	if errorConsultaContrato == nil {
 		if errorConsultaActa == nil {
 			datosContrato := objetoDatosContrato.ContratoEstado
-			datosActa := objetoDatosActa.ActaInicio
+			//		datosActa := objetoDatosActa.ActaInicio
 
 			layout := "2006-01-02"
-
-			FechaInicio, _ = time.Parse(layout, datosActa.FechaInicioTemp)
-			FechaFin, _ = time.Parse(layout, datosActa.FechaFinTemp)
+			//se modifica por fechas listadas
+			FechaInicio, _ = time.Parse(layout, persona.FechaInicio)
+			FechaFin, _ = time.Parse(layout, persona.FechaFin)
 
 			diasContrato := CalcularDias(FechaInicio, FechaFin) + 1 //Suma uno para día inclusive
 			fmt.Println("valor del contrato ", datosContrato.ValorContrato)
