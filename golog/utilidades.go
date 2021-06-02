@@ -379,6 +379,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
 
 	consultar_conceptos_deduccion_retencion := m.ProveAll("aplica_deduccion_retencion(X).")
+	fmt.Println(consultar_conceptos_deduccion_retencion)
 	for _, solution := range consultar_conceptos_deduccion_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
 		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)

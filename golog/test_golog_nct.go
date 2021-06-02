@@ -21,6 +21,7 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 	reglas = reglas + "cargo(0)."
 	reglas = reglas + "periodo(" + periodo + ")."
 
+	//debe verificar si tiene una novedad tipo cesion y calcular el periodo de acuerdo a ello
 	diasALiquidar, _ := CalcularPeriodoLiquidacion(preliquidacion, objeto_datos_acta)
 	fmt.Println("dias liquidados", diasALiquidar)
 
@@ -45,9 +46,7 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 		fmt.Println("AnoHasta", AnoHasta)
 		fmt.Println("MesHasta", MesHasta)
 		fmt.Println("DiaHasta", DiaHasta)
-		
-		
-		
+
 		afectacion_seg_social := m.ProveAll("afectacion_seguridad(" + novedad + ").")
 		for _, solution := range afectacion_seg_social {
 
