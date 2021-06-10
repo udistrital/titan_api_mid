@@ -138,7 +138,7 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 	fmt.Println("valor del contrato ", persona.VigenciaContrato)
 	objetoDatosContrato, errorConsultaContrato = ContratosContratistas(persona.NumeroContrato, persona.VigenciaContrato)
 
-	//objetoDatosActa, errorConsultaActa = ActaInicioContratistas(persona.NumeroContrato, persona.VigenciaContrato)
+	objetoDatosActa, errorConsultaActa = ActaInicioContratistas(persona.NumeroContrato, persona.VigenciaContrato)
 
 	if errorConsultaContrato == nil {
 		if errorConsultaActa == nil {
@@ -147,8 +147,8 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 
 			layout := "2006-01-02"
 			//se modifica por fechas listadas
-			FechaInicio, _ = time.Parse(layout, persona.FechaInicio)
-			FechaFin, _ = time.Parse(layout, persona.FechaFin)
+			FechaInicio, _ = time.Parse(layout, datosActa.FechaInicioTemp)
+			FechaFin, _ = time.Parse(layout, datosActa.FechaFinTemp)
 
 			diasContrato := CalcularDias(FechaInicio, FechaFin) + 1 //Suma uno para día inclusive
 			fmt.Println("valor del contrato ", datosContrato.ValorContrato)
