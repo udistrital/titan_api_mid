@@ -143,7 +143,7 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 	if errorConsultaContrato == nil {
 		if errorConsultaActa == nil {
 			datosContrato := objetoDatosContrato.ContratoEstado
-			//		datosActa := objetoDatosActa.ActaInicio
+			datosActa := objetoDatosActa.ActaInicio
 
 			layout := "2006-01-02"
 			//se modifica por fechas listadas
