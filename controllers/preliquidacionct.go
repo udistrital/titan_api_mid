@@ -61,7 +61,7 @@ func (c *PreliquidacionctController) Preliquidar(datos models.DatosPreliquidacio
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
 		if datos.PersonasPreLiquidacion[i].IdPersona != 0 {
-
+			fmt.Println("estado disponibilidad ", datos.PersonasPreLiquidacion[i].EstadoDisponibilidad)
 			if datos.PersonasPreLiquidacion[i].EstadoDisponibilidad == 1 {
 
 				var respuesta string
@@ -143,10 +143,10 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 	if errorConsultaContrato == nil {
 		if errorConsultaActa == nil {
 			datosContrato := objetoDatosContrato.ContratoEstado
-			datosActa := objetoDatosActa.ActaInicio
+			//		datosActa := objetoDatosActa.ActaInicio
 
 			layout := "2006-01-02"
-
+			//se modifica por fechas listadas
 			FechaInicio, _ = time.Parse(layout, datosActa.FechaInicioTemp)
 			FechaFin, _ = time.Parse(layout, datosActa.FechaFinTemp)
 
