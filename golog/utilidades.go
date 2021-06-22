@@ -359,7 +359,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	var sueldos []int
 	var porcentajes []float64
 	var retenciones []models.ConceptosResumen
-
+	var valor_rete int
 	temp_reglas := reglas
 	m := NewMachine().Consult(reglas)
 
@@ -395,9 +395,12 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	fmt.Println("valorrete", valor_retencion)
 	for _, solution := range valor_retencion {
 		val_reten := fmt.Sprintf("%s", solution.ByName_("VR"))
-		if(int(val_reten) > 0 ){
-			valor_reten = int(val_reten) - 2000
+		if(strconv.Atoi(val_reten) > 0 ){
+			valor_reten = strconv.Atoi(val_reten) - 2000
+		} else{
+			valor_reten=0
 		}
+		
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 			Valor: valor_reten,
 		}
