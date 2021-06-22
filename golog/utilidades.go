@@ -395,11 +395,11 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	fmt.Println("valorrete", valor_retencion)
 	for _, solution := range valor_retencion {
 		val_reten := fmt.Sprintf("%s", solution.ByName_("VR"))
-		if(val_reten > 0 ){
-		val_reten = val_reten-2000
+		if(int(val_reten) > 0 ){
+			valor_reten = int(val_reten) - 2000
 		}
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
-			Valor: val_reten,
+			Valor: valor_reten,
 		}
 		fmt.Println("dias a liq rete", val_reten)
 		fmt.Println("dias a liq rete", temp_conceptos)
