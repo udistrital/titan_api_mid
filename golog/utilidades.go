@@ -359,7 +359,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	var sueldos []int
 	var porcentajes []float64
 	var retenciones []models.ConceptosResumen
-	var valor_reten int
+	
 	temp_reglas := reglas
 	m := NewMachine().Consult(reglas)
 
