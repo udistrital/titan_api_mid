@@ -7,6 +7,7 @@ package models
 	InteresViviendaAfc float64
 	MedicinaPrepagada bool
 	Pensionado bool
+
 }*/
 type InformacionPersonaNatural struct {
 	InformacionPersonaNatural struct {
