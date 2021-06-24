@@ -502,26 +502,26 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 			
 			json.Unmarshal(jsonPersonaNatural, &tempPersonaNatural)
 			fmt.Println("personaNatural:", &tempPersonaNatural)
-			if tempPersonaNatural.InformacionPersonaNatural.PersonasACargo == true {
+			if tempPersonaNatural.InformacionPersonaNatural.PersonasACargo == "true" {
 				reglas = reglas + "dependiente(si)."
 			} else {
 				reglas = reglas + "dependiente(no)."
 			}
 
-			if tempPersonaNatural.InformacionPersonaNatural.DeclaranteRenta == true {
+			if tempPersonaNatural.InformacionPersonaNatural.DeclaranteRenta == "true" {
 				reglas = reglas + "declarante(si)."
 			} else {
 				reglas = reglas + "declarante(no)."
 			}
 
-			if tempPersonaNatural.InformacionPersonaNatural.MedicinaPrepagada == true {
+			if tempPersonaNatural.InformacionPersonaNatural.MedicinaPrepagada == "true" {
 				reglas = reglas + "medicina_prepagada(si)."
 			} else {
 				reglas = reglas + "medicina_prepagada(no)."
 			}
 
 
-			if tempPersonaNatural.InformacionPersonaNatural.Pensionado == true {
+			if tempPersonaNatural.InformacionPersonaNatural.Pensionado == "true" {
 
 				reglas = reglas + "pensionado(si)."
 			} else {
