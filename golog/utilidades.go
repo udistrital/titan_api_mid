@@ -366,34 +366,40 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	consultar_conceptos_ingresos_retencion := m.ProveAll("aplica_ingreso_retencion(X).")
 	for _, solution := range consultar_conceptos_ingresos_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
+		fmt.Println("ingresos", codigo_concepto)
+		fmt.Println("lista_descuentos", listaDescuentos)
 		ingresos = ingresos + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 
-		if codigo_concepto == "11" {
+		if codigo_concepto == "10" {
 			sueldo = sueldo + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 			//sueldos = append(sueldos, BuscarValorConcepto(listaDescuentos, codigo_concepto))
 
 		}
 	}
-	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
+	
 
 	consultar_conceptos_deduccion_retencion := m.ProveAll("aplica_deduccion_retencion(X).")
+	fmt.Println(consultar_conceptos_deduccion_retencion)
 	for _, solution := range consultar_conceptos_deduccion_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
 		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
+	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
 	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
 
 	temp_reglas = temp_reglas + "deducciones(" + strconv.Itoa(deduccion_salud) + ")."
 
 	o := NewMachine().Consult(temp_reglas)
-
+	fmt.Println(temp_reglas)
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
+	fmt.Println("valorrete", valor_retencion)
 	for _, solution := range valor_retencion {
 		val_reten := fmt.Sprintf("%s", solution.ByName_("VR"))
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 			Valor: val_reten,
 		}
-
+		fmt.Println("dias a liq rete", val_reten)
+		fmt.Println("dias a liq rete", temp_conceptos)
 		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
@@ -408,7 +414,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	}
 
 	for _, solution := range listaDescuentos {
-		if strconv.Itoa(solution.Id) == "11" {
+		if strconv.Itoa(solution.Id) == "10" {
 			auxtemp, _ := strconv.Atoi(solution.Valor)
 
 			sueldos = append(sueldos, auxtemp)
@@ -436,7 +442,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		retenciones = append(retenciones, auxRetenciones)
 
 	}
-
+	fmt.Println("RETE", retenciones)
 	return retenciones
 }
 

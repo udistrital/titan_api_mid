@@ -61,7 +61,7 @@ func (c *PreliquidacionctController) Preliquidar(datos models.DatosPreliquidacio
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
 		if datos.PersonasPreLiquidacion[i].IdPersona != 0 {
-
+			fmt.Println("estado disponibilidad ", datos.PersonasPreLiquidacion[i].EstadoDisponibilidad)
 			if datos.PersonasPreLiquidacion[i].EstadoDisponibilidad == 1 {
 
 				var respuesta string
@@ -134,7 +134,8 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 
 	var FechaInicio time.Time
 	var FechaFin time.Time
-
+	fmt.Println("valor del contrato ", persona.NumeroContrato)
+	fmt.Println("valor del contrato ", persona.VigenciaContrato)
 	objetoDatosContrato, errorConsultaContrato = ContratosContratistas(persona.NumeroContrato, persona.VigenciaContrato)
 
 	objetoDatosActa, errorConsultaActa = ActaInicioContratistas(persona.NumeroContrato, persona.VigenciaContrato)
@@ -142,10 +143,10 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 	if errorConsultaContrato == nil {
 		if errorConsultaActa == nil {
 			datosContrato := objetoDatosContrato.ContratoEstado
-			datosActa := objetoDatosActa.ActaInicio
+			//		datosActa := objetoDatosActa.ActaInicio
 
 			layout := "2006-01-02"
-
+			//se modifica por fechas listadas
 			FechaInicio, _ = time.Parse(layout, datosActa.FechaInicioTemp)
 			FechaFin, _ = time.Parse(layout, datosActa.FechaFinTemp)
 
@@ -168,7 +169,7 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 			predicadosRetefuente = CargarDatosRetefuente(persona.NumDocumento)
 			disp = verificacionPago(persona.IdPersona, preliquidacion.Ano, preliquidacion.Mes, persona.NumeroContrato, strconv.Itoa(persona.VigenciaContrato))
 			reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(" + strconv.Itoa(disp) + ")."
-
+			//reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(2)."
 			temp := golog.CargarReglasCT(persona.IdPersona, reglas, preliquidacion, vigenciaContrato, objetoDatosActa)
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(persona.NumDocumento)

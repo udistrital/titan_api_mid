@@ -493,6 +493,7 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 	var tempPersonaNatural models.InformacionPersonaNatural
 	reglas = ""
 	query := "Id:" + strconv.Itoa(cedula)
+
 	//if err := request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
         if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio_elaborado/"+query, &temp); err == nil && temp != nil {
 		jsonPersonaNatural, errorJSON := json.Marshal(temp)
@@ -565,6 +566,9 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 		reglas = reglas + "intereses_vivienda(0)."
 	}
 
-	fmt.Println("reglas SS:", len(v))*/
+*/
+	fmt.Println("reglas RETEARGO:", v)
+	fmt.Println("reglas RETEFUENTE:", reglas)
+
 	return reglas
 }
