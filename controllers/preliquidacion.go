@@ -525,7 +525,7 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 				reglas = reglas + "pensionado(no)."
 			}
 
-			reglas = reglas + "intereses_vivienda(" +  strconv.ParseFloat(tempPersonaNatural.InformacionPersonaNatural.InteresViviendaAfc,64) + ")."
+			reglas = reglas + "intereses_vivienda(" + tempPersonaNatural.InformacionPersonaNatural.InteresViviendaAfc + ")."
 
 		} else {
 			fmt.Println("No existen datos sobre esa persona")
