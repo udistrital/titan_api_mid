@@ -489,39 +489,65 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona) {
 // @Description Carga lo referente al calculo de la retefuente según cédula de la persona
 func CargarDatosRetefuente(cedula int) (reglas string) {
 
-	var v []models.InformacionPersonaNatural
+	//var v []models.InformacionPersonaNatural
+	var tempPersonaNatural models.InformacionPersonaNatural
 	reglas = ""
 	query := "Id:" + strconv.Itoa(cedula)
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
+	//if err := request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
+        if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio_elaborado/"+query, &temp); err == nil && temp != nil {
+		jsonPersonaNatural, errorJSON := json.Marshal(temp)
+		if errorJSON == nil {
 
-		if len(v) != 0 {
-
-			if v[0].PersonasACargo == true {
+			json.Unmarshal(jsonPersonaNatural, &tempPersonaNatural)
+			if tempPersonaNatural.PersonasACargo == true {
 				reglas = reglas + "dependiente(si)."
 			} else {
 				reglas = reglas + "dependiente(no)."
 			}
 
-			if v[0].DeclaranteRenta == true {
+			if tempPersonaNatural.DeclaranteRenta == true {
 				reglas = reglas + "declarante(si)."
 			} else {
 				reglas = reglas + "declarante(no)."
 			}
 
-			if v[0].MedicinaPrepagada == true {
+			if tempPersonaNatural.MedicinaPrepagada == true {
 				reglas = reglas + "medicina_prepagada(si)."
 			} else {
 				reglas = reglas + "medicina_prepagada(no)."
 			}
 
-			if v[0].Pensionado == true {
+			if tempPersonaNatural.Pensionado == true {
 				reglas = reglas + "pensionado(si)."
 			} else {
 				reglas = reglas + "pensionado(no)."
 			}
 
-			reglas = reglas + "intereses_vivienda(" + strconv.Itoa(int(v[0].InteresViviendaAfc)) + ")."
+			reglas = reglas + "intereses_vivienda(" + strconv.Itoa(tempPersonaNatural.InteresViviendaAfc)) + ")."
 
+		} else {
+			fmt.Println("No existen datos sobre esa persona")
+			reglas = reglas + "dependiente(no)."
+			reglas = reglas + "declarante(no)."
+			reglas = reglas + "medicina_prepagada(no)."
+			reglas = reglas + "pensionado(no)."
+			reglas = reglas + "intereses_vivienda(0)."
+		}
+	} else {
+		fmt.Println("error al consultar en Ágora", err)
+		reglas = reglas + "dependiente(no)."
+		reglas = reglas + "declarante(no)."
+		reglas = reglas + "medicina_prepagada(no)."
+		reglas = reglas + "pensionado(no)."
+		reglas = reglas + "intereses_vivienda(0)."
+
+	}
+
+		
+		//if len(v) != 0 {
+
+			
+/*
 		} else {
 			fmt.Println("No existen datos sobre esa persona")
 			reglas = reglas + "dependiente(no)."
@@ -539,6 +565,6 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 		reglas = reglas + "intereses_vivienda(0)."
 	}
 
-	fmt.Println("reglas SS:", len(v))
+	fmt.Println("reglas SS:", len(v))*/
 	return reglas
 }
