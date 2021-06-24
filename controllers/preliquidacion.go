@@ -250,7 +250,7 @@ func (c *PreliquidacionController) GetIBCPorNovedad() {
 // @router / [post]
 func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
-
+       
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
 		//carga de reglas desde el ruler
@@ -490,6 +490,7 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona) {
 func CargarDatosRetefuente(cedula int) (reglas string) {
 
 	//var v []models.InformacionPersonaNatural
+	var temp map[string]interface{}
 	var tempPersonaNatural models.InformacionPersonaNatural
 	reglas = ""
 	query := "Id:" + strconv.Itoa(cedula)
@@ -500,7 +501,7 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 		if errorJSON == nil {
 
 			json.Unmarshal(jsonPersonaNatural, &tempPersonaNatural)
-			if tempPersonaNatural.PersonasACargo == true {
+			if tempPersonaNatural.PersonaNatural.PersonasACargo == true {
 				reglas = reglas + "dependiente(si)."
 			} else {
 				reglas = reglas + "dependiente(no)."
@@ -567,7 +568,7 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 	}
 
 */
-	fmt.Println("reglas RETEARGO:", v)
+//	fmt.Println("reglas RETEARGO:", v)
 	fmt.Println("reglas RETEFUENTE:", reglas)
 
 	return reglas
