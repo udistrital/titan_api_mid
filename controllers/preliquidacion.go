@@ -499,8 +499,9 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
         if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/informacion_persona_natural/"+query, &temp); err == nil && temp != nil {
 		jsonPersonaNatural, errorJSON := json.Marshal(temp)
 		if errorJSON == nil {
-			fmt.Println("personaNatural:", jsonPersonaNatural)
+			
 			json.Unmarshal(jsonPersonaNatural, &tempPersonaNatural)
+			fmt.Println("personaNatural:", &tempPersonaNatural)
 			if tempPersonaNatural.InformacionPersonaNatural.PersonasACargo == true {
 				reglas = reglas + "dependiente(si)."
 			} else {
