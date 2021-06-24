@@ -501,7 +501,7 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 		if errorJSON == nil {
 
 			json.Unmarshal(jsonPersonaNatural, &tempPersonaNatural)
-			if tempPersonaNatural.PersonaNatural.PersonasACargo == true {
+			if tempPersonaNatural.InformacionPersonaNatural.PersonasACargo == true {
 				reglas = reglas + "dependiente(si)."
 			} else {
 				reglas = reglas + "dependiente(no)."
