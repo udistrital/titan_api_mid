@@ -250,7 +250,7 @@ func (c *PreliquidacionController) GetIBCPorNovedad() {
 // @router / [post]
 func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
-
+       
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
 		//carga de reglas desde el ruler
@@ -490,6 +490,7 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona) {
 func CargarDatosRetefuente(cedula int) (reglas string) {
 
 	//var v []models.InformacionPersonaNatural
+	var temp map[string]interface{}
 	var tempPersonaNatural models.InformacionPersonaNatural
 	reglas = ""
 	query := "Id:" + strconv.Itoa(cedula)
@@ -500,33 +501,33 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 		if errorJSON == nil {
 
 			json.Unmarshal(jsonPersonaNatural, &tempPersonaNatural)
-			if tempPersonaNatural.PersonasACargo == true {
+			if tempPersonaNatural.InformacionPersonaNatural.PersonasACargo == true {
 				reglas = reglas + "dependiente(si)."
 			} else {
 				reglas = reglas + "dependiente(no)."
 			}
 
-			if tempPersonaNatural.DeclaranteRenta == true {
+			if tempPersonaNatural.InformacionPersonaNatural.DeclaranteRenta == true {
 				reglas = reglas + "declarante(si)."
 			} else {
 				reglas = reglas + "declarante(no)."
 			}
 
-			if tempPersonaNatural.MedicinaPrepagada == true {
+			if tempPersonaNatural.InformacionPersonaNatural.MedicinaPrepagada == true {
 				reglas = reglas + "medicina_prepagada(si)."
 			} else {
 				reglas = reglas + "medicina_prepagada(no)."
 			}
 
 
-			if tempPersonaNatural.Pensionado == true {
+			if tempPersonaNatural.InformacionPersonaNatural.Pensionado == true {
 
 				reglas = reglas + "pensionado(si)."
 			} else {
 				reglas = reglas + "pensionado(no)."
 			}
 
-			reglas = reglas + "intereses_vivienda(" + strconv.Itoa(tempPersonaNatural.InteresViviendaAfc) + ")."
+			reglas = reglas + "intereses_vivienda(" + fmt.Sprintf("%f", tempPersonaNatural.InformacionPersonaNatural.InteresViviendaAfc) + ")."
 
 		} else {
 			fmt.Println("No existen datos sobre esa persona")
@@ -569,7 +570,7 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 	}
 
 */
-	fmt.Println("reglas RETEARGO:", v)
+//	fmt.Println("reglas RETEARGO:", v)
 	fmt.Println("reglas RETEFUENTE:", reglas)
 
 	return reglas
