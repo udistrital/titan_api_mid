@@ -12,11 +12,11 @@ package models
 type InformacionPersonaNatural struct {
 	InformacionPersonaNatural struct {
 		Id 			string `json:"Id"`
-		PersonasACargo		bool `json:"PersonasACargo"`
-		DeclaranteRenta      	bool `json:"DeclaranteRenta"`
+		PersonasACargo		string `json:"PersonasACargo"`
+		DeclaranteRenta      	string `json:"DeclaranteRenta"`
 		InteresViviendaAfc      float64 `json:"InteresViviendaAfc"`
-		MedicinaPrepagada      	bool `json:"MedicinaPrepagada"`
-		Pensionado      	bool `json:"Pensionado"`
+		MedicinaPrepagada      	string `json:"MedicinaPrepagada"`
+		Pensionado      	string `json:"Pensionado"`
 	} `json:"informacion_persona_natural"`
 }
 
