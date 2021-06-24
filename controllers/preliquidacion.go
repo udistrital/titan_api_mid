@@ -518,7 +518,9 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 				reglas = reglas + "medicina_prepagada(no)."
 			}
 
+
 			if tempPersonaNatural.Pensionado == true {
+
 				reglas = reglas + "pensionado(si)."
 			} else {
 				reglas = reglas + "pensionado(no)."
