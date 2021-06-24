@@ -507,25 +507,25 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 				reglas = reglas + "dependiente(no)."
 			}
 
-			if tempPersonaNatural.DeclaranteRenta == true {
+			if tempPersonaNatural.InformacionPersonaNatural.DeclaranteRenta == true {
 				reglas = reglas + "declarante(si)."
 			} else {
 				reglas = reglas + "declarante(no)."
 			}
 
-			if tempPersonaNatural.MedicinaPrepagada == true {
+			if tempPersonaNatural.InformacionPersonaNatural.MedicinaPrepagada == true {
 				reglas = reglas + "medicina_prepagada(si)."
 			} else {
 				reglas = reglas + "medicina_prepagada(no)."
 			}
 
-			if tempPersonaNatural.Pensionado == true {
+			if tempPersonaNatural.InformacionPersonaNatural.Pensionado == true {
 				reglas = reglas + "pensionado(si)."
 			} else {
 				reglas = reglas + "pensionado(no)."
 			}
 
-			reglas = reglas + "intereses_vivienda(" + strconv.Itoa(tempPersonaNatural.InteresViviendaAfc) + ")."
+			reglas = reglas + "intereses_vivienda(" + strconv.Itoa(tempPersonaNatural.InformacionPersonaNatural.InteresViviendaAfc) + ")."
 
 		} else {
 			fmt.Println("No existen datos sobre esa persona")
