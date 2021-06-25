@@ -171,6 +171,7 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 			disp = verificacionPago(persona.IdPersona, preliquidacion.Ano, preliquidacion.Mes, persona.NumeroContrato, strconv.Itoa(persona.VigenciaContrato))
 			reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(" + strconv.Itoa(disp) + ")."
 			//reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(2)."
+			fmt.Println("dep", dependientes)
 			temp := golog.CargarReglasCT(persona.IdPersona, reglas, preliquidacion, vigenciaContrato, objetoDatosActa, pensionado, dependientes)
 			resultado := temp[len(temp)-1]
 			fmt.Println("resultado", resultado)
