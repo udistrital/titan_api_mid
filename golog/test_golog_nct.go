@@ -66,7 +66,7 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 	total_calculos = append(total_calculos, listaDescuentos...)
 	total_calculos = append(total_calculos, listaNovedades...)
 	total_calculos = append(total_calculos, listaRetefuente...)
-	resultado = GuardarConceptosCT(reglas, total_calculos, diasALiquidar, diasNovedadString)
+	resultado = GuardarConceptosCT(reglas, total_calculos, diasALiquidar, diasNovedadString, pensionado)
 
 	total_calculos = []models.ConceptosResumen{}
 	ibc = 0
