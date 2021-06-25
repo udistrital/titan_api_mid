@@ -227,7 +227,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 	//	wg.Wait()
 
 	//CALCULAR FONDO DE SOLIDARIDAD Y RETEFUENTE
-	resultadoDesc := CalcularDescuentosTotales(reglasbase, datos.Preliquidacion, resumenPreliqu)
+	/*resultadoDesc := CalcularDescuentosTotales(reglasbase, datos.Preliquidacion, resumenPreliqu)
 	var idDetaPre interface{}
 	var listaConceptos []models.ConceptosResumen
         var dependientes bool
@@ -314,7 +314,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 		}
 
 	}
-
+*/
 	//-----------------------------
 	return resumenPreliqu
 }
