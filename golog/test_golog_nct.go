@@ -75,7 +75,7 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 
 }
 
-func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionString, dias_liq string) (rest []models.ConceptosResumen, total_dev float64) {
+func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionString, dias_liq string) (rest []models.ConceptosResumen, total_dev float64, pensionado bool) {
 
 	var listaDescuentos []models.ConceptosResumen
 
@@ -95,7 +95,7 @@ func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionStr
 
 		reglas = reglas + "sumar_ibc(" + Nom_Concepto + "," + strconv.Itoa(int(Valor)) + ")."
 		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N,D).`)
-
+		fmt.Println(solution)
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
