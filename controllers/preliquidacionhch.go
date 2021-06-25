@@ -170,7 +170,8 @@ func liquidarContratoHCH(reglasbase string, NumDocumento, Persona int, preliquid
 	var objetoDatosActa models.ObjetoActaInicio
 	var errorConsultaActa error
 	var predicadosRetefuente string
-
+        var pensionado bool
+	var dependientes bool
 	var resumenPreliqu []models.Respuesta
 	var reglasinyectadas string
 	var reglas string
@@ -199,7 +200,7 @@ func liquidarContratoHCH(reglasbase string, NumDocumento, Persona int, preliquid
 
 		reglasinyectadas = FormatoReglas(predicados)
 
-		predicadosRetefuente = CargarDatosRetefuente(NumDocumento)
+		predicadosRetefuente, pensionado, dependientes = CargarDatosRetefuente(NumDocumento)
 		dispo = verificacionPago(Persona, preliquidacion.Ano, preliquidacion.Mes, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato)
 		reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(" + strconv.Itoa(dispo) + ")."
 
