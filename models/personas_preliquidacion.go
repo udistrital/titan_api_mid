@@ -12,4 +12,5 @@ type PersonasPreliquidacion struct {
 	FechaInicio     string
 	FechaFin        string
 	ValorContrato   string    
+	Pensionado	string
 }

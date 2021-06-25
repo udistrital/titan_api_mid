@@ -61,7 +61,7 @@ func (c *PreliquidacionctController) Preliquidar(datos models.DatosPreliquidacio
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
 		if datos.PersonasPreLiquidacion[i].IdPersona != 0 {
-			fmt.Println("estado disponibilidad ", datos.PersonasPreLiquidacion[i].EstadoDisponibilidad)
+			
 			if datos.PersonasPreLiquidacion[i].EstadoDisponibilidad == 1 {
 
 				var respuesta string
@@ -172,6 +172,7 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 			//reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(2)."
 			temp := golog.CargarReglasCT(persona.IdPersona, reglas, preliquidacion, vigenciaContrato, objetoDatosActa)
 			resultado := temp[len(temp)-1]
+			fmt.Println("resultado", resultado)
 			resultado.NumDocumento = float64(persona.NumDocumento)
 			resultado.NumeroContrato = persona.NumeroContrato
 			resultado.VigenciaContrato = strconv.Itoa(persona.VigenciaContrato)
