@@ -384,9 +384,12 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
 		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
+	fmt.Println("INGRESOS", ingresos)
+	fmt.Println("DEDUCCIONES", deducciones_salud)
 	if(dependientes){
 		deduccion_salud=  deduccion_salud + (ingresos * (10/100))
 		}
+	
 	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
 	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
 	
