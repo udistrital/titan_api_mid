@@ -350,7 +350,7 @@ func BuscarValorConcepto(listaDescuentos []models.ConceptosResumen, codigo_conce
 	return temp
 }
 
-func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq string) (rest []models.ConceptosResumen) {
+func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq string, dependientes bool) (rest []models.ConceptosResumen) {
 
 	var listaRetefuente []models.ConceptosResumen
 	var ingresos int
@@ -384,9 +384,12 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
 		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
+	if(dependientes){
+		   deduccion_salud=   deduccion_salud+ingresos*0.1
+		}
 	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
 	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
-
+	
 	temp_reglas = temp_reglas + "deducciones(" + strconv.Itoa(deduccion_salud) + ")."
 
 	o := NewMachine().Consult(temp_reglas)
@@ -401,6 +404,8 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		} else{
 			valor_reten=0
 		}
+		
+		
 		val_reten = strconv.Itoa(valor_reten)
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 			Valor: val_reten,
