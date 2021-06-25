@@ -204,7 +204,7 @@ func liquidarContratoHCH(reglasbase string, NumDocumento, Persona int, preliquid
 		dispo = verificacionPago(Persona, preliquidacion.Ano, preliquidacion.Mes, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato)
 		reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(" + strconv.Itoa(dispo) + ")."
 
-		temp := golog.CargarReglasCT(Persona, reglas, preliquidacion, vigenciaContrato, datosActa)
+		temp := golog.CargarReglasCT(Persona, reglas, preliquidacion, vigenciaContrato, datosActa, pensionado, dependientes)
 
 		resultado := temp[len(temp)-1]
 		resultado.Id = Persona
