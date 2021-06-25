@@ -487,7 +487,7 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona) {
 // CargarDatosRetefuente ...
 // @Title CargarDatosRetefuente
 // @Description Carga lo referente al calculo de la retefuente según cédula de la persona
-func CargarDatosRetefuente(cedula int) (reglas string) {
+func CargarDatosRetefuente(cedula int) (reglas string , pensionado bool , dependientes bool) {
 
 	//var v []models.InformacionPersonaNatural
 	var temp map[string]interface{}
@@ -504,8 +504,10 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 			fmt.Println("personaNatural:", &tempPersonaNatural)
 			if tempPersonaNatural.InformacionPersonaNatural.PersonasACargo == "true" {
 				reglas = reglas + "dependiente(si)."
+				dependientes = true
 			} else {
 				reglas = reglas + "dependiente(no)."
+				dependientes = false
 			}
 
 			if tempPersonaNatural.InformacionPersonaNatural.DeclaranteRenta == "true" {
@@ -524,8 +526,10 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 			if tempPersonaNatural.InformacionPersonaNatural.Pensionado == "true" {
 
 				reglas = reglas + "pensionado(si)."
+				pensionado = true
 			} else {
 				reglas = reglas + "pensionado(no)."
+				pensionado = false
 			}
 
 			reglas = reglas + "intereses_vivienda(" + fmt.Sprintf("%f", tempPersonaNatural.InformacionPersonaNatural.InteresViviendaAfc) + ")."
@@ -537,6 +541,9 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 			reglas = reglas + "medicina_prepagada(no)."
 			reglas = reglas + "pensionado(no)."
 			reglas = reglas + "intereses_vivienda(0)."
+			pensionado = false
+			dependientes = false
+			
 		}
 	} else {
 		fmt.Println("error al consultar en Ágora", err)
@@ -545,6 +552,8 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 		reglas = reglas + "medicina_prepagada(no)."
 		reglas = reglas + "pensionado(no)."
 		reglas = reglas + "intereses_vivienda(0)."
+		pensionado = false
+		dependientes = false
 
 	}
 
@@ -574,5 +583,5 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 //	fmt.Println("reglas RETEARGO:", v)
 	fmt.Println("reglas RETEFUENTE:", reglas)
 
-	return reglas
+	return reglas , pensionado , dependientes
 }
