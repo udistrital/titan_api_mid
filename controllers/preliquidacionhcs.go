@@ -232,6 +232,10 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 	var listaConceptos []models.ConceptosResumen
         var dependientes bool
 	var pensionado bool
+	
+	
+	dependientes=false
+	pensionado=false
 	if len(resultadoDesc) != 0 {
 
 		for v, _ := range resumenPreliqu {
