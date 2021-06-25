@@ -405,8 +405,8 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 			Valor: val_reten,
 		}
-		fmt.Println("dias a liq rete", val_reten)
-		fmt.Println("dias a liq rete", temp_conceptos)
+		fmt.Println("val_reten", val_reten)
+		fmt.Println("temp_conceptos", temp_conceptos)
 		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
