@@ -132,4 +132,4 @@ steps:
     - push
     status:
     - failure
-    - success
+   

@@ -8,7 +8,7 @@ import (
 	models "github.com/udistrital/titan_api_mid/models"
 )
 
-func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio) (rest []models.Respuesta) {
+func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio, pensionado bool, dependientes bool) (rest []models.Respuesta) {
 
 	var resultado []models.Respuesta
 	var listaDescuentos []models.ConceptosResumen
@@ -54,19 +54,19 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 			dias_novedad := CalcularDiasNovedades(preliquidacion.Mes, ano, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
 			diasALiquidar = strconv.Itoa(int(30 - dias_novedad))
 			diasNovedadString = strconv.Itoa(int(dias_novedad))
-			_, total_devengado_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasNovedadString)
+			_, total_devengado_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasNovedadString, pensionado)
 			ibc = 0
 		}
 
 	}
 
-	listaDescuentos, total_devengado_no_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasALiquidar)
+	listaDescuentos, total_devengado_no_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasALiquidar, pensionado)
 	listaNovedades = ManejarNovedadesCT(reglas, idProveedor, tipoPreliquidacionString, periodo, diasALiquidar)
-	listaRetefuente = CalcularReteFuenteSal(tipoPreliquidacionString, reglas, listaDescuentos, diasALiquidar)
+	listaRetefuente = CalcularReteFuenteSal(tipoPreliquidacionString, reglas, listaDescuentos, diasALiquidar, dependientes)
 	total_calculos = append(total_calculos, listaDescuentos...)
 	total_calculos = append(total_calculos, listaNovedades...)
 	total_calculos = append(total_calculos, listaRetefuente...)
-	resultado = GuardarConceptosCT(reglas, total_calculos, diasALiquidar, diasNovedadString)
+	resultado = GuardarConceptosCT(reglas, total_calculos, diasALiquidar, diasNovedadString, pensionado)
 
 	total_calculos = []models.ConceptosResumen{}
 	ibc = 0
@@ -75,7 +75,7 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 
 }
 
-func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionString, dias_liq string) (rest []models.ConceptosResumen, total_dev float64) {
+func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionString, dias_liq string, pensionado bool) (rest []models.ConceptosResumen, total_dev float64) {
 
 	var listaDescuentos []models.ConceptosResumen
 
@@ -95,7 +95,7 @@ func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionStr
 
 		reglas = reglas + "sumar_ibc(" + Nom_Concepto + "," + strconv.Itoa(int(Valor)) + ")."
 		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N,D).`)
-
+		fmt.Println(solution)
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
@@ -112,7 +112,7 @@ func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionStr
 
 }
 
-func GuardarConceptosCT(reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq_no_nov, dias_a_liq_nov string) (rest []models.Respuesta) {
+func GuardarConceptosCT(reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq_no_nov, dias_a_liq_nov string, pensionado bool) (rest []models.Respuesta) {
 	temp := models.Respuesta{}
 	var resultado []models.Respuesta
 	m := NewMachine().Consult(reglas)
