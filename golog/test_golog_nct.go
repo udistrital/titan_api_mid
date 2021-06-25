@@ -54,7 +54,7 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 			dias_novedad := CalcularDiasNovedades(preliquidacion.Mes, ano, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
 			diasALiquidar = strconv.Itoa(int(30 - dias_novedad))
 			diasNovedadString = strconv.Itoa(int(dias_novedad))
-			_, total_devengado_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasNovedadString)
+			_, total_devengado_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasNovedadString, pensionado)
 			ibc = 0
 		}
 
