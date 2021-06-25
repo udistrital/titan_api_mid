@@ -75,7 +75,7 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 
 }
 
-func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionString, dias_liq string) (rest []models.ConceptosResumen, total_dev float64, pensionado bool) {
+func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionString, dias_liq string, pensionado bool) (rest []models.ConceptosResumen, total_dev float64) {
 
 	var listaDescuentos []models.ConceptosResumen
 
@@ -112,7 +112,7 @@ func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionStr
 
 }
 
-func GuardarConceptosCT(reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq_no_nov, dias_a_liq_nov string) (rest []models.Respuesta) {
+func GuardarConceptosCT(reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq_no_nov, dias_a_liq_nov string, pensionado bool) (rest []models.Respuesta) {
 	temp := models.Respuesta{}
 	var resultado []models.Respuesta
 	m := NewMachine().Consult(reglas)
