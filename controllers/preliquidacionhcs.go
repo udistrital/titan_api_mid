@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"math"
+	
 	"strconv"
 
 	"github.com/astaxie/beego"
