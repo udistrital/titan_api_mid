@@ -230,7 +230,8 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 	resultadoDesc := CalcularDescuentosTotales(reglasbase, datos.Preliquidacion, resumenPreliqu)
 	var idDetaPre interface{}
 	var listaConceptos []models.ConceptosResumen
-
+        var dependientes bool
+	var pensionado bool
 	if len(resultadoDesc) != 0 {
 
 		for v, _ := range resumenPreliqu {
@@ -246,7 +247,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 			listaConceptos = append(listaConceptos, *resumenPreliqu[v].Conceptos...)
 		}
 
-		predicadosRetefuente := CargarDatosRetefuente(datos.PersonasPreLiquidacion[0].NumDocumento)
+		predicadosRetefuente, pensionado, dependientes := CargarDatosRetefuente(datos.PersonasPreLiquidacion[0].NumDocumento)
 		reglasbase = reglasbase + predicadosRetefuente
 
 		reteFuente := golog.CalcularRetefuenteHCS(reglasbase, listaConceptos, datos)
