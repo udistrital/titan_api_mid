@@ -386,6 +386,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	}
 	fmt.Println("INGRESOS", ingresos)
 	fmt.Println("DEDUCCIONES", deduccion_salud)
+	fmt.Println("DEPENDIENTES", dependientes)
 	if(dependientes){
 		deduccion_salud=  deduccion_salud + (ingresos * (10/100))
 		}
