@@ -250,7 +250,7 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 		predicadosRetefuente, pensionado, dependientes := CargarDatosRetefuente(datos.PersonasPreLiquidacion[0].NumDocumento)
 		reglasbase = reglasbase + predicadosRetefuente
 
-		reteFuente := golog.CalcularRetefuenteHCS(reglasbase, listaConceptos, datos)
+		reteFuente := golog.CalcularRetefuenteHCS(reglasbase, listaConceptos, datos, dependientes)
 		//RETEFUENTE
 		for v, _ := range resumenPreliqu {
 
@@ -375,10 +375,12 @@ func liquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento, Pers
 		} else {
 			reglasinyectadas = reglasinyectadas + novedadInyectada
 		}
-		predicadosRetefuente = CargarDatosRetefuente(NumDocumento)
+		var pensionado bool
+		var dependientes bool
+		predicadosRetefuente, pensionado, dependientes = CargarDatosRetefuente(NumDocumento)
 		reglas = reglasinyectadas + predicadosRetefuente + reglasbase
 
-		temp := golog.CargarReglasHCS(Persona, reglas, preliquidacion, informacionContrato.VigenciaContrato, datosActa)
+		temp := golog.CargarReglasHCS(Persona, reglas, preliquidacion, informacionContrato.VigenciaContrato, datosActa, pensionado, dependientes)
 
 		resultado := temp[len(temp)-1]
 		resultado.Id = Persona
