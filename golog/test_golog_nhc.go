@@ -8,7 +8,7 @@ import (
 	models "github.com/udistrital/titan_api_mid/models"
 )
 
-func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio) (rest []models.Respuesta) {
+func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio, pensionado bool, dependientes bool) (rest []models.Respuesta) {
 
 	var resultado []models.Respuesta
 	var listaDescuentos []models.ConceptosResumen
@@ -49,7 +49,7 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preli
 			dias_novedad := CalcularDiasNovedades(preliquidacion.Mes, ano, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
 			diasALiquidar = strconv.Itoa(int(30 - dias_novedad))
 			diasNovedadString = strconv.Itoa(int(dias_novedad))
-			_, total_devengado_novedad = CalcularConceptosHCS(idProveedor, periodo, reglas, tipoPreliquidacionString, diasNovedadString)
+			_, total_devengado_novedad = CalcularConceptosHCS(idProveedor, periodo, reglas, tipoPreliquidacionString, diasNovedadString, dependientes)
 			fmt.Println("- dias_a_liq", diasALiquidar)
 			fmt.Println("- diasNovedadString", dias_novedad)
 			fmt.Println("- total novedad", total_devengado_novedad)
@@ -62,7 +62,7 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preli
 	fmt.Println("diasNovedadString", diasNovedadString)
 	fmt.Println("total novedad", total_devengado_novedad)
 
-	listaDescuentos, total_devengado_no_novedad = CalcularConceptosHCS(idProveedor, periodo, reglas, tipoPreliquidacionString, diasALiquidar)
+	listaDescuentos, total_devengado_no_novedad = CalcularConceptosHCS(idProveedor, periodo, reglas, tipoPreliquidacionString, diasALiquidar, dependientes)
 	listaNovedades = ManejarNovedadesHCS(reglas, idProveedor, tipoPreliquidacionString, periodo, diasALiquidar)
 	//listaRetefuente = CalcularReteFuenteSal(tipoPreliquidacionString, reglas, listaDescuentos, diasALiquidar)
 	total_calculos = append(total_calculos, listaDescuentos...)
@@ -75,16 +75,16 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preli
 	return resultado
 }
 
-func CalcularRetefuenteHCS(reglas string, listaConceptos []models.ConceptosResumen, datos models.DatosPreliquidacion) (rest []models.ConceptosResumen) {
+func CalcularRetefuenteHCS(reglas string, listaConceptos []models.ConceptosResumen, datos models.DatosPreliquidacion, dependientes bool) (rest []models.ConceptosResumen) {
 
 	reglas = reglas + "periodo(" + strconv.Itoa(datos.Preliquidacion.Ano) + ")."
 	reglas = reglas + "intereses_vivienda(0)."
 
-	return CalcularReteFuenteSal("2", reglas, listaConceptos, datos.DiasALiquidar)
+	return CalcularReteFuenteSal("2", reglas, listaConceptos, datos.DiasALiquidar, dependientes)
 
 }
 
-func CalcularConceptosHCS(idProveedor int, periodo, reglas, tipoPreliquidacionString, dias_liq string) (rest []models.ConceptosResumen, total_dev float64) {
+func CalcularConceptosHCS(idProveedor int, periodo, reglas, tipoPreliquidacionString, dias_liq string, dependientes bool) (rest []models.ConceptosResumen, total_dev float64) {
 
 	var listaDescuentos []models.ConceptosResumen
 	reglas = reglas + "dias_liquidados(" + strconv.Itoa(idProveedor) + "," + dias_liq + ")."
