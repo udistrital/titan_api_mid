@@ -124,7 +124,8 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 	var reglasinyectadas string
 	var reglas string
 	var disp int
-
+        var pensionado bool
+	var dependientes bool
 	var idDetaPre interface{}
 
 	var objetoDatosContrato models.ObjetoContratoEstado
@@ -165,8 +166,8 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 			} else {
 				reglasinyectadas = reglasinyectadas + novedadInyectada
 			}
-
-			predicadosRetefuente = CargarDatosRetefuente(persona.NumDocumento)
+                        
+			predicadosRetefuente, pensionado, dependientes = CargarDatosRetefuente(persona.NumDocumento)
 			disp = verificacionPago(persona.IdPersona, preliquidacion.Ano, preliquidacion.Mes, persona.NumeroContrato, strconv.Itoa(persona.VigenciaContrato))
 			reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(" + strconv.Itoa(disp) + ")."
 			//reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(2)."
