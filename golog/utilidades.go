@@ -354,6 +354,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 
 	var listaRetefuente []models.ConceptosResumen
 	var ingresos int
+	var saldo int
 	var deduccion_salud int
 	var sueldo int
 	var sueldos []int
@@ -384,6 +385,18 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
 		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
+
+	saldo=ingresos-deduccion_salud
+	if saldo < 0
+	{
+		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
+		deduccion_salud=0
+	}
+	else
+	{
+	    temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
+	}
+
 	fmt.Println("INGRESOS", ingresos)
 	fmt.Println("DEDUCCIONES", deduccion_salud)
 	fmt.Println("DEPENDIENTES", dependientes)
@@ -392,6 +405,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		}
 	
 	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
+
 	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
 	
 	temp_reglas = temp_reglas + "deducciones(" + strconv.Itoa(deduccion_salud) + ")."
