@@ -391,10 +391,9 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	{
 		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
 		deduccion_salud=0
-	}
-	else
+	}else
 	{
-	    temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
+		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
 	}
 
 	fmt.Println("INGRESOS", ingresos)
