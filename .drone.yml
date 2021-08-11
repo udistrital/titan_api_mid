@@ -127,11 +127,9 @@ steps:
       {{/success}}
   when:
     branch:
-    - develop
-    - desarrollo
     - master
     event:
     - push
     status:
     - failure
-    - success
+   

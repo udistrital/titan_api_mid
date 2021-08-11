@@ -250,7 +250,7 @@ func (c *PreliquidacionController) GetIBCPorNovedad() {
 // @router / [post]
 func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
-
+       
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		fmt.Println("informacion ingresa ",v)
 		//carga de reglas desde el ruler
@@ -487,41 +487,81 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona) {
 // CargarDatosRetefuente ...
 // @Title CargarDatosRetefuente
 // @Description Carga lo referente al calculo de la retefuente según cédula de la persona
-func CargarDatosRetefuente(cedula int) (reglas string) {
+func CargarDatosRetefuente(cedula int) (reglas string , pensionado bool , dependientes bool) {
 
-	var v []models.InformacionPersonaNatural
+	//var v []models.InformacionPersonaNatural
+	var temp map[string]interface{}
+	var tempPersonaNatural models.InformacionPersonaNatural
 	reglas = ""
-	query := "Id:" + strconv.Itoa(cedula)
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
-	fmt.Println("reglas SS:", query)
-		if len(v) != 0 {
+	query := strconv.Itoa(cedula)
 
-			if v[0].PersonasACargo == true {
+	//if err := request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
+        if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/informacion_persona_natural/"+query, &temp); err == nil && temp != nil {
+		jsonPersonaNatural, errorJSON := json.Marshal(temp)
+		if errorJSON == nil {
+			
+			json.Unmarshal(jsonPersonaNatural, &tempPersonaNatural)
+			fmt.Println("personaNatural:", &tempPersonaNatural)
+			if tempPersonaNatural.InformacionPersonaNatural.PersonasACargo == "true" {
 				reglas = reglas + "dependiente(si)."
+				dependientes = true
 			} else {
 				reglas = reglas + "dependiente(no)."
+				dependientes = false
 			}
 
-			if v[0].DeclaranteRenta == true {
+			if tempPersonaNatural.InformacionPersonaNatural.DeclaranteRenta == "true" {
 				reglas = reglas + "declarante(si)."
 			} else {
 				reglas = reglas + "declarante(no)."
 			}
 
-			if v[0].MedicinaPrepagada == true {
+			if tempPersonaNatural.InformacionPersonaNatural.MedicinaPrepagada == "true" {
 				reglas = reglas + "medicina_prepagada(si)."
 			} else {
 				reglas = reglas + "medicina_prepagada(no)."
 			}
 
-			if v[0].IdFondoPension == 119 {
+
+			if tempPersonaNatural.InformacionPersonaNatural.Pensionado == "true" {
+
 				reglas = reglas + "pensionado(si)."
+				pensionado = true
 			} else {
 				reglas = reglas + "pensionado(no)."
+				pensionado = false
 			}
 
-			reglas = reglas + "intereses_vivienda(" + strconv.Itoa(int(v[0].InteresViviendaAfc)) + ")."
+			reglas = reglas + "intereses_vivienda(" + fmt.Sprintf("%f", tempPersonaNatural.InformacionPersonaNatural.InteresViviendaAfc) + ")."
 
+		} else {
+			fmt.Println("No existen datos sobre esa persona")
+			reglas = reglas + "dependiente(no)."
+			reglas = reglas + "declarante(no)."
+			reglas = reglas + "medicina_prepagada(no)."
+			reglas = reglas + "pensionado(no)."
+			reglas = reglas + "intereses_vivienda(0)."
+			pensionado = false
+			dependientes = false
+			
+		}
+	} else {
+		fmt.Println("error al consultar en Ágora", err)
+		reglas = reglas + "dependiente(no)."
+		reglas = reglas + "declarante(no)."
+		reglas = reglas + "medicina_prepagada(no)."
+		reglas = reglas + "pensionado(no)."
+		reglas = reglas + "intereses_vivienda(0)."
+		pensionado = false
+		dependientes = false
+
+	}
+
+		
+		//if len(v) != 0 {
+
+			
+/*
 		} else {
 			fmt.Println("No existen datos sobre esa persona")
 			reglas = reglas + "dependiente(no)."
@@ -539,7 +579,9 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 		reglas = reglas + "intereses_vivienda(0)."
 	}
 
-	fmt.Println("reglas RETEARGO:", v)
+*/
+//	fmt.Println("reglas RETEARGO:", v)
 	fmt.Println("reglas RETEFUENTE:", reglas)
-	return reglas
+
+	return reglas , pensionado , dependientes
 }

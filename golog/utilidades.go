@@ -350,7 +350,7 @@ func BuscarValorConcepto(listaDescuentos []models.ConceptosResumen, codigo_conce
 	return temp
 }
 
-func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq string) (rest []models.ConceptosResumen) {
+func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq string, dependientes bool) (rest []models.ConceptosResumen) {
 
 	var listaRetefuente []models.ConceptosResumen
 	var ingresos int
@@ -385,6 +385,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
 		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
+
 	saldo=ingresos-deduccion_salud
 	if saldo < 0
 	{
@@ -395,28 +396,43 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	{
 	    temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
 	}
-	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
 
+	fmt.Println("INGRESOS", ingresos)
+	fmt.Println("DEDUCCIONES", deduccion_salud)
+	fmt.Println("DEPENDIENTES", dependientes)
+	if(dependientes){
+		deduccion_salud=  deduccion_salud + (ingresos * (10/100))
+		}
+	
+	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
+
+	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
+	
 	temp_reglas = temp_reglas + "deducciones(" + strconv.Itoa(deduccion_salud) + ")."
 
 	o := NewMachine().Consult(temp_reglas)
-	fmt.Println(temp_reglas)
+	
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
 	fmt.Println("valorrete", valor_retencion)
 	for _, solution := range valor_retencion {
 		val_reten := fmt.Sprintf("%s", solution.ByName_("VR"))
 		valor_reten, _ := strconv.Atoi(val_reten)
+		if(dependientes==true){
+		valor_reten = 0
+		}
 		if(valor_reten > 0 ){
 			valor_reten = valor_reten - int(2000)
 		} else{
 			valor_reten=0
 		}
+		
+		
 		val_reten = strconv.Itoa(valor_reten)
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 			Valor: val_reten,
 		}
-		fmt.Println("dias a liq rete", val_reten)
-		fmt.Println("dias a liq rete", temp_conceptos)
+		fmt.Println("val_reten", val_reten)
+		fmt.Println("temp_conceptos", temp_conceptos)
 		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
