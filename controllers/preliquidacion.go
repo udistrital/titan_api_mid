@@ -39,7 +39,7 @@ func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 	fmt.Println(c.Ctx.Input.RequestBody)
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-
+		
 		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/personas_x_preliquidacion", "POST", &personasPreliquidacion, &v); err == nil {
 			//personasPreliquidacion := []models.PersonasPreliquidacion{}
 			fmt.Println("http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/preliquidacion/personas_x_preliquidacion")
@@ -252,7 +252,7 @@ func (c *PreliquidacionController) Preliquidar() {
 	var v models.DatosPreliquidacion
        
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-
+		fmt.Println("informacion ingresa ",v)
 		//carga de reglas desde el ruler
 		reglasbase := cargarReglasBase(v.Preliquidacion.Nomina.TipoNomina.Nombre) //funcion general para dar formato a reglas cargadas desde el ruler
 		reglasbase = reglasbase + cargarReglasSS()
