@@ -2,13 +2,12 @@ package models
 
 type ObjetoContratoEstado struct {
 	ContratoEstado struct {
-			ValorContrato  string `json:"valorContrato"`
-			Estado 				Estado   `json:"estado"`
-			Vigencia      string				 `json:"vigencia"`
-			NumeroContrato string    `json:"numeroContrato"`
+		ValorContrato  string `json:"valorContrato"`
+		Estado         Estado `json:"estado"`
+		Vigencia       string `json:"vigencia"`
+		NumeroContrato string `json:"numeroContrato"`
 	} `json:"contratoEstado"`
 }
-
 
 type Estado struct {
 	Id           int
@@ -16,11 +15,7 @@ type Estado struct {
 }
 
 type ListaContratos struct {
-
-
-			VigenciaContrato  string
-			Total    				   string
-			NumeroContrato      string
-
-
+	VigenciaContrato string
+	Total            string
+	NumeroContrato   string
 }

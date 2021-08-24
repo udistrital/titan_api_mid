@@ -23,14 +23,14 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 
 	//debe verificar si tiene una novedad tipo cesion y calcular el periodo de acuerdo a ello
 	diasALiquidar, _ := CalcularPeriodoLiquidacion(preliquidacion, objeto_datos_acta)
-	fmt.Println("dias liquidados", diasALiquidar)
+	//fmt.Println("dias liquidados", diasALiquidar)
 
 	m := NewMachine().Consult(reglas)
 	novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
 
 	for _, solution := range novedades_seg_social {
 
-		fmt.Println("existe novedad de SS")
+		//fmt.Println("existe novedad de SS")
 
 		novedad := fmt.Sprintf("%s", solution.ByName_("N"))
 		AnoDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
@@ -39,13 +39,13 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 		AnoHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("AA")), 64)
 		MesHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
 		DiaHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
-		fmt.Println("existe novedad de SS", novedad)
-		fmt.Println("AnoDesde", AnoDesde)
-		fmt.Println("MesDesde", MesDesde)
-		fmt.Println("DiaDesde", DiaDesde)
-		fmt.Println("AnoHasta", AnoHasta)
-		fmt.Println("MesHasta", MesHasta)
-		fmt.Println("DiaHasta", DiaHasta)
+		//fmt.Println("existe novedad de SS", novedad)
+		//fmt.Println("AnoDesde", AnoDesde)
+		//fmt.Println("MesDesde", MesDesde)
+		//fmt.Println("DiaDesde", DiaDesde)
+		//fmt.Println("AnoHasta", AnoHasta)
+		//fmt.Println("MesHasta", MesHasta)
+		//fmt.Println("DiaHasta", DiaHasta)
 
 		afectacion_seg_social := m.ProveAll("afectacion_seguridad(" + novedad + ").")
 		for _, solution := range afectacion_seg_social {

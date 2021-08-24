@@ -32,8 +32,7 @@ func (c *GestionPersonasAPreliquidarController) URLMapping() {
 func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 	var v models.Preliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if v.Nomina.TipoNomina.Nombre == "CT" {
-			fmt.Println("preliq", v)
+		if v.NominaId.TipoNominaId.Nombre == "CT" {
 			if listaContratos, err := ListaContratosContratistas(v); err == nil {
 				c.Ctx.Output.SetStatus(201)
 				c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
@@ -42,7 +41,7 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 				fmt.Println("error : ", err)
 			}
 
-		} else if v.Nomina.TipoNomina.Nombre == "HCS" {
+		} else if v.NominaId.TipoNominaId.Nombre == "HCS" {
 			if listaContratos, err := ListarPersonasHCS(v); err == nil {
 				c.Ctx.Output.SetStatus(201)
 				c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
@@ -50,7 +49,7 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 				c.Data["json"] = err.Error()
 				fmt.Println("error : ", err)
 			}
-		} else if v.Nomina.TipoNomina.Nombre == "HCH" {
+		} else if v.NominaId.TipoNominaId.Nombre == "HCH" {
 			if listaContratos, err := ListarPersonasHCH(v); err == nil {
 				c.Ctx.Output.SetStatus(201)
 				c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
@@ -58,8 +57,8 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 				c.Data["json"] = err.Error()
 				fmt.Println("error : ", err)
 			}
-		} else if v.Nomina.TipoNomina.Nombre == "FP" {
-			fmt.Println("Planta")
+		} else if v.NominaId.TipoNominaId.Nombre == "FP" {
+			//fmt.Println("Planta")
 			if listaContratos, err := ListaContratosFuncionariosPlanta(); err == nil {
 				c.Ctx.Output.SetStatus(201)
 				c.Data["json"] = listaContratos
@@ -74,7 +73,6 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 		fmt.Println("error 2: ", err)
 	}
 	c.ServeJSON()
-
 }
 
 // ListarPersonasAPreliquidarPendientes ...
@@ -89,8 +87,8 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidarPendie
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
-		if v.Nomina.TipoNomina.Nombre == "CT" {
-			fmt.Println("preliq", v)
+		if v.NominaId.TipoNominaId.Nombre == "CT" {
+			//fmt.Println("preliq", v)
 			if listaContratos, err := ListaContratosContratistasPendientes(v); err == nil {
 				c.Ctx.Output.SetStatus(201)
 				c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
@@ -186,12 +184,14 @@ func ListarPersonasHCH(objeto_nom models.Preliquidacion) (arreglo_contratos mode
 	}
 
 	//SABER SI YA FUE PRELIQUIDADO O NO
+	var aux map[string]interface{}
 	var d []models.DetallePreliquidacion
 	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
 		d = nil
 		query := "Preliquidacion.Id:" + strconv.Itoa(objeto_nom.Id) + ",Persona:" + dato.Id
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
-			if len(d) == 0 || d[0].Id == 0 {
+		if err := request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			LimpiezaRespuestaRefactor(aux, &d)
+			if len(d) == 0 {
 				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "NO"
 
 			} else {

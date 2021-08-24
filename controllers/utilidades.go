@@ -52,7 +52,7 @@ func ActaInicioDVE(id_contrato, vigencia string) (datos models.ObjetoActaInicio,
 	var tempDocentes models.ObjetoActaInicio
 	var controlError error
 
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio_elaborado/"+id_contrato+"/"+vigencia, &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/acta_inicio_elaborado/"+id_contrato+"/"+vigencia, &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {
@@ -74,7 +74,7 @@ func ActaInicioDVE(id_contrato, vigencia string) (datos models.ObjetoActaInicio,
 
 func verificacionPago(id_proveedor, ano, mes int, num_cont, vig string) (estado int) {
 
-	fmt.Println("verificación de cumplido 1: ")
+	//fmt.Println("verificación de cumplido 1: ")
 	estadoPago := consultarEstadoPago(num_cont, vig, ano, mes)
 	//disponibilidad := calcular_disponibilidad(id_proveedor,vig,resultado)
 	disponibilidad := 2
@@ -92,14 +92,14 @@ func consultarRp(id_proveedor, vigencia int) (saldo float64) {
 	var saldoRP float64
 	var IDProveedorString = strconv.Itoa(id_proveedor)
 	var vigenciaString = strconv.Itoa(vigencia)
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registroPresupuestal?limit=-1&query=Beneficiario:"+IDProveedorString+",Vigencia:"+vigenciaString, &registroPresupuestal); err == nil && registroPresupuestal != nil {
+	if err := request.GetJson(beego.AppConfig.String("UrlCrudFinanciera")+"/registroPresupuestal?limit=-1&query=Beneficiario:"+IDProveedorString+",Vigencia:"+vigenciaString, &registroPresupuestal); err == nil && registroPresupuestal != nil {
 		var id_registro_pre = strconv.Itoa(registroPresupuestal[0].Id)
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registroPresupuestal/ValorActualRp/"+id_registro_pre, &saldoRP); err == nil {
-			fmt.Println("saldo rp")
-			fmt.Println(saldoRP)
+		if err := request.GetJson(beego.AppConfig.String("UrlCrudFinanciera")+"/registroPresupuestal/ValorActualRp/"+id_registro_pre, &saldoRP); err == nil {
+			//fmt.Println("saldo rp")
+			//fmt.Println(saldoRP)
 		} else {
-			fmt.Println("error al consultar saldo de rp")
-			fmt.Println(err)
+			//fmt.Println("error al consultar saldo de rp")
+			//mt.Println(err)
 			saldoRP = 0
 		}
 
@@ -173,7 +173,7 @@ func consultarEstadoPago(num_cont, vigencia string, ano, mes int) (disponibilida
 
 		}*/
 	dispo = 2
-	fmt.Println("verificación de cumplido:", dispo)
+	//fmt.Println("verificación de cumplido:", dispo)
 	return dispo
 
 }
@@ -184,7 +184,7 @@ func GetIDProveedor(Documento string) (IDProveedor int) {
 	var idProveedor int
 
 	var respuesta_servicio []models.InformacionProveedor
-	if controlError := request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=NumDocumento:"+Documento, &respuesta_servicio); controlError == nil {
+	if controlError := request.GetJson(beego.AppConfig.String("UrlAdministrativaAmazon")+"/informacion_proveedor?query=NumDocumento:"+Documento, &respuesta_servicio); controlError == nil {
 		idProveedor = respuesta_servicio[0].Id
 	} else {
 		idProveedor = 0
@@ -203,9 +203,8 @@ func InformacionPersonaProveedor(idPersona int) (Nom string, doc int, err error)
 	var documento int
 	var respuesta_servicio []models.InformacionProveedor
 	var controlError error
-	fmt.Println("URL ARGO", "http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona))
-	if controlError := request.GetJson("http://"+beego.AppConfig.String("Urlargoamazon")+":"+beego.AppConfig.String("Portargoamazon")+"/"+beego.AppConfig.String("Nsargoamazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona), &respuesta_servicio); controlError == nil {
-
+	//fmt.Println("URL ARGO", beego.AppConfig.String("UrlAdministrativaAmazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona))
+	if controlError := request.GetJson(beego.AppConfig.String("UrlAdministrativaAmazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona), &respuesta_servicio); controlError == nil {
 		nombre_persona = respuesta_servicio[0].NomProveedor
 		documento, _ = strconv.Atoi(respuesta_servicio[0].NumDocumento)
 
@@ -241,7 +240,7 @@ func InformacionPersona(tipoNomina string, NumeroContrato string, VigenciaContra
 			endpoint = "informacion_contrato_elaborado_contratista"
 		}
 
-		if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/"+endpoint+"/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
+		if err := request.GetJsonWSO2(beego.AppConfig.String("UrlAdministrativaWso2")+"/"+endpoint+"/"+NumeroContrato+"/"+strconv.Itoa(VigenciaContrato), &temp); err == nil && temp != nil {
 
 			jsonDocentes, errorJSON := json.Marshal(temp)
 
@@ -264,10 +263,10 @@ func InformacionPersona(tipoNomina string, NumeroContrato string, VigenciaContra
 	}
 
 	if tipoNomina == "FP" {
-		fmt.Println("asdafadada1")
+		//fmt.Println("asdafadada1")
 		var datosPlanta []models.Funcionario_x_Proveedor
-		if err = request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/informacion_proveedor/get_informacion_personas_planta?numero_contrato="+NumeroContrato+"&vigencia="+strconv.Itoa(VigenciaContrato), &datosPlanta); err == nil {
-			fmt.Println("asdafadada", datosPlanta)
+		if err = request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/informacion_proveedor/get_informacion_personas_planta?numero_contrato="+NumeroContrato+"&vigencia="+strconv.Itoa(VigenciaContrato), &datosPlanta); err == nil {
+			//fmt.Println("asdafadada", datosPlanta)
 			nombre_contratista = datosPlanta[0].NombreProveedor
 			contrato = datosPlanta[0].NumeroContrato
 			documento = strconv.Itoa(datosPlanta[0].NumDocumento)
@@ -344,7 +343,7 @@ func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidaci
 		aux := models.TotalPersona{}
 		if err := formatdata.FillStruct(info_total_personas[key], &aux); err == nil {
 
-			if preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
+			if preliquidacion.NominaId.TipoNominaId.Nombre == "HCH" {
 				auxhch, _ := strconv.Atoi(aux.Total)
 
 				auxhch2 := float64(auxhch) * 0.4
@@ -402,7 +401,7 @@ func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidaci
 				//	}
 
 			}
-			fmt.Println("fondo solidaridad total", temp)
+			//fmt.Println("fondo solidaridad total", temp)
 		} else {
 			fmt.Println("error al guardar información agrupada", err)
 		}
@@ -419,7 +418,7 @@ func ContratosContratistas(id_contrato string, vigencia int) (datos models.Objet
 	var temp map[string]interface{}
 	var tempDocentes models.ObjetoContratoEstado
 	var controlError error
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/contrato_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {
@@ -448,7 +447,7 @@ func ActaInicioContratistas(id_contrato string, vigencia int) (datos models.Obje
 	var tempDocentes models.ObjetoActaInicio
 	var controlError error
 
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/acta_inicio/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {
@@ -466,4 +465,13 @@ func ActaInicioContratistas(id_contrato string, vigencia int) (datos models.Obje
 	}
 
 	return tempDocentes, controlError
+}
+
+//limpia la respuesta obtenedia del crud
+func LimpiezaRespuestaRefactor(respuesta map[string]interface{}, v interface{}) {
+	b, err := json.Marshal(respuesta["Data"])
+	if err != nil {
+		panic(err)
+	}
+	json.Unmarshal(b, &v)
 }

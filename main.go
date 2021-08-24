@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
-	"github.com/udistrital/auditoria"
 	_ "github.com/udistrital/titan_api_mid/routers"
 	apistatus "github.com/udistrital/utils_oas/apiStatusLib"
 )
@@ -26,8 +25,7 @@ func main() {
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	}
 	InitInterceptor()
-	auditoria.InitMiddleware()
+	//auditoria.InitMiddleware()
 	apistatus.Init()
 	beego.Run()
-
 }

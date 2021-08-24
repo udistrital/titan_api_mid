@@ -34,7 +34,7 @@ func CalcularDiasNovedades(MesPreliq, AnoPreliq int, AnoDesde float64, MesDesde 
 			*/
 			if int(FechaDesde.Month()) == MesPreliq && int(FechaDesde.Year()) == AnoPreliq {
 				FechaControl = time.Date(AnoPreliq, time.Month(MesPreliq), 30, 0, 0, 0, 0, time.UTC)
-				fmt.Println("fecha cont", FechaControl, FechaDesde)
+				//fmt.Println("fecha cont", FechaControl, FechaDesde)
 				periodo_liquidacion = CalcularDias(FechaDesde, FechaControl) + 1
 			} else if int(FechaHasta.Month()) == MesPreliq && int(FechaHasta.Year()) == AnoPreliq {
 				/*
@@ -216,7 +216,7 @@ func ConsultarValoresPriServDic(numero_contrato string, vigencia_contrato int, p
 }
 
 func CalcularReteFuentePlanta(tipoPreliquidacionString, reglas, periodo string, listaDescuentos []models.ConceptosResumen) (rest []models.ConceptosResumen) {
-	fmt.Println("retefuente", periodo)
+	//fmt.Println("retefuente", periodo)
 	var listaRetefuente []models.ConceptosResumen
 
 	var ingresos int
@@ -227,7 +227,7 @@ func CalcularReteFuentePlanta(tipoPreliquidacionString, reglas, periodo string, 
 	var Valor_alivio_vivienda float64
 	var Valor_alivio_salud_prepagada float64
 	var definitivo_deduccion int
-	fmt.Println(listaDescuentos)
+	//mt.Println(listaDescuentos)
 	temp_reglas := reglas
 	temp_reglas = temp_reglas + "beneficiario(no)."
 	temp_reglas = temp_reglas + "intereses_vivienda(0)."
@@ -354,12 +354,13 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 
 	var listaRetefuente []models.ConceptosResumen
 	var ingresos int
+	var saldo int
 	var deduccion_salud int
 	var sueldo int
 	var sueldos []int
 	var porcentajes []float64
 	var retenciones []models.ConceptosResumen
-	
+
 	temp_reglas := reglas
 	m := NewMachine().Consult(reglas)
 
@@ -376,7 +377,6 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 
 		}
 	}
-	
 
 	consultar_conceptos_deduccion_retencion := m.ProveAll("aplica_deduccion_retencion(X).")
 	fmt.Println(consultar_conceptos_deduccion_retencion)
@@ -384,7 +384,17 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
 		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
+
+	saldo = ingresos - deduccion_salud
+	if saldo < 0 {
+		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
+		deduccion_salud = 0
+	} else {
+		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
+	}
+
 	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
+
 	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
 
 	temp_reglas = temp_reglas + "deducciones(" + strconv.Itoa(deduccion_salud) + ")."
@@ -392,32 +402,35 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	o := NewMachine().Consult(temp_reglas)
 	fmt.Println(temp_reglas)
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
-	fmt.Println("valorrete", valor_retencion)
-	for _, solution := range valor_retencion {
-		val_reten := fmt.Sprintf("%s", solution.ByName_("VR"))
-		valor_reten, _ := strconv.Atoi(val_reten)
-		if(valor_reten > 0 ){
-			valor_reten = valor_reten - int(2000)
-		} else{
-			valor_reten=0
-		}
-		val_reten = strconv.Itoa(valor_reten)
-		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
-			Valor: val_reten,
-		}
-		fmt.Println("dias a liq rete", val_reten)
-		fmt.Println("dias a liq rete", temp_conceptos)
-		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
-		for _, cod := range codigo {
-			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
-			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
-			temp_conceptos.DiasLiquidados = dias_a_liq
-			temp_conceptos.TipoPreliquidacion = tipoPreliquidacionString
-			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
-		}
-		fmt.Println("dias a liq rete", dias_a_liq)
-		listaRetefuente = append(listaRetefuente, temp_conceptos)
 
+	if len(valor_retencion) != 0 {
+		fmt.Println("valorrete", valor_retencion)
+		for _, solution := range valor_retencion {
+			val_reten := fmt.Sprintf("%s", solution.ByName_("VR"))
+			valor_reten, _ := strconv.Atoi(val_reten)
+			if valor_reten > 0 {
+				valor_reten = valor_reten - int(2000)
+			} else {
+				valor_reten = 0
+			}
+			val_reten = strconv.Itoa(valor_reten)
+			temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
+				Valor: val_reten,
+			}
+			fmt.Println("dias a liq rete", val_reten)
+			fmt.Println("dias a liq rete", temp_conceptos)
+			codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
+			for _, cod := range codigo {
+				temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+				temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
+				temp_conceptos.DiasLiquidados = dias_a_liq
+				temp_conceptos.TipoPreliquidacion = tipoPreliquidacionString
+				temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+			}
+			fmt.Println("dias a liq rete", dias_a_liq)
+			listaRetefuente = append(listaRetefuente, temp_conceptos)
+
+		}
 	}
 
 	for _, solution := range listaDescuentos {
@@ -449,7 +462,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		retenciones = append(retenciones, auxRetenciones)
 
 	}
-	fmt.Println("RETE", retenciones)
+	//fmt.Println("RETE", retenciones)
 	return retenciones
 }
 
@@ -473,8 +486,8 @@ func CalcularPeriodoLiquidacion(preliquidacion models.Preliquidacion, objeto_dat
 	FechaFin, _ = time.Parse(layout, datos_acta.FechaFinTemp)
 	a, m, d := diff(FechaInicio, FechaFin)
 
-	fmt.Println("Fecha inicio", FechaInicio)
-	fmt.Println("Fecha fin", FechaFin)
+	//fmt.Println("Fecha inicio", FechaInicio)
+	//fmt.Println("Fecha fin", FechaFin)
 	FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
 	FechaFinContrato = time.Date(FechaFin.Year(), FechaFin.Month(), FechaFin.Day(), 0, 0, 0, 0, time.UTC)
 

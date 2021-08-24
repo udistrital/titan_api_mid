@@ -1,18 +1,22 @@
 package models
 
-
+import "time"
 
 type DetallePreliquidacion struct {
-	Id                 int                   `orm:"column(id);pk"`
-	ValorCalculado     float64               `orm:"column(valor_calculado)"`
-	NumeroContrato     string                `orm:"column(numero_contrato);null"`
-	VigenciaContrato   int                   `orm:"column(vigencia_contrato);null"`
-	Persona      			 int									 `orm:"column(persona)"`
-	DiasLiquidados     float64               `orm:"column(dias_liquidados);null"`
-	TipoPreliquidacion *TipoPreliquidacion   `orm:"column(tipo_preliquidacion);rel(fk)"`
-	Preliquidacion     *Preliquidacion       `orm:"column(preliquidacion);rel(fk)"`
-	Concepto           *ConceptoNomina       `orm:"column(concepto);rel(fk)"`
-	EstadoDisponibilidad *EstadoDisponibilidad   `orm:"column(estado_disponibilidad);rel(fk)"`
-	NombreCompleto 		string
-	Documento         string
+	Id                     int
+	ValorCalculado         float64
+	NumeroContrato         string
+	VigenciaContrato       int
+	DiasLiquidados         float64
+	TipoPreliquidacionId   *TipoPreliquidacion
+	PreliquidacionId       *Preliquidacion
+	ConceptoNominaId       *ConceptoNomina
+	EstadoDisponibilidadId *EstadoDisponibilidad
+	PersonaId              int
+	DependenciaId          int
+	FechaCreacion          time.Time
+	FechaModificacion      time.Time
+	Activo                 bool
+	NombreCompleto         string
+	Documento              string
 }

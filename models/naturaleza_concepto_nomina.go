@@ -1,10 +1,14 @@
 package models
 
+import "time"
+
 type NaturalezaConceptoNomina struct {
-	Id                int     `orm:"column(id);pk"`
-	Nombre            string  `orm:"column(nombre)"`
-	Descripcion       string  `orm:"column(descripcion);null"`
-	CodigoAbreviacion string  `orm:"column(codigo_abreviacion);null"`
-	Activo            bool    `orm:"column(activo)"`
-	NumeroOrden       float64 `orm:"column(numero_orden);null"`
+	Id                int
+	Nombre            string
+	Descripcion       string
+	CodigoAbreviacion string
+	Activo            bool
+	NumeroOrden       float64
+	FechaCreacion     time.Time
+	FechaModificacion time.Time
 }

@@ -1,6 +1,5 @@
 package models
 
-
 type CategoriaBeneficiario struct {
 	Id                          int    `orm:"column(id);pk"`
 	NombreTipoBeneficiario      string `orm:"column(nombre_tipo_beneficiario)"`

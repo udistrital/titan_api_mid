@@ -36,20 +36,20 @@ func (c *GestionContratosController) ListarContratosAgrupadosPorPersona() {
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" {
+		if v.Preliquidacion.NominaId.TipoNominaId.Nombre == "CT" {
 			tempDocentes, controlError = GetContratosPorPersonaCT(v, v.PersonasPreLiquidacion[0].NumDocumento)
 		}
 		//Buscar contratos vigentes en ese periodo para esa persona
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
+		if v.Preliquidacion.NominaId.TipoNominaId.Nombre == "HCH" {
 			tempDocentes, controlError = GetContratosPorPersonaHCH(v, v.PersonasPreLiquidacion[0])
 		}
 
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
+		if v.Preliquidacion.NominaId.TipoNominaId.Nombre == "HCS" {
 			tempDocentes, controlError = GetContratosPorPersonaHCS(v, v.PersonasPreLiquidacion[0])
 		}
 
 		if controlError == nil {
-			if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
+			if v.Preliquidacion.NominaId.TipoNominaId.Nombre == "HCH" || v.Preliquidacion.NominaId.TipoNominaId.Nombre == "HCS" {
 				tempAgrupar := make(map[string]interface{}) // este mapa tiene la siguiente estructura: tempAgrupar[numero_cedula_docente][id_resolucion][valor_total] (cada resolucion tiene un único tipo de nivel académico, por lo tanto los valores totales se van sumando de acuerdo a la resolución )
 				infoContratos := make(map[string]interface{})
 
@@ -57,7 +57,7 @@ func (c *GestionContratosController) ListarContratosAgrupadosPorPersona() {
 
 					var vinculaciones []models.VinculacionDocente
 					query := "NumeroContrato:" + dato.NumeroContrato + ",Vigencia:" + dato.VigenciaContrato
-					if err := request.GetJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
+					if err := request.GetJson(beego.AppConfig.String("UrlAdministrativaCrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
 
 						infoContrato := make(map[string]interface{})
 						infoContrato["VigenciaContrato"] = dato.VigenciaContrato
@@ -72,7 +72,7 @@ func (c *GestionContratosController) ListarContratosAgrupadosPorPersona() {
 				c.Data["json"] = tempAgrupar
 			}
 
-			if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" {
+			if v.Preliquidacion.NominaId.TipoNominaId.Nombre == "CT" {
 				tempAgrupar := make(map[string]interface{}) // este mapa tiene la siguiente estructura: tempAgrupar[numero_cedula_docente][id_resolucion][valor_total] (cada resolucion tiene un único tipo de nivel académico, por lo tanto los valores totales se van sumando de acuerdo a la resolución )
 				infoContratos := make(map[string]interface{})
 				for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
@@ -113,10 +113,8 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion) (arreglo_contr
 	} else {
 		mes = strconv.Itoa(objeto_nom.Mes)
 	}
-
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
-
 		if errorJSON == nil {
 			json.Unmarshal(jsonDocentes, &tempDocentes)
 
@@ -129,13 +127,14 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion) (arreglo_contr
 		fmt.Println("Error al unmarshal datos de nómina", err)
 
 	}
-
 	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
 
 		var d []models.DetallePreliquidacion
-		query := "Preliquidacion.Id:" + strconv.Itoa(objeto_nom.Id) + ",Persona:" + dato.Id
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
+		var aux map[string]interface{}
 
+		query := "PreliquidacionId:" + strconv.Itoa(objeto_nom.Id) + ",PersonaId:" + dato.Id
+		if err := request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			LimpiezaRespuestaRefactor(aux, d)
 			cumple := consultarEstadoPago(dato.NumeroContrato, dato.VigenciaContrato, objeto_nom.Ano, objeto_nom.Mes)
 
 			if cumple == 2 {
@@ -144,14 +143,16 @@ func ListaContratosContratistas(objeto_nom models.Preliquidacion) (arreglo_contr
 				tempDocentes.ContratosTipo.ContratoTipo[x].Cumplido = "NO"
 			}
 
-			if d[0].Id == 0 || len(d) == 0 {
+			if len(d) == 0 {
 				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "NO"
 				tempDocentes.ContratosTipo.ContratoTipo[x].EstadoPago = "No liquidado"
 			} else {
 				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "SI"
-				tempDocentes.ContratosTipo.ContratoTipo[x].EstadoPago = d[0].EstadoDisponibilidad.Nombre
+				tempDocentes.ContratosTipo.ContratoTipo[x].EstadoPago = d[0].EstadoDisponibilidadId.Nombre
 			}
 
+		} else {
+			//fmt.Println("no entré a verificar cumplidos", err)
 		}
 	}
 
@@ -177,7 +178,7 @@ func ListaContratosContratistasPendientes(objeto_nom models.Preliquidacion) (arr
 		mes = strconv.Itoa(objeto_nom.Mes)
 	}
 
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {
@@ -196,19 +197,14 @@ func ListaContratosContratistasPendientes(objeto_nom models.Preliquidacion) (arr
 	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
 
 		var d []models.DetallePreliquidacion
-		query := "Preliquidacion.Id:" + strconv.Itoa(objeto_nom.Id) + ",Persona:" + dato.Id + ",EstadoDisponibilidad:3" + ",NumeroContrato:" + dato.NumeroContrato + ",VigenciaContrato:" + dato.VigenciaContrato
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
-
-			if d[0].Id == 0 || len(d) == 0 {
-
+		query := "PreliquidacionId:" + strconv.Itoa(objeto_nom.Id) + ",PersonaId:" + dato.Id + ",EstadoDisponibilidadId:3" + ",NumeroContrato:" + dato.NumeroContrato + ",VigenciaContrato:" + dato.VigenciaContrato
+		if err := request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
+			if len(d) == 0 {
 				cumple := consultarEstadoPago(dato.NumeroContrato, dato.VigenciaContrato, objeto_nom.Ano, objeto_nom.Mes)
-
 				if cumple == 2 {
 					pendientes.ContratosTipo.ContratoTipo = append(pendientes.ContratosTipo.ContratoTipo, tempDocentes.ContratosTipo.ContratoTipo[x])
 				}
-
 			}
-
 		}
 	}
 
@@ -222,8 +218,7 @@ func ListaContratosContratistasPendientes(objeto_nom models.Preliquidacion) (arr
 func ListaContratosFuncionariosPlanta() (arreglo_contratos []models.Funcionario_x_Proveedor, e error) {
 	var err error
 	var datosPlanta []models.Funcionario_x_Proveedor
-	fmt.Println("listar personas de planta")
-	if err = request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_proveedor/get_funcionarios_planta", &datosPlanta); err == nil && datosPlanta != nil {
+	if err = request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/funcionario_proveedor/get_funcionarios_planta", &datosPlanta); err == nil && datosPlanta != nil {
 		fmt.Println("funcionario")
 
 	} else {
@@ -258,7 +253,7 @@ func GetContratosPorPersonaHCH(v models.DatosPreliquidacion, docente models.Pers
 	}
 
 	tipoNom = "3"
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes+"/"+persona, &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes+"/"+persona, &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {
@@ -303,7 +298,7 @@ func GetContratosPorPersonaCT(v models.DatosPreliquidacion, docente int) (arregl
 	}
 
 	tipoNom = "6"
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes+"/"+persona, &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes+"/"+persona, &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {
@@ -349,7 +344,7 @@ func GetContratosPorPersonaHCS(v models.DatosPreliquidacion, docente models.Pers
 	}
 
 	tipoNom = "2"
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes+"/"+persona, &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes+"/"+persona, &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {
@@ -367,7 +362,7 @@ func GetContratosPorPersonaHCS(v models.DatosPreliquidacion, docente models.Pers
 	}
 
 	tipoNom = "18"
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes+"/"+persona, &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes+"/"+persona, &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {

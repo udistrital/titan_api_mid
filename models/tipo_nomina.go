@@ -1,8 +1,14 @@
 package models
 
-
+import "time"
 
 type TipoNomina struct {
-	Id     int    `orm:"column(id);pk"`
-	Nombre string `orm:"column(Nombre);null"`
+	Id                int
+	Nombre            string
+	Descripcion       string
+	CodigoAbreviacion string
+	NumeroOrden       float64
+	Activo            bool
+	FechaCreacion     time.Time
+	FechaModificacion time.Time
 }
