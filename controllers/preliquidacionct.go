@@ -88,7 +88,6 @@ func (c *PreliquidacionctController) Preliquidar(datos models.DatosPreliquidacio
 					var aux map[string]interface{}
 					datos.PersonasPreLiquidacion[i].NumeroContrato = strings.Replace(datos.PersonasPreLiquidacion[i].NumeroContrato, "c", "", -1)
 					query := "PreliquidacionId:" + strconv.Itoa(datos.Preliquidacion.Id) + ",NumeroContrato:" + datos.PersonasPreLiquidacion[i].NumeroContrato + ",VigenciaContrato:" + strconv.Itoa(datos.PersonasPreLiquidacion[i].VigenciaContrato)
-
 					if err := request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &d)
 						if len(d) != 0 {
@@ -126,6 +125,8 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 	var reglasinyectadas string
 	var reglas string
 	var disp int
+	var pensionado bool
+	var dependientes bool
 
 	var idDetaPre interface{}
 
@@ -168,11 +169,11 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 				reglasinyectadas = reglasinyectadas + novedadInyectada
 			}
 
-			predicadosRetefuente = CargarDatosRetefuente(persona.NumDocumento)
+			predicadosRetefuente, pensionado, dependientes = CargarDatosRetefuente(persona.NumDocumento)
 			disp = verificacionPago(persona.IdPersona, preliquidacion.Ano, preliquidacion.Mes, persona.NumeroContrato, strconv.Itoa(persona.VigenciaContrato))
 			reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(" + strconv.Itoa(disp) + ")."
 			//reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(2)."
-			temp := golog.CargarReglasCT(persona.IdPersona, reglas, preliquidacion, vigenciaContrato, objetoDatosActa)
+			temp := golog.CargarReglasCT(persona.IdPersona, reglas, preliquidacion, vigenciaContrato, objetoDatosActa, pensionado, dependientes)
 			resultado := temp[len(temp)-1]
 			resultado.NumDocumento = float64(persona.NumDocumento)
 			resultado.NumeroContrato = persona.NumeroContrato

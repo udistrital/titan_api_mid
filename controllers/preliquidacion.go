@@ -43,7 +43,10 @@ func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 		query := "?query=PreliquidacionId:" + strconv.Itoa(v.Id) + ",EstadoDisponibilidadId:2&fields=PersonaId,NumeroContrato,VigenciaContrato,EstadoDisponibilidadId"
 		if err := request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/detalle_preliquidacion/"+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &personasPreliquidacion)
-			if len(personasPreliquidacion) != 0 {
+			fmt.Println("Numero de personas a preliquidar", len(personasPreliquidacion))
+			fmt.Println("personas a preliquidar:", personasPreliquidacion[0].IdPersona)
+			if len(personasPreliquidacion) != 0 || personasPreliquidacion[0].IdPersona != 0 {
+				fmt.Println("entrando a donde no debo")
 				for x, dato := range personasPreliquidacion {
 					personasPreliquidacion[x].NombreCompleto, personasPreliquidacion[x].NumDocumento, errorConsultaInformacionAgora = InformacionPersonaProveedor(dato.IdPersona)
 				}
@@ -269,7 +272,7 @@ func (c *PreliquidacionController) Preliquidar() {
 		}
 
 		if v.Preliquidacion.NominaId.TipoNominaId.Nombre == "CT" {
-			fmt.Println("Datos preliquidacion: ", v.PersonasPreLiquidacion)
+			//fmt.Println("Datos preliquidacion: ", v.PersonasPreLiquidacion)
 			var n *PreliquidacionctController //aca se esta creando un objeto del controlador especico
 			resumen := n.Preliquidar(v, reglasbase)
 			c.Data["json"] = resumen
@@ -321,9 +324,7 @@ func cargarReglasBase(dominio string) (reglas string) {
 	var datosConceptos []models.ConceptoNomina
 
 	if err := request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/concepto_nomina?limit=-1", &aux); err == nil {
-		//fmt.Println("entre a cargar reglas")
 		LimpiezaRespuestaRefactor(aux, &datosConceptos)
-		//fmt.Println("concepto, nomina", datosConceptos)
 		for _, datos := range datosConceptos {
 			reglasbase = reglasbase + "codigo_concepto(" + datos.NombreConcepto + "," + strconv.Itoa(datos.Id) + "," + strconv.Itoa(datos.NaturalezaConceptoNominaId.Id) + ",'" + datos.AliasConcepto + "')." + "\n"
 		}
@@ -338,6 +339,7 @@ func cargarReglasBase(dominio string) (reglas string) {
 	}
 
 	//-----------------------------
+
 	return reglasbase
 }
 
@@ -370,6 +372,7 @@ func FormatoReglas(v []models.Predicado) (reglas string) {
 	for i := 0; i < len(arregloReglas); i++ {
 		reglas = reglas + arregloReglas[i] + "\n"
 	}
+
 	return
 }
 
@@ -386,7 +389,8 @@ func CargarNovedadesPersona(id_persona int, numero_contrato, vigencia string, da
 	query := "Activo:true,NumeroContrato:" + numero_contrato + ",VigenciaContrato:" + vigencia
 	if err := request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/concepto_nomina_por_persona?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &v)
-		if v != nil {
+		if v[0].Id != 0 {
+			fmt.Println("estoy entrando donde no debo2: ", v)
 			for i := 0; i < len(v); i++ {
 				esActiva := validarNovedadesSegSocial(datos_preliqu.Mes, datos_preliqu.Ano, v[i].FechaDesde, v[i].FechaHasta)
 				if esActiva == 1 {
@@ -454,7 +458,6 @@ func validarNovedadesSegSocial(Mes, Ano int, FechaDesde, FechaHasta time.Time) (
 	} else if FechaDesde.Year() <= Ano && FechaHasta.Year() >= Ano && int(FechaDesde.Month()) <= Mes && int(FechaHasta.Month()) >= Mes {
 		return 1
 	} else {
-
 		return 0
 	}
 
@@ -496,19 +499,21 @@ func desactivarNovedad(idNovedad int, v models.ConceptoNominaPorPersona) {
 // CargarDatosRetefuente ...
 // @Title CargarDatosRetefuente
 // @Description Carga lo referente al calculo de la retefuente según cédula de la persona
-func CargarDatosRetefuente(cedula int) (reglas string) {
+func CargarDatosRetefuente(cedula int) (reglas string, pensionado bool, dependientes bool) {
 
 	var v []models.InformacionPersonaNatural
 	reglas = ""
 	query := "Id:" + strconv.Itoa(cedula)
 	if err := request.GetJson(beego.AppConfig.String("UrlAdministrativaAmazon")+"/informacion_persona_natural?limit=-1&query="+query, &v); err == nil {
-		fmt.Println("reglas SS:", query)
+
 		if len(v) != 0 {
 
 			if v[0].PersonasACargo == true {
 				reglas = reglas + "dependiente(si)."
+				dependientes = true
 			} else {
 				reglas = reglas + "dependiente(no)."
+				dependientes = false
 			}
 
 			if v[0].DeclaranteRenta == true {
@@ -525,8 +530,10 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 
 			if v[0].IdFondoPension == 119 {
 				reglas = reglas + "pensionado(si)."
+				pensionado = true
 			} else {
 				reglas = reglas + "pensionado(no)."
+				pensionado = false
 			}
 
 			reglas = reglas + "intereses_vivienda(" + strconv.Itoa(int(v[0].InteresViviendaAfc)) + ")."
@@ -550,5 +557,5 @@ func CargarDatosRetefuente(cedula int) (reglas string) {
 
 	//fmt.Println("reglas RETEARGO:", v)
 	//fmt.Println("reglas RETEFUENTE:", reglas)
-	return reglas
+	return reglas, pensionado, dependientes
 }

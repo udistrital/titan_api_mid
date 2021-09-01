@@ -1,8 +1,6 @@
 package models
 
-import (
-	"database/sql"
-)
+import "database/sql"
 
 type VinculacionDocente struct {
 	Id                   int            `orm:"column(id);pk;auto"`

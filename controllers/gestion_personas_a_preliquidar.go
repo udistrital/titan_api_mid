@@ -32,6 +32,7 @@ func (c *GestionPersonasAPreliquidarController) URLMapping() {
 func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 	var v models.Preliquidacion
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+		fmt.Println(v.NominaId.TipoNominaId.Nombre)
 		if v.NominaId.TipoNominaId.Nombre == "CT" {
 			if listaContratos, err := ListaContratosContratistas(v); err == nil {
 				c.Ctx.Output.SetStatus(201)
@@ -124,7 +125,7 @@ func ListarPersonasHCS(objeto_nom models.Preliquidacion) (arreglo_contratos mode
 		mes = strconv.Itoa(objeto_nom.Mes)
 	}
 
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/personas_preliquidacion/"+strconv.Itoa(objeto_nom.Id), &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/personas_preliquidacion/"+strconv.Itoa(objeto_nom.Id), &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {
@@ -167,7 +168,7 @@ func ListarPersonasHCH(objeto_nom models.Preliquidacion) (arreglo_contratos mode
 
 	tipoNom = "3"
 
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_personas/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/contratos_elaborado_tipo_personas/"+tipoNom+"/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
 		jsonDocentes, errorJSON := json.Marshal(temp)
 
 		if errorJSON == nil {
@@ -188,7 +189,7 @@ func ListarPersonasHCH(objeto_nom models.Preliquidacion) (arreglo_contratos mode
 	var d []models.DetallePreliquidacion
 	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
 		d = nil
-		query := "Preliquidacion.Id:" + strconv.Itoa(objeto_nom.Id) + ",Persona:" + dato.Id
+		query := "PreliquidacionId:" + strconv.Itoa(objeto_nom.Id) + ",PersonaId:" + dato.Id
 		if err := request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &d)
 			if len(d) == 0 {

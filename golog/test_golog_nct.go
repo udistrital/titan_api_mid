@@ -8,7 +8,7 @@ import (
 	models "github.com/udistrital/titan_api_mid/models"
 )
 
-func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio) (rest []models.Respuesta) {
+func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio, pensionado bool, dependientes bool) (rest []models.Respuesta) {
 
 	var resultado []models.Respuesta
 	var listaDescuentos []models.ConceptosResumen
@@ -16,7 +16,7 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 	var listaRetefuente []models.ConceptosResumen
 	var tipoPreliquidacionString = "2"
 	var diasNovedadString = "0"
-	var ano, _ = strconv.Atoi(periodo)
+	//var ano, _ = strconv.Atoi(periodo)
 
 	reglas = reglas + "cargo(0)."
 	reglas = reglas + "periodo(" + periodo + ")."
@@ -25,10 +25,10 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 	diasALiquidar, _ := CalcularPeriodoLiquidacion(preliquidacion, objeto_datos_acta)
 	//fmt.Println("dias liquidados", diasALiquidar)
 
-	m := NewMachine().Consult(reglas)
-	novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
+	//m := NewMachine().Consult(reglas)
+	//novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
 
-	for _, solution := range novedades_seg_social {
+	/*for _, solution := range novedades_seg_social {
 
 		//fmt.Println("existe novedad de SS")
 
@@ -58,11 +58,11 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 			ibc = 0
 		}
 
-	}
+	}*/
 
 	listaDescuentos, total_devengado_no_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasALiquidar)
 	listaNovedades = ManejarNovedadesCT(reglas, idProveedor, tipoPreliquidacionString, periodo, diasALiquidar)
-	listaRetefuente = CalcularReteFuenteSal(tipoPreliquidacionString, reglas, listaDescuentos, diasALiquidar)
+	listaRetefuente = CalcularReteFuenteSal(tipoPreliquidacionString, reglas, listaDescuentos, diasALiquidar, dependientes)
 	total_calculos = append(total_calculos, listaDescuentos...)
 	total_calculos = append(total_calculos, listaNovedades...)
 	total_calculos = append(total_calculos, listaRetefuente...)

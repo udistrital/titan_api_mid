@@ -205,9 +205,10 @@ func InformacionPersonaProveedor(idPersona int) (Nom string, doc int, err error)
 	var controlError error
 	//fmt.Println("URL ARGO", beego.AppConfig.String("UrlAdministrativaAmazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona))
 	if controlError := request.GetJson(beego.AppConfig.String("UrlAdministrativaAmazon")+"/informacion_proveedor?query=Id:"+strconv.Itoa(idPersona), &respuesta_servicio); controlError == nil {
-		nombre_persona = respuesta_servicio[0].NomProveedor
-		documento, _ = strconv.Atoi(respuesta_servicio[0].NumDocumento)
-
+		if len(respuesta_servicio) != 0 {
+			nombre_persona = respuesta_servicio[0].NomProveedor
+			documento, _ = strconv.Atoi(respuesta_servicio[0].NumDocumento)
+		}
 	} else {
 		nombre_persona = "No encontrado"
 		nombre_persona = "0"

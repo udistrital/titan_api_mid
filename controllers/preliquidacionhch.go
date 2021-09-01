@@ -96,7 +96,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 					//fmt.Println("dato contratos", dato)
 					var vinculaciones []models.VinculacionDocente
 					query := "NumeroContrato:" + dato.NumeroContrato + ",Vigencia:" + dato.VigenciaContrato
-					if err := request.GetJson("http://"+beego.AppConfig.String("Urlargocrud")+":"+beego.AppConfig.String("Portargocrud")+"/"+beego.AppConfig.String("Nsargocrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
+					if err := request.GetJson(beego.AppConfig.String("UrlAdministrativaCrud")+"/vinculacion_docente?limit=-1&query="+query, &vinculaciones); err == nil {
 
 						_, ok := infoResolucion[strconv.Itoa(vinculaciones[0].IdResolucion.Id)]
 						if ok {
@@ -172,6 +172,8 @@ func liquidarContratoHCH(reglasbase string, NumDocumento, Persona int, preliquid
 	var objetoDatosActa models.ObjetoActaInicio
 	var errorConsultaActa error
 	var predicadosRetefuente string
+	var pensionado bool
+	var dependientes bool
 
 	var resumenPreliqu []models.Respuesta
 	var reglasinyectadas string
@@ -201,11 +203,11 @@ func liquidarContratoHCH(reglasbase string, NumDocumento, Persona int, preliquid
 
 		reglasinyectadas = FormatoReglas(predicados)
 
-		predicadosRetefuente = CargarDatosRetefuente(NumDocumento)
+		predicadosRetefuente, pensionado, dependientes = CargarDatosRetefuente(NumDocumento)
 		dispo = verificacionPago(Persona, preliquidacion.Ano, preliquidacion.Mes, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato)
 		reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(" + strconv.Itoa(dispo) + ")."
 
-		temp := golog.CargarReglasCT(Persona, reglas, preliquidacion, vigenciaContrato, datosActa)
+		temp := golog.CargarReglasCT(Persona, reglas, preliquidacion, vigenciaContrato, datosActa, pensionado, dependientes)
 
 		resultado := temp[len(temp)-1]
 		resultado.Id = Persona
@@ -227,7 +229,7 @@ func liquidarContratoHCH(reglasbase string, NumDocumento, Persona int, preliquid
 				detallepreliqu := models.DetallePreliquidacion{ConceptoNominaId: &models.ConceptoNomina{Id: descuentos.Id}, PreliquidacionId: &models.Preliquidacion{Id: preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: informacionContrato.NumeroContrato, VigenciaContrato: vigenciaContratoString, PersonaId: Persona, DiasLiquidados: diasLiquidados, TipoPreliquidacionId: &models.TipoPreliquidacion{Id: tipoPreliquidacion}, EstadoDisponibilidadId: &models.EstadoDisponibilidad{Id: dispo}}
 
 				if err := request.SendJson(beego.AppConfig.String("UrlCrudTitan")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
-
+					fmt.Println("Registro completo")
 				} else {
 					fmt.Println("error1: ", err)
 				}
