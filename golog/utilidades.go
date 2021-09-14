@@ -64,13 +64,10 @@ func CalcularDiasNovedades(MesPreliq, AnoPreliq int, AnoDesde float64, MesDesde 
 //Función que calcula IBC, basado en hechos de golog
 func CalcularIBC(persona, reglas string) {
 	e := NewMachine().Consult(reglas)
-
 	valor_ibc := e.ProveAll("calcular_ibc(X,V).")
 	for _, solution := range valor_ibc {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-
 		ibc = ibc + Valor
-
 	}
 
 }
@@ -343,22 +340,25 @@ func BuscarValorConcepto(listaDescuentos []models.ConceptosResumen, codigo_conce
 			auxtemp, _ := strconv.Atoi(solution.Valor)
 			temp = temp + auxtemp
 		}
-
 	}
-
 	return temp
 }
 
-func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq string, dependientes bool) (rest []models.ConceptosResumen) {
+func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq string, dependientes bool, periodo string) (rest []models.ConceptosResumen) {
 
 	var listaRetefuente []models.ConceptosResumen
+	//var saldo int
 	var ingresos int
-	var saldo int
 	var deduccion_salud int
 	var sueldo int
 	var sueldos []int
 	var porcentajes []float64
 	var retenciones []models.ConceptosResumen
+	var deducciones int
+	var calculo_dependientes int
+	var total_exensiones int
+	var renta_exenta_calculada int
+	var renta_maxima int
 
 	temp_reglas := reglas
 	m := NewMachine().Consult(reglas)
@@ -366,47 +366,54 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	consultar_conceptos_ingresos_retencion := m.ProveAll("aplica_ingreso_retencion(X).")
 	for _, solution := range consultar_conceptos_ingresos_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
-		fmt.Println("ingresos", codigo_concepto)
-		fmt.Println("lista_descuentos", listaDescuentos)
 		ingresos = ingresos + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 
 		if codigo_concepto == "10" {
 			sueldo = sueldo + BuscarValorConcepto(listaDescuentos, codigo_concepto)
-			//sueldos = append(sueldos, BuscarValorConcepto(listaDescuentos, codigo_concepto))
-
 		}
 	}
-
+	//Aquí calcula el valor de las deducciones
 	consultar_conceptos_deduccion_retencion := m.ProveAll("aplica_deduccion_retencion(X).")
-	fmt.Println(consultar_conceptos_deduccion_retencion)
+	//fmt.Println(consultar_conceptos_deduccion_retencion)
 	for _, solution := range consultar_conceptos_deduccion_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
 		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
 
-	saldo = ingresos - deduccion_salud
-	if saldo < 0 {
-		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
-		deduccion_salud = 0
-	} else {
-		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
-	}
-
-	fmt.Println("INGRESOS", ingresos)
-	fmt.Println("DEDUCCIONES", deduccion_salud)
-	fmt.Println("DEPENDIENTES", dependientes)
+	//fmt.Println("INGRESOS", ingresos)
+	//fmt.Println("DEDUCCIONES", deduccion_salud)
+	//fmt.Println("DEPENDIENTES", dependientes)
 	if dependientes {
-		deduccion_salud = deduccion_salud + (ingresos * (10 / 100))
+		calculo_dependientes = calculo_dependientes + (sueldo / 10)
 	}
+	/*
+		saldo = ingresos - deduccion_salud
+		if saldo < 0 {
+			temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
+			deduccion_salud = 0
+		} else {
+			temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
+		}
+	*/
 
-	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
+	deducciones = calculo_dependientes + BuscarValorConcepto(listaDescuentos, "31") //falta agregar los de medicina prepagada y descuento de intereses de vivienda
 
-	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
+	total_exensiones = total_exensiones - deduccion_salud - deducciones //falta Rentas excentas
+
+	renta_exenta_calculada = renta_exenta_calculada + (total_exensiones / 4) + deducciones
+
+	renta_maxima = renta_maxima + (((sueldo - deduccion_salud) * 2) / 5)
+
+	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
 
 	temp_reglas = temp_reglas + "deducciones(" + strconv.Itoa(deduccion_salud) + ")."
 
+	temp_reglas = temp_reglas + "rentaMaxima(" + strconv.Itoa(renta_maxima) + ")."
+
+	temp_reglas = temp_reglas + "rentaExenta(" + strconv.Itoa(renta_exenta_calculada) + ")."
+
+	fmt.Println("reglas:", temp_reglas)
 	o := NewMachine().Consult(temp_reglas)
-	//fmt.Println(temp_reglas)
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
 
 	for _, solution := range valor_retencion {
@@ -425,8 +432,6 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 			Valor: val_reten,
 		}
-		fmt.Println("val_reten", val_reten)
-		fmt.Println("temp_conceptos", temp_conceptos)
 		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
@@ -435,25 +440,19 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacionString
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
-		fmt.Println("dias a liq rete", dias_a_liq)
 		listaRetefuente = append(listaRetefuente, temp_conceptos)
-
 	}
 
 	for _, solution := range listaDescuentos {
 		if strconv.Itoa(solution.Id) == "10" {
 			auxtemp, _ := strconv.Atoi(solution.Valor)
-
 			sueldos = append(sueldos, auxtemp)
-
 		}
 
 	}
 	//Se obtienen los porcentajes para cada sueldo
 	for i := range sueldos {
-
 		porcentajes = append(porcentajes, float64(sueldos[i])/float64(sueldo))
-
 	}
 
 	for j := range porcentajes {
@@ -469,6 +468,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		retenciones = append(retenciones, auxRetenciones)
 
 	}
+
 	//fmt.Println("RETE", retenciones)
 	return retenciones
 }

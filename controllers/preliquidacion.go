@@ -43,9 +43,10 @@ func (c *PreliquidacionController) PersonasPorPreliquidacion() {
 		query := "?query=PreliquidacionId:" + strconv.Itoa(v.Id) + ",EstadoDisponibilidadId:2&fields=PersonaId,NumeroContrato,VigenciaContrato,EstadoDisponibilidadId"
 		if err := request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/detalle_preliquidacion/"+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &personasPreliquidacion)
+			
 			fmt.Println("Numero de personas a preliquidar", len(personasPreliquidacion))
 			fmt.Println("personas a preliquidar:", personasPreliquidacion[0].IdPersona)
-			if len(personasPreliquidacion) != 0 || personasPreliquidacion[0].IdPersona != 0 {
+			if personasPreliquidacion[0].IdPersona != 0 {
 				fmt.Println("entrando a donde no debo")
 				for x, dato := range personasPreliquidacion {
 					personasPreliquidacion[x].NombreCompleto, personasPreliquidacion[x].NumDocumento, errorConsultaInformacionAgora = InformacionPersonaProveedor(dato.IdPersona)
@@ -332,7 +333,7 @@ func cargarReglasBase(dominio string) (reglas string) {
 		fmt.Println("error al cargar conceptos como reglas", err)
 	}
 
-	if err := request.GetJson(beego.AppConfig.String("UrlRuler")+"/predicado?limit=-1&query=Dominio.Nombre:"+dominio, &v); err == nil {
+	if err := request.GetJson(beego.AppConfig.String("UrlRuler")+"/predicado?limit=-1&query=DominioId.Nombre:"+dominio, &v); err == nil {
 		reglasbase = reglasbase + FormatoReglas(v) //funcion general para dar formato a reglas cargadas desde el ruler
 	} else {
 		fmt.Println("error al cargar reglas base: ", err)
@@ -348,7 +349,7 @@ func cargarReglasSS() (reglas string) {
 	var reglasSS string = ``
 	var v []models.Predicado
 
-	if err := request.GetJson(beego.AppConfig.String("UrlRuler")+"/predicado?limit=-1&query=Dominio.Nombre:SeguridadSocial", &v); err == nil {
+	if err := request.GetJson(beego.AppConfig.String("UrlRuler")+"/predicado?limit=-1&query=DominioId.Nombre:SeguridadSocial", &v); err == nil {
 		reglasSS = FormatoReglas(v) //funcion general para dar formato a reglas cargadas desde el ruler
 	} else {
 		fmt.Println("error al cargar reglas base: ", err)
@@ -524,6 +525,7 @@ func CargarDatosRetefuente(cedula int) (reglas string, pensionado bool, dependie
 
 			if v[0].MedicinaPrepagada == true {
 				reglas = reglas + "medicina_prepagada(si)."
+				reglas = reglas + "uvt_prepagada(" + strconv.Itoa(v[0].ValorUvtPrepagada) + ")."
 			} else {
 				reglas = reglas + "medicina_prepagada(no)."
 			}

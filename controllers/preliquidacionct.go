@@ -70,7 +70,6 @@ func (c *PreliquidacionctController) Preliquidar(datos models.DatosPreliquidacio
 				detallesAMod := ConsultarDetalleAModificar(datos.PersonasPreLiquidacion[i].NumeroContrato, datos.PersonasPreLiquidacion[i].VigenciaContrato, datos.PersonasPreLiquidacion[i].Preliquidacion)
 				if len(detallesAMod) != 0 {
 					for _, pos := range detallesAMod {
-
 						verificacionPagoPendientes = verificacionPago(0, datos.Preliquidacion.Ano, datos.Preliquidacion.Mes, pos.NumeroContrato, strconv.Itoa(pos.VigenciaContrato))
 						pos.EstadoDisponibilidadId = &models.EstadoDisponibilidad{Id: verificacionPagoPendientes}
 						if err := request.SendJson(beego.AppConfig.String("UrlCrudTitan")+"/detalle_preliquidacion/"+strconv.Itoa(pos.Id), "PUT", &respuesta, pos); err == nil {
@@ -232,7 +231,5 @@ func ConsultarDetalleAModificar(id_contrato string, vigencia, preliquidacion int
 	} else {
 		fmt.Println("error al consultar preliquidacion a modificar ", err)
 	}
-
 	return v
-
 }

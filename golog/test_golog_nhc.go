@@ -75,12 +75,12 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preli
 	return resultado
 }
 
-func CalcularRetefuenteHCS(reglas string, listaConceptos []models.ConceptosResumen, datos models.DatosPreliquidacion, dependientes bool) (rest []models.ConceptosResumen) {
+func CalcularRetefuenteHCS(reglas string, listaConceptos []models.ConceptosResumen, datos models.DatosPreliquidacion, dependientes bool, periodo string) (rest []models.ConceptosResumen) {
 
 	reglas = reglas + "periodo(" + strconv.Itoa(datos.Preliquidacion.Ano) + ")."
 	reglas = reglas + "intereses_vivienda(0)."
 
-	return CalcularReteFuenteSal("2", reglas, listaConceptos, datos.DiasALiquidar, dependientes)
+	return CalcularReteFuenteSal("2", reglas, listaConceptos, datos.DiasALiquidar, dependientes, periodo)
 
 }
 

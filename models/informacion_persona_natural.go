@@ -7,6 +7,7 @@ type InformacionPersonaNatural struct {
 	InteresViviendaAfc float64
 	MedicinaPrepagada  bool
 	IdFondoPension     int
+	ValorUvtPrepagada  int
 }
 
 //informacionproveedor.id_proveedor, contratos.contratista,contratos.numero_contrato,informacionproveedor.nom_proveedor

@@ -354,7 +354,7 @@ func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidaci
 			temp = append(temp, golog.CalcularDescuentosTotalesHCS(key, aux.Total, aux.Id, reglas, preliquidacion, strconv.Itoa(preliquidacion.Ano))...)
 
 			vrefFondoSol, _ := strconv.ParseFloat(temp[0].Valor, 64)
-			vrefFondoSub, _ := strconv.ParseFloat(temp[1].Valor, 64)
+			vrefFondoSub, _ := strconv.ParseFloat(temp[0].Valor, 64)
 
 			vTotal, _ := strconv.ParseFloat(aux.Total, 64)
 
@@ -387,7 +387,7 @@ func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidaci
 				valorFondoSub := (valorIBC * vrefFondoSub) / vTotal
 
 				conceptoFondoSol := auxTemp[0]
-				conceptoFondoSub := auxTemp[1]
+				conceptoFondoSub := auxTemp[0]
 
 				conceptoFondoSol.Valor = fmt.Sprintf("%.0f", valorFondoSol)
 				conceptoFondoSub.Valor = fmt.Sprintf("%.0f", valorFondoSub)

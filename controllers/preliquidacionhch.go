@@ -71,7 +71,7 @@ func (c *PreliquidacionhchController) Preliquidar(datos models.DatosPreliquidaci
 
 					if err := request.GetJson(beego.AppConfig.String("UrlCrudTitan")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &d)
-						if len(d) != 0 {
+						if d[0].Id == 0 {
 							for _, dato := range d {
 								urlcrud := beego.AppConfig.String("UrlCrudTitan") + "/detalle_preliquidacion/" + strconv.Itoa(dato.Id)
 								var res string

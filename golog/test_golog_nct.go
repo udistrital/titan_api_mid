@@ -62,7 +62,7 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 
 	listaDescuentos, total_devengado_no_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasALiquidar)
 	listaNovedades = ManejarNovedadesCT(reglas, idProveedor, tipoPreliquidacionString, periodo, diasALiquidar)
-	listaRetefuente = CalcularReteFuenteSal(tipoPreliquidacionString, reglas, listaDescuentos, diasALiquidar, dependientes)
+	listaRetefuente = CalcularReteFuenteSal(tipoPreliquidacionString, reglas, listaDescuentos, diasALiquidar, dependientes, periodo)
 	total_calculos = append(total_calculos, listaDescuentos...)
 	total_calculos = append(total_calculos, listaNovedades...)
 	total_calculos = append(total_calculos, listaRetefuente...)
