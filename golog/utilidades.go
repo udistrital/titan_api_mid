@@ -354,13 +354,13 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 
 	var listaRetefuente []models.ConceptosResumen
 	var ingresos int
-	var saldo int
 	var deduccion_salud int
 	var sueldo int
 	var sueldos []int
 	var porcentajes []float64
 	var retenciones []models.ConceptosResumen
-	
+	var saldo int
+
 	temp_reglas := reglas
 	m := NewMachine().Consult(reglas)
 
@@ -377,7 +377,6 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 
 		}
 	}
-	
 
 	consultar_conceptos_deduccion_retencion := m.ProveAll("aplica_deduccion_retencion(X).")
 	fmt.Println(consultar_conceptos_deduccion_retencion)
@@ -386,44 +385,40 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
 
-	saldo=ingresos-deduccion_salud
-	if saldo < 0	{
+	saldo = ingresos - deduccion_salud
+	if saldo < 0 {
 		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
-		deduccion_salud=0
-	}else	{
-		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
+		deduccion_salud = 0
+	} else {
+		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
 	}
-
 	fmt.Println("INGRESOS", ingresos)
 	fmt.Println("DEDUCCIONES", deduccion_salud)
 	fmt.Println("DEPENDIENTES", dependientes)
-	if(dependientes){
-		deduccion_salud=  deduccion_salud + (ingresos * (10/100))
-		}
-	
-	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
-
+	if dependientes {
+		deduccion_salud = deduccion_salud + (ingresos * (10 / 100))
+	}
+	//temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
 	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
-	
+
 	temp_reglas = temp_reglas + "deducciones(" + strconv.Itoa(deduccion_salud) + ")."
 
 	o := NewMachine().Consult(temp_reglas)
-	
+
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
 	fmt.Println("valorrete", valor_retencion)
 	for _, solution := range valor_retencion {
 		val_reten := fmt.Sprintf("%s", solution.ByName_("VR"))
 		valor_reten, _ := strconv.Atoi(val_reten)
-		if(dependientes==true){
-		valor_reten = 0
+		if dependientes == true {
+			valor_reten = 0
 		}
-		if(valor_reten > 0 ){
+		if valor_reten > 0 {
 			valor_reten = valor_reten - int(2000)
-		} else{
-			valor_reten=0
+		} else {
+			valor_reten = 0
 		}
-		
-		
+
 		val_reten = strconv.Itoa(valor_reten)
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 			Valor: val_reten,

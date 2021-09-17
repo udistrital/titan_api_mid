@@ -3,12 +3,12 @@ package golog
 import (
 	"fmt"
 	"strconv"
-	
+
 	. "github.com/udistrital/golog"
 	models "github.com/udistrital/titan_api_mid/models"
 )
 
-func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio, pensionado bool, dependientes bool) (rest []models.Respuesta) {
+func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio, pensionado bool, dependientes bool, reteiva bool) (rest []models.Respuesta) {
 
 	var resultado []models.Respuesta
 	var listaDescuentos []models.ConceptosResumen
@@ -221,17 +221,17 @@ func ManejarNovedadesHCS(reglas string, idProveedor int, tipoPreliquidacion, per
 
 }
 
-func CalcularTotalesContratoHCS(NumDocumento, MesesContrato, VigenciaContrato, ValorContrato ,reglas string) (rest []models.ConceptosResumen) {
+func CalcularTotalesContratoHCS(NumDocumento, MesesContrato, VigenciaContrato, ValorContrato, reglas string) (rest []models.ConceptosResumen) {
 
 	var listaDescuentos []models.ConceptosResumen
 
-	reglas = reglas + "valor_contrato(" +NumDocumento + ","+ValorContrato+")."
+	reglas = reglas + "valor_contrato(" + NumDocumento + "," + ValorContrato + ")."
 	reglas = reglas + "fin_contrato(" + NumDocumento + ",si)."
 	reglas = reglas + "pensionado(no)."
-	
+
 	m := NewMachine().Consult(reglas)
 
-	valor_pago := m.ProveAll("valor_pago_total(" +NumDocumento + "," +VigenciaContrato + ",T).")
+	valor_pago := m.ProveAll("valor_pago_total(" + NumDocumento + "," + VigenciaContrato + ",T).")
 	for _, solution := range valor_pago {
 
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
@@ -248,7 +248,7 @@ func CalcularTotalesContratoHCS(NumDocumento, MesesContrato, VigenciaContrato, V
 
 	}
 
-	descuentos := m.ProveAll("conceptos_total_contrato("+NumDocumento + "," + VigenciaContrato+","+MesesContrato+",T,N).")
+	descuentos := m.ProveAll("conceptos_total_contrato(" + NumDocumento + "," + VigenciaContrato + "," + MesesContrato + ",T,N).")
 	for _, solution := range descuentos {
 
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
@@ -267,11 +267,10 @@ func CalcularTotalesContratoHCS(NumDocumento, MesesContrato, VigenciaContrato, V
 
 		listaDescuentos = append(listaDescuentos, temp_conceptos)
 	}
-	
+
 	return listaDescuentos
 
 }
-
 
 func CalcularDescuentosTotalesHCS(IdPersona, valor_total string, idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string) (rest []models.ConceptosResumen) {
 
