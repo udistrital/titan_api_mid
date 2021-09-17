@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	
+
 	"strconv"
 
 	"github.com/astaxie/beego"
@@ -228,93 +228,93 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 
 	//CALCULAR FONDO DE SOLIDARIDAD Y RETEFUENTE
 	/*resultadoDesc := CalcularDescuentosTotales(reglasbase, datos.Preliquidacion, resumenPreliqu)
-	var idDetaPre interface{}
-	var listaConceptos []models.ConceptosResumen
-        var dependientes bool
-	var pensionado bool
-	
-	
-	dependientes=false
-	pensionado=false
-	if len(resultadoDesc) != 0 {
+		var idDetaPre interface{}
+		var listaConceptos []models.ConceptosResumen
+	        var dependientes bool
+		var pensionado bool
 
-		for v, _ := range resumenPreliqu {
 
-			var resConceptos []models.ConceptosResumen
-			resConceptos = append(resConceptos, resultadoDesc[2*v])
-			auxDesc, _ := strconv.Atoi(resultadoDesc[2*v].Valor)
-			resumenPreliqu[v].TotalDescuentos += auxDesc
-			resConceptos = append(resConceptos, resultadoDesc[(2*v)+1])
-			auxDescb, _ := strconv.Atoi(resultadoDesc[2*v].Valor)
-			resumenPreliqu[v].TotalDescuentos += auxDescb
-			*resumenPreliqu[v].Conceptos = append(*resumenPreliqu[v].Conceptos, resConceptos...)
-			listaConceptos = append(listaConceptos, *resumenPreliqu[v].Conceptos...)
-		}
+		dependientes=false
+		pensionado=false
+		if len(resultadoDesc) != 0 {
 
-		predicadosRetefuente, pensionado, dependientes := CargarDatosRetefuente(datos.PersonasPreLiquidacion[0].NumDocumento)
-		reglasbase = reglasbase + predicadosRetefuente
+			for v, _ := range resumenPreliqu {
 
-		reteFuente := golog.CalcularRetefuenteHCS(reglasbase, listaConceptos, datos, dependientes)
-		//RETEFUENTE
-		for v, _ := range resumenPreliqu {
-
-			auxDescc, _ := strconv.Atoi(reteFuente[v].Valor)
-			resumenPreliqu[v].TotalDescuentos += auxDescc
-
-			resumenPreliqu[v].TotalAPagar = resumenPreliqu[v].TotalDevengos - resumenPreliqu[v].TotalDescuentos
-			*resumenPreliqu[v].Conceptos = append(*resumenPreliqu[v].Conceptos, reteFuente[v])
-			//listaConceptos = append(listaConceptos, *resumenPreliqu[v].Conceptos...)
-		}
-
-		if datos.Preliquidacion.Definitiva == true {
-			//FONDO SOLIDARIDAD
-			for i, descuentos := range resultadoDesc {
-				valor, _ := strconv.ParseFloat(descuentos.Valor, 64)
-				diasLiquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados, 64)
-				tipoPreliquidacion, _ := strconv.Atoi(descuentos.TipoPreliquidacion)
-
-				vigencia, _ := strconv.Atoi(resumenPreliqu[int(math.RoundToEven(float64(i/2)))].VigenciaContrato)
-
-				estadoDisponibilidad := verificacionPago(descuentos.IdPersona, datos.Preliquidacion.Ano, datos.Preliquidacion.Mes, resumenPreliqu[int(math.RoundToEven(float64(i/2)))].NumeroContrato, resumenPreliqu[int(math.RoundToEven(float64(i/2)))].VigenciaContrato)
-
-				detallepreliqu := models.DetallePreliquidacion{NumeroContrato: resumenPreliqu[int(math.RoundToEven(float64(i/2)))].NumeroContrato, VigenciaContrato: vigencia, Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, Persona: descuentos.IdPersona, DiasLiquidados: diasLiquidados, TipoPreliquidacion: &models.TipoPreliquidacion{Id: tipoPreliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad{Id: estadoDisponibilidad}}
-
-				if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
-
-				} else {
-					fmt.Println("error1: ", err)
-				}
-
+				var resConceptos []models.ConceptosResumen
+				resConceptos = append(resConceptos, resultadoDesc[2*v])
+				auxDesc, _ := strconv.Atoi(resultadoDesc[2*v].Valor)
+				resumenPreliqu[v].TotalDescuentos += auxDesc
+				resConceptos = append(resConceptos, resultadoDesc[(2*v)+1])
+				auxDescb, _ := strconv.Atoi(resultadoDesc[2*v].Valor)
+				resumenPreliqu[v].TotalDescuentos += auxDescb
+				*resumenPreliqu[v].Conceptos = append(*resumenPreliqu[v].Conceptos, resConceptos...)
+				listaConceptos = append(listaConceptos, *resumenPreliqu[v].Conceptos...)
 			}
 
+			predicadosRetefuente, pensionado, dependientes := CargarDatosRetefuente(datos.PersonasPreLiquidacion[0].NumDocumento)
+			reglasbase = reglasbase + predicadosRetefuente
+
+			reteFuente := golog.CalcularRetefuenteHCS(reglasbase, listaConceptos, datos, dependientes)
 			//RETEFUENTE
+			for v, _ := range resumenPreliqu {
 
-			for j, retenciones := range reteFuente {
+				auxDescc, _ := strconv.Atoi(reteFuente[v].Valor)
+				resumenPreliqu[v].TotalDescuentos += auxDescc
 
-				valorRete, _ := strconv.ParseFloat(retenciones.Valor, 64)
-				diasLiquidadosRete, _ := strconv.ParseFloat(retenciones.DiasLiquidados, 64)
-				tipoPreliquidacionRete, _ := strconv.Atoi(retenciones.TipoPreliquidacion)
+				resumenPreliqu[v].TotalAPagar = resumenPreliqu[v].TotalDevengos - resumenPreliqu[v].TotalDescuentos
+				*resumenPreliqu[v].Conceptos = append(*resumenPreliqu[v].Conceptos, reteFuente[v])
+				//listaConceptos = append(listaConceptos, *resumenPreliqu[v].Conceptos...)
+			}
 
-				vigenciaRete, _ := strconv.Atoi(resumenPreliqu[j].VigenciaContrato)
-				estadoDisponibilidadRete := verificacionPago(retenciones.IdPersona, datos.Preliquidacion.Ano, datos.Preliquidacion.Mes, resumenPreliqu[j].NumeroContrato, resumenPreliqu[j].VigenciaContrato)
+			if datos.Preliquidacion.Definitiva == true {
+				//FONDO SOLIDARIDAD
+				for i, descuentos := range resultadoDesc {
+					valor, _ := strconv.ParseFloat(descuentos.Valor, 64)
+					diasLiquidados, _ := strconv.ParseFloat(descuentos.DiasLiquidados, 64)
+					tipoPreliquidacion, _ := strconv.Atoi(descuentos.TipoPreliquidacion)
 
-				detallepreliquRete := models.DetallePreliquidacion{NumeroContrato: resumenPreliqu[j].NumeroContrato, VigenciaContrato: vigenciaRete, Concepto: &models.ConceptoNomina{Id: retenciones.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valorRete, Persona: datos.PersonasPreLiquidacion[0].IdPersona, DiasLiquidados: diasLiquidadosRete, TipoPreliquidacion: &models.TipoPreliquidacion{Id: tipoPreliquidacionRete}, EstadoDisponibilidad: &models.EstadoDisponibilidad{Id: estadoDisponibilidadRete}}
+					vigencia, _ := strconv.Atoi(resumenPreliqu[int(math.RoundToEven(float64(i/2)))].VigenciaContrato)
 
-				if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliquRete); err == nil {
+					estadoDisponibilidad := verificacionPago(descuentos.IdPersona, datos.Preliquidacion.Ano, datos.Preliquidacion.Mes, resumenPreliqu[int(math.RoundToEven(float64(i/2)))].NumeroContrato, resumenPreliqu[int(math.RoundToEven(float64(i/2)))].VigenciaContrato)
 
-				} else {
-					fmt.Println("error1: ", err)
+					detallepreliqu := models.DetallePreliquidacion{NumeroContrato: resumenPreliqu[int(math.RoundToEven(float64(i/2)))].NumeroContrato, VigenciaContrato: vigencia, Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valor, Persona: descuentos.IdPersona, DiasLiquidados: diasLiquidados, TipoPreliquidacion: &models.TipoPreliquidacion{Id: tipoPreliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad{Id: estadoDisponibilidad}}
+
+					if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliqu); err == nil {
+
+					} else {
+						fmt.Println("error1: ", err)
+					}
+
 				}
 
-			}
-		} else {
+				//RETEFUENTE
 
-			//
+				for j, retenciones := range reteFuente {
+
+					valorRete, _ := strconv.ParseFloat(retenciones.Valor, 64)
+					diasLiquidadosRete, _ := strconv.ParseFloat(retenciones.DiasLiquidados, 64)
+					tipoPreliquidacionRete, _ := strconv.Atoi(retenciones.TipoPreliquidacion)
+
+					vigenciaRete, _ := strconv.Atoi(resumenPreliqu[j].VigenciaContrato)
+					estadoDisponibilidadRete := verificacionPago(retenciones.IdPersona, datos.Preliquidacion.Ano, datos.Preliquidacion.Mes, resumenPreliqu[j].NumeroContrato, resumenPreliqu[j].VigenciaContrato)
+
+					detallepreliquRete := models.DetallePreliquidacion{NumeroContrato: resumenPreliqu[j].NumeroContrato, VigenciaContrato: vigenciaRete, Concepto: &models.ConceptoNomina{Id: retenciones.Id}, Preliquidacion: &models.Preliquidacion{Id: datos.Preliquidacion.Id}, ValorCalculado: valorRete, Persona: datos.PersonasPreLiquidacion[0].IdPersona, DiasLiquidados: diasLiquidadosRete, TipoPreliquidacion: &models.TipoPreliquidacion{Id: tipoPreliquidacionRete}, EstadoDisponibilidad: &models.EstadoDisponibilidad{Id: estadoDisponibilidadRete}}
+
+					if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", "POST", &idDetaPre, &detallepreliquRete); err == nil {
+
+					} else {
+						fmt.Println("error1: ", err)
+					}
+
+				}
+			} else {
+
+				//
+
+			}
 
 		}
-
-	}
-*/
+	*/
 	//-----------------------------
 	return resumenPreliqu
 }
@@ -381,10 +381,11 @@ func liquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento, Pers
 		}
 		var pensionado bool
 		var dependientes bool
+		var reteiva bool
 		predicadosRetefuente, pensionado, dependientes = CargarDatosRetefuente(NumDocumento)
 		reglas = reglasinyectadas + predicadosRetefuente + reglasbase
 
-		temp := golog.CargarReglasHCS(Persona, reglas, preliquidacion, informacionContrato.VigenciaContrato, datosActa, pensionado, dependientes)
+		temp := golog.CargarReglasHCS(Persona, reglas, preliquidacion, informacionContrato.VigenciaContrato, datosActa, pensionado, dependientes, reteiva)
 
 		resultado := temp[len(temp)-1]
 		resultado.Id = Persona

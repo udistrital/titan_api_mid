@@ -170,7 +170,7 @@ func liquidarContratoHCH(reglasbase string, NumDocumento, Persona int, preliquid
 	var objetoDatosActa models.ObjetoActaInicio
 	var errorConsultaActa error
 	var predicadosRetefuente string
-        var pensionado bool
+	var pensionado bool
 	var dependientes bool
 	var resumenPreliqu []models.Respuesta
 	var reglasinyectadas string
