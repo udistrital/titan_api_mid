@@ -354,7 +354,6 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 
 	var listaRetefuente []models.ConceptosResumen
 	var ingresos int
-	var saldo int
 	var deduccion_salud int
 	var sueldo int
 	var sueldos []int
