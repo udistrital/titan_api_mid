@@ -354,6 +354,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 
 	var listaRetefuente []models.ConceptosResumen
 	var ingresos int
+	var saldo int
 	var deduccion_salud int
 	var sueldo int
 	var sueldos []int
@@ -398,7 +399,6 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	if dependientes {
 		deduccion_salud = deduccion_salud + (ingresos * (10 / 100))
 	}
-
 	//temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
 	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
 
