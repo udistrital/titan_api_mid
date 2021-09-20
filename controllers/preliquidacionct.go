@@ -61,7 +61,7 @@ func (c *PreliquidacionctController) Preliquidar(datos models.DatosPreliquidacio
 	for i := 0; i < len(datos.PersonasPreLiquidacion); i++ {
 
 		if datos.PersonasPreLiquidacion[i].IdPersona != 0 {
-			
+
 			if datos.PersonasPreLiquidacion[i].EstadoDisponibilidad == 1 {
 
 				var respuesta string
@@ -124,7 +124,7 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 	var reglasinyectadas string
 	var reglas string
 	var disp int
-        var pensionado bool
+	var pensionado bool
 	var dependientes bool
 	var idDetaPre interface{}
 
@@ -166,7 +166,7 @@ func liquidarContratoCT(persona models.PersonasPreliquidacion, preliquidacion mo
 			} else {
 				reglasinyectadas = reglasinyectadas + novedadInyectada
 			}
-                        
+
 			predicadosRetefuente, pensionado, dependientes = CargarDatosRetefuente(persona.NumDocumento)
 			disp = verificacionPago(persona.IdPersona, preliquidacion.Ano, preliquidacion.Mes, persona.NumeroContrato, strconv.Itoa(persona.VigenciaContrato))
 			reglas = reglasinyectadas + reglasbase + predicadosRetefuente + "estado_pago(" + strconv.Itoa(disp) + ")."
