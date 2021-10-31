@@ -25,6 +25,24 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DetallePreliquidacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DetallePreliquidacionController"],
+        beego.ControllerComments{
+            Method: "ObtenerDetalleCT",
+            Router: "/obtener_detalle_CT/:ano/:mes/:contrato",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DetallePreliquidacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DetallePreliquidacionController"],
+        beego.ControllerComments{
+            Method: "ObtenerDetalleHCH",
+            Router: "/obtener_detalle_HCH/:ano/:mes/:documento",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionContratosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionContratosController"],
         beego.ControllerComments{
             Method: "ListarContratosAgrupadosPorPersona",
@@ -47,15 +65,6 @@ func init() {
         beego.ControllerComments{
             Method: "ListarPersonasAPreliquidar",
             Router: "/listar_personas_a_preliquidar_argo",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionPersonasAPreliquidarController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionPersonasAPreliquidarController"],
-        beego.ControllerComments{
-            Method: "ListarPersonasAPreliquidarPendientes",
-            Router: "/listar_personas_a_preliquidar_pendientes",
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -133,37 +142,28 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadController"],
+        beego.ControllerComments{
+            Method: "AgregarNovedad",
+            Router: "/agregar_novedad",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadController"],
+        beego.ControllerComments{
+            Method: "EliminarNovedad",
+            Router: "/eliminar_novedad/:id",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"],
         beego.ControllerComments{
             Method: "Preliquidar",
             Router: "/",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"],
-        beego.ControllerComments{
-            Method: "GetIBCPorNovedad",
-            Router: "/get_ibc_novedad",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"],
-        beego.ControllerComments{
-            Method: "PersonasPorPreliquidacion",
-            Router: "/personas_x_preliquidacion",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"],
-        beego.ControllerComments{
-            Method: "ResumenConceptos",
-            Router: "/resumen_conceptos",
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,

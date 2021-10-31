@@ -1,14 +1,8 @@
 package controllers
 
 import (
-	"strconv"
-	"github.com/udistrital/titan_api_mid/golog"
-	"github.com/udistrital/titan_api_mid/models"
-	"github.com/udistrital/utils_oas/request"
 	//"encoding/json"
 	"github.com/astaxie/beego"
-  "fmt"
-	"time"
 )
 
 // PreliquidacionFpController operations for PreliquidacionHc
@@ -16,6 +10,7 @@ type PreliquidacionFpController struct {
 	beego.Controller
 }
 
+/*
 // Preliquidar ...
 // @Title Preliquidar
 // @Description Preliquidacion para administrativos
@@ -98,32 +93,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 }
 
-// CalcularDias ...
-// @Title CalcularDias
-// @Description Dada una fecha inicio y una fecha fin, indicar los días transcurridos
-func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (diasLaborados float64) {
-	var a, m, d int
-	var mesesContrato float64
-	var diasContrato float64
-	if FechaFin.IsZero() {
-		var FechaFin2 time.Time
-		FechaFin2 = time.Now()
-		a, m, d = diff(FechaInicio, FechaFin2)
-		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
-		diasContrato = mesesContrato * 30
 
-	} else {
-		a, m, d = diff(FechaInicio, FechaFin)
-		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
-		diasContrato = mesesContrato * 30
-
-	}
-
-	fmt.Println("dias de contFP", diasContrato)
-
-	return diasContrato
-
-}
 
 func esAnual(MesPreliquidacion int, FechaIngreso time.Time) (regla_anual string) {
 	//Si es uno, es el momento de pagar bonificacion por servicios.
@@ -138,3 +108,4 @@ func esAnual(MesPreliquidacion int, FechaIngreso time.Time) (regla_anual string)
 
 	return esAnual
 }
+*/
