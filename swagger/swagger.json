@@ -15,7 +15,50 @@
     },
     "basePath": "/v1",
     "paths": {
-        "/detalle_preliquidacion/obtener_detalle_CT/{ano}/{mes}/{contrato}": {
+        "/cumplido/obtener_detalle_CT/{ano}/{mes}/{contrato}": {
+            "get": {
+                "tags": [
+                    "cumplido"
+                ],
+                "description": "Actualizar cumplido del contrato",
+                "operationId": "CumplidoController.Actualizar Cumplido",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "ano",
+                        "description": "Año de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "mes",
+                        "description": "Mes de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "contrato",
+                        "description": "Contrato a buscar",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.ContratoPreliquidacion"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/detalle_preliquidacion/obtener_detalle_CT/{ano}/{mes}/{contrato}/{documento}": {
             "get": {
                 "tags": [
                     "detalle_preliquidacion"
@@ -41,6 +84,13 @@
                         "in": "path",
                         "name": "contrato",
                         "description": "Contrato a buscar",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "documento",
+                        "description": "Documento del contratista",
                         "required": true,
                         "type": "string"
                     }
@@ -418,6 +468,67 @@
                 }
             }
         },
+        "/novedad/cancelar_contrato/{NumeroContrato}": {
+            "get": {
+                "tags": [
+                    "novedad"
+                ],
+                "description": "Maneja la novedad contractual de cancelación",
+                "operationId": "NovedadController.Registrar Cancelacion",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "NumeroContrato",
+                        "description": "Numero del contrato que se va a cancelar",
+                        "schema": {
+                            "$ref": "#/definitions/true"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/novedad/ceder_contrato": {
+            "post": {
+                "tags": [
+                    "novedad"
+                ],
+                "description": "Maneja la novedad contractual de cesión de contrato",
+                "operationId": "NovedadController.Ceder Contrato",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Sucesor",
+                        "description": "Datos del sucesor del contrato",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Sucesor"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
         "/novedad/eliminar_novedad/{id}": {
             "get": {
                 "tags": [
@@ -437,7 +548,68 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "No response"
+                        "description": "models.Novedad.Id"
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/novedad/otrosi_contrato": {
+            "post": {
+                "tags": [
+                    "novedad"
+                ],
+                "description": "Aplicar novedad contratul de otro sí",
+                "operationId": "NovedadController.Aplicar Oro sí",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "OtroSí",
+                        "description": "Datos del sucesor del contrato",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.OtroSi"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/novedad/suspender_contrato": {
+            "post": {
+                "tags": [
+                    "novedad"
+                ],
+                "description": "Maneja la novedad contractual de Suspensión de Contrato",
+                "operationId": "NovedadController.Suspender Contrato",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Suspension",
+                        "description": "Duración de la suspensión",
+                        "schema": {
+                            "$ref": "#/definitions/true"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
                     },
                     "403": {
                         "description": "body is empty"
@@ -490,12 +662,10 @@
                     "format": "int64"
                 },
                 "FechaCreacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "FechaModificacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "Id": {
                     "type": "integer",
@@ -579,8 +749,7 @@
                     "type": "string"
                 },
                 "FechaCreacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "FechaFin": {
                     "type": "string",
@@ -591,8 +760,7 @@
                     "format": "datetime"
                 },
                 "FechaModificacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "Id": {
                     "type": "integer",
@@ -643,12 +811,10 @@
                     "type": "boolean"
                 },
                 "FechaCreacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "FechaModificacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "Id": {
                     "type": "integer",
@@ -775,12 +941,10 @@
                     "format": "int64"
                 },
                 "FechaCreacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "FechaModificacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "Id": {
                     "type": "integer",
@@ -865,8 +1029,7 @@
                     "format": "int64"
                 },
                 "FechaCreacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "FechaFin": {
                     "type": "string",
@@ -877,8 +1040,7 @@
                     "format": "datetime"
                 },
                 "FechaModificacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "Id": {
                     "type": "integer",
@@ -922,6 +1084,19 @@
                 "TotalDocentes": {
                     "type": "integer",
                     "format": "int64"
+                }
+            }
+        },
+        "models.OtroSi": {
+            "title": "OtroSi",
+            "type": "object",
+            "properties": {
+                "FechaFin": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "NumeroContrato": {
+                    "type": "string"
                 }
             }
         },
@@ -991,12 +1166,10 @@
                     "format": "int64"
                 },
                 "FechaCreacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "FechaModificacion": {
-                    "type": "string",
-                    "format": "datetime"
+                    "type": "string"
                 },
                 "Id": {
                     "type": "integer",
@@ -1028,6 +1201,25 @@
                     "format": "int64"
                 },
                 "NivelAcademico": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Sucesor": {
+            "title": "Sucesor",
+            "type": "object",
+            "properties": {
+                "Documento": {
+                    "type": "string"
+                },
+                "FechaInicio": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "NombreCompleto": {
+                    "type": "string"
+                },
+                "NumeroContrato": {
                     "type": "string"
                 }
             }

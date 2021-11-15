@@ -56,6 +56,11 @@ func init() {
 				&controllers.NovedadController{},
 			),
 		),
+		beego.NSNamespace("/cumplido",
+			beego.NSInclude(
+				&controllers.CumplidoController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }

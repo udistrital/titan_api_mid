@@ -419,12 +419,10 @@ func (c *GestionReportesController) DesagregadoNominaPorProyectoCurricular() {
 		} else {
 			fmt.Println("error en vinculaciones", err)
 		}
-
 	} else {
 		c.Data["json"] = err
 		fmt.Println("error", err)
 	}
-
 	c.ServeJSON()
 
 }

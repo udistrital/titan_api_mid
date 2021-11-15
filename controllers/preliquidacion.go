@@ -36,7 +36,7 @@ func (c *PreliquidacionController) Preliquidar() {
 		if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			if contrato.TipoNominaId == 411 {
-				liquidarCPS(contrato)
+				liquidarCPS(contrato, 0)
 			} else if contrato.TipoNominaId == 409 {
 				liquidarHCH(contrato)
 			} else if contrato.TipoNominaId == 410 {
@@ -112,8 +112,6 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 		alivios.MedicinaPrepagadaUvt = 0
 		alivios.Pensionado = false
 		alivios.InteresesVivienda = 0
-
 	}
-
 	return reglas, alivios
 }

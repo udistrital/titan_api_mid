@@ -16,7 +16,7 @@ type PreliquidacionhchController struct {
 }
 
 func liquidarHCH(contrato models.Contrato) {
-
+	fmt.Println("Entrando a HCH")
 	var mesIterativo int              //mes para iterar en el ciclo para liquidar todos los meses de una vez
 	var predicados []models.Predicado //variable para inyectar reglas
 	var preliquidacion []models.Preliquidacion
@@ -35,16 +35,18 @@ func liquidarHCH(contrato models.Contrato) {
 
 	mesIterativo = int(contrato.FechaInicio.Month())
 
-	diasContrato := calcularDiasContratoHCH(contrato.FechaInicio, contrato.FechaFin) + 1 //se suma 1 para día inclusive
+	//Obtener las semanas del contrato
+
+	semanasContrato := int(calcularSemanasContratoHCH(contrato.FechaInicio, contrato.FechaFin))
 
 	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
-	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", diasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 	reglasbase := cargarReglasBase("HCH") + cargarReglasSS() + reglasAlivios + FormatoReglas(predicados)
 
 	for mesIterativo <= int(contrato.FechaFin.Month()) {
+		fmt.Println(mesIterativo)
 		reglasNuevas = ""
 		query := "Ano:" + strconv.Itoa(contrato.Vigencia) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:415"
-		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/preliquidacion?limit=-1&query=" + query)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &preliquidacion)
 			if preliquidacion[0].Id == 0 {
@@ -60,7 +62,9 @@ func liquidarHCH(contrato models.Contrato) {
 			detallePreliquidacion.EstadoDisponibilidadId = 426
 			diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
 			detallePreliquidacion.DiasLiquidados, _ = strconv.ParseFloat(diasALiquidar, 64)
-			reglasNuevas = reglasNuevas + reglasbase + "periodo(" + strconv.Itoa(contrato.Vigencia) + ")." + "dias_liquidados(" + contrato.Documento + "," + diasALiquidar + ")."
+			//Calcular semanas a liquidar
+			semanas_liquidadas := CalcularSemanas(detallePreliquidacion.DiasLiquidados)
+			reglasNuevas = reglasNuevas + reglasbase + "periodo(" + strconv.Itoa(contrato.Vigencia) + ")." + "semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
 			auxDetalle = golog.LiquidarMesHCH(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion)
 			for j := 0; j < len(auxDetalle); j++ {
 				registrarDetallePreliquidacion(auxDetalle[j])

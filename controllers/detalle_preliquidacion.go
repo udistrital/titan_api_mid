@@ -26,26 +26,28 @@ func (c *DetallePreliquidacionController) URLMapping() {
 // @Param	ano		path 	string	true		"Año de la preliquidación"
 // @Param	mes		path 	string	true		"Mes de la preliquidación"
 // @Param	contrato		path 	string	true		"Contrato a buscar"
+// @Param	documento		path 	string	true		"Documento del contratista"
 // @Success 201 {object} models.Detalle
 // @Failure 403 body is empty
-// @router /obtener_detalle_CT/:ano/:mes/:contrato [get]
+// @router /obtener_detalle_CT/:ano/:mes/:contrato/:documento [get]
 func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
 
 	ano := c.Ctx.Input.Param(":ano")
 	mes := c.Ctx.Input.Param(":mes")
 	contrato := c.Ctx.Input.Param(":contrato")
+	documento := c.Ctx.Input.Param(":documento")
 
-	detalle := TraerDetalleMensual(ano, mes, contrato)
+	detalle := TraerDetalleMensual(ano, mes, contrato, documento)
 
 	c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detalle}
 
 	c.ServeJSON()
 }
 
-func TraerDetalleMensual(ano, mes, contrato string) (detalle models.Detalle) {
+func TraerDetalleMensual(ano, mes, contrato, documento string) (detalle models.Detalle) {
 	var aux map[string]interface{}
 	var tempDetalle []models.DetallePreliquidacion
-	var query = "ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato
+	var query = "ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato + ",ContratoPreliquidacionId.ContratoId.Documento:" + documento
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &tempDetalle)
 		detalle.Contrato = tempDetalle[0].ContratoPreliquidacionId.ContratoId.NumeroContrato
@@ -102,15 +104,15 @@ func (c *DetallePreliquidacionController) ObtenerDetalleHCH() {
 				json.Unmarshal(jsonString, &resolucion)
 				if len(detallesHCH) == 0 {
 					tempDetalle.Resolucion = &resolucion
-					tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato))
+					tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, documento))
 					detallesHCH = append(detallesHCH, tempDetalle)
 				} else {
 					res, pos := encontrarResolucion(resolucion.Id, detallesHCH)
 					if res {
-						detallesHCH[pos].Detalle = append(detallesHCH[pos].Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato))
+						detallesHCH[pos].Detalle = append(detallesHCH[pos].Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, documento))
 					} else {
 						tempDetalle.Resolucion = &resolucion
-						tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato))
+						tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, documento))
 						detallesHCH = append(detallesHCH, tempDetalle)
 					}
 				}
