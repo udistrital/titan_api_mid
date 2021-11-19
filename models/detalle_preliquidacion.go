@@ -1,18 +1,22 @@
 package models
 
-
-
 type DetallePreliquidacion struct {
-	Id                 int                   `orm:"column(id);pk"`
-	ValorCalculado     float64               `orm:"column(valor_calculado)"`
-	NumeroContrato     string                `orm:"column(numero_contrato);null"`
-	VigenciaContrato   int                   `orm:"column(vigencia_contrato);null"`
-	Persona      			 int									 `orm:"column(persona)"`
-	DiasLiquidados     float64               `orm:"column(dias_liquidados);null"`
-	TipoPreliquidacion *TipoPreliquidacion   `orm:"column(tipo_preliquidacion);rel(fk)"`
-	Preliquidacion     *Preliquidacion       `orm:"column(preliquidacion);rel(fk)"`
-	Concepto           *ConceptoNomina       `orm:"column(concepto);rel(fk)"`
-	EstadoDisponibilidad *EstadoDisponibilidad   `orm:"column(estado_disponibilidad);rel(fk)"`
-	NombreCompleto 		string
-	Documento         string
+	Id                       int
+	ContratoPreliquidacionId *ContratoPreliquidacion
+	ValorCalculado           float64
+	DiasLiquidados           float64
+	DiasEspecificos          string
+	TipoPreliquidacionId     int
+	ConceptoNominaId         *ConceptoNomina
+	EstadoDisponibilidadId   int
+	Activo                   bool
+	FechaCreacion            string
+	FechaModificacion        string
+
+	//posibilidad de borrar, se colocan temporalmente para no generar errores
+	NombreCompleto   string
+	Documento        string
+	NumeroContrato   string
+	VigenciaContrato int
+	Persona          int
 }

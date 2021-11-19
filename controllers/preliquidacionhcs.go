@@ -1,15 +1,7 @@
 package controllers
 
 import (
-	"fmt"
-
-	"strconv"
-
 	"github.com/astaxie/beego"
-	"github.com/udistrital/titan_api_mid/golog"
-	"github.com/udistrital/titan_api_mid/models"
-	"github.com/udistrital/utils_oas/formatdata"
-	"github.com/udistrital/utils_oas/request"
 )
 
 // PreliquidacionHcSController operations for PreliquidacionHcS
@@ -17,6 +9,7 @@ type PreliquidacionHcSController struct {
 	beego.Controller
 }
 
+/*
 // GetIBCPorNovedad ...
 // @Title GetIBCPorNovedad
 // @Description Funcion para calcular IBC para una novedad específica
@@ -314,11 +307,11 @@ func (c *PreliquidacionHcSController) Preliquidar(datos models.DatosPreliquidaci
 			}
 
 		}
-	*/
-	//-----------------------------
-	return resumenPreliqu
-}
-
+*/
+//-----------------------------
+//return resumenPreliqu
+//}
+/*
 func liquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento, Persona int, preliquidacion models.Preliquidacion, informacionContrato models.ListaContratos) (res []models.Respuesta) {
 
 	var objetoDatosActa models.ObjetoActaInicio
@@ -374,6 +367,7 @@ func liquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento, Pers
 		predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + strconv.Itoa(Persona) + "," + informacionContrato.Total + ")."})
 		reglasinyectadas = FormatoReglas(predicados)
 		/* If para permitir incluir regla en servicio get_ibcNovedad  */
+/*
 		if novedadInyectada == "" {
 			reglasinyectadas = reglasinyectadas + CargarNovedadesPersona(Persona, informacionContrato.NumeroContrato, informacionContrato.VigenciaContrato, preliquidacion)
 		} else {
@@ -426,3 +420,4 @@ func liquidarContratoHCS(reglasbase, novedadInyectada string, NumDocumento, Pers
 	return resumenPreliqu
 
 }
+*/

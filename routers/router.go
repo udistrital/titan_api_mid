@@ -45,15 +45,20 @@ func init() {
 			),
 		),
 
-		beego.NSNamespace("/services",
+		beego.NSNamespace("/detalle_preliquidacion",
 			beego.NSInclude(
-				&controllers.ServicesController{},
+				&controllers.DetallePreliquidacionController{},
 			),
 		),
 
-		beego.NSNamespace("/concepto_nomina_por_persona",
+		beego.NSNamespace("/novedad",
 			beego.NSInclude(
-				&controllers.Concepto_nomina_por_personaController{},
+				&controllers.NovedadController{},
+			),
+		),
+		beego.NSNamespace("/cumplido",
+			beego.NSInclude(
+				&controllers.CumplidoController{},
 			),
 		),
 	)

@@ -69,9 +69,7 @@ func CalcularIBC(persona, reglas string) {
 	valor_ibc := e.ProveAll("calcular_ibc(X,V).")
 	for _, solution := range valor_ibc {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-
 		ibc = ibc + Valor
-
 	}
 
 }
@@ -441,17 +439,13 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	for _, solution := range listaDescuentos {
 		if strconv.Itoa(solution.Id) == "10" {
 			auxtemp, _ := strconv.Atoi(solution.Valor)
-
 			sueldos = append(sueldos, auxtemp)
-
 		}
-
 	}
+
 	//Se obtienen los porcentajes para cada sueldo
 	for i := range sueldos {
-
 		porcentajes = append(porcentajes, float64(sueldos[i])/float64(sueldo))
-
 	}
 
 	for j := range porcentajes {
@@ -482,8 +476,6 @@ func CalcularPeriodoLiquidacion(preliquidacion models.Preliquidacion, objeto_dat
 	var meses_contrato float64
 
 	layout := "2006-01-02"
-	//FechaInicio, _ = time.Parse(layout , "2018-08-01")
-	//FechaFin, _ = time.Parse(layout , "2018-12-15")
 
 	datos_acta := objeto_datos_acta.ActaInicio
 
@@ -499,21 +491,16 @@ func CalcularPeriodoLiquidacion(preliquidacion models.Preliquidacion, objeto_dat
 	if int(FechaInicioContrato.Month()) == preliquidacion.Mes && int(FechaInicioContrato.Year()) == preliquidacion.Ano {
 		FechaControl = time.Date(preliquidacion.Ano, time.Month(preliquidacion.Mes), 30, 0, 0, 0, 0, time.UTC)
 		periodo_liquidacion = CalcularDias(FechaInicioContrato, FechaControl) + 1
-
 	} else if int(FechaFinContrato.Month()) == preliquidacion.Mes && int(FechaFinContrato.Year()) == preliquidacion.Ano {
-
 		FechaControl = time.Date(preliquidacion.Ano, time.Month(preliquidacion.Mes), 1, 0, 0, 0, 0, time.UTC)
 		periodo_liquidacion = CalcularDias(FechaControl, FechaFinContrato) + 1
-
 	} else {
 		periodo_liquidacion = 30
-
 	}
 
 	if FechaFin.Day() != FechaInicio.Day() {
 		d = d + 1
 	}
-	//meses_contrato = 4.5;
 	meses_contrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
 	periodo := strconv.Itoa(int(periodo_liquidacion))
 	meses := strconv.FormatFloat(meses_contrato, 'E', -1, 64)

@@ -36,20 +36,20 @@ func (c *GestionContratosController) ListarContratosAgrupadosPorPersona() {
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" {
+		if v.Preliquidacion.NominaId == 414 {
 			tempDocentes, controlError = GetContratosPorPersonaCT(v, v.PersonasPreLiquidacion[0].NumDocumento)
 		}
 		//Buscar contratos vigentes en ese periodo para esa persona
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
+		if v.Preliquidacion.NominaId == 415 {
 			tempDocentes, controlError = GetContratosPorPersonaHCH(v, v.PersonasPreLiquidacion[0])
 		}
 
-		if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
+		if v.Preliquidacion.NominaId == 416 {
 			tempDocentes, controlError = GetContratosPorPersonaHCS(v, v.PersonasPreLiquidacion[0])
 		}
 
 		if controlError == nil {
-			if v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCH" || v.Preliquidacion.Nomina.TipoNomina.Nombre == "HCS" {
+			if v.Preliquidacion.NominaId == 415 || v.Preliquidacion.NominaId == 416 {
 				tempAgrupar := make(map[string]interface{}) // este mapa tiene la siguiente estructura: tempAgrupar[numero_cedula_docente][id_resolucion][valor_total] (cada resolucion tiene un único tipo de nivel académico, por lo tanto los valores totales se van sumando de acuerdo a la resolución )
 				infoContratos := make(map[string]interface{})
 
@@ -72,7 +72,7 @@ func (c *GestionContratosController) ListarContratosAgrupadosPorPersona() {
 				c.Data["json"] = tempAgrupar
 			}
 
-			if v.Preliquidacion.Nomina.TipoNomina.Nombre == "CT" {
+			if v.Preliquidacion.NominaId == 414 {
 				tempAgrupar := make(map[string]interface{}) // este mapa tiene la siguiente estructura: tempAgrupar[numero_cedula_docente][id_resolucion][valor_total] (cada resolucion tiene un único tipo de nivel académico, por lo tanto los valores totales se van sumando de acuerdo a la resolución )
 				infoContratos := make(map[string]interface{})
 				for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
@@ -95,125 +95,6 @@ func (c *GestionContratosController) ListarContratosAgrupadosPorPersona() {
 	} else {
 		fmt.Println("Error al leer datos", controlError)
 	}
-}
-
-// ListaContratosContratistas ...
-// @Title ListaContratosContratistas
-// @Description Lista los contratos vigentes para esa preliquidaciones para contratistas
-func ListaContratosContratistas(objeto_nom models.Preliquidacion) (arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error) {
-
-	var temp map[string]interface{}
-	var tempDocentes models.ObjetoFuncionarioContrato
-	var controlError error
-	var mes string
-	var ano = strconv.Itoa(objeto_nom.Ano)
-	if objeto_nom.Mes >= 1 && objeto_nom.Mes <= 9 {
-		mes = strconv.Itoa(objeto_nom.Mes)
-		mes = "0" + mes
-	} else {
-		mes = strconv.Itoa(objeto_nom.Mes)
-	}
-
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
-		jsonDocentes, errorJSON := json.Marshal(temp)
-
-		if errorJSON == nil {
-			json.Unmarshal(jsonDocentes, &tempDocentes)
-
-		} else {
-			controlError = errorJSON
-			fmt.Println("error al traer contratos docentes DVE")
-		}
-	} else {
-		controlError = err
-		fmt.Println("Error al unmarshal datos de nómina", err)
-
-	}
-
-	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
-
-		var d []models.DetallePreliquidacion
-		query := "Preliquidacion.Id:" + strconv.Itoa(objeto_nom.Id) + ",Persona:" + dato.Id
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
-
-			cumple := consultarEstadoPago(dato.NumeroContrato, dato.VigenciaContrato, objeto_nom.Ano, objeto_nom.Mes)
-
-			if cumple == 2 {
-				tempDocentes.ContratosTipo.ContratoTipo[x].Cumplido = "SI"
-			} else if cumple == 1 {
-				tempDocentes.ContratosTipo.ContratoTipo[x].Cumplido = "NO"
-			}
-
-			if d[0].Id == 0 || len(d) == 0 {
-				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "NO"
-				tempDocentes.ContratosTipo.ContratoTipo[x].EstadoPago = "No liquidado"
-			} else {
-				tempDocentes.ContratosTipo.ContratoTipo[x].Preliquidado = "SI"
-				tempDocentes.ContratosTipo.ContratoTipo[x].EstadoPago = d[0].EstadoDisponibilidad.Nombre
-			}
-
-		}
-	}
-
-	return tempDocentes, controlError
-
-}
-
-// ListaContratosContratistasPendientes ...
-// @Title ListaContratosContratistasPendientes
-// @Description Lista los contratos vigentes pendientes para esa preliquidaciones para contratistas
-func ListaContratosContratistasPendientes(objeto_nom models.Preliquidacion) (arreglo_contratos models.ObjetoFuncionarioContrato, cont_error error) {
-
-	var temp map[string]interface{}
-	var tempDocentes models.ObjetoFuncionarioContrato
-	var pendientes models.ObjetoFuncionarioContrato
-	var controlError error
-	var mes string
-	var ano = strconv.Itoa(objeto_nom.Ano)
-	if objeto_nom.Mes >= 1 && objeto_nom.Mes <= 9 {
-		mes = strconv.Itoa(objeto_nom.Mes)
-		mes = "0" + mes
-	} else {
-		mes = strconv.Itoa(objeto_nom.Mes)
-	}
-
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo/6/"+ano+"-"+mes+"/"+ano+"-"+mes, &temp); err == nil && temp != nil {
-		jsonDocentes, errorJSON := json.Marshal(temp)
-
-		if errorJSON == nil {
-			json.Unmarshal(jsonDocentes, &tempDocentes)
-
-		} else {
-			controlError = errorJSON
-			fmt.Println("error al traer contratos docentes DVE")
-		}
-	} else {
-		controlError = err
-		fmt.Println("Error al unmarshal datos de nómina", err)
-
-	}
-
-	for x, dato := range tempDocentes.ContratosTipo.ContratoTipo {
-
-		var d []models.DetallePreliquidacion
-		query := "Preliquidacion.Id:" + strconv.Itoa(objeto_nom.Id) + ",Persona:" + dato.Id + ",EstadoDisponibilidad:3" + ",NumeroContrato:" + dato.NumeroContrato + ",VigenciaContrato:" + dato.VigenciaContrato
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
-
-			if d[0].Id == 0 || len(d) == 0 {
-
-				cumple := consultarEstadoPago(dato.NumeroContrato, dato.VigenciaContrato, objeto_nom.Ano, objeto_nom.Mes)
-
-				if cumple == 2 {
-					pendientes.ContratosTipo.ContratoTipo = append(pendientes.ContratosTipo.ContratoTipo, tempDocentes.ContratosTipo.ContratoTipo[x])
-				}
-
-			}
-
-		}
-	}
-
-	return pendientes, controlError
-
 }
 
 // ListaContratosFuncionariosPlanta ...
