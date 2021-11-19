@@ -13,3 +13,9 @@ type DetalleHCH struct {
 	Resolucion *Resolucion
 	Detalle    []Detalle
 }
+
+type DetalleMensual struct {
+	TotalDevengado  float64
+	TotalDescuentos float64
+	Detalle         []DetallePreliquidacion
+}

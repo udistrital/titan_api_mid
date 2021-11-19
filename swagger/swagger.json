@@ -644,6 +644,49 @@
                     }
                 }
             }
+        },
+        "/preliquidacion/obtener_resumen_preliquidacion/{mes}/{ano}/{nomina}": {
+            "get": {
+                "tags": [
+                    "preliquidacion"
+                ],
+                "description": "Retorna el total de la preliquidacion",
+                "operationId": "PreliquidacionController.Resumen Preliquidacion",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "ano",
+                        "description": "Año de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "mes",
+                        "description": "Mes de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "nomina",
+                        "description": "Tipo de nomina",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.DetalleMensual"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -910,6 +953,26 @@
                 },
                 "Resolucion": {
                     "$ref": "#/definitions/models.Resolucion"
+                }
+            }
+        },
+        "models.DetalleMensual": {
+            "title": "DetalleMensual",
+            "type": "object",
+            "properties": {
+                "Detalle": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DetallePreliquidacion"
+                    }
+                },
+                "TotalDescuentos": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "TotalDevengado": {
+                    "type": "number",
+                    "format": "double"
                 }
             }
         },

@@ -115,3 +115,73 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 	}
 	return reglas, alivios
 }
+
+// Resumen de la preliquidacion ...
+// @Title Resumen Preliquidacion
+// @Description Retorna el total de la preliquidacion
+// @Param	ano		path 	string	true		"Año de la preliquidación"
+// @Param	mes		path 	string	true		"Mes de la preliquidación"
+// @Param	nomina		path 	string	true		"Tipo de nomina"
+// @Success 201 {object} models.DetalleMensual
+// @Failure 403 body is empty
+// @router /obtener_resumen_preliquidacion/:mes/:ano/:nomina [get]
+func (c *PreliquidacionController) ObtenerResumenPreliquidacion() {
+	var aux map[string]interface{}
+	var detalles []models.DetallePreliquidacion
+	var detalleMesual models.DetalleMensual
+
+	ano := c.Ctx.Input.Param(":ano")
+	mes := c.Ctx.Input.Param(":mes")
+	nomina := c.Ctx.Input.Param(":nomina")
+
+	//traer todos los detalles de la preliquidacion correspondientes a ese mes
+	query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.NominaId:" + nomina
+	fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=" + query)
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+		LimpiezaRespuestaRefactor(aux, &detalles)
+		fmt.Println(len(detalles))
+		for i := 0; i < len(detalles); i++ {
+			if detalles[i].ConceptoNominaId.Id != 2352 && detalles[i].ConceptoNominaId.Id != 2353 {
+				if len(detalles) == 0 {
+					detalleMesual.Detalle = append(detalleMesual.Detalle, detalles[0])
+					if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
+						detalleMesual.TotalDevengado = detalleMesual.TotalDevengado + detalles[i].ValorCalculado
+					} else if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
+						detalleMesual.TotalDescuentos = detalleMesual.TotalDescuentos + detalles[i].ValorCalculado
+					}
+				} else {
+					res, pos := encontrarConcepto(detalles[i].ConceptoNominaId.Id, detalleMesual.Detalle)
+					if res {
+						detalleMesual.Detalle[pos].ValorCalculado = detalleMesual.Detalle[pos].ValorCalculado + detalles[i].ValorCalculado
+						if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
+							detalleMesual.TotalDevengado = detalleMesual.TotalDevengado + detalles[i].ValorCalculado
+						} else if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
+							detalleMesual.TotalDescuentos = detalleMesual.TotalDescuentos + detalles[i].ValorCalculado
+						}
+					} else {
+						detalleMesual.Detalle = append(detalleMesual.Detalle, detalles[i])
+						if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
+							detalleMesual.TotalDevengado = detalleMesual.TotalDevengado + detalles[i].ValorCalculado
+						} else if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
+							detalleMesual.TotalDescuentos = detalleMesual.TotalDescuentos + detalles[i].ValorCalculado
+						}
+					}
+				}
+			}
+		}
+		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detalleMesual}
+	} else {
+		fmt.Println("Error al obtener los detalles")
+		c.Data["mesaage"] = "Error, la preliquidación no existe"
+	}
+	c.ServeJSON()
+}
+
+func encontrarConcepto(id int, detalles []models.DetallePreliquidacion) (res bool, pos int) {
+	for i := 0; i < len(detalles); i++ {
+		if id == detalles[i].ConceptoNominaId.Id {
+			return true, i
+		}
+	}
+	return false, 0
+}

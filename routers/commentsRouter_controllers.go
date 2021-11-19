@@ -214,6 +214,15 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:PreliquidacionController"],
+        beego.ControllerComments{
+            Method: "ObtenerResumenPreliquidacion",
+            Router: "/obtener_resumen_preliquidacion/:mes/:ano/:nomina",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:ServicesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:ServicesController"],
         beego.ControllerComments{
             Method: "DesagregacionContratoHCS",
