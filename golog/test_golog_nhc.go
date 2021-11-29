@@ -347,7 +347,7 @@ func LiquidarMesHCH(reglas string, cedula string, ano int, detallePreliquidacion
 			conceptoNomina.NaturalezaConceptoNominaId, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
-		if conceptoNomina.Id == 10 {
+		if conceptoNomina.Id == 87 {
 			totalDevengado = detallePreliquidacion.ValorCalculado
 		}
 
@@ -364,14 +364,14 @@ func LiquidarMesHCH(reglas string, cedula string, ano int, detallePreliquidacion
 	//se agrega el detalle del total a pagar
 	detallePreliquidacion.Id = 0
 	detallePreliquidacion.ValorCalculado = totalAPagar
-	detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: 2353}
+	detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: 574}
 	detallePreliquidacion.Activo = true
 	data = append(data, detallePreliquidacion)
 
 	//se agrega el detalle del total de los descuentos
 	detallePreliquidacion.Id = 0
 	detallePreliquidacion.ValorCalculado = totalDescuentos
-	detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: 2352}
+	detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: 573}
 	detallePreliquidacion.Activo = true
 	data = append(data, detallePreliquidacion)
 

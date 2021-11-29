@@ -53,9 +53,9 @@ func TraerDetalleMensual(ano, mes, contrato, documento string) (detalle models.D
 		detalle.Contrato = tempDetalle[0].ContratoPreliquidacionId.ContratoId.NumeroContrato
 		detalle.Vigencia = tempDetalle[0].ContratoPreliquidacionId.ContratoId.Vigencia
 		for i := 0; i < len(tempDetalle); i++ {
-			if tempDetalle[i].ConceptoNominaId.Id == 2352 {
+			if tempDetalle[i].ConceptoNominaId.Id == 573 {
 				detalle.TotalDescuentos = tempDetalle[i].ValorCalculado
-			} else if tempDetalle[i].ConceptoNominaId.Id == 2353 {
+			} else if tempDetalle[i].ConceptoNominaId.Id == 574 {
 				detalle.TotalPago = tempDetalle[i].ValorCalculado
 			} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
 				detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
@@ -158,11 +158,11 @@ func AgregarValorNovedad(novedad models.Novedad) {
 			//Para descuentos
 			if novedad.ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
 				//Obtener el valor de los honorarios para ese mes
-				query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:10"
+				query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:87"
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &res); err == nil {
 					LimpiezaRespuestaRefactor(res, &honorarios)
 					//Actualizar los descuentos
-					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:2352"
+					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:573"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &res); err == nil {
 
 						LimpiezaRespuestaRefactor(res, &descuentos)
@@ -187,7 +187,7 @@ func AgregarValorNovedad(novedad models.Novedad) {
 						fmt.Println("Error al obtener el valor de los descuentos ", err)
 					}
 					//Obtener el total a pagar
-					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:2353"
+					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:574"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &res); err == nil {
 
 						LimpiezaRespuestaRefactor(res, &totalAPagar)
@@ -232,11 +232,11 @@ func AgregarValorNovedad(novedad models.Novedad) {
 				//Para devengos
 			} else if novedad.ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
 				//Obtener el valor de los honorarios para ese mes
-				query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:10"
+				query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:87"
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &res); err == nil {
 					LimpiezaRespuestaRefactor(res, &honorarios)
 					//Actualizar el total a pagar
-					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:2353"
+					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:574"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &res); err == nil {
 						LimpiezaRespuestaRefactor(res, &totalAPagar)
 						if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 {
@@ -309,11 +309,11 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
 			LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
 			if novedad.ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
 				//Obtener el valor de los honorarios para ese mes
-				query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:10"
+				query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:87"
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene los descuentos aplicados para ese mes para sumarle el de la novedad
 					LimpiezaRespuestaRefactor(aux, &honorarios)
 					//Actualizar el total a pagar
-					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:2353"
+					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:574"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene los descuentos aplicados para ese mes para sumarle el de la novedad
 						LimpiezaRespuestaRefactor(aux, &totalAPagar)
 						if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 {
@@ -339,11 +339,11 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
 				}
 			} else if novedad.ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
 				//Obtener el valor de los honorarios para ese mes
-				query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:10"
+				query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:87"
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene los descuentos aplicados para ese mes para sumarle el de la novedad
 					LimpiezaRespuestaRefactor(aux, &honorarios)
 					//Actualizar los descuentos
-					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:2352"
+					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:573"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene los descuentos aplicados para ese mes para sumarle el de la novedad
 						LimpiezaRespuestaRefactor(aux, &descuentos)
 						if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 {
@@ -365,7 +365,7 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
 						fmt.Println("Error al obtener el valor de los descuentos ", err)
 					}
 
-					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:2353"
+					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:574"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene los descuentos aplicados para ese mes para sumarle el de la novedad
 
 						LimpiezaRespuestaRefactor(aux, &totalAPagar)

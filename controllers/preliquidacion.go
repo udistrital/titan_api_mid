@@ -141,29 +141,25 @@ func (c *PreliquidacionController) ObtenerResumenPreliquidacion() {
 		LimpiezaRespuestaRefactor(aux, &detalles)
 		fmt.Println(len(detalles))
 		for i := 0; i < len(detalles); i++ {
-			if detalles[i].ConceptoNominaId.Id != 2352 && detalles[i].ConceptoNominaId.Id != 2353 {
-				if len(detalles) == 0 {
+			if detalles[i].ConceptoNominaId.Id == 573 {
+				detalleMesual.TotalDescuentos = detalleMesual.TotalDescuentos + detalles[i].ValorCalculado
+			} else {
+				if len(detalles) == 0 && detalles[i].ConceptoNominaId.Id != 574 {
 					detalleMesual.Detalle = append(detalleMesual.Detalle, detalles[0])
 					if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
 						detalleMesual.TotalDevengado = detalleMesual.TotalDevengado + detalles[i].ValorCalculado
-					} else if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
-						detalleMesual.TotalDescuentos = detalleMesual.TotalDescuentos + detalles[i].ValorCalculado
 					}
-				} else {
+				} else if detalles[i].ConceptoNominaId.Id != 574 {
 					res, pos := encontrarConcepto(detalles[i].ConceptoNominaId.Id, detalleMesual.Detalle)
 					if res {
 						detalleMesual.Detalle[pos].ValorCalculado = detalleMesual.Detalle[pos].ValorCalculado + detalles[i].ValorCalculado
 						if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
 							detalleMesual.TotalDevengado = detalleMesual.TotalDevengado + detalles[i].ValorCalculado
-						} else if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
-							detalleMesual.TotalDescuentos = detalleMesual.TotalDescuentos + detalles[i].ValorCalculado
 						}
 					} else {
 						detalleMesual.Detalle = append(detalleMesual.Detalle, detalles[i])
 						if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
 							detalleMesual.TotalDevengado = detalleMesual.TotalDevengado + detalles[i].ValorCalculado
-						} else if detalles[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
-							detalleMesual.TotalDescuentos = detalleMesual.TotalDescuentos + detalles[i].ValorCalculado
 						}
 					}
 				}

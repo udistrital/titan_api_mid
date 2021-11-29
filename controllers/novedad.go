@@ -94,7 +94,7 @@ func (c *NovedadController) AgregarNovedad() {
 				var query = "ContratoId:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(iteracion) + ",PreliquidacionId.Ano:" + strconv.Itoa(fecha_actual.Year())
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
-					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:10"
+					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:87"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &auxDetalle)
 						honorarios = auxDetalle[0].ValorCalculado
@@ -109,7 +109,7 @@ func (c *NovedadController) AgregarNovedad() {
 				query = "ContratoId:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(iteracion) + ",PreliquidacionId.Ano:" + strconv.Itoa(fecha_actual.Year())
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
-					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:2352"
+					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:573"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &auxDetalle)
 						descuentos = auxDetalle[0].ValorCalculado
@@ -236,7 +236,7 @@ func (c *NovedadController) CancelarContrato() {
 			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &detalles)
 				for j := 0; j < len(detalles); j++ {
-					if detalles[j].ConceptoNominaId.Id == 10 && i == mesInicio {
+					if detalles[j].ConceptoNominaId.Id == 87 && i == mesInicio {
 						valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
 					}
 					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
@@ -343,7 +343,7 @@ func (c *NovedadController) CederContrato() {
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &detalles)
 					for j := 0; j < len(detalles); j++ {
-						if detalles[j].ConceptoNominaId.Id == 10 && i == mesInicio {
+						if detalles[j].ConceptoNominaId.Id == 87 && i == mesInicio {
 							valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
 						}
 						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
@@ -375,7 +375,7 @@ func (c *NovedadController) CederContrato() {
 					LimpiezaRespuestaRefactor(aux, &detalles)
 					diasLiquidados = diasLiquidados + int(detalles[0].DiasLiquidados)
 					for j := 0; j < len(detalles); j++ {
-						if detalles[j].ConceptoNominaId.Id == 10 {
+						if detalles[j].ConceptoNominaId.Id == 87 {
 							valorNuevo = valorNuevo + detalles[j].ValorCalculado
 						}
 					}
@@ -480,7 +480,7 @@ func (c *NovedadController) AplicarOtrosi() {
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &detalles)
 			for j := 0; j < len(detalles); j++ {
-				if detalles[j].ConceptoNominaId.Id == 10 {
+				if detalles[j].ConceptoNominaId.Id == 87 {
 					honorarios = detalles[j].ValorCalculado
 					dias = int(detalles[j].DiasLiquidados)
 				}
@@ -582,7 +582,7 @@ func (c *NovedadController) SuspenderContrato() {
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &detalles)
 					for j := 0; j < len(detalles); j++ {
-						if detalles[j].ConceptoNominaId.Id == 10 && i == mesInicio {
+						if detalles[j].ConceptoNominaId.Id == 87 && i == mesInicio {
 							valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
 						}
 						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
@@ -614,7 +614,7 @@ func (c *NovedadController) SuspenderContrato() {
 					LimpiezaRespuestaRefactor(aux, &detalles)
 					diasLiquidados = diasLiquidados + int(detalles[0].DiasLiquidados)
 					for j := 0; j < len(detalles); j++ {
-						if detalles[j].ConceptoNominaId.Id == 10 {
+						if detalles[j].ConceptoNominaId.Id == 87 {
 							valorNuevo = valorNuevo + detalles[j].ValorCalculado
 						}
 					}
