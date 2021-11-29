@@ -99,7 +99,7 @@ func (c *GestionReportesController) TotalNominaPorProyecto() {
 				query := "Preliquidacion.Ano:" + ano + ",Preliquidacion.Mes:" + mes + ",Preliquidacion.Nomina.Id:" + IDNomina + ",Persona:" + strconv.Itoa(IDProveedor) + ",Concepto.NaturalezaConcepto.Id:1"
 				if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 					if d != nil {
-						if d[0].ConceptoNominaId.Id == 11 || d[0].ConceptoNominaId.Id == 10 {
+						if d[0].ConceptoNominaId.Id == 11 || d[0].ConceptoNominaId.Id == 87 {
 
 							contDev = contDev + 1
 						}
@@ -176,7 +176,7 @@ func (c *GestionReportesController) TotalNominaPorFacultad() {
 				query := "Preliquidacion.Ano:" + ano + ",Preliquidacion.Mes:" + mes + ",Preliquidacion.Nomina.Id:" + IDNomina + ",Persona:" + strconv.Itoa(IDProveedor) + ",Concepto.NaturalezaConcepto.Id:1"
 				if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query="+query, &d); err == nil {
 					if d != nil {
-						if d[0].ConceptoNominaId.Id == 11 || d[0].ConceptoNominaId.Id == 10 {
+						if d[0].ConceptoNominaId.Id == 11 || d[0].ConceptoNominaId.Id == 87 {
 							contDev = contDev + 1
 						}
 						total = total + d[0].ValorCalculado
@@ -481,7 +481,7 @@ func (c *GestionReportesController) TotalNominaPorDependencia() {
 				for _, dato := range arregloTotal {
 					if dato.ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
 						total = total + dato.ValorCalculado
-						if dato.ConceptoNominaId.Id == 11 || d[0].ConceptoNominaId.Id == 10 {
+						if dato.ConceptoNominaId.Id == 11 || d[0].ConceptoNominaId.Id == 87 {
 							contDev = contDev + 1
 						}
 					}
@@ -627,7 +627,7 @@ func (c *GestionReportesController) TotalNominaPorOrdenador() {
 				for _, dato := range arregloTotal {
 					if dato.ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
 						total = total + dato.ValorCalculado
-						if dato.ConceptoNominaId.Id == 11 || d[0].ConceptoNominaId.Id == 10 {
+						if dato.ConceptoNominaId.Id == 11 || d[0].ConceptoNominaId.Id == 87 {
 							contDev = contDev + 1
 						}
 					}

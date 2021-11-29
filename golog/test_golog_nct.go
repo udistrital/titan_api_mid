@@ -16,53 +16,9 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 	var listaRetefuente []models.ConceptosResumen
 	var tipoPreliquidacionString = "2"
 	var diasNovedadString = "0"
-	var ano, _ = strconv.Atoi(periodo)
-
-	reglas = reglas + "cargo(0)."
-	reglas = reglas + "periodo(" + periodo + ")."
-
-	//debe verificar si tiene una novedad tipo cesion y calcular el periodo de acuerdo a ello
-	diasALiquidar, _ := CalcularPeriodoLiquidacion(preliquidacion, objeto_datos_acta)
-	fmt.Println("dias liquidados", diasALiquidar)
-
-	m := NewMachine().Consult(reglas)
-	novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
-
-	for _, solution := range novedades_seg_social {
-
-		fmt.Println("existe novedad de SS")
-
-		novedad := fmt.Sprintf("%s", solution.ByName_("N"))
-		AnoDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
-		MesDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
-		DiaDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("D")), 64)
-		AnoHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("AA")), 64)
-		MesHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
-		DiaHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
-		fmt.Println("existe novedad de SS", novedad)
-		fmt.Println("AnoDesde", AnoDesde)
-		fmt.Println("MesDesde", MesDesde)
-		fmt.Println("DiaDesde", DiaDesde)
-		fmt.Println("AnoHasta", AnoHasta)
-		fmt.Println("MesHasta", MesHasta)
-		fmt.Println("DiaHasta", DiaHasta)
-
-		afectacion_seg_social := m.ProveAll("afectacion_seguridad(" + novedad + ").")
-		for _, solution := range afectacion_seg_social {
-
-			fmt.Println(solution)
-			dias_novedad := CalcularDiasNovedades(preliquidacion.Mes, ano, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
-			diasALiquidar = strconv.Itoa(int(30 - dias_novedad))
-			diasNovedadString = strconv.Itoa(int(dias_novedad))
-			_, total_devengado_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasNovedadString, pensionado)
-			ibc = 0
-		}
-
-	}
 
 	listaDescuentos, total_devengado_no_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasALiquidar, pensionado)
 	listaNovedades = ManejarNovedadesCT(reglas, idProveedor, tipoPreliquidacionString, periodo, diasALiquidar)
-	listaRetefuente = CalcularReteFuenteSal(tipoPreliquidacionString, reglas, listaDescuentos, diasALiquidar, dependientes)
 	total_calculos = append(total_calculos, listaDescuentos...)
 	total_calculos = append(total_calculos, listaNovedades...)
 	total_calculos = append(total_calculos, listaRetefuente...)
@@ -212,7 +168,7 @@ func LiquidarMesCPS(reglas string, cedula string, ano int, detallePreliquidacion
 			conceptoNomina.NaturalezaConceptoNominaId, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 
-		if conceptoNomina.Id == 10 {
+		if conceptoNomina.NaturalezaConceptoNominaId == 423 {
 			totalDevengado = detallePreliquidacion.ValorCalculado
 		}
 
@@ -253,14 +209,14 @@ func LiquidarMesCPS(reglas string, cedula string, ano int, detallePreliquidacion
 	//se agrega el detalle del total a pagar
 	detallePreliquidacion.Id = 0
 	detallePreliquidacion.ValorCalculado = totalAPagar
-	detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: 2353}
+	detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: 574}
 	detallePreliquidacion.Activo = true
 	data = append(data, detallePreliquidacion)
 
 	//se agrega el detalle del total de los descuentos
 	detallePreliquidacion.Id = 0
 	detallePreliquidacion.ValorCalculado = totalDescuentos
-	detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: 2352}
+	detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: 573}
 	detallePreliquidacion.Activo = true
 	data = append(data, detallePreliquidacion)
 

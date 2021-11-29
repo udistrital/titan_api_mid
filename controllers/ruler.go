@@ -23,7 +23,7 @@ func cargarReglasBase(dominio string) (reglas string) {
 	} else {
 		fmt.Println("error al cargar conceptos como reglas", err)
 	}
-	if err := request.GetJson(beego.AppConfig.String("UrlRuler")+"predicado?limit=-1&query=Dominio.Nombre:"+dominio, &v); err == nil {
+	if err := request.GetJson(beego.AppConfig.String("UrlRuler")+"/predicado?limit=-1&query=Dominio.Nombre:"+dominio, &v); err == nil {
 		reglasbase = reglasbase + FormatoReglas(v) //funcion general para dar formato a reglas cargadas desde el ruler
 	} else {
 		fmt.Println("error al cargar reglas base: ", err)
