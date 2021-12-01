@@ -150,9 +150,8 @@ func LiquidarMesCPS(reglas string, cedula string, ano int, detallePreliquidacion
 	var totalDevengado float64
 	var totalDescuentos float64
 	var totalAPagar float64
-
+	fmt.Println(reglas)
 	m := NewMachine().Consult(reglas)
-	//fmt.Println(reglas)
 	total := m.ProveAll("liquidar_ct(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
 	totalDescuentos = 0
 	totalDevengado = 0
