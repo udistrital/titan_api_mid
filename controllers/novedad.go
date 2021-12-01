@@ -33,6 +33,7 @@ func (c *NovedadController) AgregarNovedad() {
 	var aux map[string]interface{}
 	var auxNovedad []models.Novedad
 	var contratoPreliquidacion []models.ContratoPreliquidacion
+	var contrato []models.Contrato
 	var auxDetalle []models.DetallePreliquidacion
 	var auxConcepto []models.ConceptoNomina
 	var honorarios float64
@@ -43,14 +44,17 @@ func (c *NovedadController) AgregarNovedad() {
 	var mesFin int
 	var iteracion int
 	var posible bool
-
+	posible = true
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &novedad); err == nil {
+		fmt.Println(novedad)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/concepto_nomina?limit=-1&query=Id:"+strconv.Itoa(novedad.ConceptoNominaId.Id), &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &auxConcepto)
+			fmt.Println(auxConcepto[0])
 		} else {
 			fmt.Println("Error al obtener el concepto: ", err)
 		}
-		posible = true
+
+		//Si es devengo
 		if auxConcepto[0].NaturalezaConceptoNominaId == 423 {
 			if int(fecha_actual.Month())+novedad.Cuotas-1 > 12 {
 				fmt.Println(int(fecha_actual.Month()))
@@ -61,7 +65,7 @@ func (c *NovedadController) AgregarNovedad() {
 				anoFin = fecha_actual.Year()
 			}
 			novedad.FechaInicio = fecha_actual
-			novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 30, 0, 0, 0, 0, time.Local)
+			novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 30, 0, 0, 0, 0, time.UTC)
 			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad", "POST", &aux, novedad); err == nil {
 				LimpiezaRespuestaRefactor(aux, &novedad)
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad?limit=-1&query=Id:"+strconv.Itoa(novedad.Id), &aux); err == nil {
@@ -77,9 +81,9 @@ func (c *NovedadController) AgregarNovedad() {
 				fmt.Println("No se pudo guardar la novedad", err)
 				c.Data["message"] = "Error service Delete: Request contains incorrect parameter"
 			}
+			//si es desuento
 		} else if auxConcepto[0].NaturalezaConceptoNominaId == 424 {
 			if int(fecha_actual.Month())+novedad.Cuotas-1 > 12 {
-				fmt.Println(int(fecha_actual.Month()))
 				mesFin = int(fecha_actual.Month()) + novedad.Cuotas - 13
 				anoFin = fecha_actual.Year() + 1
 			} else {
@@ -88,6 +92,31 @@ func (c *NovedadController) AgregarNovedad() {
 			}
 			novedad.FechaInicio = fecha_actual
 			novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 30, 0, 0, 0, 0, time.Local)
+			//Verificar que las cuotas no se pasen del tiempo restante del contrato
+			//Obtener el contrato
+
+			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=Id:"+strconv.Itoa(novedad.ContratoId.Id), &aux); err == nil {
+				LimpiezaRespuestaRefactor(aux, &contrato)
+			} else {
+				fmt.Println("Error al obtener el contrato: ", err)
+			}
+			fmt.Println(novedad.Cuotas)
+
+			if contrato[0].FechaFin.Year() == novedad.FechaInicio.Year() {
+				if int(contrato[0].FechaFin.Month())-int(fecha_actual.Month()) < novedad.Cuotas {
+					c.Data["message"] = "Imposible agregar la novedad, las cuotas superan los meses restantes"
+					fmt.Println("Supera los meses año igual")
+					posible = false
+				}
+			} else {
+
+				if int(contrato[0].FechaFin.Month())+12-int(fecha_actual.Month()) < novedad.Cuotas {
+					c.Data["message"] = "Imposible agregar la novedad, las cuotas superan los meses restantes"
+					fmt.Println("Supera los meses año diferente")
+					posible = false
+				}
+			}
+
 			iteracion = int(novedad.FechaInicio.Month())
 			for iteracion < int(novedad.FechaInicio.Month())+novedad.Cuotas {
 				//Obtener el valor de los honorarios de ese mes
@@ -98,14 +127,13 @@ func (c *NovedadController) AgregarNovedad() {
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &auxDetalle)
 						honorarios = auxDetalle[0].ValorCalculado
-						fmt.Println("Honorarios: ", honorarios)
 					} else {
 						fmt.Println("Error al obtener el valor de los honorarios: ", err)
 					}
 				} else {
 					fmt.Println("Error al obtener el contrato peliquidacion: ", err)
 				}
-				//Obtener el Valor de los honorarios
+				//Obtener el Valor de los descuentos de ese mes
 				query = "ContratoId:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(iteracion) + ",PreliquidacionId.Ano:" + strconv.Itoa(fecha_actual.Year())
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
@@ -113,7 +141,6 @@ func (c *NovedadController) AgregarNovedad() {
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &auxDetalle)
 						descuentos = auxDetalle[0].ValorCalculado
-						fmt.Println("Descuentos: ", descuentos)
 					} else {
 						fmt.Println("Error al obtener el valor de los descuentos: ", err)
 					}
@@ -122,21 +149,15 @@ func (c *NovedadController) AgregarNovedad() {
 				}
 				//Verificar que el valor de los descuentos no supera la mitad de los honorarios
 				if auxConcepto[0].TipoConceptoNominaId == 419 {
-					fmt.Println(descuentos + novedad.Valor)
 					if descuentos+novedad.Valor > (honorarios / 2) {
 						posible = false
 					}
 				} else if auxConcepto[0].TipoConceptoNominaId == 420 {
-					fmt.Println(descuentos + novedad.Valor)
 					if descuentos+((novedad.Valor/100)*honorarios) > (honorarios / 2) {
 						posible = false
 					}
 				}
-				if iteracion == 12 {
-					break
-				} else {
-					iteracion = iteracion + 1
-				}
+
 				if posible {
 					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad", "POST", &aux, novedad); err == nil {
 						fmt.Println("Novedad Registrada ")
@@ -157,6 +178,11 @@ func (c *NovedadController) AgregarNovedad() {
 				} else {
 					fmt.Println("No se pudo guardar la novedad", err)
 					c.Data["message"] = "Imposible agregar la novedad, los descuentos sobrepasan la mitad de los honorarios"
+				}
+				if iteracion == 12 {
+					break
+				} else {
+					iteracion = iteracion + 1
 				}
 			}
 		}
