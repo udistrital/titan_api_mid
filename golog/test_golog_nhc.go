@@ -44,7 +44,7 @@ func CargarReglasHCS(idProveedor int, reglas string, preliquidacion models.Preli
 		DiaHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
 
 		afectacion_seg_social := m.ProveAll("afectacion_seguridad(" + novedad + ").")
-		for _, _ = range afectacion_seg_social {
+		for range afectacion_seg_social {
 
 			dias_novedad := CalcularDiasNovedades(preliquidacion.Mes, ano, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
 			diasALiquidar = strconv.Itoa(int(30 - dias_novedad))
