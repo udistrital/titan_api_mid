@@ -167,7 +167,7 @@ func LiquidarMesCPS(reglas string, cedula string, ano int, detallePreliquidacion
 		}
 
 		if conceptoNomina.NaturalezaConceptoNominaId == 423 {
-			totalDevengado = detallePreliquidacion.ValorCalculado
+			totalDevengado = totalDevengado + detallePreliquidacion.ValorCalculado
 		}
 
 		if conceptoNomina.NaturalezaConceptoNominaId == 424 {

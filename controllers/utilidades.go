@@ -373,7 +373,11 @@ func calcularSemanasContratoHCH(FechaInicio time.Time, FechaFin time.Time) (sema
 		a, m, d = diff(FechaInicio, FechaFin)
 		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
 	}
-	return (mesesContrato * 4) + 1
+	if mesesContrato/float64(int(mesesContrato)) != 1 {
+		return (mesesContrato * 4) + 1
+	} else {
+		return (mesesContrato * 4)
+	}
 }
 
 func registrarPreliquidacion(año, mes, estadoPreliquidacion, nomina int) (preliquidacion models.Preliquidacion) {
