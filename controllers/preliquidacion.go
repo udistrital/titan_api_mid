@@ -100,7 +100,7 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 		fmt.Println("error al consultar en Ágora", err)
 		reglas = reglas + "dependientes(0)."
 		reglas = reglas + "medicina_prepagada(0)."
-		reglas = reglas + "pensionado(no)."
+		reglas = reglas + "pensionado(0)."
 		reglas = reglas + "intereses_vivienda(0)."
 		reglas = reglas + "reteiva(0)."
 		reglas = reglas + "pension_voluntaria(0)."
