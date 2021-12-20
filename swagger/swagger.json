@@ -15,27 +15,42 @@
     },
     "basePath": "/v1",
     "paths": {
-        "/concepto_nomina_por_persona/tr_registro_incapacidades": {
-            "post": {
+        "/cumplido/obtener_detalle_CT/{ano}/{mes}/{contrato}": {
+            "get": {
                 "tags": [
-                    "concepto_nomina_por_persona"
+                    "cumplido"
                 ],
-                "description": "create tr_registro_incapacidades",
-                "operationId": "Concepto_nomina_por_personaController.tr_registro_incapacidades",
+                "description": "Actualizar cumplido del contrato",
+                "operationId": "CumplidoController.Actualizar Cumplido",
                 "parameters": [
                     {
-                        "in": "body",
-                        "name": "body",
-                        "description": "body for Concepto_nomina_por_persona content",
+                        "in": "path",
+                        "name": "ano",
+                        "description": "Año de la preliquidación",
                         "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.ConceptoNominaPorPersona"
-                        }
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "mes",
+                        "description": "Mes de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "contrato",
+                        "description": "Contrato a buscar",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "{int} models.Concepto_nomina_por_persona"
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.ContratoPreliquidacion"
+                        }
                     },
                     "403": {
                         "description": "body is empty"
@@ -43,27 +58,92 @@
                 }
             }
         },
-        "/concepto_nomina_por_persona/tr_registro_prorroga_incapacidad": {
-            "post": {
+        "/detalle_preliquidacion/obtener_detalle_CT/{ano}/{mes}/{contrato}/{documento}": {
+            "get": {
                 "tags": [
-                    "concepto_nomina_por_persona"
+                    "detalle_preliquidacion"
                 ],
-                "description": "Recibe un objeto con la estructura de concepto_nomina_por_persona,",
-                "operationId": "Concepto_nomina_por_personaController.TrRegistroProrrogaIncapacidad",
+                "description": "Obtener el detalle de la preliquidación para CPS",
+                "operationId": "DetallePreliquidacionController.Obtener Resumen CT",
                 "parameters": [
                     {
-                        "in": "body",
-                        "name": "body",
-                        "description": "body for Concepto_nomina_por_persona content",
+                        "in": "path",
+                        "name": "ano",
+                        "description": "Año de la preliquidación",
                         "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.ConceptoNominaPorPersona"
-                        }
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "mes",
+                        "description": "Mes de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "contrato",
+                        "description": "Contrato a buscar",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "documento",
+                        "description": "Documento del contratista",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "{int} models.Concepto_nomina_por_persona"
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Detalle"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/detalle_preliquidacion/obtener_detalle_HCH/{ano}/{mes}/{documento}": {
+            "get": {
+                "tags": [
+                    "detalle_preliquidacion"
+                ],
+                "description": "Obtener el detalle de la preliquidación para HCH",
+                "operationId": "DetallePreliquidacionController.Obtener Resumen HCH",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "ano",
+                        "description": "Año de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "mes",
+                        "description": "Mes de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "documento",
+                        "description": "Documento a buscar",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.DetalleHCH"
+                        }
                     },
                     "403": {
                         "description": "body is empty"
@@ -137,37 +217,6 @@
                 "responses": {
                     "201": {
                         "description": ""
-                    },
-                    "403": {
-                        "description": "body is empty"
-                    }
-                }
-            }
-        },
-        "/gestion_personas_a_liquidar/listar_personas_a_preliquidar_pendientes": {
-            "post": {
-                "tags": [
-                    "gestion_personas_a_liquidar"
-                ],
-                "description": "create ListarPersonasAPreliquidar: Lista a las personas pendientes de periodos anteriores para que puedan ser tenidas en cuenta el presente mes",
-                "operationId": "GestionPersonasAPreliquidarController.create ListarPersonasAPreliquidarPendientes",
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "description": "body for models.Preliquidacion content",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Preliquidacion"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/models.DetallePreliquidacion"
-                        }
                     },
                     "403": {
                         "description": "body is empty"
@@ -388,13 +437,193 @@
                 }
             }
         },
+        "/novedad/agregar_novedad": {
+            "post": {
+                "tags": [
+                    "novedad"
+                ],
+                "description": "Agregar Novedad a un contrato y liquidar nuevamente",
+                "operationId": "NovedadController.Agregar Novedad",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "novedad",
+                        "description": "Cuerpo de la novedad a guardar",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Novedad"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Novedad"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/novedad/cancelar_contrato/{NumeroContrato}": {
+            "get": {
+                "tags": [
+                    "novedad"
+                ],
+                "description": "Maneja la novedad contractual de cancelación",
+                "operationId": "NovedadController.Registrar Cancelacion",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "NumeroContrato",
+                        "description": "Numero del contrato que se va a cancelar",
+                        "schema": {
+                            "$ref": "#/definitions/true"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/novedad/ceder_contrato": {
+            "post": {
+                "tags": [
+                    "novedad"
+                ],
+                "description": "Maneja la novedad contractual de cesión de contrato",
+                "operationId": "NovedadController.Ceder Contrato",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Sucesor",
+                        "description": "Datos del sucesor del contrato",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Sucesor"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/novedad/eliminar_novedad/{id}": {
+            "get": {
+                "tags": [
+                    "novedad"
+                ],
+                "description": "Eliminar Novedad Novedad a un contrato y liquidar nuevamente",
+                "operationId": "NovedadController.Eliminar Novedad",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "description": "Id de la novedad que se va retirar",
+                        "schema": {
+                            "$ref": "#/definitions/true"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "models.Novedad.Id"
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/novedad/otrosi_contrato": {
+            "post": {
+                "tags": [
+                    "novedad"
+                ],
+                "description": "Aplicar novedad contratul de otro sí",
+                "operationId": "NovedadController.Aplicar Oro sí",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "OtroSí",
+                        "description": "Datos del sucesor del contrato",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.OtroSi"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/novedad/suspender_contrato": {
+            "post": {
+                "tags": [
+                    "novedad"
+                ],
+                "description": "Maneja la novedad contractual de Suspensión de Contrato",
+                "operationId": "NovedadController.Suspender Contrato",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Suspension",
+                        "description": "Duración de la suspensión",
+                        "schema": {
+                            "$ref": "#/definitions/true"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
         "/preliquidacion/": {
             "post": {
                 "tags": [
                     "preliquidacion"
                 ],
-                "description": "create Preliquidacion",
-                "operationId": "PreliquidacionController.create Preliquidar",
+                "description": "Preliquida todos los meses del contrato que se le pase como parámetro",
+                "operationId": "PreliquidacionController.Preliquidar Contrato",
                 "parameters": [
                     {
                         "in": "body",
@@ -402,140 +631,56 @@
                         "description": "body for DatosPreliquidacion content",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.DatosPreliquidacion"
+                            "$ref": "#/definitions/models.Contrato"
                         }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "body is empty"
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/preliquidacion/obtener_resumen_preliquidacion/{mes}/{ano}/{nomina}": {
+            "get": {
+                "tags": [
+                    "preliquidacion"
+                ],
+                "description": "Retorna el total de la preliquidacion",
+                "operationId": "PreliquidacionController.Resumen Preliquidacion",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "ano",
+                        "description": "Año de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "mes",
+                        "description": "Mes de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "nomina",
+                        "description": "Tipo de nomina",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
                     "201": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/models.Preliquidacion"
+                            "$ref": "#/definitions/models.DetalleMensual"
                         }
-                    },
-                    "403": {
-                        "description": "body is empty"
-                    }
-                }
-            }
-        },
-        "/preliquidacion/get_ibc_novedad": {
-            "post": {
-                "tags": [
-                    "preliquidacion"
-                ],
-                "description": "create GetIBCPorNovedad",
-                "operationId": "PreliquidacionController.create GetIBCPorNovedad",
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "description": "body for models.IBCPorNovedad content",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.IBCPorNovedad"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": ""
-                    },
-                    "403": {
-                        "description": "body is empty"
-                    }
-                }
-            }
-        },
-        "/preliquidacion/personas_x_preliquidacion": {
-            "post": {
-                "tags": [
-                    "preliquidacion"
-                ],
-                "description": "create PersonasPorPreliquidacion",
-                "operationId": "PreliquidacionController.create PersonasPorPreliquidacion",
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "description": "body for Preliquidacion content",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Preliquidacion"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.PersonasPreliquidacion"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "body is empty"
-                    }
-                }
-            }
-        },
-        "/preliquidacion/resumen_conceptos": {
-            "post": {
-                "tags": [
-                    "preliquidacion"
-                ],
-                "description": "create ResumenConceptos",
-                "operationId": "PreliquidacionController.create ResumenConceptos",
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "description": "body for Preliquidacion content",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Preliquidacion"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.ResumentCompleto"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "body is empty"
-                    }
-                }
-            }
-        },
-        "/services/desagregacion_contrato_hcs": {
-            "post": {
-                "tags": [
-                    "services"
-                ],
-                "description": "Dado un valor de contrato para docente de hora cátedra salarios, su fecha de inicio y fin y una vigencia, se retorna el valor por concepto que le será pagado en la totalidad de su vinculación con la universidad. Los conceptos a mostrar son: sueldo básico, vacaciones, prima de vacaciones, prima de servicios, intereses sobre cesantías y cesantías.",
-                "operationId": "ServicesController.DesagregadoContratoHCS",
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "description": "body for Services content",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.InformacionContratoDocente"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "{int} models.DesagregadoContratoHCS"
                     },
                     "403": {
                         "description": "body is empty"
@@ -549,21 +694,36 @@
             "title": "ConceptoNomina",
             "type": "object",
             "properties": {
+                "Activo": {
+                    "type": "boolean"
+                },
                 "AliasConcepto": {
+                    "type": "string"
+                },
+                "EstadoConceptoNominaId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "FechaCreacion": {
+                    "type": "string"
+                },
+                "FechaModificacion": {
                     "type": "string"
                 },
                 "Id": {
                     "type": "integer",
                     "format": "int64"
                 },
-                "NaturalezaConcepto": {
-                    "$ref": "#/definitions/models.NaturalezaConceptoNomina"
+                "NaturalezaConceptoNominaId": {
+                    "type": "integer",
+                    "format": "int64"
                 },
                 "NombreConcepto": {
                     "type": "string"
                 },
-                "TipoConcepto": {
-                    "$ref": "#/definitions/models.TipoConceptoNomina"
+                "TipoConceptoNominaId": {
+                    "type": "integer",
+                    "format": "int64"
                 }
             }
         },
@@ -579,15 +739,15 @@
                 },
                 "FechaDesde": {
                     "type": "string",
-                    "format": "string"
+                    "format": "datetime"
                 },
                 "FechaHasta": {
                     "type": "string",
-                    "format": "string"
+                    "format": "datetime"
                 },
                 "FechaRegistro": {
                     "type": "string",
-                    "format": "string"
+                    "format": "datetime"
                 },
                 "Id": {
                     "type": "integer",
@@ -600,6 +760,9 @@
                     "type": "integer",
                     "format": "int64"
                 },
+                "NumeroContrato": {
+                    "type": "string"
+                },
                 "Persona": {
                     "type": "integer",
                     "format": "int64"
@@ -607,6 +770,122 @@
                 "ValorNovedad": {
                     "type": "number",
                     "format": "double"
+                },
+                "VigenciaContrato": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
+        "models.Contrato": {
+            "title": "Contrato",
+            "type": "object",
+            "properties": {
+                "Activo": {
+                    "type": "boolean"
+                },
+                "DependenciaId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "Documento": {
+                    "type": "string"
+                },
+                "FechaCreacion": {
+                    "type": "string"
+                },
+                "FechaFin": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "FechaInicio": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "FechaModificacion": {
+                    "type": "string"
+                },
+                "Id": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "NombreCompleto": {
+                    "type": "string"
+                },
+                "NumeroContrato": {
+                    "type": "string"
+                },
+                "PersonaId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "TipoNominaId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "ValorContrato": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "Vigencia": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
+        "models.ContratoPreliquidacion": {
+            "title": "ContratoPreliquidacion",
+            "type": "object",
+            "properties": {
+                "Activo": {
+                    "type": "boolean"
+                },
+                "Afc": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "ContratoId": {
+                    "$ref": "#/definitions/models.Contrato"
+                },
+                "Cumplido": {
+                    "type": "boolean"
+                },
+                "Dependientes": {
+                    "type": "boolean"
+                },
+                "FechaCreacion": {
+                    "type": "string"
+                },
+                "FechaModificacion": {
+                    "type": "string"
+                },
+                "Id": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "InteresesVivienda": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "MedicinaPrepagadaUvt": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "PensionVoluntaria": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "Pensionado": {
+                    "type": "boolean"
+                },
+                "PreliquidacionId": {
+                    "$ref": "#/definitions/models.Preliquidacion"
+                },
+                "Preliquidado": {
+                    "type": "boolean"
+                },
+                "ResponsableIva": {
+                    "type": "boolean"
                 }
             }
         },
@@ -631,12 +910,87 @@
                 }
             }
         },
+        "models.Detalle": {
+            "title": "Detalle",
+            "type": "object",
+            "properties": {
+                "Contrato": {
+                    "type": "string"
+                },
+                "Detalle": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DetallePreliquidacion"
+                    }
+                },
+                "TotalDescuentos": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "TotalDevengado": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "TotalPago": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "Vigencia": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
+        "models.DetalleHCH": {
+            "title": "DetalleHCH",
+            "type": "object",
+            "properties": {
+                "Detalle": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Detalle"
+                    }
+                },
+                "Resolucion": {
+                    "$ref": "#/definitions/models.Resolucion"
+                }
+            }
+        },
+        "models.DetalleMensual": {
+            "title": "DetalleMensual",
+            "type": "object",
+            "properties": {
+                "Detalle": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DetallePreliquidacion"
+                    }
+                },
+                "TotalDescuentos": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "TotalDevengado": {
+                    "type": "number",
+                    "format": "double"
+                }
+            }
+        },
         "models.DetallePreliquidacion": {
             "title": "DetallePreliquidacion",
             "type": "object",
             "properties": {
-                "Concepto": {
+                "Activo": {
+                    "type": "boolean"
+                },
+                "ConceptoNominaId": {
                     "$ref": "#/definitions/models.ConceptoNomina"
+                },
+                "ContratoPreliquidacionId": {
+                    "$ref": "#/definitions/models.ContratoPreliquidacion"
+                },
+                "DiasEspecificos": {
+                    "type": "string"
                 },
                 "DiasLiquidados": {
                     "type": "number",
@@ -645,8 +999,15 @@
                 "Documento": {
                     "type": "string"
                 },
-                "EstadoDisponibilidad": {
-                    "$ref": "#/definitions/models.EstadoDisponibilidad"
+                "EstadoDisponibilidadId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "FechaCreacion": {
+                    "type": "string"
+                },
+                "FechaModificacion": {
+                    "type": "string"
                 },
                 "Id": {
                     "type": "integer",
@@ -662,11 +1023,9 @@
                     "type": "integer",
                     "format": "int64"
                 },
-                "Preliquidacion": {
-                    "$ref": "#/definitions/models.Preliquidacion"
-                },
-                "TipoPreliquidacion": {
-                    "$ref": "#/definitions/models.TipoPreliquidacion"
+                "TipoPreliquidacionId": {
+                    "type": "integer",
+                    "format": "int64"
                 },
                 "ValorCalculado": {
                     "type": "number",
@@ -678,127 +1037,21 @@
                 }
             }
         },
-        "models.EstadoDisponibilidad": {
-            "title": "EstadoDisponibilidad",
-            "type": "object",
-            "properties": {
-                "Activo": {
-                    "type": "boolean"
-                },
-                "CodigoAbreviacion": {
-                    "type": "string"
-                },
-                "Descripcion": {
-                    "type": "string"
-                },
-                "Id": {
-                    "type": "integer",
-                    "format": "int64"
-                },
-                "Nombre": {
-                    "type": "string"
-                },
-                "NumeroOrden": {
-                    "type": "number",
-                    "format": "double"
-                }
-            }
-        },
-        "models.EstadoPreliquidacion": {
-            "title": "EstadoPreliquidacion",
-            "type": "object",
-            "properties": {
-                "Activo": {
-                    "type": "boolean"
-                },
-                "CodigoAbreviacion": {
-                    "type": "string"
-                },
-                "Descripcion": {
-                    "type": "string"
-                },
-                "Id": {
-                    "type": "integer",
-                    "format": "int64"
-                },
-                "Nombre": {
-                    "type": "string"
-                },
-                "NumeroOrden": {
-                    "type": "number",
-                    "format": "double"
-                }
-            }
-        },
-        "models.IBCPorNovedad": {
-            "title": "IBCPorNovedad",
-            "type": "object",
-            "properties": {
-                "Ano": {
-                    "type": "integer",
-                    "format": "int64"
-                },
-                "IdPersona": {
-                    "type": "integer",
-                    "format": "int64"
-                },
-                "Mes": {
-                    "type": "integer",
-                    "format": "int64"
-                },
-                "NombreNomina": {
-                    "type": "string"
-                },
-                "Novedad": {
-                    "type": "string"
-                },
-                "NumDocumento": {
-                    "type": "integer",
-                    "format": "int64"
-                }
-            }
-        },
         "models.InformacionContratoDocente": {
             "title": "InformacionContratoDocente",
             "type": "object",
             "properties": {
-                "NumDocumento": {
-                    "type": "integer",
-                    "format": "int64"
+                "MesesContrato": {
+                    "type": "string"
                 },
-                "ValorTotalContrato": {
-                    "type": "integer",
-                    "format": "int64"
+                "NumDocumento": {
+                    "type": "string"
+                },
+                "ValorContrato": {
+                    "type": "string"
                 },
                 "VigenciaContrato": {
-                    "type": "integer",
-                    "format": "int64"
-                }
-            }
-        },
-        "models.NaturalezaConceptoNomina": {
-            "title": "NaturalezaConceptoNomina",
-            "type": "object",
-            "properties": {
-                "Activo": {
-                    "type": "boolean"
-                },
-                "CodigoAbreviacion": {
                     "type": "string"
-                },
-                "Descripcion": {
-                    "type": "string"
-                },
-                "Id": {
-                    "type": "integer",
-                    "format": "int64"
-                },
-                "Nombre": {
-                    "type": "string"
-                },
-                "NumeroOrden": {
-                    "type": "number",
-                    "format": "double"
                 }
             }
         },
@@ -818,6 +1071,47 @@
                 },
                 "TipoNomina": {
                     "$ref": "#/definitions/models.TipoNomina"
+                }
+            }
+        },
+        "models.Novedad": {
+            "title": "Novedad",
+            "type": "object",
+            "properties": {
+                "Activo": {
+                    "type": "boolean"
+                },
+                "ConceptoNominaId": {
+                    "$ref": "#/definitions/models.ConceptoNomina"
+                },
+                "ContratoId": {
+                    "$ref": "#/definitions/models.Contrato"
+                },
+                "Cuotas": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "FechaCreacion": {
+                    "type": "string"
+                },
+                "FechaFin": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "FechaInicio": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "FechaModificacion": {
+                    "type": "string"
+                },
+                "Id": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "Valor": {
+                    "type": "number",
+                    "format": "double"
                 }
             }
         },
@@ -856,6 +1150,19 @@
                 }
             }
         },
+        "models.OtroSi": {
+            "title": "OtroSi",
+            "type": "object",
+            "properties": {
+                "FechaFin": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "NumeroContrato": {
+                    "type": "string"
+                }
+            }
+        },
         "models.PersonasPreliquidacion": {
             "title": "PersonasPreliquidacion",
             "type": "object",
@@ -884,6 +1191,9 @@
                 "NumeroContrato": {
                     "type": "string"
                 },
+                "Pensionado": {
+                    "type": "string"
+                },
                 "Preliquidacion": {
                     "type": "integer",
                     "format": "int64"
@@ -904,22 +1214,25 @@
             "title": "Preliquidacion",
             "type": "object",
             "properties": {
+                "Activo": {
+                    "type": "boolean"
+                },
                 "Ano": {
                     "type": "integer",
                     "format": "int64"
                 },
-                "Definitiva": {
-                    "type": "boolean"
-                },
                 "Descripcion": {
                     "type": "string"
                 },
-                "EstadoPreliquidacion": {
-                    "$ref": "#/definitions/models.EstadoPreliquidacion"
+                "EstadoPreliquidacionId": {
+                    "type": "integer",
+                    "format": "int64"
                 },
-                "FechaRegistro": {
-                    "type": "string",
-                    "format": "string"
+                "FechaCreacion": {
+                    "type": "string"
+                },
+                "FechaModificacion": {
+                    "type": "string"
                 },
                 "Id": {
                     "type": "integer",
@@ -929,72 +1242,48 @@
                     "type": "integer",
                     "format": "int64"
                 },
-                "Nomina": {
-                    "$ref": "#/definitions/models.Nomina"
-                }
-            }
-        },
-        "models.Resumen": {
-            "title": "Resumen",
-            "type": "object",
-            "properties": {
-                "NaturalezaConcepto": {
-                    "type": "string"
-                },
-                "NaturalezaConceptoId": {
-                    "type": "string"
-                },
-                "NombreConcepto": {
-                    "type": "string"
-                },
-                "Total": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.ResumentCompleto": {
-            "title": "ResumentCompleto",
-            "type": "object",
-            "properties": {
-                "ResumenTotalConceptos": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Resumen"
-                    }
-                },
-                "TotalDescuentos": {
-                    "type": "integer",
-                    "format": "int64"
-                },
-                "TotalDevengos": {
+                "NominaId": {
                     "type": "integer",
                     "format": "int64"
                 }
             }
         },
-        "models.TipoConceptoNomina": {
-            "title": "TipoConceptoNomina",
+        "models.Resolucion": {
+            "title": "Resolucion",
             "type": "object",
             "properties": {
-                "Activo": {
-                    "type": "boolean"
-                },
-                "CodigoAbreviacion": {
-                    "type": "string"
-                },
-                "Descripcion": {
+                "Dedicacion": {
                     "type": "string"
                 },
                 "Id": {
                     "type": "integer",
                     "format": "int64"
                 },
-                "Nombre": {
+                "IdFacultad": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "NivelAcademico": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Sucesor": {
+            "title": "Sucesor",
+            "type": "object",
+            "properties": {
+                "Documento": {
                     "type": "string"
                 },
-                "NumeroOrden": {
-                    "type": "number",
-                    "format": "double"
+                "FechaInicio": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "NombreCompleto": {
+                    "type": "string"
+                },
+                "NumeroContrato": {
+                    "type": "string"
                 }
             }
         },
@@ -1011,31 +1300,9 @@
                 }
             }
         },
-        "models.TipoPreliquidacion": {
-            "title": "TipoPreliquidacion",
-            "type": "object",
-            "properties": {
-                "Activo": {
-                    "type": "boolean"
-                },
-                "CodigoAbreviacion": {
-                    "type": "string"
-                },
-                "Descripcion": {
-                    "type": "string"
-                },
-                "Id": {
-                    "type": "integer",
-                    "format": "int64"
-                },
-                "Nombre": {
-                    "type": "string"
-                },
-                "NumeroOrden": {
-                    "type": "number",
-                    "format": "double"
-                }
-            }
+        "true": {
+            "title": "true",
+            "type": "object"
         }
     },
     "tags": [
@@ -1058,14 +1325,6 @@
         {
             "name": "gestion_ops",
             "description": "GestionOpsController operations for GestionOps\n"
-        },
-        {
-            "name": "services",
-            "description": "ServicesController operations for Services\n"
-        },
-        {
-            "name": "concepto_nomina_por_persona",
-            "description": "Concepto_nomina_por_personaController operations for Concepto_nomina_por_persona\n"
         }
     ]
 }

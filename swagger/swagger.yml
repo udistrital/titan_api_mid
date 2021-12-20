@@ -1,0 +1,902 @@
+swagger: "2.0"
+info:
+  title: beego Test API
+  description: beego has a very cool tools to autogenerate documents for your API
+  version: 1.0.0
+  termsOfService: http://beego.me/
+  contact:
+    email: astaxie@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+basePath: /v1
+paths:
+  /cumplido/obtener_detalle_CT/{ano}/{mes}/{contrato}:
+    get:
+      tags:
+      - cumplido
+      description: Actualizar cumplido del contrato
+      operationId: CumplidoController.Actualizar Cumplido
+      parameters:
+      - in: path
+        name: ano
+        description: Año de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: mes
+        description: Mes de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: contrato
+        description: Contrato a buscar
+        required: true
+        type: string
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.ContratoPreliquidacion'
+        "403":
+          description: body is empty
+  /detalle_preliquidacion/obtener_detalle_CT/{ano}/{mes}/{contrato}/{documento}:
+    get:
+      tags:
+      - detalle_preliquidacion
+      description: Obtener el detalle de la preliquidación para CPS
+      operationId: DetallePreliquidacionController.Obtener Resumen CT
+      parameters:
+      - in: path
+        name: ano
+        description: Año de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: mes
+        description: Mes de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: contrato
+        description: Contrato a buscar
+        required: true
+        type: string
+      - in: path
+        name: documento
+        description: Documento del contratista
+        required: true
+        type: string
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Detalle'
+        "403":
+          description: body is empty
+  /detalle_preliquidacion/obtener_detalle_HCH/{ano}/{mes}/{documento}:
+    get:
+      tags:
+      - detalle_preliquidacion
+      description: Obtener el detalle de la preliquidación para HCH
+      operationId: DetallePreliquidacionController.Obtener Resumen HCH
+      parameters:
+      - in: path
+        name: ano
+        description: Año de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: mes
+        description: Mes de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: documento
+        description: Documento a buscar
+        required: true
+        type: string
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.DetalleHCH'
+        "403":
+          description: body is empty
+  /gestion_contratos/listar_contratos_agrupados_por_persona:
+    post:
+      tags:
+      - gestion_contratos
+      description: Lista por persona los contratos que tiene vigentes. Para el caso
+        de los docentes HC, agrupará los que sean de la misma resolución
+      operationId: GestionContratosController.Create ListarContratosAgrupadosPorPersona
+      parameters:
+      - in: body
+        name: body
+        description: body for models.DatosPreliquidacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.DatosPreliquidacion'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_ops/generar_op:
+    post:
+      tags:
+      - gestion_ops
+      description: Lanzar Job para crear órdenes de pago y actualizar estados de disponibilidad
+        de detalles de preliquidación
+      operationId: GestionOpsController.create GenerarOrdenPago
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_personas_a_liquidar/listar_personas_a_preliquidar_argo:
+    post:
+      tags:
+      - gestion_personas_a_liquidar
+      description: 'create ListarPersonasAPreliquidar: Lista a las personas que tienen
+        vinculaciones activas para ese periodo y que por consiguiente pueden ser preliquidadas'
+      operationId: GestionPersonasAPreliquidarController.create ListarPersonasAPreliquidar
+      parameters:
+      - in: body
+        name: body
+        description: body for models.Preliquidacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Preliquidacion'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/desagregado_nomina_por_dependencia:
+    post:
+      tags:
+      - gestion_reportes
+      description: create TotalNominaPorFacultad
+      operationId: GestionReportesController.create DesagregadoNominaPorDependencia
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/desagregado_nomina_por_facultad:
+    post:
+      tags:
+      - gestion_reportes
+      description: create DesagregadoNominaPorFacultad
+      operationId: GestionReportesController.create DesagregadoNominaPorFacultad
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/desagregado_nomina_por_pc:
+    post:
+      tags:
+      - gestion_reportes
+      description: create DesagregadoNominaPorProyectoCurricular
+      operationId: GestionReportesController.create DesagregadoNominaPorProyectoCurricular
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/get_ordenadores_gasto:
+    post:
+      tags:
+      - gestion_reportes
+      description: create GetOrdenadoresGasto
+      operationId: GestionReportesController.create GetOrdenadoresGasto
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/total_nomina_por_dependencia:
+    post:
+      tags:
+      - gestion_reportes
+      description: create TotalNominaPorFacultad
+      operationId: GestionReportesController.create TotalNominaPorDependencia
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/total_nomina_por_facultad:
+    post:
+      tags:
+      - gestion_reportes
+      description: create TotalNominaPorFacultad
+      operationId: GestionReportesController.create TotalNominaPorFacultad
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/total_nomina_por_ordenador:
+    post:
+      tags:
+      - gestion_reportes
+      description: create TotalNominaPorDependencia
+      operationId: GestionReportesController.create TotalNominaPorOrdenador
+      parameters:
+      - in: body
+        name: body
+        description: body for models.ObjetoReporte content
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /gestion_reportes/total_nomina_por_proyecto:
+    post:
+      tags:
+      - gestion_reportes
+      description: create TotalNominaPorProyecto
+      operationId: GestionReportesController.create TotalNominaPorProyecto
+      parameters:
+      - in: body
+        name: body
+        description: "body for models.ObjetoReporte\ttrue content"
+        required: true
+        schema:
+          $ref: '#/definitions/models.ObjetoReporte'
+      responses:
+        "201":
+          description: ""
+        "403":
+          description: body is empty
+  /novedad/agregar_novedad:
+    post:
+      tags:
+      - novedad
+      description: Agregar Novedad a un contrato y liquidar nuevamente
+      operationId: NovedadController.Agregar Novedad
+      parameters:
+      - in: body
+        name: novedad
+        description: Cuerpo de la novedad a guardar
+        required: true
+        schema:
+          $ref: '#/definitions/models.Novedad'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Novedad'
+        "403":
+          description: body is empty
+  /novedad/cancelar_contrato/{NumeroContrato}:
+    get:
+      tags:
+      - novedad
+      description: Maneja la novedad contractual de cancelación
+      operationId: NovedadController.Registrar Cancelacion
+      parameters:
+      - in: path
+        name: NumeroContrato
+        description: Numero del contrato que se va a cancelar
+        schema:
+          $ref: '#/definitions/true'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Contrato'
+        "403":
+          description: body is empty
+  /novedad/ceder_contrato:
+    post:
+      tags:
+      - novedad
+      description: Maneja la novedad contractual de cesión de contrato
+      operationId: NovedadController.Ceder Contrato
+      parameters:
+      - in: body
+        name: Sucesor
+        description: Datos del sucesor del contrato
+        required: true
+        schema:
+          $ref: '#/definitions/models.Sucesor'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Contrato'
+        "403":
+          description: body is empty
+  /novedad/eliminar_novedad/{id}:
+    get:
+      tags:
+      - novedad
+      description: Eliminar Novedad Novedad a un contrato y liquidar nuevamente
+      operationId: NovedadController.Eliminar Novedad
+      parameters:
+      - in: path
+        name: id
+        description: Id de la novedad que se va retirar
+        schema:
+          $ref: '#/definitions/true'
+      responses:
+        "201":
+          description: models.Novedad.Id
+        "403":
+          description: body is empty
+  /novedad/otrosi_contrato:
+    post:
+      tags:
+      - novedad
+      description: Aplicar novedad contratul de otro sí
+      operationId: NovedadController.Aplicar Oro sí
+      parameters:
+      - in: body
+        name: OtroSí
+        description: Datos del sucesor del contrato
+        required: true
+        schema:
+          $ref: '#/definitions/models.OtroSi'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Contrato'
+        "403":
+          description: body is empty
+  /novedad/suspender_contrato:
+    post:
+      tags:
+      - novedad
+      description: Maneja la novedad contractual de Suspensión de Contrato
+      operationId: NovedadController.Suspender Contrato
+      parameters:
+      - in: body
+        name: Suspension
+        description: Duración de la suspensión
+        schema:
+          $ref: '#/definitions/true'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Contrato'
+        "403":
+          description: body is empty
+  /preliquidacion/:
+    post:
+      tags:
+      - preliquidacion
+      description: Preliquida todos los meses del contrato que se le pase como parámetro
+      operationId: PreliquidacionController.Preliquidar Contrato
+      parameters:
+      - in: body
+        name: body
+        description: body for DatosPreliquidacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Contrato'
+      responses:
+        "201":
+          description: body is empty
+        "403":
+          description: body is empty
+  /preliquidacion/obtener_resumen_preliquidacion/{mes}/{ano}/{nomina}:
+    get:
+      tags:
+      - preliquidacion
+      description: Retorna el total de la preliquidacion
+      operationId: PreliquidacionController.Resumen Preliquidacion
+      parameters:
+      - in: path
+        name: ano
+        description: Año de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: mes
+        description: Mes de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: nomina
+        description: Tipo de nomina
+        required: true
+        type: string
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.DetalleMensual'
+        "403":
+          description: body is empty
+definitions:
+  models.ConceptoNomina:
+    title: ConceptoNomina
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      AliasConcepto:
+        type: string
+      EstadoConceptoNominaId:
+        type: integer
+        format: int64
+      FechaCreacion:
+        type: string
+      FechaModificacion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      NaturalezaConceptoNominaId:
+        type: integer
+        format: int64
+      NombreConcepto:
+        type: string
+      TipoConceptoNominaId:
+        type: integer
+        format: int64
+  models.ConceptoNominaPorPersona:
+    title: ConceptoNominaPorPersona
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      Concepto:
+        $ref: '#/definitions/models.ConceptoNomina'
+      FechaDesde:
+        type: string
+        format: datetime
+      FechaHasta:
+        type: string
+        format: datetime
+      FechaRegistro:
+        type: string
+        format: datetime
+      Id:
+        type: integer
+        format: int64
+      Nomina:
+        $ref: '#/definitions/models.Nomina'
+      NumCuotas:
+        type: integer
+        format: int64
+      NumeroContrato:
+        type: string
+      Persona:
+        type: integer
+        format: int64
+      ValorNovedad:
+        type: number
+        format: double
+      VigenciaContrato:
+        type: integer
+        format: int64
+  models.Contrato:
+    title: Contrato
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      DependenciaId:
+        type: integer
+        format: int64
+      Documento:
+        type: string
+      FechaCreacion:
+        type: string
+      FechaFin:
+        type: string
+        format: datetime
+      FechaInicio:
+        type: string
+        format: datetime
+      FechaModificacion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      NombreCompleto:
+        type: string
+      NumeroContrato:
+        type: string
+      PersonaId:
+        type: integer
+        format: int64
+      TipoNominaId:
+        type: integer
+        format: int64
+      ValorContrato:
+        type: number
+        format: double
+      Vigencia:
+        type: integer
+        format: int64
+  models.ContratoPreliquidacion:
+    title: ContratoPreliquidacion
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      Afc:
+        type: number
+        format: double
+      ContratoId:
+        $ref: '#/definitions/models.Contrato'
+      Cumplido:
+        type: boolean
+      Dependientes:
+        type: boolean
+      FechaCreacion:
+        type: string
+      FechaModificacion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      InteresesVivienda:
+        type: number
+        format: double
+      MedicinaPrepagadaUvt:
+        type: number
+        format: double
+      PensionVoluntaria:
+        type: number
+        format: double
+      Pensionado:
+        type: boolean
+      PreliquidacionId:
+        $ref: '#/definitions/models.Preliquidacion'
+      Preliquidado:
+        type: boolean
+      ResponsableIva:
+        type: boolean
+  models.DatosPreliquidacion:
+    title: DatosPreliquidacion
+    type: object
+    properties:
+      DiasALiquidar:
+        type: string
+      Novedad:
+        type: string
+      PersonasPreLiquidacion:
+        type: array
+        items:
+          $ref: '#/definitions/models.PersonasPreliquidacion'
+      Preliquidacion:
+        $ref: '#/definitions/models.Preliquidacion'
+  models.Detalle:
+    title: Detalle
+    type: object
+    properties:
+      Contrato:
+        type: string
+      Detalle:
+        type: array
+        items:
+          $ref: '#/definitions/models.DetallePreliquidacion'
+      TotalDescuentos:
+        type: number
+        format: double
+      TotalDevengado:
+        type: number
+        format: double
+      TotalPago:
+        type: number
+        format: double
+      Vigencia:
+        type: integer
+        format: int64
+  models.DetalleHCH:
+    title: DetalleHCH
+    type: object
+    properties:
+      Detalle:
+        type: array
+        items:
+          $ref: '#/definitions/models.Detalle'
+      Resolucion:
+        $ref: '#/definitions/models.Resolucion'
+  models.DetalleMensual:
+    title: DetalleMensual
+    type: object
+    properties:
+      Detalle:
+        type: array
+        items:
+          $ref: '#/definitions/models.DetallePreliquidacion'
+      TotalDescuentos:
+        type: number
+        format: double
+      TotalDevengado:
+        type: number
+        format: double
+  models.DetallePreliquidacion:
+    title: DetallePreliquidacion
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      ConceptoNominaId:
+        $ref: '#/definitions/models.ConceptoNomina'
+      ContratoPreliquidacionId:
+        $ref: '#/definitions/models.ContratoPreliquidacion'
+      DiasEspecificos:
+        type: string
+      DiasLiquidados:
+        type: number
+        format: double
+      Documento:
+        type: string
+      EstadoDisponibilidadId:
+        type: integer
+        format: int64
+      FechaCreacion:
+        type: string
+      FechaModificacion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      NombreCompleto:
+        type: string
+      NumeroContrato:
+        type: string
+      Persona:
+        type: integer
+        format: int64
+      TipoPreliquidacionId:
+        type: integer
+        format: int64
+      ValorCalculado:
+        type: number
+        format: double
+      VigenciaContrato:
+        type: integer
+        format: int64
+  models.InformacionContratoDocente:
+    title: InformacionContratoDocente
+    type: object
+    properties:
+      MesesContrato:
+        type: string
+      NumDocumento:
+        type: string
+      ValorContrato:
+        type: string
+      VigenciaContrato:
+        type: string
+  models.Nomina:
+    title: Nomina
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      Descripcion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      TipoNomina:
+        $ref: '#/definitions/models.TipoNomina'
+  models.Novedad:
+    title: Novedad
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      ConceptoNominaId:
+        $ref: '#/definitions/models.ConceptoNomina'
+      ContratoId:
+        $ref: '#/definitions/models.Contrato'
+      Cuotas:
+        type: integer
+        format: int64
+      FechaCreacion:
+        type: string
+      FechaFin:
+        type: string
+        format: datetime
+      FechaInicio:
+        type: string
+        format: datetime
+      FechaModificacion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      Valor:
+        type: number
+        format: double
+  models.ObjetoReporte:
+    title: ObjetoReporte
+    type: object
+    properties:
+      Dependencia:
+        type: string
+      Facultad:
+        type: integer
+        format: int64
+      Ordenador:
+        type: string
+      Preliquidacion:
+        $ref: '#/definitions/models.Preliquidacion'
+      ProyectoCurricular:
+        type: integer
+        format: int64
+      TotalDesc:
+        type: number
+        format: double
+      TotalDev:
+        type: number
+        format: double
+      TotalDocentes:
+        type: integer
+        format: int64
+  models.OtroSi:
+    title: OtroSi
+    type: object
+    properties:
+      FechaFin:
+        type: string
+        format: datetime
+      NumeroContrato:
+        type: string
+  models.PersonasPreliquidacion:
+    title: PersonasPreliquidacion
+    type: object
+    properties:
+      EstadoDisponibilidad:
+        type: integer
+        format: int64
+      FechaFin:
+        type: string
+      FechaInicio:
+        type: string
+      IdPersona:
+        type: integer
+        format: int64
+      NombreCompleto:
+        type: string
+      NumDocumento:
+        type: integer
+        format: int64
+      NumeroContrato:
+        type: string
+      Pensionado:
+        type: string
+      Preliquidacion:
+        type: integer
+        format: int64
+      TipoContrato:
+        type: string
+      ValorContrato:
+        type: string
+      VigenciaContrato:
+        type: integer
+        format: int64
+  models.Preliquidacion:
+    title: Preliquidacion
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      Ano:
+        type: integer
+        format: int64
+      Descripcion:
+        type: string
+      EstadoPreliquidacionId:
+        type: integer
+        format: int64
+      FechaCreacion:
+        type: string
+      FechaModificacion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      Mes:
+        type: integer
+        format: int64
+      NominaId:
+        type: integer
+        format: int64
+  models.Resolucion:
+    title: Resolucion
+    type: object
+    properties:
+      Dedicacion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      IdFacultad:
+        type: integer
+        format: int64
+      NivelAcademico:
+        type: string
+  models.Sucesor:
+    title: Sucesor
+    type: object
+    properties:
+      Documento:
+        type: string
+      FechaInicio:
+        type: string
+        format: datetime
+      NombreCompleto:
+        type: string
+      NumeroContrato:
+        type: string
+  models.TipoNomina:
+    title: TipoNomina
+    type: object
+    properties:
+      Id:
+        type: integer
+        format: int64
+      Nombre:
+        type: string
+  "true":
+    title: "true"
+    type: object
+tags:
+- name: preliquidacion
+  description: |
+    PreliquidacionController operations for Preliquidacion
+- name: gestion_personas_a_liquidar
+  description: |
+    GestionPersonasAPreliquidarController operations for GestionPersonasAPreliquidar
+- name: gestion_contratos
+  description: |
+    GestionContratosController operations for GestionContratos
+- name: gestion_reportes
+  description: |
+    GestionReportesController operations for GestionReportes
+- name: gestion_ops
+  description: |
+    GestionOpsController operations for GestionOps

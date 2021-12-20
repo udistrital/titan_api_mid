@@ -1,7 +1,7 @@
 package models
 
 /*type InformacionPersonaNatural struct {
-	Id string 
+	Id string
 	PersonasACargo bool
 	DeclaranteRenta bool
 	InteresViviendaAfc float64
@@ -11,12 +11,12 @@ package models
 }*/
 type InformacionPersonaNatural struct {
 	InformacionPersonaNatural struct {
-		Id 			string `json:"Id"`
-		PersonasACargo		string `json:"PersonasACargo"`
-		DeclaranteRenta      	string `json:"DeclaranteRenta"`
-		InteresViviendaAfc      float64 `json:"InteresViviendaAfc"`
-		MedicinaPrepagada      	string `json:"MedicinaPrepagada"`
-		Pensionado      	string `json:"Pensionado"`
+		Id                 string  `json:"Id"`
+		PersonasACargo     string  `json:"PersonasACargo"`
+		DeclaranteRenta    string  `json:"DeclaranteRenta"`
+		InteresViviendaAfc float64 `json:"InteresViviendaAfc"`
+		MedicinaPrepagada  string  `json:"MedicinaPrepagada"`
+		Pensionado         string  `json:"Pensionado"`
 	} `json:"informacion_persona_natural"`
 }
 

@@ -43,50 +43,6 @@ func diff(a, b time.Time) (year, month, day int) {
 	return
 }
 
-// ActaInicioDVE ...
-// @Title ActaInicioDVE
-// @Description Trae el acta de inicio segun contrato y vigencia
-func ActaInicioDVE(id_contrato, vigencia string) (datos models.ObjetoActaInicio, err error) {
-
-	var temp map[string]interface{}
-	var tempDocentes models.ObjetoActaInicio
-	var controlError error
-
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio_elaborado/"+id_contrato+"/"+vigencia, &temp); err == nil && temp != nil {
-		jsonDocentes, errorJSON := json.Marshal(temp)
-
-		if errorJSON == nil {
-
-			json.Unmarshal(jsonDocentes, &tempDocentes)
-
-		} else {
-			controlError = errorJSON
-			fmt.Println("error al traer contratos docentes DVE")
-		}
-	} else {
-		controlError = err
-		fmt.Println("Error al unmarshal datos de nómina", err)
-
-	}
-
-	return tempDocentes, controlError
-}
-
-func verificacionPago(id_proveedor, ano, mes int, num_cont, vig string) (estado int) {
-
-	
-	estadoPago := consultarEstadoPago(num_cont, vig, ano, mes)
-	//disponibilidad := calcular_disponibilidad(id_proveedor,vig,resultado)
-	disponibilidad := 2
-
-	if estadoPago == 2 && disponibilidad == 2 {
-		return 2
-	} else {
-		return 1
-	}
-
-}
-
 func consultarRp(id_proveedor, vigencia int) (saldo float64) {
 	var registroPresupuestal []models.RegistroPresupuestal
 	var saldoRP float64
@@ -110,72 +66,6 @@ func consultarRp(id_proveedor, vigencia int) (saldo float64) {
 	}
 
 	return saldoRP
-}
-
-func totalAPagar(respuesta models.Respuesta) (total float64) {
-	var total_dev float64
-	for _, descuentos := range *respuesta.Conceptos {
-		if descuentos.NaturalezaConcepto == 1 {
-			valor, _ := strconv.ParseFloat(descuentos.Valor, 64)
-			total_dev = total_dev + valor
-		}
-
-	}
-	return total_dev
-}
-
-func calcularDisponibilidad(id_proveedor, vigencia int, respuesta models.Respuesta) (disp int) {
-	var valorAPagar float64
-	var saldoRP float64
-	var disponibilidad int
-	saldoRP = consultarRp(id_proveedor, vigencia)
-	valorAPagar = totalAPagar(respuesta)
-	if valorAPagar > saldoRP {
-		disponibilidad = 1
-		fmt.Println("no hay dinero")
-	} else {
-		disponibilidad = 2
-		fmt.Println("si hay dinero ")
-	}
-
-	return disponibilidad
-}
-
-func consultarEstadoPago(num_cont, vigencia string, ano, mes int) (disponibilidad int) {
-	var dispo int
-	//var temp map[string]interface{}
-	//var tempPago models.Pago
-
-	//var rta string
-	/*
-		fmt.Println("pago:", "http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"")
-		if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2Argo")+"/"+beego.AppConfig.String("Nswso2Argo")+"/pago_aprobado/"+num_cont+"/"+vigencia+"/"+strconv.Itoa(mes)+"/"+strconv.Itoa(ano)+"", &temp); err == nil && temp != nil {
-			temp2, errorJSON := json.Marshal(temp)
-			if errorJSON == nil {
-
-				json.Unmarshal(temp2, &tempPago)
-				rta = tempPago.Contrato.CodigoAbreviacion
-				if rta == "AP" {
-					dispo = 2
-				} else {
-					dispo = 1
-				}
-
-			} else {
-
-				fmt.Println("error al traer contratos docentes DVE")
-			}
-
-			fmt.Println("consulta exitosa de aprobación de pago")
-		} else {
-
-			fmt.Println("Error al unmarshal datos de pago", err)
-
-		}*/
-	dispo = 2
-	
-	return dispo
-
 }
 
 // GetIDProveedor ...
@@ -250,7 +140,7 @@ func InformacionPersona(tipoNomina string, NumeroContrato string, VigenciaContra
 				json.Unmarshal(jsonDocentes, &tempDocentes)
 				nombre_contratista = tempDocentes.InformacionContratista.NombreCompleto
 				documento = tempDocentes.InformacionContratista.Documento.Numero
-				contrato = tempDocentes.InformacionContratista.Contrato.Numero
+				contrato = tempDocentes.InformacionContratista.Contrato.NumeroContrato
 
 			} else {
 				controlError = errorJSON
@@ -344,7 +234,7 @@ func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidaci
 		aux := models.TotalPersona{}
 		if err := formatdata.FillStruct(info_total_personas[key], &aux); err == nil {
 
-			if preliquidacion.Nomina.TipoNomina.Nombre == "HCH" {
+			if preliquidacion.NominaId == 415 {
 				auxhch, _ := strconv.Atoi(aux.Total)
 
 				auxhch2 := float64(auxhch) * 0.4
@@ -411,59 +301,194 @@ func CalcularDescuentosTotales(reglas string, preliquidacion models.Preliquidaci
 	return temp
 }
 
-// ContratosContratistas ...
-// @Title ContratosContratistas
-// @Description Trae de Argo la informacion del contrato por su número y su vigencia
-func ContratosContratistas(id_contrato string, vigencia int) (datos models.ObjetoContratoEstado, err error) {
-
-	var temp map[string]interface{}
-	var tempDocentes models.ObjetoContratoEstado
-	var controlError error
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contrato_estado/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
-		jsonDocentes, errorJSON := json.Marshal(temp)
-
-		if errorJSON == nil {
-
-			json.Unmarshal(jsonDocentes, &tempDocentes)
-
-		} else {
-			controlError = errorJSON
-			fmt.Println("error al traer contratos docentes DVE")
-		}
-	} else {
-		controlError = err
-		fmt.Println("Error al unmarshal datos de nómina", err)
-
+func LimpiezaRespuestaRefactor(respuesta map[string]interface{}, v interface{}) {
+	b, err := json.Marshal(respuesta["Data"])
+	if err != nil {
+		panic(err)
 	}
-
-	return tempDocentes, controlError
+	json.Unmarshal(b, &v)
 }
 
-// ActaInicioContratistas ...
-// @Title ActaInicioContratistas
-// @Description Trae el acta de inicio por contrato y vigencia
-func ActaInicioContratistas(id_contrato string, vigencia int) (datos models.ObjetoActaInicio, err error) {
-
-	var temp map[string]interface{}
-	var tempDocentes models.ObjetoActaInicio
-	var controlError error
-
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/acta_inicio/"+id_contrato+"/"+strconv.Itoa(vigencia), &temp); err == nil && temp != nil {
-		jsonDocentes, errorJSON := json.Marshal(temp)
-
-		if errorJSON == nil {
-
-			json.Unmarshal(jsonDocentes, &tempDocentes)
-
-		} else {
-			controlError = errorJSON
-			fmt.Println("error al traer contratos docentes DVE")
-		}
-	} else {
-		controlError = err
-		fmt.Println("Error al unmarshal datos de nómina", err)
-
+func FormatoReglas(v []models.Predicado) (reglas string) {
+	var arregloReglas = make([]string, len(v))
+	reglas = ""
+	//var respuesta []models.FormatoPreliqu
+	for i := 0; i < len(v); i++ {
+		arregloReglas[i] = v[i].Nombre
 	}
 
-	return tempDocentes, controlError
+	for i := 0; i < len(arregloReglas); i++ {
+		reglas = reglas + arregloReglas[i] + "\n"
+	}
+	return
+}
+
+func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (diasLaborados float64, meses float64) {
+
+	var a, m, d int
+	var mesesContrato float64
+	var diasContrato float64
+	if FechaFin.IsZero() {
+		var FechaFin2 time.Time
+		FechaFin2 = time.Now()
+		a, m, d = diff(FechaInicio, FechaFin2)
+		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
+		diasContrato = mesesContrato * 30
+	} else {
+		a, m, d = diff(FechaInicio, FechaFin)
+		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
+		diasContrato = mesesContrato * 30
+	}
+	return diasContrato, mesesContrato
+
+}
+
+func calcularDiasContratoCPS(FechaInicio time.Time, FechaFin time.Time) (diasLaborados int, meses int) {
+	if FechaInicio.Year() == FechaFin.Year() {
+		meses = int(FechaFin.Month()) - int(FechaInicio.Month())
+		if meses == 0 {
+			meses = 1
+			diasLaborados = FechaFin.Day() - FechaInicio.Day() + 1
+		} else {
+			diasLaborados = meses * 30
+		}
+	} else {
+		meses = int(FechaFin.Month()) - int(FechaInicio.Month()) + 12
+		diasLaborados = meses * 30
+	}
+
+	return diasLaborados, meses
+}
+
+func calcularSemanasContratoHCH(FechaInicio time.Time, FechaFin time.Time) (semanas float64) {
+	var a, m, d int
+	var mesesContrato float64
+	if FechaFin.IsZero() {
+		var FechaFin2 time.Time
+		FechaFin2 = time.Now()
+		a, m, d = diff(FechaInicio, FechaFin2)
+		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
+
+	} else {
+		a, m, d = diff(FechaInicio, FechaFin)
+		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
+	}
+	if mesesContrato/float64(int(mesesContrato)) != 1 {
+		return (mesesContrato * 4) + 1
+	} else {
+		return (mesesContrato * 4)
+	}
+}
+
+func registrarPreliquidacion(año, mes, estadoPreliquidacion, nomina int) (preliquidacion models.Preliquidacion) {
+	var aux map[string]interface{}
+	var nombre string
+
+	if nomina == 412 {
+		nombre = "Funcionarios Administrativos-Planta-"
+	} else if nomina == 413 {
+		nombre = "Docentes de Planta-"
+	} else if nomina == 414 {
+		nombre = "Contratistas-"
+	} else if nomina == 415 {
+		nombre = "Hora cátedra honorarios-"
+	} else {
+		nombre = "Hora cátedra salarios-"
+	}
+	preliquidacion.Descripcion = nombre + strconv.Itoa(año) + strconv.Itoa(mes)
+	preliquidacion.Ano = año
+	preliquidacion.Mes = mes
+	preliquidacion.NominaId = nomina
+	preliquidacion.EstadoPreliquidacionId = estadoPreliquidacion
+	preliquidacion.Activo = true
+	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion", "POST", &aux, preliquidacion); err == nil {
+		LimpiezaRespuestaRefactor(aux, &preliquidacion)
+		fmt.Println("Preliquidación creada con éxito")
+	} else {
+		fmt.Println("Error al guardar preliquidacion: ", err)
+	}
+
+	return preliquidacion
+}
+
+func registrarContratoPreliquidacion(preliquidacionId int, contratoId int, contratoPreliq models.ContratoPreliquidacion) (contratoPreliquidacion models.ContratoPreliquidacion) {
+	var aux map[string]interface{}
+	var respuesta models.ContratoPreliquidacion
+	contratoPreliq.Id = 0
+	contratoPreliquidacion = contratoPreliq
+	contratoPreliquidacion.ContratoId = &models.Contrato{Id: contratoId}
+	contratoPreliquidacion.PreliquidacionId = &models.Preliquidacion{Id: preliquidacionId}
+	contratoPreliquidacion.Cumplido = false
+	contratoPreliquidacion.Preliquidado = false
+	contratoPreliquidacion.Activo = true
+
+	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion", "POST", &aux, contratoPreliquidacion); err == nil {
+		LimpiezaRespuestaRefactor(aux, &respuesta)
+		fmt.Println("Contrato_preliquidacion guardado con exito")
+	} else {
+		fmt.Println("Error al guardar contrato_preliquidacion: ", err)
+	}
+	return respuesta
+}
+
+func registrarDetallePreliquidacion(detallePreliquidacion models.DetallePreliquidacion) {
+	var response models.DetallePreliquidacion
+	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion", "POST", &response, detallePreliquidacion); err == nil {
+		fmt.Println("Detalle guardado con éxito")
+	} else {
+		fmt.Println("Error al guardar detalle", err)
+	}
+}
+
+func registratContrato(contrato models.Contrato) (respuesta models.Contrato) {
+	var response map[string]interface{}
+	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &response, contrato); err == nil {
+		fmt.Println("Contrato guardado con éxito")
+		LimpiezaRespuestaRefactor(response, &respuesta)
+	} else {
+		fmt.Println("Error al guardar contrato", err)
+	}
+	return respuesta
+}
+
+func CalcularPeriodoLiquidacion(anoPreliquidacion, mesPreliquidacion int, fechaInicio, fechaFin time.Time) (periodoLiquidacion, periodoEspecifico string) {
+
+	var FechaControl time.Time
+	var periodo_liquidacion float64
+	if fechaInicio.Month() == fechaFin.Month() && fechaInicio.Year() == fechaFin.Year() {
+		periodo_liquidacion, _ = CalcularDias(fechaInicio, fechaFin)
+		periodo_liquidacion = periodo_liquidacion + 1
+		periodoEspecifico = "Del " + strconv.Itoa(fechaInicio.Day()) + " al " + strconv.Itoa(fechaFin.Day()) + " del mes " + strconv.Itoa(mesPreliquidacion)
+	} else if int(fechaInicio.Month()) == mesPreliquidacion && int(fechaInicio.Year()) == anoPreliquidacion {
+		FechaControl = time.Date(anoPreliquidacion, time.Month(mesPreliquidacion), 30, 0, 0, 0, 0, time.UTC)
+		periodo_liquidacion, _ = CalcularDias(fechaInicio, FechaControl)
+		periodo_liquidacion = periodo_liquidacion + 1 //Dia inclusive
+		periodoEspecifico = "Del " + strconv.Itoa(fechaInicio.Day()) + " al " + strconv.Itoa(FechaControl.Day()) + " del mes " + strconv.Itoa(mesPreliquidacion)
+	} else if int(fechaFin.Month()) == mesPreliquidacion && int(fechaFin.Year()) == anoPreliquidacion {
+		FechaControl = time.Date(anoPreliquidacion, time.Month(mesPreliquidacion), 1, 0, 0, 0, 0, time.UTC)
+		periodo_liquidacion, _ = CalcularDias(FechaControl, fechaFin)
+		periodo_liquidacion = periodo_liquidacion + 1 //Dia Inclusivo
+		periodoEspecifico = "Del " + strconv.Itoa(FechaControl.Day()) + " al " + strconv.Itoa(fechaFin.Day()) + " del mes " + strconv.Itoa(mesPreliquidacion)
+	} else {
+		periodo_liquidacion = 30
+		periodoEspecifico = "Del 1 al 30 del mes " + strconv.Itoa(mesPreliquidacion)
+	}
+
+	periodo := strconv.Itoa(int(periodo_liquidacion))
+
+	return periodo, periodoEspecifico
+}
+
+func CalcularSemanas(diasLiquidados float64) (semanas int) {
+	aux := diasLiquidados / 7
+
+	if aux <= 1 {
+		return 1
+	} else if aux <= 2 {
+		return 2
+	} else if aux <= 3 {
+		return 3
+	} else {
+		return 4
+	}
 }
