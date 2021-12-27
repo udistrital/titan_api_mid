@@ -226,7 +226,7 @@ func (c *NovedadController) EliminarNovedad() {
 // @Title Registrar Cancelacion
 // @Description Maneja la novedad contractual de cancelación
 // @Param	NumeroContrato		path 	true	"Numero del contrato que se va a cancelar"
-// @Param	Vigencia		path 	true	"Numero del contrato que se va a cancelar"
+// @Param	Vigencia		path 	true	"Vigencia del contrato que se va a cancelar"
 // @Success 201 {object} models.Contrato
 // @Failure 403 body is empty
 // @router /cancelar_contrato/:NumeroContrato/:Vigencia [get]

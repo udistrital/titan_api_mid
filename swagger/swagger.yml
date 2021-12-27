@@ -11,7 +11,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 basePath: /v1
 paths:
-  /cumplido/obtener_detalle_CT/{ano}/{mes}/{contrato}:
+  /cumplido/{ano}/{mes}/{contrato}/{vigencia}:
     get:
       tags:
       - cumplido
@@ -31,6 +31,11 @@ paths:
       - in: path
         name: contrato
         description: Contrato a buscar
+        required: true
+        type: string
+      - in: path
+        name: vigencia
+        description: vigencia del contrato
         required: true
         type: string
       responses:
@@ -310,7 +315,7 @@ paths:
             $ref: '#/definitions/models.Novedad'
         "403":
           description: body is empty
-  /novedad/cancelar_contrato/{NumeroContrato}:
+  /novedad/cancelar_contrato/{NumeroContrato}/{Vigencia}:
     get:
       tags:
       - novedad
@@ -320,6 +325,11 @@ paths:
       - in: path
         name: NumeroContrato
         description: Numero del contrato que se va a cancelar
+        schema:
+          $ref: '#/definitions/true'
+      - in: path
+        name: Vigencia
+        description: Vigencia del contrato que se va a cancelar
         schema:
           $ref: '#/definitions/true'
       responses:
@@ -697,18 +707,6 @@ definitions:
       VigenciaContrato:
         type: integer
         format: int64
-  models.InformacionContratoDocente:
-    title: InformacionContratoDocente
-    type: object
-    properties:
-      MesesContrato:
-        type: string
-      NumDocumento:
-        type: string
-      ValorContrato:
-        type: string
-      VigenciaContrato:
-        type: string
   models.Nomina:
     title: Nomina
     type: object
@@ -785,6 +783,9 @@ definitions:
         format: datetime
       NumeroContrato:
         type: string
+      Vigencia:
+        type: integer
+        format: int64
   models.PersonasPreliquidacion:
     title: PersonasPreliquidacion
     type: object
@@ -872,6 +873,9 @@ definitions:
         type: string
       NumeroContrato:
         type: string
+      Vigencia:
+        type: integer
+        format: int64
   models.TipoNomina:
     title: TipoNomina
     type: object
