@@ -23,9 +23,10 @@ func (c *CumplidoController) URLMapping() {
 // @Param	ano		path 	string	true		"Año de la preliquidación"
 // @Param	mes		path 	string	true		"Mes de la preliquidación"
 // @Param	contrato		path 	string	true		"Contrato a buscar"
+// @Param	vigencia		path 	string	true		"vigencia del contrato"
 // @Success 201 {object} models.ContratoPreliquidacion
 // @Failure 403 body is empty
-// @router /obtener_detalle_CT/:ano/:mes/:contrato [get]
+// @router /:ano/:mes/:contrato/:vigencia [get]
 func (c *CumplidoController) ActualizarCumplido() {
 	var aux map[string]interface{}
 	var contrato []models.Contrato
@@ -33,8 +34,9 @@ func (c *CumplidoController) ActualizarCumplido() {
 	ano := c.Ctx.Input.Param(":ano")
 	mes := c.Ctx.Input.Param(":mes")
 	numeroContrato := c.Ctx.Input.Param(":contrato")
+	vigencia := c.Ctx.Input.Param((":vigencia"))
 
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+numeroContrato, &aux); err == nil {
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+numeroContrato+",Vigencia:"+vigencia, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contrato)
 		//Obtener contrato Preliquidacion para ese mes
 		query := "PreliquidacionId.Ano:" + ano + ",PreliquidacionId.Mes:" + mes + ",ContratoId.NumeroContrato:" + numeroContrato
