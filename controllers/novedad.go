@@ -226,11 +226,13 @@ func (c *NovedadController) EliminarNovedad() {
 // @Title Registrar Cancelacion
 // @Description Maneja la novedad contractual de cancelación
 // @Param	NumeroContrato		path 	true	"Numero del contrato que se va a cancelar"
+// @Param	Vigencia		path 	true	"Vigencia del contrato que se va a cancelar"
 // @Success 201 {object} models.Contrato
 // @Failure 403 body is empty
-// @router /cancelar_contrato/:NumeroContrato [get]
+// @router /cancelar_contrato/:NumeroContrato/:Vigencia [get]
 func (c *NovedadController) CancelarContrato() {
 	var numero = c.Ctx.Input.Param(":NumeroContrato")
+	var vigencia = c.Ctx.Input.Param(":Vigencia")
 	var fecha_actual = time.Now()
 	var aux map[string]interface{}
 	var contrato []models.Contrato
@@ -241,7 +243,7 @@ func (c *NovedadController) CancelarContrato() {
 	var mesFin int
 
 	//Traer el contrato a cancelar
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+numero, &aux); err == nil {
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+numero+",Vigencia:"+vigencia, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contrato)
 	} else {
 		fmt.Println("Error al obtener el contrato: ", err)
@@ -338,7 +340,7 @@ func (c *NovedadController) CederContrato() {
 		mesInicio = int(sucesor.FechaInicio.Month())
 
 		//Traer el contrato a cancelar
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+sucesor.NumeroContrato, &aux); err == nil {
+		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+sucesor.NumeroContrato+"Vigencia:"+strconv.Itoa(sucesor.Vigencia), &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			contratoNuevo = contrato[0]
 			valorViejo = contrato[0].ValorContrato
@@ -483,7 +485,7 @@ func (c *NovedadController) AplicarOtrosi() {
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &otro_si); err == nil {
 		//Traer el contrato a cancelar
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+otro_si.NumeroContrato, &aux); err == nil {
+		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+otro_si.NumeroContrato+",Vigencia:"+strconv.Itoa(otro_si.Vigencia), &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			fechaRespaldo = contrato[0].FechaFin
 		} else {
@@ -577,7 +579,7 @@ func (c *NovedadController) SuspenderContrato() {
 		mesInicio = int(suspension.FechaInicio.Month())
 
 		//Traer el contrato a cancelar
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+suspension.NumeroContrato, &aux); err == nil {
+		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+suspension.NumeroContrato+",Vigencia:"+strconv.Itoa(suspension.Vigencia), &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			contratoNuevo = contrato[0]
 			valorViejo = contrato[0].ValorContrato

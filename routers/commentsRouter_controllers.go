@@ -28,7 +28,7 @@ func init() {
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:CumplidoController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:CumplidoController"],
         beego.ControllerComments{
             Method: "ActualizarCumplido",
-            Router: "/obtener_detalle_CT/:ano/:mes/:contrato",
+            Router: "/:ano/:mes/:contrato/:vigencia",
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -163,7 +163,7 @@ func init() {
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadController"],
         beego.ControllerComments{
             Method: "CancelarContrato",
-            Router: "/cancelar_contrato/:NumeroContrato",
+            Router: "/cancelar_contrato/:NumeroContrato/:Vigencia",
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -219,15 +219,6 @@ func init() {
             Method: "ObtenerResumenPreliquidacion",
             Router: "/obtener_resumen_preliquidacion/:mes/:ano/:nomina",
             AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:ServicesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:ServicesController"],
-        beego.ControllerComments{
-            Method: "DesagregacionContratoHCS",
-            Router: "/desagregacion_contrato_hcs",
-            AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
