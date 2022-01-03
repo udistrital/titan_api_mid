@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"math"
 	"strconv"
 
 	"github.com/astaxie/beego"
@@ -16,7 +15,7 @@ type PreliquidacionctController struct {
 	beego.Controller
 }
 
-func liquidarCPS(contrato models.Contrato, diasRestantes int) {
+func liquidarCPS(contrato models.Contrato, diasRestantes int, ano int) {
 
 	var mesIterativo int              //mes para iterar en el ciclo para liquidar todos los meses de una vez
 	var predicados []models.Predicado //variable para inyectar reglas
@@ -30,39 +29,39 @@ func liquidarCPS(contrato models.Contrato, diasRestantes int) {
 	var auxDetalle []models.DetallePreliquidacion
 	var reglasAlivios string
 	var reglasNuevas string //reglas a usar en cada iteracion
-	var diasContrato int
-	var mesesContrato int
+	var diasContrato float64
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 
 	if err == nil {
 		reglasAlivios, contratoPreliquidacion = CargarDatosRetefuente(int(cedula))
 	}
 
-	mesIterativo = int(contrato.FechaInicio.Month())
-	if diasRestantes == 0 {
-		diasContrato, mesesContrato = calcularDiasContratoCPS(contrato.FechaInicio, contrato.FechaFin)
-		fmt.Println("Dias Contrato: ", diasContrato)
+	if ano != contrato.Vigencia { //en caso de que no sea el mismo año en el que se empezó el contrato se procede a liquidar desde el mes uno (cambio de año)
+		mesIterativo = 1
 	} else {
-		diasContrato = diasRestantes
-		mesesContrato = int(math.Ceil(float64(diasContrato) / 30))
-
+		mesIterativo = int(contrato.FechaInicio.Month())
+	}
+	if diasRestantes == 0 {
+		diasContrato, _ = CalcularDias(contrato.FechaInicio, contrato.FechaFin)
+		diasContrato = diasContrato + 1 //dia inclusive
+	} else {
+		diasContrato = float64(diasRestantes)
 	}
 
 	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
-	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(diasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", diasContrato) + "," + strconv.Itoa(ano) + "). "})
 	reglasbase := cargarReglasBase("CT") + cargarReglasSS() + reglasAlivios + FormatoReglas(predicados)
 
-	if contrato.FechaInicio.Day() != 1 {
-		mesesContrato = mesesContrato + 1
-	}
-
-	for i := 0; i < int(mesesContrato); i++ {
+	for mesIterativo <= 12 {
 		reglasNuevas = ""
-		query := "Ano:" + strconv.Itoa(contrato.Vigencia) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:414"
+
+		query := "Ano:" + strconv.Itoa(ano) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:414"
+		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/preliquidacion?limit=-1&query=" + query)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &preliquidacion)
+			fmt.Println(preliquidacion[0])
 			if preliquidacion[0].Id == 0 {
-				preliquidacion[0] = registrarPreliquidacion(contrato.Vigencia, mesIterativo, 476, 414)
+				preliquidacion[0] = registrarPreliquidacion(ano, mesIterativo, 476, 414)
 				contratoPreliquidacion = registrarContratoPreliquidacion(preliquidacion[0].Id, contrato.Id, contratoPreliquidacion)
 			} else {
 				contratoPreliquidacion = registrarContratoPreliquidacion(preliquidacion[0].Id, contrato.Id, contratoPreliquidacion)
@@ -97,11 +96,11 @@ func liquidarCPS(contrato models.Contrato, diasRestantes int) {
 				fmt.Println("Error al obtener las novedades")
 			}
 
-			auxDetalle = golog.LiquidarMesCPS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion, novedades)
+			auxDetalle = golog.LiquidarMesCPS(reglasNuevas, contrato.Documento, ano, detallePreliquidacion, novedades)
 			for j := 0; j < len(auxDetalle); j++ {
 				registrarDetallePreliquidacion(auxDetalle[j])
 			}
-			if mesIterativo == 12 {
+			if mesIterativo == int(contrato.FechaFin.Month()) && ano == contrato.FechaFin.Year() {
 				break
 			} else {
 				mesIterativo = mesIterativo + 1
@@ -109,7 +108,7 @@ func liquidarCPS(contrato models.Contrato, diasRestantes int) {
 		} else {
 			fmt.Println("Error al consultar preliquidaciones")
 		}
-		preliquidacion[0].Id = 0 //PAra evitar errores al obtener la preliquidación del siguiente mes
+		preliquidacion[0].Id = 0 //Para evitar errores al obtener la preliquidación del siguiente mes
 	}
 
 }
