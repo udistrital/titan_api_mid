@@ -20,6 +20,7 @@ func (c *NovedadController) URLMapping() {
 	c.Mapping("EliminarNovedad", c.EliminarNovedad)
 	c.Mapping("CancelarContrato", c.CancelarContrato)
 	c.Mapping("CederContrato", c.CederContrato)
+	c.Mapping("AplicarOtrosi", c.AplicarOtrosi)
 }
 
 // Post ...
@@ -45,6 +46,7 @@ func (c *NovedadController) AgregarNovedad() {
 	var iteracion int
 	var posible bool
 	posible = true
+
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &novedad); err == nil {
 		fmt.Println(novedad)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/concepto_nomina?limit=-1&query=Id:"+strconv.Itoa(novedad.ConceptoNominaId.Id), &aux); err == nil {
@@ -305,9 +307,9 @@ func (c *NovedadController) CancelarContrato() {
 	}
 
 	if contrato[0].TipoNominaId == 411 {
-		liquidarCPS(contrato[0], 0)
+		liquidarCPS(contrato[0], 0, fecha_actual.Year())
 	} else if contrato[0].TipoNominaId == 409 {
-		liquidarHCH(contrato[0])
+		liquidarHCH(contrato[0], time.Now().Year())
 	} else if contrato[0].TipoNominaId == 410 {
 
 	}
@@ -333,8 +335,9 @@ func (c *NovedadController) CederContrato() {
 	var mesInicio int
 	var mesFin int
 	var diasRestantes int
-	var diasCompletos int
+	var diasCompletos float64
 	var diasLiquidados int
+	var ano int //ano que se va liquidar
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &sucesor); err == nil {
 		mesInicio = int(sucesor.FechaInicio.Month())
@@ -345,8 +348,15 @@ func (c *NovedadController) CederContrato() {
 			contratoNuevo = contrato[0]
 			valorViejo = contrato[0].ValorContrato
 
+			if contrato[0].Vigencia == time.Now().Year() {
+				ano = contrato[0].Vigencia
+			} else {
+				ano = time.Now().Year()
+			}
+
 			if contrato[0].TipoNominaId == 411 {
-				diasCompletos, _ = calcularDiasContratoCPS(contrato[0].FechaInicio, contrato[0].FechaFin)
+				diasCompletos, _ = CalcularDias(contrato[0].FechaInicio, contrato[0].FechaFin)
+				diasCompletos = diasCompletos + 1 // dia inclusive
 			} else if contrato[0].TipoNominaId == 409 {
 				//liquidarHCH(contrato[0])
 			} else if contrato[0].TipoNominaId == 410 {
@@ -430,7 +440,7 @@ func (c *NovedadController) CederContrato() {
 		contrato[0].FechaFin = sucesor.FechaInicio.Add(24 * time.Hour * -1)
 		//Dias Restantes de contrato
 		diasLiquidados = diasLiquidados + contrato[0].FechaFin.Day()
-		diasRestantes = diasCompletos - diasLiquidados
+		diasRestantes = int(diasCompletos) - diasLiquidados
 		//Actualizar fecha de finalización del contrato
 		if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contrato[0]); err == nil {
 			fmt.Println("Contrato Actualizado")
@@ -449,22 +459,22 @@ func (c *NovedadController) CederContrato() {
 			contratoNuevo.ValorContrato = valorViejo - valorNuevo - valorDia*float64(contrato[0].FechaFin.Day())
 		}
 		if contrato[0].TipoNominaId == 411 {
-			liquidarCPS(contrato[0], 0)
-			liquidarCPS(contratoNuevo, diasRestantes)
+			liquidarCPS(contrato[0], 0, ano)
+			liquidarCPS(contratoNuevo, diasRestantes, ano)
 		} else if contrato[0].TipoNominaId == 409 {
-			liquidarHCH(contrato[0])
+			liquidarHCH(contrato[0], ano)
 		} else if contrato[0].TipoNominaId == 410 {
 
 		}
 	} else {
-		fmt.Println("Erro al unmarsahl de los datos del sucesor: ", err)
+		fmt.Println("Error al unmarsahl de los datos del sucesor: ", err)
 	}
 }
 
 // Post ...
 // @Title Aplicar Oro sí
-// @Description Aplicar novedad contratul de otro sí
-// @Param	OtroSí		body 	models.OtroSi 	true	"Datos del sucesor del contrato"
+// @Description Aplicar novedad contractual de otro sí
+// @Param	OtroSí		body 	models.OtroSi 	true	"Nueva Fecha de finalización del contrato"
 // @Success 201 {object} models.Contrato
 // @Failure 403 body is empty
 // @router /otrosi_contrato [post]
@@ -476,18 +486,21 @@ func (c *NovedadController) AplicarOtrosi() {
 	var detalles []models.DetallePreliquidacion
 	var diasNuevos float64
 	var valorNuevo float64
-	var mesesContrato int
+	var mesesContrato float64
 	var valorMensual float64
 	var honorarios float64
 	var dias int
 	var diasRestantes int
 	var fechaRespaldo time.Time
+	var ano int
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &otro_si); err == nil {
-		//Traer el contrato a cancelar
+		//Traer el contrato
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+otro_si.NumeroContrato+",Vigencia:"+strconv.Itoa(otro_si.Vigencia), &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			fechaRespaldo = contrato[0].FechaFin
+			ano = contrato[0].FechaFin.Year()
+
 		} else {
 			fmt.Println("Error al obtener el contrato: ", err)
 		}
@@ -498,7 +511,8 @@ func (c *NovedadController) AplicarOtrosi() {
 	diasNuevos, _ = CalcularDias(contrato[0].FechaFin, otro_si.FechaFin)
 
 	//Calcular Valor mensual del contrato
-	_, mesesContrato = calcularDiasContratoCPS(contrato[0].FechaInicio, contrato[0].FechaFin)
+	_, mesesContrato = CalcularDias(contrato[0].FechaInicio, contrato[0].FechaFin)
+	mesesContrato = float64(int(mesesContrato + 1))
 	valorMensual = contrato[0].ValorContrato / float64(mesesContrato)
 
 	//Eliminar el detalle del último mes
@@ -507,6 +521,7 @@ func (c *NovedadController) AplicarOtrosi() {
 		LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &detalles)
+
 			for j := 0; j < len(detalles); j++ {
 				if detalles[j].ConceptoNominaId.Id == 87 {
 					honorarios = detalles[j].ValorCalculado
@@ -547,7 +562,7 @@ func (c *NovedadController) AplicarOtrosi() {
 	contrato[0].ValorContrato = valorNuevo
 	fmt.Println("Contrato: ", contrato[0])
 	//liquidar el contrato
-	liquidarCPS(contrato[0], diasRestantes)
+	liquidarCPS(contrato[0], diasRestantes, ano)
 
 }
 
@@ -571,9 +586,10 @@ func (c *NovedadController) SuspenderContrato() {
 	var mesInicio int
 	var mesFin int
 	var diasRestantes int
-	var diasCompletos int
+	var diasCompletos float64
 	var diasLiquidados int
 	var diasSuspension float64
+	var ano int
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &suspension); err == nil {
 		mesInicio = int(suspension.FechaInicio.Month())
@@ -584,8 +600,15 @@ func (c *NovedadController) SuspenderContrato() {
 			contratoNuevo = contrato[0]
 			valorViejo = contrato[0].ValorContrato
 
+			if contrato[0].Vigencia == time.Now().Year() {
+				ano = contrato[0].Vigencia
+			} else {
+				ano = time.Now().Year()
+			}
+
 			if contrato[0].TipoNominaId == 411 {
-				diasCompletos, _ = calcularDiasContratoCPS(contrato[0].FechaInicio, contrato[0].FechaFin)
+				diasCompletos, _ = CalcularDias(contrato[0].FechaInicio, contrato[0].FechaFin)
+				diasCompletos = diasCompletos + 1 //Día inclusive
 			} else if contrato[0].TipoNominaId == 409 {
 				//liquidarHCH(contrato[0])
 			} else if contrato[0].TipoNominaId == 410 {
@@ -666,7 +689,7 @@ func (c *NovedadController) SuspenderContrato() {
 		contrato[0].FechaFin = suspension.FechaInicio.Add(24 * time.Hour * -1)
 		//Dias Restantes de contrato
 		diasLiquidados = diasLiquidados + contrato[0].FechaFin.Day()
-		diasRestantes = diasCompletos - diasLiquidados
+		diasRestantes = int(diasCompletos) - diasLiquidados
 		//Actualizar fecha de finalización del contrato
 		if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contratoNuevo.Id), "PUT", &aux, contratoNuevo); err == nil {
 			fmt.Println("Contrato Actualizado")
@@ -688,10 +711,10 @@ func (c *NovedadController) SuspenderContrato() {
 		}
 
 		if contrato[0].TipoNominaId == 411 {
-			liquidarCPS(contrato[0], 0)
-			liquidarCPS(contratoNuevo, diasRestantes)
+			liquidarCPS(contrato[0], 0, ano)
+			liquidarCPS(contratoNuevo, diasRestantes, ano)
 		} else if contrato[0].TipoNominaId == 409 {
-			liquidarHCH(contrato[0])
+			liquidarHCH(contrato[0], ano)
 		} else if contrato[0].TipoNominaId == 410 {
 
 		}

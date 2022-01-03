@@ -98,16 +98,13 @@ func InformacionPersonaProveedor(idPersona int) (Nom string, doc int, err error)
 
 		nombre_persona = respuesta_servicio[0].NomProveedor
 		documento, _ = strconv.Atoi(respuesta_servicio[0].NumDocumento)
-
 	} else {
 		nombre_persona = "No encontrado"
 		nombre_persona = "0"
 		fmt.Println("error en consulta de información de persona", controlError)
 
 	}
-
 	return nombre_persona, documento, controlError
-
 }
 
 func InformacionPersona(tipoNomina string, NumeroContrato string, VigenciaContrato int) (Nom, cont, doc string, err error) {
@@ -343,23 +340,6 @@ func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (diasLaborados floa
 
 }
 
-func calcularDiasContratoCPS(FechaInicio time.Time, FechaFin time.Time) (diasLaborados int, meses int) {
-	if FechaInicio.Year() == FechaFin.Year() {
-		meses = int(FechaFin.Month()) - int(FechaInicio.Month())
-		if meses == 0 {
-			meses = 1
-			diasLaborados = FechaFin.Day() - FechaInicio.Day() + 1
-		} else {
-			diasLaborados = meses * 30
-		}
-	} else {
-		meses = int(FechaFin.Month()) - int(FechaInicio.Month()) + 12
-		diasLaborados = meses * 30
-	}
-
-	return diasLaborados, meses
-}
-
 func calcularSemanasContratoHCH(FechaInicio time.Time, FechaFin time.Time) (semanas float64) {
 	var a, m, d int
 	var mesesContrato float64
@@ -491,4 +471,9 @@ func CalcularSemanas(diasLiquidados float64) (semanas int) {
 	} else {
 		return 4
 	}
+}
+
+func Remove(s []models.Contrato, i int) []models.Contrato {
+	s = append(s[:i], s[i+1:]...)
+	return s
 }
