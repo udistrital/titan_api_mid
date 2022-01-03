@@ -2,22 +2,22 @@ package models
 
 type ObjetoInformacionContratista struct {
 	InformacionContratista struct {
-			Documento Documento `json:"Documento"`
-			Contrato 	Contrato  `json:"contrato"`
-			NombreCompleto  string  `json:"nombre_completo"`
-			Dependencia Supervisor `json:"Supervisor"`
+		Documento      Documento  `json:"Documento"`
+		Contrato       Contrato   `json:"contrato"`
+		NombreCompleto string     `json:"nombre_completo"`
+		Dependencia    Supervisor `json:"Supervisor"`
 	} `json:"informacion_contratista"`
 }
-
-
-type Documento struct {
-	Numero       string   `json:"numero"`
+type Pago struct {
+	Contrato struct {
+		CodigoAbreviacion string `json:"codigo_abreviacion"`
+	} `json:"Contrato"`
 }
 
-type Contrato struct {
-	Numero       string   `json:"numero"`
+type Documento struct {
+	Numero string `json:"numero"`
 }
 
 type Supervisor struct {
-	IdDependencia       string   `json:"id_dep"`
+	IdDependencia string `json:"id_dep"`
 }

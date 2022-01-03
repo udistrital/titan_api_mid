@@ -8,7 +8,7 @@ import (
 	models "github.com/udistrital/titan_api_mid/models"
 )
 
-func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio) (rest []models.Respuesta) {
+func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliquidacion, periodo string, objeto_datos_acta models.ObjetoActaInicio, pensionado bool, dependientes bool) (rest []models.Respuesta) {
 
 	var resultado []models.Respuesta
 	var listaDescuentos []models.ConceptosResumen
@@ -16,49 +16,13 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 	var listaRetefuente []models.ConceptosResumen
 	var tipoPreliquidacionString = "2"
 	var diasNovedadString = "0"
-	var ano, _ = strconv.Atoi(periodo)
 
-	reglas = reglas + "cargo(0)."
-	reglas = reglas + "periodo(" + periodo + ")."
-
-	diasALiquidar, _ := CalcularPeriodoLiquidacion(preliquidacion, objeto_datos_acta)
-	fmt.Println("dias liquidados", diasALiquidar)
-
-	m := NewMachine().Consult(reglas)
-	novedades_seg_social := m.ProveAll("seg_social(N,A,M,D,AA,MM,DD).")
-
-	for _, solution := range novedades_seg_social {
-
-		fmt.Println("existe novedad de SS")
-
-		novedad := fmt.Sprintf("%s", solution.ByName_("N"))
-		AnoDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
-		MesDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
-		DiaDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("D")), 64)
-		AnoHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("AA")), 64)
-		MesHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("MM")), 64)
-		DiaHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
-
-		afectacion_seg_social := m.ProveAll("afectacion_seguridad(" + novedad + ").")
-		for _, solution := range afectacion_seg_social {
-
-			fmt.Println(solution)
-			dias_novedad := CalcularDiasNovedades(preliquidacion.Mes, ano, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
-			diasALiquidar = strconv.Itoa(int(30 - dias_novedad))
-			diasNovedadString = strconv.Itoa(int(dias_novedad))
-			_, total_devengado_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasNovedadString)
-			ibc = 0
-		}
-
-	}
-
-	listaDescuentos, total_devengado_no_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasALiquidar)
+	listaDescuentos, total_devengado_no_novedad = CalcularConceptosCT(idProveedor, periodo, reglas, tipoPreliquidacionString, diasALiquidar, pensionado)
 	listaNovedades = ManejarNovedadesCT(reglas, idProveedor, tipoPreliquidacionString, periodo, diasALiquidar)
-	listaRetefuente = CalcularReteFuenteSal(tipoPreliquidacionString, reglas, listaDescuentos, diasALiquidar)
 	total_calculos = append(total_calculos, listaDescuentos...)
 	total_calculos = append(total_calculos, listaNovedades...)
 	total_calculos = append(total_calculos, listaRetefuente...)
-	resultado = GuardarConceptosCT(reglas, total_calculos, diasALiquidar, diasNovedadString)
+	resultado = GuardarConceptosCT(reglas, total_calculos, diasALiquidar, diasNovedadString, pensionado)
 
 	total_calculos = []models.ConceptosResumen{}
 	ibc = 0
@@ -67,7 +31,7 @@ func CargarReglasCT(idProveedor int, reglas string, preliquidacion models.Preliq
 
 }
 
-func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionString, dias_liq string) (rest []models.ConceptosResumen, total_dev float64) {
+func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionString, dias_liq string, pensionado bool) (rest []models.ConceptosResumen, total_dev float64) {
 
 	var listaDescuentos []models.ConceptosResumen
 
@@ -87,7 +51,7 @@ func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionStr
 
 		reglas = reglas + "sumar_ibc(" + Nom_Concepto + "," + strconv.Itoa(int(Valor)) + ")."
 		codigo := m.ProveAll(`codigo_concepto(` + temp_conceptos.Nombre + `,C, N,D).`)
-
+		fmt.Println(solution)
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
@@ -104,7 +68,7 @@ func CalcularConceptosCT(idProveedor int, periodo, reglas, tipoPreliquidacionStr
 
 }
 
-func GuardarConceptosCT(reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq_no_nov, dias_a_liq_nov string) (rest []models.Respuesta) {
+func GuardarConceptosCT(reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq_no_nov, dias_a_liq_nov string, pensionado bool) (rest []models.Respuesta) {
 	temp := models.Respuesta{}
 	var resultado []models.Respuesta
 	m := NewMachine().Consult(reglas)
@@ -164,7 +128,7 @@ func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, peri
 		temp_conceptos := models.ConceptosResumen{Nombre: fmt.Sprintf("%s", solution.ByName_("N")),
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
-		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
+		codigo := f.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
 			temp_conceptos.AliasConcepto = fmt.Sprintf("%s", cod.ByName_("D"))
@@ -179,4 +143,80 @@ func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, peri
 
 	return listaNovedades
 
+}
+
+func LiquidarMesCPS(reglas string, cedula string, ano int, detallePreliquidacion models.DetallePreliquidacion, novedades []models.Novedad) (data []models.DetallePreliquidacion) {
+	var conceptoNomina models.ConceptoNomina
+	var totalDevengado float64
+	var totalDescuentos float64
+	var totalAPagar float64
+	m := NewMachine().Consult(reglas)
+	total := m.ProveAll("liquidar_ct(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
+	totalDescuentos = 0
+	totalDevengado = 0
+	totalAPagar = 0
+	for _, solution := range total {
+
+		detallePreliquidacion.ValorCalculado, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
+		conceptoNomina.NombreConcepto = fmt.Sprintf("%s", solution.ByName_("N"))
+
+		codigo := m.ProveAll(`codigo_concepto(` + conceptoNomina.NombreConcepto + `,C,N).`)
+		for _, cod := range codigo {
+			conceptoNomina.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+			conceptoNomina.NaturalezaConceptoNominaId, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
+		}
+
+		if conceptoNomina.NaturalezaConceptoNominaId == 423 {
+			totalDevengado = totalDevengado + detallePreliquidacion.ValorCalculado
+		}
+
+		if conceptoNomina.NaturalezaConceptoNominaId == 424 {
+			if conceptoNomina.NombreConcepto != "arl" && conceptoNomina.NombreConcepto != "pension" && conceptoNomina.NombreConcepto != "salud" {
+				totalDescuentos = totalDescuentos + detallePreliquidacion.ValorCalculado
+			}
+		}
+
+		detallePreliquidacion.Id = 0
+		detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: conceptoNomina.Id}
+		data = append(data, detallePreliquidacion)
+	}
+
+	//Agregar Novedades
+	if len(novedades) != 0 {
+		for i := 0; i < len(novedades); i++ {
+			if novedades[i].ConceptoNominaId.TipoConceptoNominaId == 419 {
+				totalDescuentos = totalDescuentos + novedades[i].Valor
+				detallePreliquidacion.Id = 0
+				detallePreliquidacion.ValorCalculado = novedades[i].Valor
+				detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: novedades[i].ConceptoNominaId.Id}
+				detallePreliquidacion.Activo = true
+				data = append(data, detallePreliquidacion)
+			} else if novedades[i].ConceptoNominaId.TipoConceptoNominaId == 420 {
+				totalDescuentos = totalDescuentos + (totalDevengado * (novedades[i].Valor / 100))
+				detallePreliquidacion.Id = 0
+				detallePreliquidacion.ValorCalculado = (totalDevengado * (novedades[i].Valor / 100))
+				detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: novedades[i].ConceptoNominaId.Id}
+				detallePreliquidacion.Activo = true
+				data = append(data, detallePreliquidacion)
+			}
+
+		}
+	}
+
+	totalAPagar = totalDevengado - totalDescuentos
+	//se agrega el detalle del total a pagar
+	detallePreliquidacion.Id = 0
+	detallePreliquidacion.ValorCalculado = totalAPagar
+	detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: 574}
+	detallePreliquidacion.Activo = true
+	data = append(data, detallePreliquidacion)
+
+	//se agrega el detalle del total de los descuentos
+	detallePreliquidacion.Id = 0
+	detallePreliquidacion.ValorCalculado = totalDescuentos
+	detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: 573}
+	detallePreliquidacion.Activo = true
+	data = append(data, detallePreliquidacion)
+
+	return data
 }

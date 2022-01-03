@@ -69,9 +69,7 @@ func CalcularIBC(persona, reglas string) {
 	valor_ibc := e.ProveAll("calcular_ibc(X,V).")
 	for _, solution := range valor_ibc {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-
 		ibc = ibc + Valor
-
 	}
 
 }
@@ -350,7 +348,7 @@ func BuscarValorConcepto(listaDescuentos []models.ConceptosResumen, codigo_conce
 	return temp
 }
 
-func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq string) (rest []models.ConceptosResumen) {
+func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuentos []models.ConceptosResumen, dias_a_liq string, dependientes bool) (rest []models.ConceptosResumen) {
 
 	var listaRetefuente []models.ConceptosResumen
 	var ingresos int
@@ -359,6 +357,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	var sueldos []int
 	var porcentajes []float64
 	var retenciones []models.ConceptosResumen
+	var saldo int
 
 	temp_reglas := reglas
 	m := NewMachine().Consult(reglas)
@@ -366,21 +365,38 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	consultar_conceptos_ingresos_retencion := m.ProveAll("aplica_ingreso_retencion(X).")
 	for _, solution := range consultar_conceptos_ingresos_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
+		fmt.Println("ingresos", codigo_concepto)
+		fmt.Println("lista_descuentos", listaDescuentos)
 		ingresos = ingresos + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 
-		if codigo_concepto == "11" {
+		if codigo_concepto == "10" {
 			sueldo = sueldo + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 			//sueldos = append(sueldos, BuscarValorConcepto(listaDescuentos, codigo_concepto))
 
 		}
 	}
-	temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
 
 	consultar_conceptos_deduccion_retencion := m.ProveAll("aplica_deduccion_retencion(X).")
+	fmt.Println(consultar_conceptos_deduccion_retencion)
 	for _, solution := range consultar_conceptos_deduccion_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
 		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 	}
+
+	saldo = ingresos - deduccion_salud
+	if saldo < 0 {
+		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
+		deduccion_salud = 0
+	} else {
+		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
+	}
+	fmt.Println("INGRESOS", ingresos)
+	fmt.Println("DEDUCCIONES", deduccion_salud)
+	fmt.Println("DEPENDIENTES", dependientes)
+	if dependientes {
+		deduccion_salud = deduccion_salud + (ingresos * (10 / 100))
+	}
+	//temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
 	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
 
 	temp_reglas = temp_reglas + "deducciones(" + strconv.Itoa(deduccion_salud) + ")."
@@ -388,12 +404,25 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	o := NewMachine().Consult(temp_reglas)
 
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
+	fmt.Println("valorrete", valor_retencion)
 	for _, solution := range valor_retencion {
 		val_reten := fmt.Sprintf("%s", solution.ByName_("VR"))
+		valor_reten, _ := strconv.Atoi(val_reten)
+		if dependientes == true {
+			valor_reten = 0
+		}
+		if valor_reten > 0 {
+			valor_reten = valor_reten - int(2000)
+		} else {
+			valor_reten = 0
+		}
+
+		val_reten = strconv.Itoa(valor_reten)
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 			Valor: val_reten,
 		}
-
+		fmt.Println("val_reten", val_reten)
+		fmt.Println("temp_conceptos", temp_conceptos)
 		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
@@ -408,19 +437,15 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	}
 
 	for _, solution := range listaDescuentos {
-		if strconv.Itoa(solution.Id) == "11" {
+		if strconv.Itoa(solution.Id) == "10" {
 			auxtemp, _ := strconv.Atoi(solution.Valor)
-
 			sueldos = append(sueldos, auxtemp)
-
 		}
-
 	}
+
 	//Se obtienen los porcentajes para cada sueldo
 	for i := range sueldos {
-
 		porcentajes = append(porcentajes, float64(sueldos[i])/float64(sueldo))
-
 	}
 
 	for j := range porcentajes {
@@ -436,7 +461,7 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		retenciones = append(retenciones, auxRetenciones)
 
 	}
-
+	fmt.Println("RETE", retenciones)
 	return retenciones
 }
 
@@ -451,8 +476,6 @@ func CalcularPeriodoLiquidacion(preliquidacion models.Preliquidacion, objeto_dat
 	var meses_contrato float64
 
 	layout := "2006-01-02"
-	//FechaInicio, _ = time.Parse(layout , "2018-08-01")
-	//FechaFin, _ = time.Parse(layout , "2018-12-15")
 
 	datos_acta := objeto_datos_acta.ActaInicio
 
@@ -468,21 +491,16 @@ func CalcularPeriodoLiquidacion(preliquidacion models.Preliquidacion, objeto_dat
 	if int(FechaInicioContrato.Month()) == preliquidacion.Mes && int(FechaInicioContrato.Year()) == preliquidacion.Ano {
 		FechaControl = time.Date(preliquidacion.Ano, time.Month(preliquidacion.Mes), 30, 0, 0, 0, 0, time.UTC)
 		periodo_liquidacion = CalcularDias(FechaInicioContrato, FechaControl) + 1
-
 	} else if int(FechaFinContrato.Month()) == preliquidacion.Mes && int(FechaFinContrato.Year()) == preliquidacion.Ano {
-
 		FechaControl = time.Date(preliquidacion.Ano, time.Month(preliquidacion.Mes), 1, 0, 0, 0, 0, time.UTC)
 		periodo_liquidacion = CalcularDias(FechaControl, FechaFinContrato) + 1
-
 	} else {
 		periodo_liquidacion = 30
-
 	}
 
 	if FechaFin.Day() != FechaInicio.Day() {
 		d = d + 1
 	}
-	//meses_contrato = 4.5;
 	meses_contrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
 	periodo := strconv.Itoa(int(periodo_liquidacion))
 	meses := strconv.FormatFloat(meses_contrato, 'E', -1, 64)

@@ -56,7 +56,7 @@ func (c *GestionOpsController) GenerarOrdenPago() {
 		var temp interface{}
 		//Servicio que dispara job
 
-		if v.Nomina.TipoNomina.Nombre == "CT" {
+		if v.NominaId == 414 {
 			if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2colas")+":"+beego.AppConfig.String("Portwso2colas")+"/"+beego.AppConfig.String("Nswso2colas")+"/liquidacion/"+anno+"/"+strconv.Itoa(v.Mes), &temp); err == nil {
 
 			} else {
@@ -96,7 +96,7 @@ func ActualizarEstadoPreliquidacion(mp models.Preliquidacion) (e string) {
 	var respuesta string
 	if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion:"+strconv.Itoa(mp.Id)+",EstadoDisponibilidad:1", &v); err != nil || v != nil {
 		fmt.Println("Hay personas pendientes", v)
-		mp.EstadoPreliquidacion.Id = 4
+		mp.EstadoPreliquidacionId = 405
 		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/"+strconv.Itoa(mp.Id), "PUT", &respuesta, mp); err == nil {
 			fmt.Println("Estado de preliquidación actualizada")
 		} else {
@@ -105,7 +105,7 @@ func ActualizarEstadoPreliquidacion(mp models.Preliquidacion) (e string) {
 		}
 	} else {
 		fmt.Println("No hay personas pendientes. Cerrar preliquidación", v)
-		mp.EstadoPreliquidacion.Id = 1
+		mp.EstadoPreliquidacionId = 402
 		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/"+strconv.Itoa(mp.Id), "PUT", &respuesta, mp); err == nil {
 			fmt.Println("Estado de preliquidación actualizada")
 		} else {

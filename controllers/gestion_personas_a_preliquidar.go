@@ -30,50 +30,52 @@ func (c *GestionPersonasAPreliquidarController) URLMapping() {
 // @Failure 403 body is empty
 // @router /listar_personas_a_preliquidar_argo [post]
 func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
-	var v models.Preliquidacion
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if v.Nomina.TipoNomina.Nombre == "CT" {
-			fmt.Println("preliq", v)
-			if listaContratos, err := ListaContratosContratistas(v); err == nil {
-				c.Ctx.Output.SetStatus(201)
-				c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
-			} else {
-				c.Data["json"] = err.Error()
-				fmt.Println("error : ", err)
+	/*
+		var v models.Preliquidacion
+		if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+			if v.NominaId == 414 {
+				fmt.Println("preliq", v)
+				if listaContratos, err := ListaContratosContratistas(v); err == nil {
+					c.Ctx.Output.SetStatus(201)
+					c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
+				} else {
+					c.Data["json"] = err.Error()
+					fmt.Println("error : ", err)
+				}
+
+			} else if v.NominaId == 416 {
+				if listaContratos, err := ListarPersonasHCS(v); err == nil {
+					c.Ctx.Output.SetStatus(201)
+					c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
+				} else {
+					c.Data["json"] = err.Error()
+					fmt.Println("error : ", err)
+				}
+			} else if v.NominaId == 415 {
+				if listaContratos, err := ListarPersonasHCH(v); err == nil {
+					c.Ctx.Output.SetStatus(201)
+					c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
+				} else {
+					c.Data["json"] = err.Error()
+					fmt.Println("error : ", err)
+				}
+			} else if v.NominaId == 412 {
+				fmt.Println("Planta")
+				if listaContratos, err := ListaContratosFuncionariosPlanta(); err == nil {
+					c.Ctx.Output.SetStatus(201)
+					c.Data["json"] = listaContratos
+				} else {
+					c.Data["json"] = err.Error()
+					fmt.Println("error : ", err)
+				}
 			}
 
-		} else if v.Nomina.TipoNomina.Nombre == "HCS" {
-			if listaContratos, err := ListarPersonasHCS(v); err == nil {
-				c.Ctx.Output.SetStatus(201)
-				c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
-			} else {
-				c.Data["json"] = err.Error()
-				fmt.Println("error : ", err)
-			}
-		} else if v.Nomina.TipoNomina.Nombre == "HCH" {
-			if listaContratos, err := ListarPersonasHCH(v); err == nil {
-				c.Ctx.Output.SetStatus(201)
-				c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
-			} else {
-				c.Data["json"] = err.Error()
-				fmt.Println("error : ", err)
-			}
-		} else if v.Nomina.TipoNomina.Nombre == "FP" {
-			fmt.Println("Planta")
-			if listaContratos, err := ListaContratosFuncionariosPlanta(); err == nil {
-				c.Ctx.Output.SetStatus(201)
-				c.Data["json"] = listaContratos
-			} else {
-				c.Data["json"] = err.Error()
-				fmt.Println("error : ", err)
-			}
+		} else {
+			c.Data["json"] = err.Error()
+			fmt.Println("error 2: ", err)
 		}
-
-	} else {
-		c.Data["json"] = err.Error()
-		fmt.Println("error 2: ", err)
-	}
-	c.ServeJSON()
+		c.ServeJSON()
+	*/
 
 }
 
@@ -84,30 +86,6 @@ func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidar() {
 // @Success 201
 // @Failure 403 body is empty
 // @router /listar_personas_a_preliquidar_pendientes [post]
-func (c *GestionPersonasAPreliquidarController) ListarPersonasAPreliquidarPendientes() {
-	var v models.Preliquidacion
-
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-
-		if v.Nomina.TipoNomina.Nombre == "CT" {
-			fmt.Println("preliq", v)
-			if listaContratos, err := ListaContratosContratistasPendientes(v); err == nil {
-				c.Ctx.Output.SetStatus(201)
-				c.Data["json"] = listaContratos.ContratosTipo.ContratoTipo
-			} else {
-				c.Data["json"] = err.Error()
-				fmt.Println("error : ", err)
-			}
-
-		}
-
-	} else {
-		c.Data["json"] = err.Error()
-		fmt.Println("error al leer json de nómina: ", err)
-	}
-	c.ServeJSON()
-
-}
 
 // ListarPersonasHCS ...
 // @Title  ListarPersonasHCS
@@ -222,76 +200,4 @@ func ConsultarDatosPreliq(id_pre int) (preliq *models.Preliquidacion) {
 		fmt.Println("error al consultar preliquidacion")
 		return
 	}
-}
-
-func ConsultarCumplidosHCS(mes string, anio string, numDocumento string) (cumplido string, controlError error) {
-
-	var temp map[string]interface{}
-
-	var tempDocentes models.ObjetoFuncionarioContrato
-	var tempDocentesTco models.ObjetoFuncionarioContrato
-	var tipoNom string
-
-	auxmes, _ := strconv.Atoi(mes)
-	auxanio, _ := strconv.Atoi(anio)
-
-	tipoNom = "2"
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+anio+"-"+mes+"/"+anio+"-"+mes+"/"+numDocumento, &temp); err == nil && temp != nil {
-		jsonDocentes, errorJSON := json.Marshal(temp)
-
-		if errorJSON == nil {
-
-			json.Unmarshal(jsonDocentes, &tempDocentes)
-
-		} else {
-			controlError = errorJSON
-			fmt.Println("error al traer contratos docentes DVE")
-		}
-	} else {
-		controlError = err
-		fmt.Println("Error al unmarshal datos de nómina", err)
-
-	}
-
-	tipoNom = "18"
-	if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2argo")+":"+beego.AppConfig.String("Portwso2argo")+"/"+beego.AppConfig.String("Nswso2argo")+"/contratos_elaborado_tipo_persona/"+tipoNom+"/"+anio+"-"+mes+"/"+anio+"-"+mes+"/"+numDocumento, &temp); err == nil && temp != nil {
-		jsonDocentes, errorJSON := json.Marshal(temp)
-
-		if errorJSON == nil {
-
-			json.Unmarshal(jsonDocentes, &tempDocentesTco)
-
-			if len(tempDocentesTco.ContratosTipo.ContratoTipo) > 0 {
-				auxContratoTco := tempDocentesTco.ContratosTipo.ContratoTipo[0]
-
-				tempDocentesTco.ContratosTipo.ContratoTipo = nil
-
-				tempDocentesTco.ContratosTipo.ContratoTipo = append(tempDocentesTco.ContratosTipo.ContratoTipo, auxContratoTco)
-			}
-		} else {
-			controlError = errorJSON
-			fmt.Println("error al traer contratos docentes DVE")
-		}
-	} else {
-		controlError = err
-		fmt.Println("Error al unmarshal datos de nómina", err)
-
-	}
-
-	tempDocentes.ContratosTipo.ContratoTipo = append(tempDocentes.ContratosTipo.ContratoTipo, tempDocentesTco.ContratosTipo.ContratoTipo...)
-
-	for _, contrato := range tempDocentes.ContratosTipo.ContratoTipo {
-
-		cumple := consultarEstadoPago(contrato.NumeroContrato, contrato.VigenciaContrato, auxanio, auxmes)
-
-		if cumple == 2 {
-			cumplido = "SI"
-		} else if cumple == 1 {
-			cumplido = "NO"
-			break
-		}
-
-	}
-
-	return cumplido, controlError
 }

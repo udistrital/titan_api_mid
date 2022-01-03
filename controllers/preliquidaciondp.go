@@ -1,17 +1,7 @@
 package controllers
 
 import (
-	"fmt"
-	"strconv"
-
-	"github.com/udistrital/titan_api_mid/golog"
-	"github.com/udistrital/titan_api_mid/models"
-	"github.com/udistrital/utils_oas/request"
-   "net/http"
-	 "net/url"
-	 "io/ioutil"
 	"github.com/astaxie/beego"
-	"encoding/json"
 )
 
 // PreliquidaciondpController operations for Preliquidaciondp
@@ -22,7 +12,8 @@ type PreliquidaciondpController struct {
 // Preliquidar ...
 // @Title Preliquidar
 // @Description Preliquidacion para docentes de planta
-func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
+//func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
+/*
 	var resumenPreliqu []models.Respuesta
 	var idDetaPre interface{}
 	var tipoNom string;
@@ -85,7 +76,8 @@ func (c *PreliquidaciondpController) Preliquidar(datos *models.DatosPreliquidaci
 
 	return resumenPreliqu
 }
-
+*/
+/*
 func consumirPuntos(cedula int) (res float64) {
 
 	var puntos float64
@@ -116,3 +108,4 @@ func consumirPuntos(cedula int) (res float64) {
 	fmt.Println(puntos)
 	return puntos
 }
+*/
