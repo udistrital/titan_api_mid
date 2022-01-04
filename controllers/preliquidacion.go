@@ -15,12 +15,10 @@ type PreliquidacionController struct {
 	beego.Controller
 }
 
-var reglasNovDev string = ""
-
 // URLMapping ...
 func (c *PreliquidacionController) URLMapping() {
 	c.Mapping("Preliquidar", c.Preliquidar)
-	c.Mapping("PreliquidarAnoNuevi", c.PreliquidarAnoNuevo)
+	c.Mapping("ObtenerResumenPreliquidacion", c.ObtenerResumenPreliquidacion)
 }
 
 // Preliquidar ...
@@ -34,16 +32,12 @@ func (c *PreliquidacionController) Preliquidar() {
 	var contrato models.Contrato
 	var aux map[string]interface{}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &contrato); err == nil {
-		fmt.Println("JSON entrante:", aux)
 		if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
-
-			fmt.Println("contrato:", contrato)
-			ano := contrato.Vigencia
 			if contrato.TipoNominaId == 411 {
-				liquidarCPS(contrato, 0, ano)
+				liquidarCPS(contrato)
 			} else if contrato.TipoNominaId == 409 {
-				liquidarHCH(contrato, ano)
+				liquidarHCH(contrato)
 			}
 		} else {
 			fmt.Println("No se pudo guardar el contrato", err)
@@ -68,7 +62,8 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 			reglas = reglas + "reteiva(0)."
 			alivios.ResponsableIva = false
 		}
-		if tempPersonaNatural[0].Dependientes == true {
+
+		if tempPersonaNatural[0].Dependientes {
 			reglas = reglas + "dependientes(1)."
 			alivios.Dependientes = true
 		} else {
@@ -183,49 +178,4 @@ func encontrarConcepto(id int, detalles []models.DetallePreliquidacion) (res boo
 		}
 	}
 	return false, 0
-}
-
-// Liquidar Año nuevo ...
-// @Title Liquidar año nuevo
-// @Description Método para liquidar el nuevo año una vez esten cargadas las nuevas reglas
-// @Param	ano		path 	string	true		"Año nuevo de la preliquidación"
-// @Success 201 body is empty
-// @Failure 403 body is empty
-// @router /liquidar_ano_nuevo/:ano [get]
-func (c *PreliquidacionController) PreliquidarAnoNuevo() {
-	var aux map[string]interface{}
-	var contratos []models.Contrato
-	anoStr := c.Ctx.Input.Param(":ano")
-	ano, _ := strconv.Atoi(anoStr)
-	ano = ano - 1 //buscar los contratos vigentes para el año anterior
-
-	//obtener los contratos
-
-	//obtener todos los contratos vigentes para el nuevo año
-	query := "Vigencia:" + strconv.Itoa(ano)
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
-
-		LimpiezaRespuestaRefactor(aux, &contratos)
-		//eliminar contratos cuya fecha de finalización no sea en el nuevo año, es decir, aquellos que sí finalizaron el año anterior
-		for i := 0; i < len(contratos); i++ {
-			if contratos[i].FechaFin.Year() == ano {
-				contratos = Remove(contratos, i)
-				i--
-			}
-		}
-
-		//liquidar contratos que siguen vigentes para el nuevo año
-		for i := 0; i < len(contratos); i++ {
-			if contratos[i].TipoNominaId == 411 {
-				liquidarCPS(contratos[i], 0, ano+1)
-			} else if contratos[i].TipoNominaId == 409 {
-				liquidarHCH(contratos[i], ano+1)
-			} else if contratos[i].TipoNominaId == 410 {
-
-			}
-		}
-
-	} else {
-		fmt.Println("Error al obtener contratos: ", err)
-	}
 }

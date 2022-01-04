@@ -15,8 +15,9 @@ type PreliquidacionhchController struct {
 	beego.Controller
 }
 
-func liquidarHCH(contrato models.Contrato, ano int) {
+func liquidarHCH(contrato models.Contrato) {
 	var mesIterativo int              //mes para iterar en el ciclo para liquidar todos los meses de una vez
+	var anoIterativo int              //Ano iterativo a la hora de liquidar
 	var predicados []models.Predicado //variable para inyectar reglas
 	var preliquidacion []models.Preliquidacion
 	var contratoPreliquidacion models.ContratoPreliquidacion
@@ -34,6 +35,7 @@ func liquidarHCH(contrato models.Contrato, ano int) {
 	}
 
 	mesIterativo = int(contrato.FechaInicio.Month())
+	anoIterativo = contrato.Vigencia
 
 	//Obtener las semanas del contrato
 
@@ -43,7 +45,7 @@ func liquidarHCH(contrato models.Contrato, ano int) {
 	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 	reglasbase := cargarReglasBase("HCH") + cargarReglasSS() + reglasAlivios + FormatoReglas(predicados)
 
-	for mesIterativo <= int(contrato.FechaFin.Month()) {
+	for {
 		reglasNuevas = ""
 		query := "Ano:" + strconv.Itoa(contrato.Vigencia) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:415"
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
@@ -62,9 +64,9 @@ func liquidarHCH(contrato models.Contrato, ano int) {
 			diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
 			detallePreliquidacion.DiasLiquidados, _ = strconv.ParseFloat(diasALiquidar, 64)
 			//Calcular semanas a liquidar
-			if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == ano {
+			if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
 				//para el mes inicial
-			} else if mesIterativo == int(contrato.FechaFin.Month()) && contrato.FechaFin.Year() == ano {
+			} else if mesIterativo == int(contrato.FechaFin.Month()) && contrato.FechaFin.Year() == anoIterativo {
 				//Para el mes final
 			} else {
 				semanas_liquidadas = 4
@@ -74,10 +76,15 @@ func liquidarHCH(contrato models.Contrato, ano int) {
 			for j := 0; j < len(auxDetalle); j++ {
 				registrarDetallePreliquidacion(auxDetalle[j])
 			}
-			if mesIterativo == 12 {
+			if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() {
 				break
 			} else {
-				mesIterativo = mesIterativo + 1
+				if mesIterativo == 12 {
+					mesIterativo = 1
+					anoIterativo = anoIterativo + 1
+				} else {
+					mesIterativo = mesIterativo + 1
+				}
 			}
 		} else {
 			fmt.Println("Error al consultar preliquidaciones")

@@ -145,11 +145,12 @@ func ManejarNovedadesCT(reglas string, idProveedor int, tipoPreliquidacion, peri
 
 }
 
-func LiquidarMesCPS(reglas string, cedula string, ano int, detallePreliquidacion models.DetallePreliquidacion, novedades []models.Novedad) (data []models.DetallePreliquidacion) {
+func LiquidarMesCPS(reglas string, cedula string, ano int, detallePreliquidacion models.DetallePreliquidacion) (data []models.DetallePreliquidacion) {
 	var conceptoNomina models.ConceptoNomina
 	var totalDevengado float64
 	var totalDescuentos float64
 	var totalAPagar float64
+
 	m := NewMachine().Consult(reglas)
 	total := m.ProveAll("liquidar_ct(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
 	totalDescuentos = 0
@@ -180,29 +181,6 @@ func LiquidarMesCPS(reglas string, cedula string, ano int, detallePreliquidacion
 		detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: conceptoNomina.Id}
 		data = append(data, detallePreliquidacion)
 	}
-
-	//Agregar Novedades
-	if len(novedades) != 0 {
-		for i := 0; i < len(novedades); i++ {
-			if novedades[i].ConceptoNominaId.TipoConceptoNominaId == 419 {
-				totalDescuentos = totalDescuentos + novedades[i].Valor
-				detallePreliquidacion.Id = 0
-				detallePreliquidacion.ValorCalculado = novedades[i].Valor
-				detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: novedades[i].ConceptoNominaId.Id}
-				detallePreliquidacion.Activo = true
-				data = append(data, detallePreliquidacion)
-			} else if novedades[i].ConceptoNominaId.TipoConceptoNominaId == 420 {
-				totalDescuentos = totalDescuentos + (totalDevengado * (novedades[i].Valor / 100))
-				detallePreliquidacion.Id = 0
-				detallePreliquidacion.ValorCalculado = (totalDevengado * (novedades[i].Valor / 100))
-				detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: novedades[i].ConceptoNominaId.Id}
-				detallePreliquidacion.Activo = true
-				data = append(data, detallePreliquidacion)
-			}
-
-		}
-	}
-
 	totalAPagar = totalDevengado - totalDescuentos
 	//se agrega el detalle del total a pagar
 	detallePreliquidacion.Id = 0

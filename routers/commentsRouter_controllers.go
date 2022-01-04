@@ -37,7 +37,7 @@ func init() {
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DetallePreliquidacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DetallePreliquidacionController"],
         beego.ControllerComments{
             Method: "ObtenerDetalleCT",
-            Router: "/obtener_detalle_CT/:ano/:mes/:contrato/:documento",
+            Router: "/obtener_detalle_CT/:ano/:mes/:contrato/:vigencia/:documento",
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,

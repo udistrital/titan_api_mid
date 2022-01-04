@@ -26,28 +26,30 @@ func (c *DetallePreliquidacionController) URLMapping() {
 // @Param	ano		path 	string	true		"Año de la preliquidación"
 // @Param	mes		path 	string	true		"Mes de la preliquidación"
 // @Param	contrato		path 	string	true		"Contrato a buscar"
+// @Param	vigencia		path 	string	true		"vigencia del contrato"
 // @Param	documento		path 	string	true		"Documento del contratista"
 // @Success 201 {object} models.Detalle
 // @Failure 403 body is empty
-// @router /obtener_detalle_CT/:ano/:mes/:contrato/:documento [get]
+// @router /obtener_detalle_CT/:ano/:mes/:contrato/:vigencia/:documento [get]
 func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
 
 	ano := c.Ctx.Input.Param(":ano")
 	mes := c.Ctx.Input.Param(":mes")
 	contrato := c.Ctx.Input.Param(":contrato")
+	vigencia := c.Ctx.Input.Param(":vigencia")
 	documento := c.Ctx.Input.Param(":documento")
 
-	detalle := TraerDetalleMensual(ano, mes, contrato, documento)
+	detalle := TraerDetalleMensual(ano, mes, contrato, vigencia, documento)
 
 	c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detalle}
 
 	c.ServeJSON()
 }
 
-func TraerDetalleMensual(ano, mes, contrato, documento string) (detalle models.Detalle) {
+func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string) (detalle models.Detalle) {
 	var aux map[string]interface{}
 	var tempDetalle []models.DetallePreliquidacion
-	var query = "ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato + ",ContratoPreliquidacionId.ContratoId.Documento:" + documento
+	var query = "ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + vigencia + ",ContratoPreliquidacionId.ContratoId.Documento:" + documento
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &tempDetalle)
 		detalle.Contrato = tempDetalle[0].ContratoPreliquidacionId.ContratoId.NumeroContrato
@@ -104,15 +106,15 @@ func (c *DetallePreliquidacionController) ObtenerDetalleHCH() {
 				json.Unmarshal(jsonString, &resolucion)
 				if len(detallesHCH) == 0 {
 					tempDetalle.Resolucion = &resolucion
-					tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, documento))
+					tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
 					detallesHCH = append(detallesHCH, tempDetalle)
 				} else {
 					res, pos := encontrarResolucion(resolucion.Id, detallesHCH)
 					if res {
-						detallesHCH[pos].Detalle = append(detallesHCH[pos].Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, documento))
+						detallesHCH[pos].Detalle = append(detallesHCH[pos].Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
 					} else {
 						tempDetalle.Resolucion = &resolucion
-						tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, documento))
+						tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
 						detallesHCH = append(detallesHCH, tempDetalle)
 					}
 				}
@@ -138,21 +140,24 @@ func encontrarResolucion(idResolucion int, resoluciones []models.DetalleHCH) (re
 
 func AgregarValorNovedad(novedad models.Novedad) {
 	var res map[string]interface{}
-	var mesInicio = int(novedad.FechaInicio.Month())
-	var mesFin = int(novedad.FechaFin.Month())
-	var ano = novedad.FechaInicio.Year()
+	var mesIterativo = int(novedad.FechaInicio.Month())
+	var anoIterativo = novedad.FechaInicio.Year()
+	var auxCuotas int
 	var contratoPreliquidacion []models.ContratoPreliquidacion
 	var descuentos []models.DetallePreliquidacion
 	var totalAPagar []models.DetallePreliquidacion
 	var honorarios []models.DetallePreliquidacion
 	var detalleNuevo models.DetallePreliquidacion
+	auxCuotas = novedad.Cuotas
 
-	if novedad.FechaFin.Year() != novedad.FechaInicio.Year() {
-		mesFin = 12 //para el salto de año
-	}
+	fmt.Println("Agregando Valor")
+	for { //itera desde el mes en el que se aplicó la novedad hasta el fin del numero de cuotas
 
-	for mesInicio <= mesFin { //itera desde el mes en el que se aplicó la novedad hasta el fin de año ya que las preliquidaciones son por año
-		var query = "ContratoId.NumeroContrato:" + novedad.ContratoId.NumeroContrato + ",PreliquidacionId.Ano:" + strconv.Itoa(ano) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesInicio)
+		fmt.Println("Mes: ", mesIterativo)
+		fmt.Println("Ano: ", anoIterativo)
+		fmt.Println("Cuotas: ", auxCuotas)
+		var query = "ContratoId.Id:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo)
+		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &res); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
 			LimpiezaRespuestaRefactor(res, &contratoPreliquidacion)
 			//Para descuentos
@@ -164,7 +169,6 @@ func AgregarValorNovedad(novedad models.Novedad) {
 					//Actualizar los descuentos
 					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:573"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &res); err == nil {
-
 						LimpiezaRespuestaRefactor(res, &descuentos)
 						if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 {
 							descuentos[0].ValorCalculado = descuentos[0].ValorCalculado + novedad.Valor
@@ -283,7 +287,18 @@ func AgregarValorNovedad(novedad models.Novedad) {
 		} else {
 			fmt.Println("Error al intentar obtener el id del contrato_preliquidación ", err)
 		}
-		mesInicio = mesInicio + 1
+		auxCuotas = auxCuotas - 1
+
+		if auxCuotas == 0 {
+			break
+		} else {
+			if mesIterativo == 12 {
+				mesIterativo = 1
+				anoIterativo = anoIterativo + 1
+			} else {
+				mesIterativo = mesIterativo + 1
+			}
+		}
 	}
 }
 
