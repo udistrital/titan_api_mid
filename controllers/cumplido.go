@@ -45,6 +45,7 @@ func (c *CumplidoController) ActualizarCumplido() {
 			LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 			//actualiar cumplido
 			contrato_preliquidacion[0].Cumplido = true
+			contrato_preliquidacion[0].Preliquidado = true
 			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "PUT", &aux, contrato_preliquidacion[0]); err == nil {
 				fmt.Println("Cumplido actualizado")
 				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato_preliquidacion}
