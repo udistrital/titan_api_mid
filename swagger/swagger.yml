@@ -45,7 +45,7 @@ paths:
             $ref: '#/definitions/models.ContratoPreliquidacion'
         "403":
           description: body is empty
-  /detalle_preliquidacion/obtener_detalle_CT/{ano}/{mes}/{contrato}/{documento}:
+  /detalle_preliquidacion/obtener_detalle_CT/{ano}/{mes}/{contrato}/{vigencia}/{documento}:
     get:
       tags:
       - detalle_preliquidacion
@@ -65,6 +65,11 @@ paths:
       - in: path
         name: contrato
         description: Contrato a buscar
+        required: true
+        type: string
+      - in: path
+        name: vigencia
+        description: vigencia del contrato
         required: true
         type: string
       - in: path
@@ -380,12 +385,12 @@ paths:
     post:
       tags:
       - novedad
-      description: Aplicar novedad contratul de otro sí
+      description: Aplicar novedad contractual de otro sí
       operationId: NovedadController.Aplicar Oro sí
       parameters:
       - in: body
         name: OtroSí
-        description: Datos del sucesor del contrato
+        description: Nueva Fecha de finalización del contrato
         required: true
         schema:
           $ref: '#/definitions/models.OtroSi'
@@ -406,8 +411,9 @@ paths:
       - in: body
         name: Suspension
         description: Duración de la suspensión
+        required: true
         schema:
-          $ref: '#/definitions/true'
+          $ref: '#/definitions/models.Suspension'
       responses:
         "201":
           description: ""
@@ -871,6 +877,21 @@ definitions:
         format: datetime
       NombreCompleto:
         type: string
+      NumeroContrato:
+        type: string
+      Vigencia:
+        type: integer
+        format: int64
+  models.Suspension:
+    title: Suspension
+    type: object
+    properties:
+      FechaFin:
+        type: string
+        format: datetime
+      FechaInicio:
+        type: string
+        format: datetime
       NumeroContrato:
         type: string
       Vigencia:

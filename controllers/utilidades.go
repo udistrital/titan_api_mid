@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 
@@ -43,31 +44,6 @@ func diff(a, b time.Time) (year, month, day int) {
 	return
 }
 
-func consultarRp(id_proveedor, vigencia int) (saldo float64) {
-	var registroPresupuestal []models.RegistroPresupuestal
-	var saldoRP float64
-	var IDProveedorString = strconv.Itoa(id_proveedor)
-	var vigenciaString = strconv.Itoa(vigencia)
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registroPresupuestal?limit=-1&query=Beneficiario:"+IDProveedorString+",Vigencia:"+vigenciaString, &registroPresupuestal); err == nil && registroPresupuestal != nil {
-		var id_registro_pre = strconv.Itoa(registroPresupuestal[0].Id)
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlkronos")+":"+beego.AppConfig.String("Portkronos")+"/"+beego.AppConfig.String("Nskronos")+"/registroPresupuestal/ValorActualRp/"+id_registro_pre, &saldoRP); err == nil {
-			fmt.Println("saldo rp")
-			fmt.Println(saldoRP)
-		} else {
-			fmt.Println("error al consultar saldo de rp")
-			fmt.Println(err)
-			saldoRP = 0
-		}
-
-	} else {
-		fmt.Println("error en consulta de rp")
-		fmt.Println(err)
-		saldoRP = 0
-	}
-
-	return saldoRP
-}
-
 // GetIDProveedor ...
 func GetIDProveedor(Documento string) (IDProveedor int) {
 
@@ -98,16 +74,13 @@ func InformacionPersonaProveedor(idPersona int) (Nom string, doc int, err error)
 
 		nombre_persona = respuesta_servicio[0].NomProveedor
 		documento, _ = strconv.Atoi(respuesta_servicio[0].NumDocumento)
-
 	} else {
 		nombre_persona = "No encontrado"
 		nombre_persona = "0"
 		fmt.Println("error en consulta de información de persona", controlError)
 
 	}
-
 	return nombre_persona, documento, controlError
-
 }
 
 func InformacionPersona(tipoNomina string, NumeroContrato string, VigenciaContrato int) (Nom, cont, doc string, err error) {
@@ -329,8 +302,7 @@ func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (diasLaborados floa
 	var mesesContrato float64
 	var diasContrato float64
 	if FechaFin.IsZero() {
-		var FechaFin2 time.Time
-		FechaFin2 = time.Now()
+		FechaFin2 := time.Now()
 		a, m, d = diff(FechaInicio, FechaFin2)
 		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
 		diasContrato = mesesContrato * 30
@@ -343,29 +315,11 @@ func CalcularDias(FechaInicio time.Time, FechaFin time.Time) (diasLaborados floa
 
 }
 
-func calcularDiasContratoCPS(FechaInicio time.Time, FechaFin time.Time) (diasLaborados int, meses int) {
-	if FechaInicio.Year() == FechaFin.Year() {
-		meses = int(FechaFin.Month()) - int(FechaInicio.Month())
-		if meses == 0 {
-			meses = 1
-			diasLaborados = FechaFin.Day() - FechaInicio.Day() + 1
-		} else {
-			diasLaborados = meses * 30
-		}
-	} else {
-		meses = int(FechaFin.Month()) - int(FechaInicio.Month()) + 12
-		diasLaborados = meses * 30
-	}
-
-	return diasLaborados, meses
-}
-
 func calcularSemanasContratoHCH(FechaInicio time.Time, FechaFin time.Time) (semanas float64) {
 	var a, m, d int
 	var mesesContrato float64
 	if FechaFin.IsZero() {
-		var FechaFin2 time.Time
-		FechaFin2 = time.Now()
+		FechaFin2 := time.Now()
 		a, m, d = diff(FechaInicio, FechaFin2)
 		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
 
@@ -455,23 +409,35 @@ func CalcularPeriodoLiquidacion(anoPreliquidacion, mesPreliquidacion int, fechaI
 
 	var FechaControl time.Time
 	var periodo_liquidacion float64
+
+	//En caso de que sea el mes de inicio y el mes final el mismo
 	if fechaInicio.Month() == fechaFin.Month() && fechaInicio.Year() == fechaFin.Year() {
 		periodo_liquidacion, _ = CalcularDias(fechaInicio, fechaFin)
 		periodo_liquidacion = periodo_liquidacion + 1
-		periodoEspecifico = "Del " + strconv.Itoa(fechaInicio.Day()) + " al " + strconv.Itoa(fechaFin.Day()) + " del mes " + strconv.Itoa(mesPreliquidacion)
+		periodoEspecifico = "Del " + strconv.Itoa(fechaInicio.Day()) + " al " + strconv.Itoa(fechaFin.Day()) + " del mes " + strconv.Itoa(mesPreliquidacion) + " del año " + strconv.Itoa(anoPreliquidacion)
+		//Para el mes de inicio
 	} else if int(fechaInicio.Month()) == mesPreliquidacion && int(fechaInicio.Year()) == anoPreliquidacion {
-		FechaControl = time.Date(anoPreliquidacion, time.Month(mesPreliquidacion), 30, 0, 0, 0, 0, time.UTC)
-		periodo_liquidacion, _ = CalcularDias(fechaInicio, FechaControl)
-		periodo_liquidacion = periodo_liquidacion + 1 //Dia inclusive
-		periodoEspecifico = "Del " + strconv.Itoa(fechaInicio.Day()) + " al " + strconv.Itoa(FechaControl.Day()) + " del mes " + strconv.Itoa(mesPreliquidacion)
+		//En caso de que sea febrero, si no se coloca 28 tomará días de más
+		if mesPreliquidacion == 2 {
+			FechaControl = time.Date(anoPreliquidacion, time.Month(mesPreliquidacion), 28, 0, 0, 0, 0, time.UTC)
+			periodo_liquidacion, _ = CalcularDias(fechaInicio, FechaControl)
+			periodo_liquidacion = periodo_liquidacion + 3 //Dia inclusive y 2 días de desface de febrero
+			periodoEspecifico = "Del " + strconv.Itoa(fechaInicio.Day()) + " al " + strconv.Itoa(FechaControl.Day()) + " del mes " + strconv.Itoa(mesPreliquidacion) + " del año " + strconv.Itoa(anoPreliquidacion)
+		} else {
+			FechaControl = time.Date(anoPreliquidacion, time.Month(mesPreliquidacion), 30, 0, 0, 0, 0, time.UTC)
+			periodo_liquidacion, _ = CalcularDias(fechaInicio, FechaControl)
+			periodo_liquidacion = periodo_liquidacion + 1 //Dia inclusive
+			periodoEspecifico = "Del " + strconv.Itoa(fechaInicio.Day()) + " al " + strconv.Itoa(FechaControl.Day()) + " del mes " + strconv.Itoa(mesPreliquidacion) + " del año " + strconv.Itoa(anoPreliquidacion)
+		}
+		//Para el mes final
 	} else if int(fechaFin.Month()) == mesPreliquidacion && int(fechaFin.Year()) == anoPreliquidacion {
 		FechaControl = time.Date(anoPreliquidacion, time.Month(mesPreliquidacion), 1, 0, 0, 0, 0, time.UTC)
 		periodo_liquidacion, _ = CalcularDias(FechaControl, fechaFin)
 		periodo_liquidacion = periodo_liquidacion + 1 //Dia Inclusivo
-		periodoEspecifico = "Del " + strconv.Itoa(FechaControl.Day()) + " al " + strconv.Itoa(fechaFin.Day()) + " del mes " + strconv.Itoa(mesPreliquidacion)
+		periodoEspecifico = "Del " + strconv.Itoa(FechaControl.Day()) + " al " + strconv.Itoa(fechaFin.Day()) + " del mes " + strconv.Itoa(mesPreliquidacion) + " del año " + strconv.Itoa(anoPreliquidacion)
 	} else {
 		periodo_liquidacion = 30
-		periodoEspecifico = "Del 1 al 30 del mes " + strconv.Itoa(mesPreliquidacion)
+		periodoEspecifico = "Del 1 al 30 del mes " + strconv.Itoa(mesPreliquidacion) + " del año " + strconv.Itoa(anoPreliquidacion)
 	}
 
 	periodo := strconv.Itoa(int(periodo_liquidacion))
@@ -491,4 +457,17 @@ func CalcularSemanas(diasLiquidados float64) (semanas int) {
 	} else {
 		return 4
 	}
+}
+
+func Remove(s []models.Contrato, i int) []models.Contrato {
+	s = append(s[:i], s[i+1:]...)
+	return s
+}
+
+func Roundf(x float64) float64 {
+	t := math.Trunc(x)
+	if math.Abs(x-t) >= 0.5 {
+		return t + math.Copysign(1, x)
+	}
+	return t
 }

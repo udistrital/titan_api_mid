@@ -15,11 +15,10 @@ type PreliquidacionController struct {
 	beego.Controller
 }
 
-var reglasNovDev string = ""
-
 // URLMapping ...
 func (c *PreliquidacionController) URLMapping() {
 	c.Mapping("Preliquidar", c.Preliquidar)
+	c.Mapping("ObtenerResumenPreliquidacion", c.ObtenerResumenPreliquidacion)
 }
 
 // Preliquidar ...
@@ -36,11 +35,9 @@ func (c *PreliquidacionController) Preliquidar() {
 		if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			if contrato.TipoNominaId == 411 {
-				liquidarCPS(contrato, 0)
+				liquidarCPS(contrato)
 			} else if contrato.TipoNominaId == 409 {
 				liquidarHCH(contrato)
-			} else if contrato.TipoNominaId == 410 {
-
 			}
 		} else {
 			fmt.Println("No se pudo guardar el contrato", err)
@@ -65,7 +62,8 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 			reglas = reglas + "reteiva(0)."
 			alivios.ResponsableIva = false
 		}
-		if tempPersonaNatural[0].Dependientes == true {
+
+		if tempPersonaNatural[0].Dependientes {
 			reglas = reglas + "dependientes(1)."
 			alivios.Dependientes = true
 		} else {
