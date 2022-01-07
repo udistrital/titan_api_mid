@@ -49,10 +49,8 @@ func liquidarCPS(contrato models.Contrato) {
 		fmt.Println("ano:", anoIterativo)
 		reglasNuevas = ""
 		query := "Ano:" + strconv.Itoa(anoIterativo) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:414"
-		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/preliquidacion?limit=-1&query=" + query)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &preliquidacion)
-			fmt.Println(preliquidacion[0])
 			if preliquidacion[0].Id == 0 {
 				preliquidacion[0] = registrarPreliquidacion(anoIterativo, mesIterativo, 476, 414)
 				contratoPreliquidacion = registrarContratoPreliquidacion(preliquidacion[0].Id, contrato.Id, contratoPreliquidacion)
