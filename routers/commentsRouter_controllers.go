@@ -163,7 +163,7 @@ func init() {
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadController"],
         beego.ControllerComments{
             Method: "CancelarContrato",
-            Router: "/cancelar_contrato/:NumeroContrato/:Vigencia",
+            Router: "/cancelar_contrato/:NumeroContrato/:Vigencia/:Documento",
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,

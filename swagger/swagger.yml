@@ -320,7 +320,7 @@ paths:
             $ref: '#/definitions/models.Novedad'
         "403":
           description: body is empty
-  /novedad/cancelar_contrato/{NumeroContrato}/{Vigencia}:
+  /novedad/cancelar_contrato/{NumeroContrato}/{Vigencia}/{Documento}:
     get:
       tags:
       - novedad
@@ -335,6 +335,11 @@ paths:
       - in: path
         name: Vigencia
         description: Vigencia del contrato que se va a cancelar
+        schema:
+          $ref: '#/definitions/true'
+      - in: path
+        name: Documento
+        description: Documento del contratista
         schema:
           $ref: '#/definitions/true'
       responses:
@@ -390,7 +395,7 @@ paths:
       parameters:
       - in: body
         name: OtroSí
-        description: Nueva Fecha de finalización del contrato
+        description: Documentos de contratista Nueva Fecha de finalización del contrato
         required: true
         schema:
           $ref: '#/definitions/models.OtroSi'
@@ -784,6 +789,8 @@ definitions:
     title: OtroSi
     type: object
     properties:
+      Documento:
+        type: string
       FechaFin:
         type: string
         format: datetime
@@ -870,7 +877,9 @@ definitions:
     title: Sucesor
     type: object
     properties:
-      Documento:
+      DocumentoActual:
+        type: string
+      DocumentoNuevo:
         type: string
       FechaInicio:
         type: string
@@ -886,6 +895,8 @@ definitions:
     title: Suspension
     type: object
     properties:
+      Documento:
+        type: string
       FechaFin:
         type: string
         format: datetime
