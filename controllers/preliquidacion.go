@@ -32,15 +32,19 @@ func (c *PreliquidacionController) Preliquidar() {
 	var contrato models.Contrato
 	var aux map[string]interface{}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &contrato); err == nil {
-		if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
-			LimpiezaRespuestaRefactor(aux, &contrato)
-			if contrato.TipoNominaId == 411 {
-				liquidarCPS(contrato)
-			} else if contrato.TipoNominaId == 409 {
-				liquidarHCH(contrato)
+		if contrato.FechaInicio.Before(contrato.FechaFin) {
+			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
+				LimpiezaRespuestaRefactor(aux, &contrato)
+				if contrato.TipoNominaId == 411 {
+					liquidarCPS(contrato)
+				} else if contrato.TipoNominaId == 409 {
+					liquidarHCH(contrato)
+				}
+			} else {
+				fmt.Println("No se pudo guardar el contrato", err)
 			}
 		} else {
-			fmt.Println("No se pudo guardar el contrato", err)
+			fmt.Println("La fecha inicio no puede estar después de la fecha fin")
 		}
 	} else {
 		fmt.Println("Error al obtener contratos", err)
