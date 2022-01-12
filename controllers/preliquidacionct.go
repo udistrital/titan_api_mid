@@ -29,6 +29,7 @@ func liquidarCPS(contrato models.Contrato) {
 	var reglasAlivios string
 	var reglasNuevas string //reglas a usar en cada iteracion
 	var diasContrato float64
+	var emergencia int //Varibale para evitar loop infinito
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 
 	if err == nil {
@@ -43,7 +44,7 @@ func liquidarCPS(contrato models.Contrato) {
 	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", diasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 	reglasbase := cargarReglasBase("CT") + cargarReglasSS() + reglasAlivios + FormatoReglas(predicados)
-
+	emergencia = 0
 	for {
 		fmt.Println("mes:", mesIterativo)
 		fmt.Println("ano:", anoIterativo)
@@ -70,15 +71,21 @@ func liquidarCPS(contrato models.Contrato) {
 			for j := 0; j < len(auxDetalle); j++ {
 				registrarDetallePreliquidacion(auxDetalle[j])
 			}
+
 			if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() {
 				break
 			} else {
 				if mesIterativo == 12 {
 					mesIterativo = 1
 					anoIterativo = anoIterativo + 1
+					emergencia = emergencia + 1
 				} else {
 					mesIterativo = mesIterativo + 1
+					emergencia = emergencia + 1
 				}
+			}
+			if emergencia == 12 {
+				break
 			}
 		} else {
 			fmt.Println("Error al consultar preliquidaciones")
