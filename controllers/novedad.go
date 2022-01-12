@@ -372,7 +372,6 @@ func (c *NovedadController) CederContrato() {
 				mesIterativo = int(sucesor.FechaInicio.Month())
 				anoIterativo = sucesor.FechaInicio.Year()
 				//Eliminar los detalles y los contratos_preliquidacion
-
 				for {
 					fmt.Println("Mes:", mesIterativo)
 					fmt.Println("Ano:", anoIterativo)
@@ -455,14 +454,12 @@ func (c *NovedadController) CederContrato() {
 
 				//El valor del contrato nuevo es lo que queda del contrato pasado (no se almacena únicamente para cálculos)
 				if sucesor.FechaInicio.Day() == 1 {
-					contrato[0].ValorContrato = valorDia * 30
 					contratoNuevo.ValorContrato = valorViejo - valorNuevo
+					fmt.Println("Liquidando nuevo:", contratoNuevo.NumeroContrato, " de ", contratoNuevo.NombreCompleto)
+					liquidarCPS(contratoNuevo)
 				} else {
 					contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day())
 					contratoNuevo.ValorContrato = valorViejo - valorNuevo - valorDia*float64(contrato[0].FechaFin.Day())
-				}
-
-				if contrato[0].TipoNominaId == 411 {
 					fmt.Println("Liquidando actual:", contrato[0].NumeroContrato, " de ", contrato[0].NombreCompleto)
 					liquidarCPS(contrato[0])
 					fmt.Println("Liquidando nuevo:", contratoNuevo.NumeroContrato, " de ", contratoNuevo.NombreCompleto)
