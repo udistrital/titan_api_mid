@@ -482,7 +482,7 @@
                 }
             }
         },
-        "/novedad/cancelar_contrato/{NumeroContrato}/{Vigencia}": {
+        "/novedad/cancelar_contrato/{NumeroContrato}/{Vigencia}/{Documento}": {
             "get": {
                 "tags": [
                     "novedad"
@@ -502,6 +502,14 @@
                         "in": "path",
                         "name": "Vigencia",
                         "description": "Vigencia del contrato que se va a cancelar",
+                        "schema": {
+                            "$ref": "#/definitions/true"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "Documento",
+                        "description": "Documento del contratista",
                         "schema": {
                             "$ref": "#/definitions/true"
                         }
@@ -589,7 +597,7 @@
                     {
                         "in": "body",
                         "name": "OtroSí",
-                        "description": "Nueva Fecha de finalización del contrato",
+                        "description": "Documentos de contratista Nueva Fecha de finalización del contrato",
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/models.OtroSi"
@@ -1159,6 +1167,9 @@
             "title": "OtroSi",
             "type": "object",
             "properties": {
+                "Documento": {
+                    "type": "string"
+                },
                 "FechaFin": {
                     "type": "string",
                     "format": "datetime"
@@ -1281,7 +1292,10 @@
             "title": "Sucesor",
             "type": "object",
             "properties": {
-                "Documento": {
+                "DocumentoActual": {
+                    "type": "string"
+                },
+                "DocumentoNuevo": {
                     "type": "string"
                 },
                 "FechaInicio": {
@@ -1304,6 +1318,9 @@
             "title": "Suspension",
             "type": "object",
             "properties": {
+                "Documento": {
+                    "type": "string"
+                },
                 "FechaFin": {
                     "type": "string",
                     "format": "datetime"

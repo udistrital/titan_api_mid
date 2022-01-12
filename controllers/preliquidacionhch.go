@@ -22,12 +22,12 @@ func liquidarHCH(contrato models.Contrato) {
 	var preliquidacion []models.Preliquidacion
 	var contratoPreliquidacion models.ContratoPreliquidacion
 	var detallePreliquidacion models.DetallePreliquidacion
-	var diasALiquidar string
 	var aux map[string]interface{}
 	var auxDetalle []models.DetallePreliquidacion
 	var reglasAlivios string
 	var reglasNuevas string //reglas a usar en cada iteracion
 	var semanas_liquidadas int
+	var diasALiquidar string
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 
 	if err == nil {
@@ -40,14 +40,18 @@ func liquidarHCH(contrato models.Contrato) {
 	//Obtener las semanas del contrato
 
 	semanasContrato := int(calcularSemanasContratoHCH(contrato.FechaInicio, contrato.FechaFin))
+	fmt.Println("SemanasContrato: ", semanasContrato)
 
 	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 	reglasbase := cargarReglasBase("HCH") + cargarReglasSS() + reglasAlivios + FormatoReglas(predicados)
 
 	for {
+
+		fmt.Println("Mes: ", mesIterativo)
+		fmt.Println("Año: ", anoIterativo)
 		reglasNuevas = ""
-		query := "Ano:" + strconv.Itoa(contrato.Vigencia) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:415"
+		query := "Ano:" + strconv.Itoa(anoIterativo) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:415"
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &preliquidacion)
 			if preliquidacion[0].Id == 0 {
@@ -61,15 +65,68 @@ func liquidarHCH(contrato models.Contrato) {
 			detallePreliquidacion.TipoPreliquidacionId = 397
 			detallePreliquidacion.Activo = true
 			detallePreliquidacion.EstadoDisponibilidadId = 426
-			diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
-			detallePreliquidacion.DiasLiquidados, _ = strconv.ParseFloat(diasALiquidar, 64)
+			_, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
+			//detallePreliquidacion.DiasLiquidados, _ = strconv.ParseFloat(diasALiquidar, 64)
 			//Calcular semanas a liquidar
 			if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
 				//para el mes inicial
+
+				//Calcular el numero de días
+				diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
+				semanas, _ := strconv.Atoi(diasALiquidar)
+				semanas = semanas / 7
+
+				if semanas <= 1 {
+					semanas_liquidadas = 1
+					detallePreliquidacion.DiasLiquidados = 1
+					fmt.Println("Semanas: ", semanas)
+				} else {
+					semanas_liquidadas = semanas
+					detallePreliquidacion.DiasLiquidados = float64(semanas)
+					fmt.Println("Semanas: ", semanas)
+				}
+
 			} else if mesIterativo == int(contrato.FechaFin.Month()) && contrato.FechaFin.Year() == anoIterativo {
 				//Para el mes final
+				//Contar las semanas liquidadas
+				var aux map[string]interface{}
+				var semanas []models.DetallePreliquidacion
+				var mes = int(contrato.FechaInicio.Month())
+				var ano = contrato.FechaFin.Year()
+				semanas_liquidadas = 0
+				for {
+					if mes == int(contrato.FechaFin.Month()) && ano == contrato.FechaFin.Year() {
+						break
+					}
+					query := "ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(ano) + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mes) + ",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato.NumeroContrato + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + strconv.Itoa(contrato.Vigencia)
+					fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=" + query)
+					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+						fmt.Println()
+						LimpiezaRespuestaRefactor(aux, &semanas)
+						for i := 0; i < len(semanas); i++ {
+							if semanas[i].ConceptoNominaId.Id == 87 {
+								semanas_liquidadas = semanas_liquidadas + int(semanas[i].DiasLiquidados)
+								fmt.Println("Semanas Liquidadas: ", semanas_liquidadas)
+							}
+						}
+					} else {
+						fmt.Println("Error al conseguir las semanas liquidadas: ", err)
+					}
+
+					if mes == 12 {
+						mes = 1
+						ano = ano + 1
+					} else {
+						mes = mes + 1
+					}
+				}
+
+				semanas_liquidadas = semanasContrato - semanas_liquidadas
+				fmt.Println("Semanas  a Liquidadas: ", semanas_liquidadas)
+				detallePreliquidacion.DiasLiquidados = float64(semanas_liquidadas)
 			} else {
 				semanas_liquidadas = 4
+				detallePreliquidacion.DiasLiquidados = 4
 			}
 			reglasNuevas = reglasNuevas + reglasbase + "periodo(" + strconv.Itoa(contrato.Vigencia) + ")." + "semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
 			auxDetalle = golog.LiquidarMesHCH(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion)
