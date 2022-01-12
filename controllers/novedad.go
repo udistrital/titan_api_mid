@@ -416,50 +416,62 @@ func (c *NovedadController) CederContrato() {
 			}
 		}
 
-		mesIterativo = int(contrato[0].FechaInicio.Month())
-		anoIterativo = contrato[0].FechaInicio.Year()
 		//Obtener lo liquidado hasta el momento
 		fmt.Println("Obteniendo:")
 		fmt.Println("Fecha Inicio:", sucesor.FechaInicio.Month(), " ", sucesor.FechaInicio.Year())
-		for {
-			if mesIterativo == int(sucesor.FechaInicio.Month()) && anoIterativo == sucesor.FechaInicio.Year() {
-				break
+		query := "ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato[0].NumeroContrato
+		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			LimpiezaRespuestaRefactor(aux, &detalles)
+			for j := 0; j < len(detalles); j++ {
+				if detalles[j].ConceptoNominaId.Id == 87 {
+					valorNuevo = valorNuevo + detalles[j].ValorCalculado
+				}
 			}
-			//Obtener contrato_preliquidacion para ese mes
-			fmt.Println("Mes:", mesIterativo)
-			fmt.Println("Ano:", anoIterativo)
-			query := "ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
-			fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-				LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
-				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
-					LimpiezaRespuestaRefactor(aux, &detalles)
-					for j := 0; j < len(detalles); j++ {
-						if detalles[j].ConceptoNominaId.Id == 87 {
-							valorNuevo = valorNuevo + detalles[j].ValorCalculado
+		} else {
+			fmt.Println("Error al obtener detalles")
+		}
+		/*
+			for {
+				if mesIterativo == int(sucesor.FechaInicio.Month()) && anoIterativo == sucesor.FechaInicio.Year() {
+					break
+				}
+				//Obtener contrato_preliquidacion para ese mes
+				fmt.Println("Mes:", mesIterativo)
+				fmt.Println("Ano:", anoIterativo)
+				query := "ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
+				fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
+				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
+					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
+						LimpiezaRespuestaRefactor(aux, &detalles)
+						for j := 0; j < len(detalles); j++ {
+							if detalles[j].ConceptoNominaId.Id == 87 {
+								valorNuevo = valorNuevo + detalles[j].ValorCalculado
+							}
 						}
+					} else {
+						fmt.Println("Error al obtener detalles")
 					}
 				} else {
-					fmt.Println("Error al obtener detalles")
+					fmt.Println("Error al obtener contrato_preliquidacion")
 				}
-			} else {
-				fmt.Println("Error al obtener contrato_preliquidacion")
+
+				if mesIterativo == 12 {
+					anoIterativo = anoIterativo + 1
+					mesIterativo = 1
+				} else {
+					mesIterativo = mesIterativo + 1
+				}
 			}
 
-			if mesIterativo == 12 {
-				anoIterativo = anoIterativo + 1
-				mesIterativo = 1
-			} else {
-				mesIterativo = mesIterativo + 1
-			}
-		}
-
+		*/
 		//Agregar el nuevo contrato
 		contratoNuevo.Id = 0
 		contratoNuevo.Documento = sucesor.DocumentoNuevo
 		contratoNuevo.NombreCompleto = sucesor.NombreCompleto
 		contratoNuevo.FechaInicio = sucesor.FechaInicio
 		contratoNuevo = registratContrato(contratoNuevo)
+		fmt.Println("Contrato nuevo: ", contratoNuevo)
 
 		contrato[0].FechaFin = sucesor.FechaInicio.Add(24 * time.Hour * -1)
 		//Actualizar fecha de finalización del contrato
@@ -485,7 +497,9 @@ func (c *NovedadController) CederContrato() {
 		}
 
 		if contrato[0].TipoNominaId == 411 {
+			fmt.Println("Liquidando actual:")
 			liquidarCPS(contrato[0])
+			fmt.Println("Liquidando nuevo:")
 			liquidarCPS(contratoNuevo)
 		} else if contrato[0].TipoNominaId == 409 {
 			liquidarHCH(contrato[0])
