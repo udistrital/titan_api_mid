@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -17,7 +16,7 @@ type DetallePreliquidacionController struct {
 
 func (c *DetallePreliquidacionController) URLMapping() {
 	c.Mapping("ObtenerDetalleCT", c.ObtenerDetalleCT)
-	c.Mapping("ObtenerDetalleHCH", c.ObtenerDetalleHCH)
+	c.Mapping("ObtenerDetalleDVE", c.ObtenerDetalleDVE)
 }
 
 // Get ...
@@ -74,64 +73,75 @@ func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string) (detall
 }
 
 // Get ...
-// @Title Obtener Resumen HCH
-// @Description Obtener el detalle de la preliquidación para HCH
+// @Title Obtener Resumen DVE
+// @Description Obtener el detalle de la preliquidación para DVE sea HCS o HCH
 // @Param	ano		path 	string	true		"Año de la preliquidación"
 // @Param	mes		path 	string	true		"Mes de la preliquidación"
 // @Param	documento		path 	string	true		"Documento a buscar"
-// @Success 201 {object} models.DetalleHCH
+// @Param	nomina		path 	string	true		"Nomina, si es HCH o HCS"
+// @Success 201 {object} models.DetalleDVE
 // @Failure 403 body is empty
-// @router /obtener_detalle_HCH/:ano/:mes/:documento [get]
-func (c *DetallePreliquidacionController) ObtenerDetalleHCH() {
+// @router /obtener_detalle_DVE/:ano/:mes/:documento/:nomina [get]
+func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 
 	ano := c.Ctx.Input.Param(":ano")
 	mes := c.Ctx.Input.Param(":mes")
 	documento := c.Ctx.Input.Param(":documento")
+	nomina := c.Ctx.Input.Param(":nomina")
 
 	var aux map[string]interface{}
-	var aux2 []map[string]interface{}
+	var vinculacion []models.VinculacionDocente
 	var tempContrato []models.ContratoPreliquidacion
-	var resolucion models.Resolucion
-	var detallesHCH []models.DetalleHCH
-	var tempDetalle models.DetalleHCH
-	var query = "ContratoId.Documento:" + documento + ",ContratoId.Vigencia:" + ano + ",PreliquidacionId.Ano:" + ano + ",PreliquidacionId.Mes:" + mes
-	fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
+	var resolucionCompleta []models.ResolucionCompleta
+	var detallesDVE []models.DetalleDVE
+	var tempDetalle models.DetalleDVE
+
+	//obtener los contratos asociados a la persona
+	var query = "ContratoId.Documento:" + documento + ",ContratoId.Vigencia:" + ano + ",PreliquidacionId.Ano:" + ano + ",PreliquidacionId.Mes:" + mes + ",PreliquidacionId.NominaId:" + nomina
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &tempContrato)
-		fmt.Println("Contratos: ", tempContrato)
+		//Recorrer los contratos para obtener las resoluciones
 		for i := 0; i < len(tempContrato); i++ {
+			//Encontrar el id de la resolucion
 			query := "NumeroContrato:" + tempContrato[i].ContratoId.NumeroContrato + ",Vigencia:" + strconv.Itoa(tempContrato[i].ContratoId.Vigencia)
-			if err := request.GetJson(beego.AppConfig.String("UrlAdministrativaCrud")+"/vinculacion_docente?limit=-1&query="+query, &aux2); err == nil {
-				jsonString, _ := json.Marshal(aux2[0]["IdResolucion"])
-				json.Unmarshal(jsonString, &resolucion)
-				if len(detallesHCH) == 0 {
-					tempDetalle.Resolucion = &resolucion
-					tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
-					detallesHCH = append(detallesHCH, tempDetalle)
-				} else {
-					res, pos := encontrarResolucion(resolucion.Id, detallesHCH)
-					if res {
-						detallesHCH[pos].Detalle = append(detallesHCH[pos].Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
-					} else {
-						tempDetalle.Resolucion = &resolucion
+			if err := request.GetJson(beego.AppConfig.String("UrlAdministrativaCrud")+"/vinculacion_docente?limit=-1&query="+query, &aux); err == nil {
+				LimpiezaRespuestaRefactor(aux, &vinculacion)
+				//Encontrar el número de resolución
+				if err := request.GetJson(beego.AppConfig.String("UrlAdministrativaCrud")+"/resolucion?limit=-1&query=Id:"+strconv.Itoa(vinculacion[0].ResolucionVinculacionDocenteId.Id), &aux); err == nil {
+					LimpiezaRespuestaRefactor(aux, &resolucionCompleta)
+					if len(detallesDVE) == 0 {
+						tempDetalle.Resolucion = vinculacion[0].ResolucionVinculacionDocenteId
+						tempDetalle.ResolucionCompleta = &resolucionCompleta[0]
 						tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
-						detallesHCH = append(detallesHCH, tempDetalle)
+						detallesDVE = append(detallesDVE, tempDetalle)
+					} else {
+						res, pos := encontrarResolucion(resolucionCompleta[0].Id, detallesDVE)
+						if res {
+							detallesDVE[pos].Detalle = append(detallesDVE[pos].Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
+						} else {
+							tempDetalle.Resolucion = vinculacion[0].ResolucionVinculacionDocenteId
+							tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
+							detallesDVE = append(detallesDVE, tempDetalle)
+						}
 					}
+				} else {
+					fmt.Println("Error al obtener el número de la resolución: ", err)
 				}
 			} else {
 				fmt.Println("Error al obtener resolución: ", err)
 			}
 		}
-		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detallesHCH}
+		fmt.Println("Detalles: ", detallesDVE)
+		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detallesDVE}
 	} else {
 		fmt.Println("Error al obtener detalle ", err)
 	}
 	c.ServeJSON()
 }
 
-func encontrarResolucion(idResolucion int, resoluciones []models.DetalleHCH) (res bool, pos int) {
+func encontrarResolucion(idResolucion int, resoluciones []models.DetalleDVE) (res bool, pos int) {
 	for i := 0; i < len(resoluciones); i++ {
-		if idResolucion == resoluciones[i].Resolucion.Id {
+		if idResolucion == resoluciones[i].ResolucionCompleta.Id {
 			return true, i
 		}
 	}

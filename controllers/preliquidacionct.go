@@ -30,6 +30,7 @@ func liquidarCPS(contrato models.Contrato) {
 	var reglasNuevas string //reglas a usar en cada iteracion
 	var diasContrato float64
 	var emergencia int //Varibale para evitar loop infinito
+
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 
 	if err == nil {
@@ -78,11 +79,11 @@ func liquidarCPS(contrato models.Contrato) {
 				if mesIterativo == 12 {
 					mesIterativo = 1
 					anoIterativo = anoIterativo + 1
-					emergencia = emergencia + 1
 				} else {
 					mesIterativo = mesIterativo + 1
-					emergencia = emergencia + 1
+
 				}
+				emergencia = emergencia + 1
 			}
 			if emergencia == 12 {
 				break
