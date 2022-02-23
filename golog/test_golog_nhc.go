@@ -40,7 +40,9 @@ func LiquidarMesHCH(reglas string, cedula string, ano int, detallePreliquidacion
 
 		detallePreliquidacion.Id = 0
 		detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: conceptoNomina.Id}
-		data = append(data, detallePreliquidacion)
+		if !EncontrarConcepto(data, detallePreliquidacion.ConceptoNominaId.Id) {
+			data = append(data, detallePreliquidacion)
+		}
 	}
 
 	totalAPagar = totalDevengado - totalDescuentos
