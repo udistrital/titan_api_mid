@@ -39,7 +39,7 @@ func liquidarHCH(contrato models.Contrato) {
 
 	//Obtener las semanas del contrato
 
-	semanasContrato := int(calcularSemanasContratoHCH(contrato.FechaInicio, contrato.FechaFin))
+	semanasContrato := int(calcularSemanasContratoDVE(contrato.FechaInicio, contrato.FechaFin))
 	fmt.Println("SemanasContrato: ", semanasContrato)
 
 	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
@@ -73,7 +73,7 @@ func liquidarHCH(contrato models.Contrato) {
 
 				//Calcular el numero de días
 				diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
-				semanas, _ := strconv.Atoi(diasALiquidar)
+				semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
 				semanas = semanas / 7
 
 				if semanas <= 1 {
@@ -81,7 +81,7 @@ func liquidarHCH(contrato models.Contrato) {
 					detallePreliquidacion.DiasLiquidados = 1
 					fmt.Println("Semanas: ", semanas)
 				} else {
-					semanas_liquidadas = semanas
+					semanas_liquidadas = int(Roundf(semanas))
 					detallePreliquidacion.DiasLiquidados = float64(semanas)
 					fmt.Println("Semanas: ", semanas)
 				}
@@ -122,7 +122,7 @@ func liquidarHCH(contrato models.Contrato) {
 				}
 
 				semanas_liquidadas = semanasContrato - semanas_liquidadas
-				fmt.Println("Semanas  a Liquidadas: ", semanas_liquidadas)
+				fmt.Println("Semanas liquidadas: ", semanas_liquidadas)
 				detallePreliquidacion.DiasLiquidados = float64(semanas_liquidadas)
 			} else {
 				semanas_liquidadas = 4
@@ -148,5 +148,4 @@ func liquidarHCH(contrato models.Contrato) {
 		}
 		preliquidacion[0].Id = 0 //Para evitar errores al obtener la preliquidación del siguiente mes
 	}
-
 }

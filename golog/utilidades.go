@@ -525,3 +525,12 @@ func validarNovedades_segSocial(Mes, Ano int, FechaDesde, FechaHasta time.Time) 
 		return 0
 	}
 }
+
+func EncontrarConcepto(data []models.DetallePreliquidacion, id int) (res bool) {
+	for i := 0; i < len(data); i++ {
+		if id == data[i].ConceptoNominaId.Id {
+			return true
+		}
+	}
+	return false
+}

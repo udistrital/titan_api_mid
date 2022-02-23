@@ -39,6 +39,8 @@ func (c *PreliquidacionController) Preliquidar() {
 					liquidarCPS(contrato)
 				} else if contrato.TipoNominaId == 409 {
 					liquidarHCH(contrato)
+				} else if contrato.TipoNominaId == 410 {
+					liquidarHCS(contrato)
 				}
 			} else {
 				fmt.Println("No se pudo guardar el contrato", err)
@@ -91,6 +93,13 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 			alivios.Pensionado = false
 		}
 
+		fmt.Println("Caja: ", tempPersonaNatural[0].CajaCompensacion)
+		if tempPersonaNatural[0].CajaCompensacion == 0 {
+			reglas = reglas + "caja(0)."
+		} else {
+			reglas = reglas + "caja(1)."
+		}
+
 		reglas = reglas + "intereses_vivienda(" + fmt.Sprintf("%f", tempPersonaNatural[0].InteresViviendaAfc) + ")."
 		alivios.InteresesVivienda = tempPersonaNatural[0].InteresViviendaAfc
 
@@ -107,6 +116,7 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 		reglas = reglas + "reteiva(0)."
 		reglas = reglas + "pension_voluntaria(0)."
 		reglas = reglas + "afc(0)."
+		reglas = reglas + "caja(0)."
 		alivios.PensionVoluntaria = 0 //Verificar campo cuando se tenga el endpoint de ágora
 		alivios.Afc = 0               //Verificar campo cuando se tenga el endpoint de ágora
 		alivios.ResponsableIva = false

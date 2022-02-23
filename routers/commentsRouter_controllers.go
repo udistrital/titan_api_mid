@@ -7,20 +7,11 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:Concepto_nomina_por_personaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:Concepto_nomina_por_personaController"],
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:ContratosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:ContratosController"],
         beego.ControllerComments{
-            Method: "TrRegistroIncapacidades",
-            Router: "/tr_registro_incapacidades",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:Concepto_nomina_por_personaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:Concepto_nomina_por_personaController"],
-        beego.ControllerComments{
-            Method: "TrRegistroProrrogaIncapacidad",
-            Router: "/tr_registro_prorroga_incapacidad",
-            AllowHTTPMethods: []string{"post"},
+            Method: "ObtenerContratosDVE",
+            Router: "/docentesDVE/:nomina/:mes:/:ano",
+            AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
@@ -45,18 +36,9 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DetallePreliquidacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DetallePreliquidacionController"],
         beego.ControllerComments{
-            Method: "ObtenerDetalleHCH",
-            Router: "/obtener_detalle_HCH/:ano/:mes/:documento",
+            Method: "ObtenerDetalleDVE",
+            Router: "/obtener_detalle_DVE/:ano/:mes/:documento/:nomina",
             AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionContratosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionContratosController"],
-        beego.ControllerComments{
-            Method: "ListarContratosAgrupadosPorPersona",
-            Router: "/listar_contratos_agrupados_por_persona",
-            AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
@@ -64,89 +46,17 @@ func init() {
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionOpsController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionOpsController"],
         beego.ControllerComments{
             Method: "GenerarOrdenPago",
-            Router: "/generar_op",
-            AllowHTTPMethods: []string{"post"},
+            Router: "/generar_op/:id",
+            AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionPersonasAPreliquidarController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionPersonasAPreliquidarController"],
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NotificacionesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NotificacionesController"],
         beego.ControllerComments{
-            Method: "ListarPersonasAPreliquidar",
-            Router: "/listar_personas_a_preliquidar_argo",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"],
-        beego.ControllerComments{
-            Method: "DesagregadoNominaPorDependencia",
-            Router: "/desagregado_nomina_por_dependencia",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"],
-        beego.ControllerComments{
-            Method: "DesagregadoNominaPorFacultad",
-            Router: "/desagregado_nomina_por_facultad",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"],
-        beego.ControllerComments{
-            Method: "DesagregadoNominaPorProyectoCurricular",
-            Router: "/desagregado_nomina_por_pc",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"],
-        beego.ControllerComments{
-            Method: "GetOrdenadoresGasto",
-            Router: "/get_ordenadores_gasto",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"],
-        beego.ControllerComments{
-            Method: "TotalNominaPorDependencia",
-            Router: "/total_nomina_por_dependencia",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"],
-        beego.ControllerComments{
-            Method: "TotalNominaPorFacultad",
-            Router: "/total_nomina_por_facultad",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"],
-        beego.ControllerComments{
-            Method: "TotalNominaPorOrdenador",
-            Router: "/total_nomina_por_ordenador",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionReportesController"],
-        beego.ControllerComments{
-            Method: "TotalNominaPorProyecto",
-            Router: "/total_nomina_por_proyecto",
-            AllowHTTPMethods: []string{"post"},
+            Method: "EnviarNotificacion",
+            Router: "/enviar_notificacion/:dependencia/:mes/:ano",
+            AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})

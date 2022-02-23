@@ -21,24 +21,6 @@ func init() {
 			),
 		),
 
-		beego.NSNamespace("/gestion_personas_a_liquidar",
-			beego.NSInclude(
-				&controllers.GestionPersonasAPreliquidarController{},
-			),
-		),
-
-		beego.NSNamespace("/gestion_contratos",
-			beego.NSInclude(
-				&controllers.GestionContratosController{},
-			),
-		),
-
-		beego.NSNamespace("/gestion_reportes",
-			beego.NSInclude(
-				&controllers.GestionReportesController{},
-			),
-		),
-
 		beego.NSNamespace("/gestion_ops",
 			beego.NSInclude(
 				&controllers.GestionOpsController{},
@@ -59,6 +41,17 @@ func init() {
 		beego.NSNamespace("/cumplido",
 			beego.NSInclude(
 				&controllers.CumplidoController{},
+			),
+		),
+		beego.NSNamespace("/notificaciones",
+			beego.NSInclude(
+				&controllers.NotificacionesController{},
+			),
+		),
+
+		beego.NSNamespace("/contratos",
+			beego.NSInclude(
+				&controllers.ContratosController{},
 			),
 		),
 	)

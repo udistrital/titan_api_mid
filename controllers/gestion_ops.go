@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -21,97 +20,72 @@ func (c *GestionOpsController) URLMapping() {
 
 }
 
-// GenerarOrdenPago ...
-// @Title create GenerarOrdenPago
-// @Description Lanzar Job para crear órdenes de pago y actualizar estados de disponibilidad de detalles de preliquidación
-// @Success 201
+// Get ...
+// @Enviar Mensaje
+// @Description Enviar orden de pago a financiera
+// @Param	id		path 	string	true		"Id de la preliquidacion"
+// @Param	mes		path 	string	true		"Mes de la preliquidación"
+// @Param	ano		path 	string	true		"Año de la preliquidación"
+// @Success 201 {object} models.Preliquidacion
 // @Failure 403 body is empty
-// @router /generar_op [post]
+// @router /generar_op/:id [get]
 func (c *GestionOpsController) GenerarOrdenPago() {
-	fmt.Println("generar órden de pagooooooooooooooo")
 
-	var v models.Preliquidacion
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		fmt.Println("holi", v.Id)
-		r := ActualizarEstadoDisponibilidadDetalles(v.Id)
-		if r.Type == "success" {
-			fmt.Println("resultado de actualización de disponibilidades", r)
-			rr := ActualizarEstadoPreliquidacion(v)
-			fmt.Println("Resultado de actualizar preliquidaciones", rr)
-		}
+	id := c.Ctx.Input.Param(":id")
+	var aux map[string]interface{}
+	var preliquicion []models.Preliquidacion
+	var contratos []models.ContratoPreliquidacion
+	//Obtener la preliquidación de ese mes
 
-		c.Data["json"] = r
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquicion?limit=-1&query=Id:"+id, &aux); err == nil {
+		LimpiezaRespuestaRefactor(aux, &preliquicion)
+		//Verificar si quedan personas pendientes por cumplido
 
-		var anno string
+		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query=PreliquidacionId.Id:"+strconv.Itoa(preliquicion[0].Id), &aux); err == nil {
+			LimpiezaRespuestaRefactor(aux, &contratos)
+			//Se cierra directamente la preliquidación
+			preliquicion[0].EstadoPreliquidacionId = 402
 
-		if v.Ano >= 10 {
-
-			anno = strconv.Itoa(v.Ano)
-
-		} else {
-
-			anno = "0" + strconv.Itoa(v.Ano)
-		}
-
-		var temp interface{}
-		//Servicio que dispara job
-
-		if v.NominaId == 414 {
-			if err := request.GetJsonWSO2("http://"+beego.AppConfig.String("Urlwso2colas")+":"+beego.AppConfig.String("Portwso2colas")+"/"+beego.AppConfig.String("Nswso2colas")+"/liquidacion/"+anno+"/"+strconv.Itoa(v.Mes), &temp); err == nil {
-
-			} else {
-
-				fmt.Println("error job", err)
+			//Verificar si todos tienen cumplidos o no, pues en caso contrario se cambia a pendientes
+			for i := 0; i < len(contratos); i++ {
+				if !contratos[i].Cumplido {
+					preliquicion[0].EstadoPreliquidacionId = 405
+					break
+				}
 			}
 
+			//Actualizar el estado de la preliquidación
+			if err := request.SendJson((beego.AppConfig.String("UrlTitanCrud") + "/preliquidacion/" + strconv.Itoa(preliquicion[0].Id)), "PUT", &aux, preliquicion[0]); err == nil {
+				fmt.Println("Preliquidación actualizada con éxito")
+				//Solicitar orden de pago
+
+				if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoColas")+"/liquidacion/"+strconv.Itoa(preliquicion[0].Ano)+"/"+strconv.Itoa(preliquicion[0].Mes), &aux); err == nil {
+					fmt.Println("Orden de pago generada")
+					c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": preliquicion}
+
+				} else {
+					fmt.Println("Error al generar orden de pago: ", err)
+					c.Data["message"] = "Error al generar orden de pago " + err.Error()
+					c.Abort("404")
+				}
+			} else {
+				fmt.Println("No se pudo actualizar la preliquidacion: ", err)
+				c.Data["message"] = "Error al actualizar la preliquidacion " + err.Error()
+				c.Abort("404")
+			}
+
+		} else {
+			fmt.Println("Error al obtener contratos: ", err)
+			c.Data["message"] = "Error al obtener los cumplidos de los contratos " + err.Error()
+			c.Abort("404")
 		}
 
 	} else {
-		c.Data["json"] = err.Error()
-		fmt.Println("error 2: ", err)
+		fmt.Println("Error al obtener la preliquidación: ", err)
+		c.Data["message"] = "Error al obtener la preliquidación " + err.Error()
+		c.Abort("404")
 	}
+
 	c.ServeJSON()
 
-}
-
-// ActualizarEstadoDisponibilidadDetalles ...
-// @Title ActualizarEstadoDisponibilidadDetalles
-// @Description Actualizar estado disponibilidad de los detalles cuyo cumplido fue aprobado (disponible a pagado)
-func ActualizarEstadoDisponibilidadDetalles(id_pre int) (r models.Alert) {
-
-	var v models.Alert
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion/update_estado_disponibilidad_detalle?idPreliquidacion="+strconv.Itoa(id_pre), &v); err != nil || v.Type != "success" {
-		fmt.Println("Error:", v.Body)
-
-	}
-	return v
-}
-
-// ActualizarEstadoPreliquidacion ...
-// @Title ActualizarEstadoPreliquidacion
-// @Description Actualizar estado estado de la preliquidación: Si la preliquidación tiene personas aún pendientes (estado_disponibilidad = 1 ), se actualiza a estado 4 (Orden de Pago pendientes) o 1 (cerrada)
-func ActualizarEstadoPreliquidacion(mp models.Preliquidacion) (e string) {
-
-	var v []models.DetallePreliquidacion
-	var respuesta string
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion?limit=-1&query=Preliquidacion:"+strconv.Itoa(mp.Id)+",EstadoDisponibilidad:1", &v); err != nil || v != nil {
-		fmt.Println("Hay personas pendientes", v)
-		mp.EstadoPreliquidacionId = 405
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/"+strconv.Itoa(mp.Id), "PUT", &respuesta, mp); err == nil {
-			fmt.Println("Estado de preliquidación actualizada")
-		} else {
-			fmt.Println("Estado de preliquidación actualizada: ", err)
-			respuesta = err.Error()
-		}
-	} else {
-		fmt.Println("No hay personas pendientes. Cerrar preliquidación", v)
-		mp.EstadoPreliquidacionId = 402
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/preliquidacion/"+strconv.Itoa(mp.Id), "PUT", &respuesta, mp); err == nil {
-			fmt.Println("Estado de preliquidación actualizada")
-		} else {
-			fmt.Println("Estado de preliquidación actualizada: ", err)
-			respuesta = err.Error()
-		}
-	}
-	return respuesta
 }
