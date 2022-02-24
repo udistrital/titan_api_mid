@@ -29,6 +29,7 @@ func liquidarHCH(contrato models.Contrato) {
 	var semanas_liquidadas int
 	var diasALiquidar string
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
+	var emergencia int //Varibale para evitar loop infinito
 
 	if err == nil {
 		reglasAlivios, contratoPreliquidacion = CargarDatosRetefuente(int(cedula))
@@ -141,7 +142,12 @@ func liquidarHCH(contrato models.Contrato) {
 					anoIterativo = anoIterativo + 1
 				} else {
 					mesIterativo = mesIterativo + 1
+
 				}
+				emergencia = emergencia + 1
+			}
+			if emergencia == 12 {
+				break
 			}
 		} else {
 			fmt.Println("Error al consultar preliquidaciones")
