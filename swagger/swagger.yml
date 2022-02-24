@@ -146,7 +146,9 @@ paths:
         "201":
           description: ""
           schema:
-            $ref: '#/definitions/models.DetalleDVE'
+            type: array
+            items:
+              $ref: '#/definitions/models.DetalleDVE'
         "403":
           description: body is empty
   /gestion_ops/generar_op/{id}:
@@ -527,10 +529,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/models.Detalle'
-      Resolucion:
-        $ref: '#/definitions/models.Resolucion'
-      ResolucionCompleta:
-        $ref: '#/definitions/models.ResolucionCompleta'
   models.DetalleMensual:
     title: DetalleMensual
     type: object
@@ -656,78 +654,6 @@ definitions:
         type: integer
         format: int64
       NominaId:
-        type: integer
-        format: int64
-  models.Resolucion:
-    title: Resolucion
-    type: object
-    properties:
-      Activo:
-        type: boolean
-      Dedicacion:
-        type: string
-      FechaCreacion:
-        type: string
-      FechaModificacion:
-        type: string
-      Id:
-        type: integer
-        format: int64
-      IdFacultad:
-        type: integer
-        format: int64
-      NivelAcademico:
-        type: string
-  models.ResolucionCompleta:
-    title: ResolucionCompleta
-    type: object
-    properties:
-      Activo:
-        type: boolean
-      ConsideracionResolucion:
-        type: string
-      CuadroResponsabilidades:
-        type: string
-      DependenciaFirmaId:
-        type: integer
-        format: int64
-      DependenciaId:
-        type: integer
-        format: int64
-      FechaCreacion:
-        type: string
-      FechaExpedicion:
-        type: string
-      FechaModificacion:
-        type: string
-      Id:
-        type: integer
-        format: int64
-      NumeroResolucion:
-        type: string
-      NumeroSemanas:
-        type: integer
-        format: int64
-      NuxeoUid:
-        type: string
-      Periodo:
-        type: integer
-        format: int64
-      PeriodoCarga:
-        type: integer
-        format: int64
-      PreambuloResolucion:
-        type: string
-      TipoResolucionId:
-        type: integer
-        format: int64
-      Titulo:
-        type: integer
-        format: int64
-      Vigencia:
-        type: integer
-        format: int64
-      VigenciaCarga:
         type: integer
         format: int64
   models.Sucesor:
