@@ -9,9 +9,10 @@ type Detalle struct {
 	Detalle         []DetallePreliquidacion
 }
 
-type DetalleHCH struct {
-	Resolucion *Resolucion
-	Detalle    []Detalle
+type DetalleDVE struct {
+	//Resolucion         *Resolucion
+	//ResolucionCompleta *ResolucionCompleta
+	Detalle []Detalle
 }
 
 type DetalleMensual struct {

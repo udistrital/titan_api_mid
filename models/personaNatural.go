@@ -5,5 +5,6 @@ type PersonaNatural struct {
 	InteresViviendaAfc float64 `json:"InteresViviendaAfc"`
 	ValorUvtPrepagada  float64 `json:"ValorUvtPrepagada"`
 	Pensionado         string  `json:"Pensionado"`
+	CajaCompensacion   int     `json:"IdCajaCompensacion"`
 	//Falta agregar el resto de alivios, como el AFC, la pensión voluntaria y responsable de iva
 }
