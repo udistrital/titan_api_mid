@@ -69,7 +69,6 @@ func LiquidarMesHCS(reglas string, cedula string, ano int, detallePreliquidacion
 	var totalDescuentos float64
 	var totalAPagar float64
 
-	fmt.Println(reglas)
 	m := NewMachine().Consult(reglas)
 	total := m.ProveAll("liquidar_hcs(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
 	totalDescuentos = 0
