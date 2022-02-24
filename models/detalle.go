@@ -10,9 +10,9 @@ type Detalle struct {
 }
 
 type DetalleDVE struct {
-	Resolucion         *Resolucion
-	ResolucionCompleta *ResolucionCompleta
-	Detalle            []Detalle
+	//Resolucion         *Resolucion
+	//ResolucionCompleta *ResolucionCompleta
+	Detalle []Detalle
 }
 
 type DetalleMensual struct {
