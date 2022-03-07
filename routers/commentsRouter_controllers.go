@@ -19,7 +19,16 @@ func init() {
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:CumplidoController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:CumplidoController"],
         beego.ControllerComments{
             Method: "ActualizarCumplido",
-            Router: "/:ano/:mes/:contrato/:vigencia",
+            Router: "/cumplido/:ano/:mes/:contrato/:vigencia",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:CumplidoController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:CumplidoController"],
+        beego.ControllerComments{
+            Method: "ActualizarPreliquidado",
+            Router: "/preliquidado/:ano/:mes/:contrato/:vigencia",
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,

@@ -38,7 +38,7 @@ func init() {
 				&controllers.NovedadController{},
 			),
 		),
-		beego.NSNamespace("/cumplido",
+		beego.NSNamespace("/contrato_preliquidacion",
 			beego.NSInclude(
 				&controllers.CumplidoController{},
 			),

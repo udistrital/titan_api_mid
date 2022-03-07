@@ -15,56 +15,10 @@
     },
     "basePath": "/v1",
     "paths": {
-        "/contratos/docentesDVE/{nomina}/{mes}/{ano}": {
+        "/contrato_preliquidacion/cumplido/{ano}/{mes}/{contrato}/{vigencia}": {
             "get": {
                 "tags": [
-                    "contratos"
-                ],
-                "description": "Retorna todos los docnetes de vinvulación especial",
-                "operationId": "ContratosController.Obtener contratos DVE",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "nomina",
-                        "description": "Nomina de la preliquidacion",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "in": "path",
-                        "name": "mes",
-                        "description": "Mes de la preliquidación",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "in": "path",
-                        "name": "ano",
-                        "description": "Año de la preliquidación",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.ContratoDVE"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "body is empty"
-                    }
-                }
-            }
-        },
-        "/cumplido/{ano}/{mes}/{contrato}/{vigencia}": {
-            "get": {
-                "tags": [
-                    "cumplido"
+                    "contrato_preliquidacion"
                 ],
                 "description": "Actualizar cumplido del contrato",
                 "operationId": "CumplidoController.Actualizar Cumplido",
@@ -103,6 +57,102 @@
                         "description": "",
                         "schema": {
                             "$ref": "#/definitions/models.ContratoPreliquidacion"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/contrato_preliquidacion/preliquidado/{ano}/{mes}/{contrato}/{vigencia}": {
+            "get": {
+                "tags": [
+                    "contrato_preliquidacion"
+                ],
+                "description": "Actualizar preliquidado del contrato",
+                "operationId": "CumplidoController.Actualizar Preliquidado",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "ano",
+                        "description": "Año de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "mes",
+                        "description": "Mes de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "contrato",
+                        "description": "Contrato a buscar",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "vigencia",
+                        "description": "vigencia del contrato",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.ContratoPreliquidacion"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/contratos/docentesDVE/{nomina}/{mes}/{ano}": {
+            "get": {
+                "tags": [
+                    "contratos"
+                ],
+                "description": "Retorna todos los docnetes de vinvulación especial",
+                "operationId": "ContratosController.Obtener contratos DVE",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "nomina",
+                        "description": "Nomina de la preliquidacion",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "mes",
+                        "description": "Mes de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "ano",
+                        "description": "Año de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ContratoDVE"
+                            }
                         }
                     },
                     "403": {
