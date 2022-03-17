@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 
@@ -220,7 +221,7 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
 							}
 						} else if novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
 							descuentos[0].ValorCalculado = (descuentos[0].ValorCalculado + (honorarios[0].ValorCalculado * (novedad.Valor / 100)))
-							detalleNuevo.ValorCalculado = (honorarios[0].ValorCalculado * (novedad.Valor / 100))
+							detalleNuevo.ValorCalculado = math.Round(honorarios[0].ValorCalculado * (novedad.Valor / 100))
 							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(descuentos[0].Id), "PUT", &res, descuentos[0]); err == nil {
 								fmt.Println("Descuentos actualizados")
 							} else {
@@ -244,7 +245,7 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
 								return "Error al actualizar total a pagar ", err
 							}
 						} else if novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
-							totalAPagar[0].ValorCalculado = totalAPagar[0].ValorCalculado - (honorarios[0].ValorCalculado * (novedad.Valor / 100))
+							totalAPagar[0].ValorCalculado = totalAPagar[0].ValorCalculado - math.Round(honorarios[0].ValorCalculado*(novedad.Valor/100))
 							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(totalAPagar[0].Id), "PUT", &res, totalAPagar[0]); err == nil {
 								fmt.Println("Total a pagar actualizado")
 							} else {
