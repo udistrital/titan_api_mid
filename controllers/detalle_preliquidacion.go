@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 
@@ -38,14 +39,20 @@ func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
 	vigencia := c.Ctx.Input.Param(":vigencia")
 	documento := c.Ctx.Input.Param(":documento")
 
-	detalle := TraerDetalleMensual(ano, mes, contrato, vigencia, documento)
+	detalle, err := TraerDetalleMensual(ano, mes, contrato, vigencia, documento, true)
 
-	c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detalle}
+	if err == nil {
+		c.Ctx.Output.SetStatus(201)
+		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detalle}
+	} else {
+		c.Data["mesaage"] = "Error al obtener el detalle, no hay "
+		c.Abort("400")
+	}
 
 	c.ServeJSON()
 }
 
-func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string) (detalle models.Detalle) {
+func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS bool) (detalle models.Detalle, err error) {
 	var aux map[string]interface{}
 	var tempDetalle []models.DetallePreliquidacion
 	var query = "ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + vigencia + ",ContratoPreliquidacionId.ContratoId.Documento:" + documento
@@ -54,10 +61,15 @@ func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string) (detall
 		detalle.Contrato = tempDetalle[0].ContratoPreliquidacionId.ContratoId.NumeroContrato
 		detalle.Vigencia = tempDetalle[0].ContratoPreliquidacionId.ContratoId.Vigencia
 		for i := 0; i < len(tempDetalle); i++ {
-			if tempDetalle[i].ConceptoNominaId.Id == 573 {
-				detalle.TotalDescuentos = tempDetalle[i].ValorCalculado
-			} else if tempDetalle[i].ConceptoNominaId.Id == 574 {
-				detalle.TotalPago = tempDetalle[i].ValorCalculado
+			if tempDetalle[i].ConceptoNominaId.Id == 574 || tempDetalle[i].ConceptoNominaId.Id == 573 {
+				fmt.Println("Salto")
+			} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
+				if CPS && (tempDetalle[i].ConceptoNominaId.Id == 568 || tempDetalle[i].ConceptoNominaId.Id == 569 || tempDetalle[i].ConceptoNominaId.Id == 570) {
+					detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
+				} else {
+					detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
+					detalle.TotalDescuentos = detalle.TotalDescuentos + tempDetalle[i].ValorCalculado
+				}
 			} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
 				detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
 				detalle.TotalDevengado = detalle.TotalDevengado + tempDetalle[i].ValorCalculado
@@ -65,10 +77,11 @@ func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string) (detall
 				detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
 			}
 		}
-		return detalle
+		detalle.TotalPago = detalle.TotalDevengado - detalle.TotalDescuentos
+		return detalle, nil
 	} else {
 		fmt.Println("Error al obtener detalle ", err)
-		return detalle
+		return detalle, err
 	}
 }
 
@@ -80,7 +93,7 @@ func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string) (detall
 // @Param	documento		path 	string	true		"Documento a buscar"
 // @Param	nomina		path 	string	true		"Nomina, si es HCH o HCS"
 // @Success 201 {object} []models.DetalleDVE
-// @Failure 403 body is empty
+// @Failure 400 the request contains incorrect syntax
 // @router /obtener_detalle_DVE/:ano/:mes/:documento/:nomina [get]
 func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 
@@ -135,16 +148,22 @@ func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 		*/
 		//Agregar los detalles de todos los contratos
 		for i := 0; i < len(contratoPreliquidacion); i++ {
-			detallesDVE = append(detallesDVE, TraerDetalleMensual(ano, mes, contratoPreliquidacion[i].ContratoId.NumeroContrato, strconv.Itoa(contratoPreliquidacion[i].ContratoId.Vigencia), documento))
+			auxDetalle, err := TraerDetalleMensual(ano, mes, contratoPreliquidacion[i].ContratoId.NumeroContrato, strconv.Itoa(contratoPreliquidacion[i].ContratoId.Vigencia), documento, false)
+			if err == nil {
+				detallesDVE = append(detallesDVE, auxDetalle)
+
+				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detallesDVE}
+			} else {
+				c.Data["mesaage"] = "Error al obtener detalle de 1 o más contratos"
+				c.Abort("404")
+				break
+			}
 		}
 
-		fmt.Println("Detalles: ", detallesDVE)
-		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detallesDVE}
 	} else {
 		fmt.Println("Error al obtener detalle ", err)
-		c.Data["message"] = "Error al obtener detalle " + err.Error()
+		c.Data["message"] = "No existe un contrato asociado al documento que sea vigente para la preliquidación " + err.Error()
 		c.Abort("404")
-
 	}
 	c.ServeJSON()
 }
@@ -160,7 +179,7 @@ func encontrarResolucion(idResolucion int, resoluciones []models.DetalleDVE) (re
 }
 */
 
-func AgregarValorNovedad(novedad models.Novedad) {
+func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
 	var res map[string]interface{}
 	var mesIterativo = int(novedad.FechaInicio.Month())
 	var anoIterativo = novedad.FechaInicio.Year()
@@ -172,7 +191,6 @@ func AgregarValorNovedad(novedad models.Novedad) {
 	var detalleNuevo models.DetallePreliquidacion
 	auxCuotas = novedad.Cuotas
 
-	fmt.Println("Agregando Valor")
 	for { //itera desde el mes en el que se aplicó la novedad hasta el fin del numero de cuotas
 
 		fmt.Println("Mes: ", mesIterativo)
@@ -199,23 +217,24 @@ func AgregarValorNovedad(novedad models.Novedad) {
 								fmt.Println("Descuentos actualizados")
 							} else {
 								fmt.Println("Error al actualizar descuentos ", err)
+								return "Error al actualizar descuentos ", err
 							}
 						} else if novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
 							descuentos[0].ValorCalculado = (descuentos[0].ValorCalculado + (honorarios[0].ValorCalculado * (novedad.Valor / 100)))
-							detalleNuevo.ValorCalculado = (honorarios[0].ValorCalculado * (novedad.Valor / 100))
+							detalleNuevo.ValorCalculado = math.Round(honorarios[0].ValorCalculado * (novedad.Valor / 100))
 							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(descuentos[0].Id), "PUT", &res, descuentos[0]); err == nil {
 								fmt.Println("Descuentos actualizados")
 							} else {
 								fmt.Println("Error al actualizar descuentos ", err)
+								return "Error al actualizar descuentos ", err
 							}
 						}
 					} else {
 						fmt.Println("Error al obtener el valor de los descuentos ", err)
 					}
-					//Obtener el total a pagar
+					//Obtener y actualizar el total a pagar
 					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:574"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &res); err == nil {
-
 						LimpiezaRespuestaRefactor(res, &totalAPagar)
 						if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 {
 							totalAPagar[0].ValorCalculado = totalAPagar[0].ValorCalculado - novedad.Valor
@@ -223,17 +242,20 @@ func AgregarValorNovedad(novedad models.Novedad) {
 								fmt.Println("Total a pagar actualizado")
 							} else {
 								fmt.Println("Error al actualizar total a pagar ", err)
+								return "Error al actualizar total a pagar ", err
 							}
 						} else if novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
-							totalAPagar[0].ValorCalculado = totalAPagar[0].ValorCalculado - (honorarios[0].ValorCalculado * (novedad.Valor / 100))
+							totalAPagar[0].ValorCalculado = totalAPagar[0].ValorCalculado - math.Round(honorarios[0].ValorCalculado*(novedad.Valor/100))
 							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(totalAPagar[0].Id), "PUT", &res, totalAPagar[0]); err == nil {
 								fmt.Println("Total a pagar actualizado")
 							} else {
 								fmt.Println("Error al actualizar total a pagar ", err)
+								return "Error al actualizar total a pagar ", err
 							}
 						}
 					} else {
 						fmt.Println("Error al obtener el total a pagar ", err)
+						return "Error al obtener el total a pagar ", err
 					}
 
 					//Agregar la novedad a los detalles de esa preliquidacion
@@ -250,10 +272,12 @@ func AgregarValorNovedad(novedad models.Novedad) {
 						fmt.Println("Concepto Añadido")
 					} else {
 						fmt.Println("Error al agregar concepto", err)
+						return "Error al agregar concepto", err
 					}
 
 				} else {
 					fmt.Println("Error al obtener el valor de los honorarios ", err)
+					return "Error al obtener el valor de los honorarios ", err
 				}
 				//Para devengos
 			} else if novedad.ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
@@ -272,6 +296,7 @@ func AgregarValorNovedad(novedad models.Novedad) {
 								fmt.Println("Total a pagar actualizado")
 							} else {
 								fmt.Println("Error al actualizar total a pagar ", err)
+								return "Error al actualizar total a pagar ", err
 							}
 						} else if novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
 							totalAPagar[0].ValorCalculado = totalAPagar[0].ValorCalculado + (honorarios[0].ValorCalculado * (novedad.Valor / 100))
@@ -280,10 +305,12 @@ func AgregarValorNovedad(novedad models.Novedad) {
 								fmt.Println("Total a pagar actualizado")
 							} else {
 								fmt.Println("Error al actualizar total a pagar ", err)
+								return "Error al actualizar total a pagar ", err
 							}
 						}
 					} else {
 						fmt.Println("Error al obtener el total a pagar ", err)
+						return "Error al actualizar total a pagar ", err
 					}
 
 					//Agregar la novedad a los detalles de esa preliquidacion
@@ -300,14 +327,17 @@ func AgregarValorNovedad(novedad models.Novedad) {
 						fmt.Println("Concepto Añadido")
 					} else {
 						fmt.Println("Error al agregar concepto", err)
+						return "Error al agregar concepto", err
 					}
 
 				} else {
 					fmt.Println("Error al obtener el valor de los honorarios ", err)
+					return "Error al obtener el valor de los honorarios ", err
 				}
 			}
 		} else {
 			fmt.Println("Error al intentar obtener el id del contrato_preliquidación ", err)
+			return "Error al intentar obtener el id del contrato_preliquidación ", err
 		}
 		auxCuotas = auxCuotas - 1
 
@@ -322,9 +352,10 @@ func AgregarValorNovedad(novedad models.Novedad) {
 			}
 		}
 	}
+	return "", nil
 }
 
-func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
+func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) (mensaje string, err error) {
 
 	var aux map[string]interface{}
 	var contratoPreliquidacion []models.ContratoPreliquidacion
@@ -359,6 +390,7 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
 								fmt.Println("Total a pagar actualizado")
 							} else {
 								fmt.Println("Error al actualizar total a pagar ", err)
+								return "Error al actualizar total a pagar  ", err
 							}
 						} else if novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
 							totalAPagar[0].ValorCalculado = totalAPagar[0].ValorCalculado - (honorarios[0].ValorCalculado * (novedad.Valor / 100))
@@ -366,13 +398,16 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
 								fmt.Println("Total a pagar actualizado")
 							} else {
 								fmt.Println("Error al actualizar total a pagar ", err)
+								return "Error al actualizar total a pagar  ", err
 							}
 						}
 					} else {
 						fmt.Println("Error al obtener el total a pagar ", err)
+						return "Error al obtener el total a pagar ", err
 					}
 				} else {
 					fmt.Println("Error al obtener el valor de los honorarios ", err)
+					return "Error al obtener el valor de los honorarios ", err
 				}
 			} else if novedad.ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
 				//Obtener el valor de los honorarios para ese mes
@@ -389,6 +424,7 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
 								fmt.Println("Descuentos actualizados")
 							} else {
 								fmt.Println("Error al actualizar descuentos ", err)
+								return "Error al actualizar descuentos ", err
 							}
 						} else if novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
 							descuentos[0].ValorCalculado = (descuentos[0].ValorCalculado - (honorarios[0].ValorCalculado * (novedad.Valor / 100)))
@@ -396,10 +432,12 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
 								fmt.Println("Descuentos actualizados")
 							} else {
 								fmt.Println("Error al actualizar descuentos ", err)
+								return "Error al actualizar descuentos ", err
 							}
 						}
 					} else {
 						fmt.Println("Error al obtener el valor de los descuentos ", err)
+						return "Error al obtener el valor de los descuentos ", err
 					}
 
 					query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:574"
@@ -412,6 +450,7 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
 								fmt.Println("Total a pagar actualizado")
 							} else {
 								fmt.Println("Error al actualizar total a pagar ", err)
+								return "Error al actualizar total a pagar ", err
 							}
 						} else if novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
 							totalAPagar[0].ValorCalculado = totalAPagar[0].ValorCalculado + (honorarios[0].ValorCalculado * (novedad.Valor / 100))
@@ -419,11 +458,13 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
 								fmt.Println("Total a pagar actualizado")
 							} else {
 								fmt.Println("Error al actualizar total a pagar ", err)
+								return "Error al actualizar total a pagar ", err
 							}
 						}
 
 					} else {
 						fmt.Println("Error al obtener el total a pagar ", err)
+						return "Error al obtener el total a pagar ", err
 					}
 
 					//Eliminar el Detalle del concepto
@@ -433,10 +474,12 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
 						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalle[0].Id), "DELETE", &aux, nil); err == nil {
 							fmt.Println("Detalle de novedad eliminado con éxtio")
 						} else {
-							fmt.Println("Error al eliminar Detalle de novedad")
+							fmt.Println("Error al eliminar Detalle de novedad: ", err)
+							return "Error al eliminar Detalle de novedad: ", err
 						}
 					} else {
 						fmt.Println("Error al obtener el detalle de la novedad ", err)
+						return "Error al obtener el detalle de la novedad ", err
 					}
 					//Actualizar fecha de finalización de la novedad
 					novedad.FechaFin = time.Now()
@@ -446,14 +489,18 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) {
 						fmt.Println("Novedad Actualizada")
 					} else {
 						fmt.Println("Error al actualizar novedad: ", err)
+						return "Error al actualizar novedad: ", err
 					}
 				} else {
 					fmt.Println("Error al obtener el valor de los honorarios ", err)
+					return "Error al obtener el valor de los honorarios ", err
 				}
 			}
 
 		} else {
 			fmt.Println("Error al intentar obtener el id del contrato_preliquidación ", err)
+			return "Error al intentar obtener el id del contrato_preliquidación ", err
 		}
 	}
+	return "", err
 }

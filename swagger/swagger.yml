@@ -11,6 +11,74 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 basePath: /v1
 paths:
+  /contrato_preliquidacion/cumplido/{ano}/{mes}/{contrato}/{vigencia}:
+    get:
+      tags:
+      - contrato_preliquidacion
+      description: Actualizar cumplido del contrato
+      operationId: CumplidoController.Actualizar Cumplido
+      parameters:
+      - in: path
+        name: ano
+        description: Año de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: mes
+        description: Mes de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: contrato
+        description: Contrato a buscar
+        required: true
+        type: string
+      - in: path
+        name: vigencia
+        description: vigencia del contrato
+        required: true
+        type: string
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.ContratoPreliquidacion'
+        "403":
+          description: body is empty
+  /contrato_preliquidacion/preliquidado/{ano}/{mes}/{contrato}/{vigencia}:
+    get:
+      tags:
+      - contrato_preliquidacion
+      description: Actualizar preliquidado del contrato
+      operationId: CumplidoController.Actualizar Preliquidado
+      parameters:
+      - in: path
+        name: ano
+        description: Año de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: mes
+        description: Mes de la preliquidación
+        required: true
+        type: string
+      - in: path
+        name: contrato
+        description: Contrato a buscar
+        required: true
+        type: string
+      - in: path
+        name: vigencia
+        description: vigencia del contrato
+        required: true
+        type: string
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.ContratoPreliquidacion'
+        "403":
+          description: body is empty
   /contratos/docentesDVE/{nomina}/{mes}/{ano}:
     get:
       tags:
@@ -40,40 +108,6 @@ paths:
             type: array
             items:
               $ref: '#/definitions/models.ContratoDVE'
-        "403":
-          description: body is empty
-  /cumplido/{ano}/{mes}/{contrato}/{vigencia}:
-    get:
-      tags:
-      - cumplido
-      description: Actualizar cumplido del contrato
-      operationId: CumplidoController.Actualizar Cumplido
-      parameters:
-      - in: path
-        name: ano
-        description: Año de la preliquidación
-        required: true
-        type: string
-      - in: path
-        name: mes
-        description: Mes de la preliquidación
-        required: true
-        type: string
-      - in: path
-        name: contrato
-        description: Contrato a buscar
-        required: true
-        type: string
-      - in: path
-        name: vigencia
-        description: vigencia del contrato
-        required: true
-        type: string
-      responses:
-        "201":
-          description: ""
-          schema:
-            $ref: '#/definitions/models.ContratoPreliquidacion'
         "403":
           description: body is empty
   /detalle_preliquidacion/obtener_detalle_CT/{ano}/{mes}/{contrato}/{vigencia}/{documento}:

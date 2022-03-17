@@ -61,7 +61,6 @@ func (c *ContratosController) ObtenerContratosDVE() {
 		//Verficar los cumplidos
 
 		for i := 0; i < len(contratoDVE); i++ {
-			fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=PreliquidacionId.Mes:" + mes + ",PreliquidacionId.Ano:" + ano + ",ContratoId.Documento:" + contratoDVE[i].Documento)
 			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query=PreliquidacionId.Mes:"+mes+",PreliquidacionId.Ano:"+ano+",ContratoId.Documento:"+contratoDVE[i].Documento, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 

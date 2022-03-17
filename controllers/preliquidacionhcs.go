@@ -28,6 +28,15 @@ func liquidarHCS(contrato models.Contrato) {
 	var reglasNuevas string //reglas a usar en cada iteracion
 	var semanas_liquidadas int
 	var diasALiquidar string
+
+	//Para agrupación
+	//var contratosDocente []models.Contrato
+	//var contratoMayor models.Contrato
+	//var sueldos []models.DetallePreliquidacion
+	//var sumatoria float64
+	//var detalles []models.DetallePreliquidacion
+	//
+
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 	var emergencia int //Varibale para evitar loop infinito
 
