@@ -183,8 +183,8 @@ paths:
             type: array
             items:
               $ref: '#/definitions/models.DetalleDVE'
-        "403":
-          description: body is empty
+        "400":
+          description: the request contains incorrect syntax
   /gestion_ops/generar_op/{id}:
     get:
       tags:
@@ -260,8 +260,8 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/models.Novedad'
-        "403":
-          description: body is empty
+        "400":
+          description: the request contains incorrect syntax
   /novedad/cancelar_contrato/{NumeroContrato}/{Vigencia}/{Documento}:
     get:
       tags:
@@ -289,8 +289,8 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/models.Contrato'
-        "403":
-          description: body is empty
+        "400":
+          description: ""
   /novedad/ceder_contrato:
     post:
       tags:
@@ -326,8 +326,8 @@ paths:
       responses:
         "201":
           description: models.Novedad.Id
-        "403":
-          description: body is empty
+        "400":
+          description: the request contains incorrect syntax
   /novedad/otrosi_contrato:
     post:
       tags:
@@ -366,8 +366,8 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/models.Contrato'
-        "403":
-          description: body is empty
+        "400":
+          description: the request contains incorrect syntax
   /preliquidacion/:
     post:
       tags:

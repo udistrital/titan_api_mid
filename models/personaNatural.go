@@ -1,10 +1,11 @@
 package models
 
 type PersonaNatural struct {
-	Dependientes       bool    `json:"PersonasACargo"`
+	Dependientes       string  `json:"PersonasACargo"`
 	InteresViviendaAfc float64 `json:"InteresViviendaAfc"`
 	ValorUvtPrepagada  float64 `json:"ValorUvtPrepagada"`
 	Pensionado         string  `json:"Pensionado"`
-	CajaCompensacion   int     `json:"IdCajaCompensacion"`
-	//Falta agregar el resto de alivios, como el AFC, la pensión voluntaria y responsable de iva
+	Afc                float64 `json:"ValorAfc"`
+	PensionVoluntaria  float64 `json:"ValorPensionVoluntaria"`
+	Reteiva            string  `json:"ResponsableIva"`
 }
