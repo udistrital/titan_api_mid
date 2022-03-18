@@ -105,13 +105,15 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 				alivios.InteresesVivienda = tempPersonaNatural.InteresViviendaAfc
 			} else {
 				reglas = reglas + "intereses_vivienda(0)."
+				alivios.InteresesVivienda = tempPersonaNatural.InteresViviendaAfc
 			}
 
 			if tempPersonaNatural.PensionVoluntaria > 0 {
 				alivios.PensionVoluntaria = tempPersonaNatural.PensionVoluntaria
-				reglas = reglas + "pension_voluntaria(0)."
+				reglas = reglas + "pension_voluntaria(" + fmt.Sprintf("%f", tempPersonaNatural.PensionVoluntaria) + ")."
 			} else {
-
+				alivios.PensionVoluntaria = tempPersonaNatural.PensionVoluntaria
+				reglas = reglas + "intereses_vivienda(0)."
 			}
 
 			if tempPersonaNatural.Afc > 0 {
@@ -121,6 +123,14 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 				alivios.Afc = 0
 				reglas = reglas + "afc(0)."
 			}
+		}else {
+			reglas = reglas + "dependientes(0)."
+			reglas = reglas + "medicina_prepagada(0)."
+			reglas = reglas + "pensionado(0)."
+			reglas = reglas + "intereses_vivienda(0)."
+			reglas = reglas + "reteiva(0)."
+			reglas = reglas + "pension_voluntaria(0)."
+			reglas = reglas + "afc(0)."
 		}
 
 	} else {
