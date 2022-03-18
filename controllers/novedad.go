@@ -39,7 +39,6 @@ func (c *NovedadController) AgregarNovedad() {
 	var auxDetalle []models.DetallePreliquidacion
 	var auxConcepto []models.ConceptoNomina
 	var honorarios float64
-	var descuentos float64
 	var novedad models.Novedad
 	var fecha_actual = time.Now()
 	var anoFin int
@@ -56,63 +55,66 @@ func (c *NovedadController) AgregarNovedad() {
 			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/concepto_nomina?limit=-1&query=Id:"+strconv.Itoa(novedad.ConceptoNominaId.Id), &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &auxConcepto)
 				novedad.ConceptoNominaId = &auxConcepto[0]
-				//Si es devengo se añade el valor de una vez
-				if auxConcepto[0].NaturalezaConceptoNominaId == 423 {
-					fmt.Println("Devengo: ")
-					if int(fecha_actual.Month())+novedad.Cuotas-1 > 12 {
-						mesFin = int(fecha_actual.Month()) + novedad.Cuotas - 13
-						anoFin = fecha_actual.Year() + 1
-					} else {
-						mesFin = int(fecha_actual.Month()) + novedad.Cuotas - 1
-						anoFin = fecha_actual.Year()
-					}
-
-					if mesFin == 2 {
-						novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 28, 0, 0, 0, 0, time.Local)
-					} else {
-						novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 30, 0, 0, 0, 0, time.Local)
-					}
-					novedad.FechaInicio = fecha_actual
-
-					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad", "POST", &aux, novedad); err == nil {
-						LimpiezaRespuestaRefactor(aux, &novedad)
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad?limit=-1&query=Id:"+strconv.Itoa(novedad.Id), &aux); err == nil {
-							LimpiezaRespuestaRefactor(aux, &auxNovedad)
-							novedad = auxNovedad[0]
-							if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 || novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
-								//Agregar el Valor al detalle
-								AgregarValorNovedad(novedad)
-								c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": novedad}
-							}
+				//traer el contrato
+				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=Id:"+strconv.Itoa(novedad.ContratoId.Id), &aux); err == nil {
+					LimpiezaRespuestaRefactor(aux, &contrato)
+					novedad.ContratoId = &contrato[0]
+					//Si es devengo se añade el valor de una vez
+					if auxConcepto[0].NaturalezaConceptoNominaId == 423 {
+						fmt.Println("Devengo: ")
+						if int(fecha_actual.Month())+novedad.Cuotas-1 > 12 {
+							mesFin = int(fecha_actual.Month()) + novedad.Cuotas - 13
+							anoFin = fecha_actual.Year() + 1
+						} else {
+							mesFin = int(fecha_actual.Month()) + novedad.Cuotas - 1
+							anoFin = fecha_actual.Year()
 						}
-					} else {
-						fmt.Println("No se pudo guardar la novedad", err)
-						c.Data["message"] = "Error, no se pudo guardar la novedad" + err.Error()
-						c.Abort("400")
-					}
-					//si es desuento
-				} else if auxConcepto[0].NaturalezaConceptoNominaId == 424 {
-					fmt.Println("Descuento: ")
 
-					if int(fecha_actual.Month())+novedad.Cuotas-1 > 12 {
-						mesFin = int(fecha_actual.Month()) + novedad.Cuotas - 13
-						anoFin = fecha_actual.Year() + 1
-					} else {
-						mesFin = int(fecha_actual.Month()) + novedad.Cuotas - 1
-						anoFin = fecha_actual.Year()
-					}
-					novedad.FechaInicio = fecha_actual
-					if mesFin == 2 {
-						novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 28, 0, 0, 0, 0, time.Local)
-					} else {
-						novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 30, 0, 0, 0, 0, time.Local)
-					}
+						if mesFin == 2 {
+							novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 28, 0, 0, 0, 0, time.Local)
+						} else {
+							novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 30, 0, 0, 0, 0, time.Local)
+						}
+						novedad.FechaInicio = fecha_actual
 
-					//Verificar que las cuotas no se pasen del tiempo restante del contrato
+						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad", "POST", &aux, novedad); err == nil {
+							LimpiezaRespuestaRefactor(aux, &novedad)
+							if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad?limit=-1&query=Id:"+strconv.Itoa(novedad.Id), &aux); err == nil {
+								LimpiezaRespuestaRefactor(aux, &auxNovedad)
+								novedad = auxNovedad[0]
+								if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 || novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
+									//Agregar el Valor al detalle
+									AgregarValorNovedad(novedad)
+									c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": novedad}
+								}
+							}
+						} else {
+							fmt.Println("No se pudo guardar la novedad", err)
+							c.Data["message"] = "Error, no se pudo guardar la novedad" + err.Error()
+							c.Abort("400")
+						}
+						//si es desuento
+					} else if auxConcepto[0].NaturalezaConceptoNominaId == 424 {
+						fmt.Println("Descuento: ")
 
-					//Obtener el contrato
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=Id:"+strconv.Itoa(novedad.ContratoId.Id), &aux); err == nil {
-						LimpiezaRespuestaRefactor(aux, &contrato)
+						if int(fecha_actual.Month())+novedad.Cuotas-1 > 12 {
+							mesFin = int(fecha_actual.Month()) + novedad.Cuotas - 13
+							anoFin = fecha_actual.Year() + 1
+						} else {
+							mesFin = int(fecha_actual.Month()) + novedad.Cuotas - 1
+							anoFin = fecha_actual.Year()
+						}
+						novedad.FechaInicio = fecha_actual
+						if mesFin == 2 {
+							novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 28, 0, 0, 0, 0, time.Local)
+						} else {
+							novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 30, 0, 0, 0, 0, time.Local)
+						}
+
+						//Verificar que las cuotas no se pasen del tiempo restante del contrato
+
+						//Obtener el contrato
+
 						if contrato[0].FechaFin.Year() == novedad.FechaInicio.Year() {
 							if int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1 < novedad.Cuotas {
 								fmt.Println("Las cuotas superan los meses")
@@ -121,7 +123,6 @@ func (c *NovedadController) AgregarNovedad() {
 								posible = false
 							}
 						} else {
-
 							if int(contrato[0].FechaFin.Month())+13-int(fecha_actual.Month()) < novedad.Cuotas {
 								fmt.Println("Las cuotas superan los meses")
 								c.Data["Message"] = "Las cuotas superan los meses"
@@ -129,117 +130,98 @@ func (c *NovedadController) AgregarNovedad() {
 								posible = false
 							}
 						}
-					} else {
-						fmt.Println("Error al obtener el contrato: ", err)
-						c.Data["message"] = "Error, no existe el contrato solicitado, por favor verifique: " + err.Error()
-						c.Abort("400")
-					}
 
-					mesIterativo = int(novedad.FechaInicio.Month())
-					anoIterativo = novedad.FechaInicio.Year()
-					auxCuotas := novedad.Cuotas
-					for {
-						//Obtener el valor de los honorarios de ese mes
-						fmt.Println("Mes: ", mesIterativo)
-						fmt.Println("Año: ", anoIterativo)
-						var query = "ContratoId:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-							LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
-							query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:87"
-							if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-								LimpiezaRespuestaRefactor(aux, &auxDetalle)
-								honorarios = auxDetalle[0].ValorCalculado
-								fmt.Println("honorarios: ", honorarios)
-							} else {
-								fmt.Println("Error al obtener el valor de los honorarios: ", err)
-								c.Data["message"] = "Error al obtener el valor de los honorarios: " + err.Error()
-								c.Abort("400")
-							}
-						} else {
-							fmt.Println("Error al obtener el contrato peliquidacion: ", err)
-							c.Data["message"] = "El contrato no está vigente para mes solicitado " + err.Error()
-							c.Abort("400")
-						}
-						//Obtener el Valor de los descuentos de ese mes
-						query = "ContratoId:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-							LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
-							query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:573"
-							if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-								LimpiezaRespuestaRefactor(aux, &auxDetalle)
-								descuentos = auxDetalle[0].ValorCalculado
-							} else {
-								fmt.Println("Error al obtener el valor de los descuentos: ", err)
-								c.Data["message"] = "No se pudieron obtener los descuentos" + err.Error()
-								c.Abort("400")
-							}
-						} else {
-							fmt.Println("Error al obtener el contrato peliquidacion: ", err)
-							c.Data["message"] = "El contrato no está vigente para mes solicitado " + err.Error()
-							c.Abort("400")
-						}
-						//Verificar que el valor de los descuentos no supera la mitad de los honorarios
-						if auxConcepto[0].TipoConceptoNominaId == 419 {
-							if descuentos+novedad.Valor > (honorarios / 2) {
-								fmt.Println("Las cuotas superan el valor de los honorarios")
-								c.Data["message"] = "Las cuotas superan el valor de los honorarios, por favor verifique el valor de la novedad"
-								c.Abort("400")
-								posible = false
-							}
-						} else if auxConcepto[0].TipoConceptoNominaId == 420 {
-							if descuentos+((novedad.Valor/100)*honorarios) > (honorarios / 2) {
-								fmt.Println("Las cuotas superan el valor de los honorarios")
-								c.Data["message"] = "Las cuotas superan el valor de los honorarios, por favor verifique el valor de la novedad"
-								c.Abort("400")
-								posible = false
-							}
-						}
-						auxCuotas = auxCuotas - 1
-
-						if auxCuotas == 0 {
-							break
-						} else {
-							if mesIterativo == 12 {
-								mesIterativo = 1
-								anoIterativo = anoIterativo + 1
-							} else {
-								mesIterativo = mesIterativo + 1
-							}
-						}
-					}
-
-					if posible {
-						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad", "POST", &aux, novedad); err == nil {
-							fmt.Println("Novedad Registrada ")
-							LimpiezaRespuestaRefactor(aux, &novedad)
-							fmt.Println(novedad.ConceptoNominaId.TipoConceptoNominaId)
-							if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 || novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
-								//Agregar el Valor al detalle
-								mensaje, err := AgregarValorNovedad(novedad)
-								if err == nil {
-									c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": novedad}
+						mesIterativo = int(novedad.FechaInicio.Month())
+						anoIterativo = novedad.FechaInicio.Year()
+						auxCuotas := novedad.Cuotas
+						for {
+							//Obtener el valor de los honorarios de ese mes
+							fmt.Println("Mes: ", mesIterativo)
+							fmt.Println("Año: ", anoIterativo)
+							var query = "ContratoId:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
+							if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+								LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
+								query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:87"
+								if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+									LimpiezaRespuestaRefactor(aux, &auxDetalle)
+									honorarios = auxDetalle[0].ValorCalculado
 								} else {
-									c.Data["mesaage"] = mensaje + err.Error()
-									c.Abort("404")
+									fmt.Println("Error al obtener el valor de los honorarios: ", err)
+									c.Data["message"] = "Error al obtener el valor de los honorarios: " + err.Error()
+									c.Abort("400")
+								}
+							} else {
+								fmt.Println("Error al obtener el contrato peliquidacion: ", err)
+								c.Data["message"] = "El contrato no está vigente para mes solicitado " + err.Error()
+								c.Abort("400")
+							}
+
+							auxDetalle, _ := TraerDetalleMensual(strconv.Itoa(anoIterativo), strconv.Itoa(mesIterativo), novedad.ContratoId.NumeroContrato, strconv.Itoa(novedad.ContratoId.Vigencia), novedad.ContratoId.Documento, false)
+							//Verificar que el valor de los descuentos no supera la mitad de los honorarios
+							if auxConcepto[0].TipoConceptoNominaId == 419 {
+								if auxDetalle.TotalDescuentos+novedad.Valor > (honorarios / 2) {
+									fmt.Println("Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad: ", auxDetalle.TotalDescuentos+novedad.Valor > (honorarios/2))
+									c.Data["message"] = "Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad"
+									c.Abort("400")
+									posible = false
+								}
+							} else if auxConcepto[0].TipoConceptoNominaId == 420 {
+								if auxDetalle.TotalDescuentos+((novedad.Valor/100)*honorarios) > (honorarios / 2) {
+									fmt.Println("Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad: ", auxDetalle.TotalDescuentos+((novedad.Valor/100)*honorarios) > (honorarios/2))
+									c.Data["message"] = "Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad"
+									c.Abort("400")
+									posible = false
 								}
 							}
+							auxCuotas = auxCuotas - 1
+
+							if auxCuotas == 0 {
+								break
+							} else {
+								if mesIterativo == 12 {
+									mesIterativo = 1
+									anoIterativo = anoIterativo + 1
+								} else {
+									mesIterativo = mesIterativo + 1
+								}
+							}
+						}
+
+						if posible {
+							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad", "POST", &aux, novedad); err == nil {
+								fmt.Println("Novedad Registrada ")
+								LimpiezaRespuestaRefactor(aux, &novedad)
+								if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 || novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
+									//Agregar el Valor al detalle
+									mensaje, err := AgregarValorNovedad(novedad)
+									if err == nil {
+										c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": novedad}
+									} else {
+										c.Data["mesaage"] = mensaje + err.Error()
+										c.Abort("404")
+									}
+								}
+							} else {
+								fmt.Println("No se pudo guardar la novedad", err)
+								c.Data["mesaage"] = "Error, no se pudo guardar la novedad: " + err.Error()
+								c.Abort("400")
+							}
 						} else {
-							fmt.Println("No se pudo guardar la novedad", err)
-							c.Data["mesaage"] = "Error, no se pudo guardar la novedad: " + err.Error()
+							fmt.Println("No se cumplen los requisitos para guardar la novedad")
+							c.Data["mesaage"] = "No se cumplen los requisitos para guardar la novedad, por favor revise cuotas o valor"
 							c.Abort("400")
 						}
+
 					} else {
-						fmt.Println("No se cumplen los requisitos para guardar la novedad")
-						c.Data["mesaage"] = "No se cumplen los requisitos para guardar la novedad, por favor revise cuotas o valor"
+						fmt.Println("Error al obtener el concepto: ", err)
+						c.Data["mesaage"] = "Error, el concepto no existe: " + err.Error()
 						c.Abort("400")
 					}
-
 				} else {
-					fmt.Println("Error al obtener el concepto: ", err)
-					c.Data["mesaage"] = "Error, el concepto no existe: " + err.Error()
+					fmt.Println("Error al obtener contrato: ", err)
+					c.Data["message"] = "Error, el contrato no existe: " + err.Error()
 					c.Abort("400")
 				}
-
 			}
 		} else {
 			fmt.Println("Número de cuotas inválido porque es menor que 0 ")
