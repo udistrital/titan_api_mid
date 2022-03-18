@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/udistrital/titan_api_mid/golog"
@@ -16,9 +17,10 @@ type PreliquidacionHcSController struct {
 }
 
 func liquidarHCS(contrato models.Contrato) {
-	var mesIterativo int              //mes para iterar en el ciclo para liquidar todos los meses de una vez
-	var anoIterativo int              //Ano iterativo a la hora de liquidar
-	var predicados []models.Predicado //variable para inyectar reglas
+	var mesIterativo int                  //mes para iterar en el ciclo para liquidar todos los meses de una vez
+	var anoIterativo int                  //Ano iterativo a la hora de liquidar
+	var predicados []models.Predicado     //variable para inyectar reglas
+	var contratoGeneral []models.Contrato //Contrato general mensual para la liquidación general
 	var preliquidacion []models.Preliquidacion
 	var contratoPreliquidacion models.ContratoPreliquidacion
 	var detallePreliquidacion models.DetallePreliquidacion
@@ -28,14 +30,6 @@ func liquidarHCS(contrato models.Contrato) {
 	var reglasNuevas string //reglas a usar en cada iteracion
 	var semanas_liquidadas int
 	var diasALiquidar string
-
-	//Para agrupación
-	//var contratosDocente []models.Contrato
-	//var contratoMayor models.Contrato
-	//var sueldos []models.DetallePreliquidacion
-	//var sumatoria float64
-	//var detalles []models.DetallePreliquidacion
-	//
 
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 	var emergencia int //Varibale para evitar loop infinito
@@ -148,6 +142,25 @@ func liquidarHCS(contrato models.Contrato) {
 
 			for j := 0; j < len(auxDetalle); j++ {
 				registrarDetallePreliquidacion(auxDetalle[j])
+			}
+
+			//Buscar el contrato general para este mes para la persona en cuestión, en caso de no existir se crea uno
+			query := "NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(anoIterativo)
+			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+				LimpiezaRespuestaRefactor(aux, &contratoGeneral)
+				if contratoGeneral[0].Id == 0 {
+					//Crear contrato General
+
+					contratoGeneral[0].NumeroContrato = "GENERAL" + strconv.Itoa(mesIterativo)
+					contratoGeneral[0].Vigencia = anoIterativo
+					contratoGeneral[0].NombreCompleto = contrato.NombreCompleto
+					contratoGeneral[0].Documento = contrato.Documento
+					contratoGeneral[0].PersonaId = contrato.PersonaId
+					contratoGeneral[0].TipoNominaId = contrato.TipoNominaId
+					contratoGeneral[0].FechaInicio = time.Date(anoIterativo, time.April, 1, 12, 0, 0, 0, time.UTC)
+				}
+			} else {
+				fmt.Println("Error buscar contrato general mensual: ", err)
 			}
 
 			if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() {

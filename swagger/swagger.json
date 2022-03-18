@@ -265,8 +265,8 @@
                             }
                         }
                     },
-                    "403": {
-                        "description": "body is empty"
+                    "400": {
+                        "description": "the request contains incorrect syntax"
                     }
                 }
             }
@@ -381,8 +381,8 @@
                             "$ref": "#/definitions/models.Novedad"
                         }
                     },
-                    "403": {
-                        "description": "body is empty"
+                    "400": {
+                        "description": "the request contains incorrect syntax"
                     }
                 }
             }
@@ -427,8 +427,8 @@
                             "$ref": "#/definitions/models.Contrato"
                         }
                     },
-                    "403": {
-                        "description": "body is empty"
+                    "400": {
+                        "description": ""
                     }
                 }
             }
@@ -485,8 +485,8 @@
                     "201": {
                         "description": "models.Novedad.Id"
                     },
-                    "403": {
-                        "description": "body is empty"
+                    "400": {
+                        "description": "the request contains incorrect syntax"
                     }
                 }
             }
@@ -547,8 +547,8 @@
                             "$ref": "#/definitions/models.Contrato"
                         }
                     },
-                    "403": {
-                        "description": "body is empty"
+                    "400": {
+                        "description": "the request contains incorrect syntax"
                     }
                 }
             }
