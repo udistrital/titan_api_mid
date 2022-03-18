@@ -123,6 +123,14 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 				alivios.Afc = 0
 				reglas = reglas + "afc(0)."
 			}
+		}else {
+			reglas = reglas + "dependientes(0)."
+			reglas = reglas + "medicina_prepagada(0)."
+			reglas = reglas + "pensionado(0)."
+			reglas = reglas + "intereses_vivienda(0)."
+			reglas = reglas + "reteiva(0)."
+			reglas = reglas + "pension_voluntaria(0)."
+			reglas = reglas + "afc(0)."
 		}
 
 	} else {
