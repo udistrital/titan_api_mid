@@ -162,15 +162,16 @@ func registrarDetallePreliquidacion(detallePreliquidacion models.DetallePreliqui
 	}
 }
 
-func registratContrato(contrato models.Contrato) (respuesta models.Contrato) {
+func registrarContrato(contrato models.Contrato) (respuesta models.Contrato, err error) {
 	var response map[string]interface{}
 	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &response, contrato); err == nil {
 		fmt.Println("Contrato guardado con éxito")
 		LimpiezaRespuestaRefactor(response, &respuesta)
 	} else {
 		fmt.Println("Error al guardar contrato", err)
+		return contrato, err
 	}
-	return respuesta
+	return respuesta, nil
 }
 
 func CalcularPeriodoLiquidacion(anoPreliquidacion, mesPreliquidacion int, fechaInicio, fechaFin time.Time) (periodoLiquidacion, periodoEspecifico string) {
@@ -266,5 +267,34 @@ func obtenerMes(numero int) time.Month {
 		return time.November
 	default:
 		return time.February
+	}
+}
+
+func esNovedad(id int) (res bool) {
+	switch id {
+	case 568:
+		return false
+	case 569:
+		return false
+	case 570:
+		return false
+	case 64:
+		return false
+	case 170:
+		return false
+	case 572:
+		return false
+	case 567:
+		return false
+	case 545:
+		return false
+	case 547:
+		return false
+	case 578:
+		return false
+	case 542:
+		return false
+	default:
+		return true
 	}
 }
