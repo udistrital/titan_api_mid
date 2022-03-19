@@ -40,17 +40,24 @@ func (c *PreliquidacionController) Preliquidar() {
 				} else if contrato.TipoNominaId == 409 {
 					liquidarHCH(contrato)
 				} else if contrato.TipoNominaId == 410 {
-					liquidarHCS(contrato)
+					liquidarHCS(contrato, false)
 				}
 			} else {
 				fmt.Println("No se pudo guardar el contrato", err)
+				c.Data["mesaage"] = "La fecha inicio no puede estar después de la fecha fin"
+				c.Abort("400")
 			}
 		} else {
 			fmt.Println("La fecha inicio no puede estar después de la fecha fin")
+			c.Data["mesaage"] = "La fecha inicio no puede estar después de la fecha fin"
+			c.Abort("400")
 		}
 	} else {
-		fmt.Println("Error al obtener contratos", err)
+		fmt.Println("Error al unmarshal del contrato: ", err)
+		c.Data["mesaage"] = "Error service POST: The request contains an incorrect data type or an invalid parameter"
+		c.Abort("400")
 	}
+	c.ServeJSON()
 }
 
 func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.ContratoPreliquidacion) {
@@ -60,15 +67,14 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 	var alivios models.ContratoPreliquidacion
 	reglas = ""
 	query := strconv.Itoa(cedula)
-	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlAdministrativaAmazon")+"/informacion_persona_natural/"+query, &aux); err == nil {
-		jsonPersonaNatural, errorJSON := json.Marshal(aux)
-
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
+		jsonPersonaNatural, errorJSON := json.Marshal(aux["informacion_persona_natural"])
 		if errorJSON == nil {
 
 			json.Unmarshal(jsonPersonaNatural, &tempPersonaNatural)
-			fmt.Println("personaNatural:", &tempPersonaNatural)
 
 			if tempPersonaNatural.Reteiva == "true" {
+				fmt.Println("sí cogí el JSON")
 				reglas = reglas + "reteiva(1)."
 				alivios.ResponsableIva = true
 			} else {
@@ -110,10 +116,10 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 
 			if tempPersonaNatural.PensionVoluntaria > 0 {
 				alivios.PensionVoluntaria = tempPersonaNatural.PensionVoluntaria
-				reglas = reglas + "pension_voluntaria(" + fmt.Sprintf("%f", tempPersonaNatural.PensionVoluntaria) + ")."
+				reglas = reglas + "pension_voluntaria(" + fmt.Sprintf("%f", tempPersonaNatural.InteresViviendaAfc) + " )."
 			} else {
 				alivios.PensionVoluntaria = tempPersonaNatural.PensionVoluntaria
-				reglas = reglas + "intereses_vivienda(0)."
+				reglas = reglas + "pension_voluntaria(0)."
 			}
 
 			if tempPersonaNatural.Afc > 0 {
@@ -123,7 +129,9 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 				alivios.Afc = 0
 				reglas = reglas + "afc(0)."
 			}
-		}else {
+
+		} else {
+			fmt.Println("Error al unmarshal del JSON: ", err)
 			reglas = reglas + "dependientes(0)."
 			reglas = reglas + "medicina_prepagada(0)."
 			reglas = reglas + "pensionado(0)."
@@ -131,8 +139,14 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 			reglas = reglas + "reteiva(0)."
 			reglas = reglas + "pension_voluntaria(0)."
 			reglas = reglas + "afc(0)."
+			alivios.PensionVoluntaria = 0
+			alivios.Afc = 0
+			alivios.ResponsableIva = false
+			alivios.Dependientes = false
+			alivios.MedicinaPrepagadaUvt = 0
+			alivios.Pensionado = false
+			alivios.InteresesVivienda = 0
 		}
-
 	} else {
 		fmt.Println("error al consultar en Ágora", err)
 		reglas = reglas + "dependientes(0)."
@@ -160,7 +174,7 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 // @Param	mes		path 	string	true		"Mes de la preliquidación"
 // @Param	nomina		path 	string	true		"Tipo de nomina"
 // @Success 201 {object} models.DetalleMensual
-// @Failure 403 body is empty
+// @Failure 404 No existe el registro
 // @router /obtener_resumen_preliquidacion/:mes/:ano/:nomina [get]
 func (c *PreliquidacionController) ObtenerResumenPreliquidacion() {
 	var aux map[string]interface{}
@@ -206,6 +220,7 @@ func (c *PreliquidacionController) ObtenerResumenPreliquidacion() {
 	} else {
 		fmt.Println("Error al obtener los detalles")
 		c.Data["mesaage"] = "Error, la preliquidación no existe"
+		c.Abort("404")
 	}
 	c.ServeJSON()
 }

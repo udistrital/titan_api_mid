@@ -461,9 +461,9 @@ func (c *NovedadController) CederContrato() {
 				contratoNuevo.Id = 0
 				contratoNuevo.Documento = sucesor.DocumentoNuevo
 				contratoNuevo.NombreCompleto = sucesor.NombreCompleto
+				contratoNuevo.Vigencia = contrato[0].Vigencia
 				contratoNuevo.FechaInicio = sucesor.FechaInicio
-				contratoNuevo = registratContrato(contratoNuevo)
-				fmt.Println("Contrato nuevo: ", contratoNuevo)
+				contratoNuevo, _ = registrarContrato(contratoNuevo)
 
 				contrato[0].FechaFin = sucesor.FechaInicio.Add(24 * time.Hour * -1)
 				//Actualizar fecha de finalización del contrato
@@ -479,7 +479,7 @@ func (c *NovedadController) CederContrato() {
 					contrato[0].FechaInicio = time.Date(sucesor.FechaInicio.Year(), sucesor.FechaInicio.Month(), contrato[0].FechaInicio.Day(), 12, 0, 0, 0, time.UTC)
 				}
 
-				//El valor del contrato nuevo es lo que queda del contrato pasado (no se almacena únicamente para cálculos)
+				//El valor del contrato nuevo es lo que queda del contrato pasado (no se almacena, es únicamente para cálculos)
 				if sucesor.FechaInicio.Day() == 1 {
 					contratoNuevo.ValorContrato = valorViejo - valorNuevo
 					fmt.Println("Liquidando nuevo:", contratoNuevo.NumeroContrato, " de ", contratoNuevo.NombreCompleto)
