@@ -17,10 +17,9 @@ type PreliquidacionHcSController struct {
 }
 
 func liquidarHCS(contrato models.Contrato, general bool) {
-	var mesIterativo int                  //mes para iterar en el ciclo para liquidar todos los meses de una vez
-	var anoIterativo int                  //Ano iterativo a la hora de liquidar
-	var predicados []models.Predicado     //variable para inyectar reglas
-	var contratoGeneral []models.Contrato //Contrato general mensual para la liquidación general
+	var mesIterativo int              //mes para iterar en el ciclo para liquidar todos los meses de una vez
+	var anoIterativo int              //Ano iterativo a la hora de liquidar
+	var predicados []models.Predicado //variable para inyectar reglas
 	var preliquidacion []models.Preliquidacion
 	var contratoPreliquidacion models.ContratoPreliquidacion
 	var detallePreliquidacion models.DetallePreliquidacion
@@ -33,6 +32,7 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 
 	//Para el contrato general
 	var contratosDocente []models.ContratoPreliquidacion
+	var contratoGeneral []models.Contrato //Contrato general mensual para la liquidación general
 
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 	var emergencia int //Varibale para evitar loop infinito
@@ -251,8 +251,6 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 							fmt.Println("Error al obtener los detalles para el contrato general del mes")
 						}
 					}
-					fmt.Println(contratoGeneral[0])
-					fmt.Println(contratoGeneral[0].ValorContrato)
 					liquidarHCS(contratoGeneral[0], true)
 				} else {
 					fmt.Println("Error buscar contrato general mensual: ", err)

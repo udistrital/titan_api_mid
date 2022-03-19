@@ -361,7 +361,7 @@ func (c *NovedadController) CancelarContrato() {
 	if contrato[0].TipoNominaId == 411 {
 		liquidarCPS(contrato[0])
 	} else if contrato[0].TipoNominaId == 409 {
-		liquidarHCH(contrato[0])
+		liquidarHCH(contrato[0], false)
 	}
 
 	c.ServeJSON()
@@ -760,7 +760,7 @@ func (c *NovedadController) SuspenderContrato() {
 			liquidarCPS(contrato[0])
 			liquidarCPS(contratoNuevo)
 		} else if contrato[0].TipoNominaId == 409 {
-			liquidarHCH(contrato[0])
+			liquidarHCH(contrato[0], false)
 		}
 	} else {
 		fmt.Println("Error al unmarsahl de los datos del sucesor: ", err)
