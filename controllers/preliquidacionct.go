@@ -44,7 +44,7 @@ func liquidarCPS(contrato models.Contrato) {
 
 	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", diasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
-	reglasbase := cargarReglasBase("CT") + cargarReglasSS() + reglasAlivios + FormatoReglas(predicados)
+	reglasbase := cargarReglasBase("CT") + reglasAlivios + FormatoReglas(predicados)
 	emergencia = 0
 	for {
 		fmt.Println("mes:", mesIterativo)
