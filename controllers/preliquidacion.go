@@ -68,31 +68,28 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 	reglas = ""
 	query := strconv.Itoa(cedula)
 	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
+
 		jsonPersonaNatural, errorJSON := json.Marshal(aux["informacion_persona_natural"])
 		if errorJSON == nil {
-
 			json.Unmarshal(jsonPersonaNatural, &tempPersonaNatural)
-
-			if tempPersonaNatural.Reteiva == "true" {
-				fmt.Println("sí cogí el JSON")
+			if tempPersonaNatural.ResponsableIva == "true" {
 				reglas = reglas + "reteiva(1)."
 				alivios.ResponsableIva = true
 			} else {
-				reglas = reglas + "reteiva(0)."
+				reglas = reglas + "reteiva(1)."
 				alivios.ResponsableIva = false
 			}
 
-			if tempPersonaNatural.Dependientes == "true" {
+			if tempPersonaNatural.PersonasACargo == "true" {
 				reglas = reglas + "dependientes(1)."
 				alivios.Dependientes = true
 			} else {
 				reglas = reglas + "dependientes(0)."
 				alivios.Dependientes = false
 			}
-
-			if tempPersonaNatural.ValorUvtPrepagada > 0 {
-				reglas = reglas + "medicina_prepagada(" + fmt.Sprintf("%f", tempPersonaNatural.ValorUvtPrepagada) + ")."
-				alivios.MedicinaPrepagadaUvt = tempPersonaNatural.ValorUvtPrepagada
+			alivios.MedicinaPrepagadaUvt, _ = strconv.ParseFloat(tempPersonaNatural.ValorUvtPrepagada, 64)
+			if alivios.MedicinaPrepagadaUvt >= 0 && tempPersonaNatural.ValorUvtPrepagada != "" {
+				reglas = reglas + "medicina_prepagada(" + tempPersonaNatural.ValorUvtPrepagada + ")."
 			} else {
 				reglas = reglas + "medicina_prepagada(0)."
 				alivios.MedicinaPrepagadaUvt = 0
@@ -106,30 +103,28 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 				alivios.Pensionado = false
 			}
 
-			if tempPersonaNatural.InteresViviendaAfc > 0 {
-				reglas = reglas + "intereses_vivienda(" + fmt.Sprintf("%f", tempPersonaNatural.InteresViviendaAfc) + ")."
-				alivios.InteresesVivienda = tempPersonaNatural.InteresViviendaAfc
+			alivios.InteresesVivienda, _ = strconv.ParseFloat(tempPersonaNatural.InteresViviendaAfc, 64)
+			if alivios.InteresesVivienda > 0 && tempPersonaNatural.InteresViviendaAfc != "" {
+				reglas = reglas + "intereses_vivienda(" + tempPersonaNatural.InteresViviendaAfc + ")."
 			} else {
 				reglas = reglas + "intereses_vivienda(0)."
-				alivios.InteresesVivienda = tempPersonaNatural.InteresViviendaAfc
+				alivios.InteresesVivienda = 0
 			}
 
-			if tempPersonaNatural.PensionVoluntaria > 0 {
-				alivios.PensionVoluntaria = tempPersonaNatural.PensionVoluntaria
-				reglas = reglas + "pension_voluntaria(" + fmt.Sprintf("%f", tempPersonaNatural.InteresViviendaAfc) + " )."
+			alivios.PensionVoluntaria, _ = strconv.ParseFloat(tempPersonaNatural.ValorPensionVoluntaria, 64)
+			if alivios.PensionVoluntaria > 0 && tempPersonaNatural.ValorPensionVoluntaria != "" {
+				reglas = reglas + "pension_voluntaria(" + tempPersonaNatural.ValorPensionVoluntaria + " )."
 			} else {
-				alivios.PensionVoluntaria = tempPersonaNatural.PensionVoluntaria
+				alivios.PensionVoluntaria = 0
 				reglas = reglas + "pension_voluntaria(0)."
 			}
-
-			if tempPersonaNatural.Afc > 0 {
-				alivios.Afc = tempPersonaNatural.Afc
-				reglas = reglas + "afc(" + fmt.Sprintf("%f", tempPersonaNatural.InteresViviendaAfc) + ")."
+			alivios.Afc, _ = strconv.ParseFloat(tempPersonaNatural.ValorAfc, 64)
+			if alivios.Afc > 0 && tempPersonaNatural.ValorAfc != "" {
+				reglas = reglas + "afc(" + tempPersonaNatural.ValorAfc + ")."
 			} else {
 				alivios.Afc = 0
 				reglas = reglas + "afc(0)."
 			}
-
 		} else {
 			fmt.Println("Error al unmarshal del JSON: ", err)
 			reglas = reglas + "dependientes(0)."
