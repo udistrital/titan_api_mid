@@ -337,7 +337,8 @@ paths:
       parameters:
       - in: body
         name: OtroSí
-        description: Documentos de contratista Nueva Fecha de finalización del contrato
+        description: Documentos de contratista con Nueva Fecha de finalización del
+          contrato
         required: true
         schema:
           $ref: '#/definitions/models.OtroSi'
@@ -347,7 +348,7 @@ paths:
           schema:
             $ref: '#/definitions/models.Contrato'
         "403":
-          description: body is empty
+          description: Fallo al obtener algún dato
   /novedad/suspender_contrato:
     post:
       tags:
@@ -413,8 +414,8 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/models.DetalleMensual'
-        "403":
-          description: body is empty
+        "404":
+          description: No existe el registro
 definitions:
   models.ConceptoNomina:
     title: ConceptoNomina
