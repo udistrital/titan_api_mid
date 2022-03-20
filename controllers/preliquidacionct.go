@@ -93,5 +93,4 @@ func liquidarCPS(contrato models.Contrato) {
 		}
 		preliquidacion[0].Id = 0 //Para evitar errores al obtener la preliquidación del siguiente mes
 	}
-
 }
