@@ -76,7 +76,7 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 				reglas = reglas + "reteiva(1)."
 				alivios.ResponsableIva = true
 			} else {
-				reglas = reglas + "reteiva(1)."
+				reglas = reglas + "reteiva(0)."
 				alivios.ResponsableIva = false
 			}
 
