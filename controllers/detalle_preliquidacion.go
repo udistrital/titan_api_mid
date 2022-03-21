@@ -180,7 +180,7 @@ func encontrarResolucion(idResolucion int, resoluciones []models.DetalleDVE) (re
 */
 
 func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
-	var res map[string]interface{}
+	var aux map[string]interface{}
 	var mesIterativo = int(novedad.FechaInicio.Month())
 	var anoIterativo = novedad.FechaInicio.Year()
 	var auxCuotas int
@@ -203,12 +203,12 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
 		fmt.Println("Cuotas: ", auxCuotas)
 		var query = "ContratoId.Id:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo)
 		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &res); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
-			LimpiezaRespuestaRefactor(res, &contratoPreliquidacion)
+		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
+			LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
 			//Obtener el valor de los honorarios para ese mes
 			query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:" + strconv.Itoa(idHonorarios)
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &res); err == nil {
-				LimpiezaRespuestaRefactor(res, &honorarios)
+			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+				LimpiezaRespuestaRefactor(aux, &honorarios)
 				detalleNuevo.Id = 0
 				detalleNuevo.TipoPreliquidacionId = 397
 				detalleNuevo.Activo = true
@@ -225,7 +225,7 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
 					detalleNuevo.ValorCalculado = math.Round((honorarios[0].ValorCalculado * (novedad.Valor / 100)))
 				}
 
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/", "POST", &res, detalleNuevo); err == nil {
+				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/", "POST", &aux, detalleNuevo); err == nil {
 					fmt.Println("Concepto Añadido")
 				} else {
 					fmt.Println("Error al agregar concepto", err)
@@ -273,7 +273,7 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) (mensa
 		var query = "ContratoId.NumeroContrato:" + novedad.ContratoId.NumeroContrato + ",PreliquidacionId.Ano:" + strconv.Itoa(fecha_actual.Year()) + ",PreliquidacionId.Mes:" + strconv.Itoa(i)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
 			LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
-			//Eliminar el Detalle del concepto
+			//Eliminar el Concepto de la liquidacion de ese mes
 			query := "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:" + strconv.Itoa(novedad.ConceptoNominaId.Id)
 			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &detalle)
@@ -302,4 +302,59 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) (mensa
 		}
 	}
 	return "", err
+}
+
+//Agregar novedades al contrato general del docente
+
+func AgregarNovedadGeneral(documento string, mes int, ano int) (mensaje string, err error) {
+	var aux map[string]interface{}
+	var contratoGeneral []models.Contrato
+	var detalleGeneral []models.DetallePreliquidacion
+	var detallesTotales []models.DetallePreliquidacion
+
+	//Traer el contrato general del mes a iterar
+	query := "NumeroContrato:GENERAL" + strconv.Itoa(mes) + ",Vigencia:" + strconv.Itoa(ano) + ",Documento:" + documento
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1"+query, &aux); err == nil {
+		LimpiezaRespuestaRefactor(aux, &contratoGeneral)
+		if contratoGeneral[0].Id != 0 {
+			//Traer los detalles de ese contrato:
+			query := "ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contratoGeneral[0].Id) + "," + documento
+			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1"+query, &aux); err == nil {
+				LimpiezaRespuestaRefactor(aux, &detalleGeneral)
+				if detalleGeneral[0].Id != 0 {
+					//Traer los detalles de todos los contratos de ese docente para ese mes en específico
+					query := "ContratoPreliquidacionId.ContratoId.Documento:" + documento + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mes) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(ano)
+					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1"+query, &aux); err == nil {
+						LimpiezaRespuestaRefactor(aux, &detallesTotales)
+						if detallesTotales[0].Id != 0 {
+							//Verificar cuáles conceptos son novedades y agregar su valor al contrato
+
+						} else {
+							fmt.Println("No hay detalles para ese contrato")
+							return "No hay detalles para ese contrato", nil
+						}
+					} else {
+						fmt.Println("Error al obtener detalles del contrato general", err)
+						return "Error al obtener detalles del contrato general", err
+					}
+
+				} else {
+					fmt.Println("No hay detalles para ese contrato")
+					return "No hay detalles para ese contrato", nil
+				}
+			} else {
+				fmt.Println("Error al obtener detalles del contrato general", err)
+				return "Error al obtener detalles del contrato general", err
+			}
+
+		} else {
+			fmt.Println("Error al agregar el concepto al contrato general, no hay conrato general para este docente")
+			return "Error al agregar el concepto al contrato general, no hay conrato general para este docente", nil
+		}
+	} else {
+		fmt.Println("Error al obtener el contrato generla", err)
+		return "Error al obtener el contrato general", err
+	}
+
+	return "Novedades generales actualizadas", nil
 }

@@ -120,14 +120,14 @@ func (c *NovedadController) AgregarNovedad() {
 						//Verificar que las cuotas no se pasen del tiempo restante del contrato
 						if contrato[0].FechaFin.Year() == novedad.FechaInicio.Year() {
 							if int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1 < novedad.Cuotas {
-								fmt.Println("Las cuotas superan los meses")
+								fmt.Println("Las cuotas superan los meses", int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1, novedad.Cuotas, 1)
 								c.Data["Message"] = "Las cuotas superan los meses"
 								c.Abort("400")
 								posible = false
 							}
 						} else {
 							if int(contrato[0].FechaFin.Month())+13-int(fecha_actual.Month()) < novedad.Cuotas {
-								fmt.Println("Las cuotas superan los meses")
+								fmt.Println("Las cuotas superan los meses, ", int(contrato[0].FechaFin.Month())+13-int(fecha_actual.Month()), novedad.Cuotas, 2)
 								c.Data["Message"] = "Las cuotas superan los meses"
 								c.Abort("400")
 								posible = false
@@ -254,6 +254,8 @@ func (c *NovedadController) EliminarNovedad() {
 	var aux map[string]interface{}
 	var novedad []models.Novedad
 	//Verificar cómo se van a enviar los datos del contrato al trabajar el front
+
+	//Buscar la novedad
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad?limit=-1&query=Id:"+id, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &novedad)
 		if novedad[0].ConceptoNominaId.TipoConceptoNominaId == 419 || novedad[0].ConceptoNominaId.TipoConceptoNominaId == 420 {
