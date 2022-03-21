@@ -409,7 +409,7 @@ func (c *NovedadController) CederContrato() {
 						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &detalles)
 							for j := 0; j < len(detalles); j++ {
-								if detalles[j].ConceptoNominaId.Id == 87 && mesIterativo == int(sucesor.FechaInicio.Month()) {
+								if detalles[j].ConceptoNominaId.Id == 87 && detalles[j].DiasLiquidados == 30 {
 									valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
 								}
 								if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
@@ -445,7 +445,8 @@ func (c *NovedadController) CederContrato() {
 				//Obtener lo liquidado hasta el momento
 				fmt.Println("Obteniendo:")
 				fmt.Println("Fecha Inicio:", sucesor.FechaInicio.Month(), " ", sucesor.FechaInicio.Year())
-				query := "ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato[0].NumeroContrato
+				valorNuevo = 0
+				query := "ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato[0].NumeroContrato + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + strconv.Itoa(contrato[0].Vigencia)
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &detalles)
 					for j := 0; j < len(detalles); j++ {
@@ -487,9 +488,9 @@ func (c *NovedadController) CederContrato() {
 				} else {
 					contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day())
 					contratoNuevo.ValorContrato = valorViejo - valorNuevo - valorDia*float64(contrato[0].FechaFin.Day())
-					fmt.Println("Liquidando actual:", contrato[0].NumeroContrato, " de ", contrato[0].NombreCompleto)
+					fmt.Println("Liquidando actual:", contrato[0])
 					liquidarCPS(contrato[0])
-					fmt.Println("Liquidando nuevo:", contratoNuevo.NumeroContrato, " de ", contratoNuevo.NombreCompleto)
+					fmt.Println("Liquidando nuevo:", contratoNuevo)
 					liquidarCPS(contratoNuevo)
 				}
 			} else {
