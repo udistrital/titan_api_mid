@@ -39,6 +39,7 @@ func (c *NovedadController) AgregarNovedad() {
 	var auxDetalle []models.DetallePreliquidacion
 	var auxConcepto []models.ConceptoNomina
 	var honorarios float64
+	var idHonorarios int //En caso de Salarios el id a buscar cambia
 	var novedad models.Novedad
 	var fecha_actual = time.Now()
 	var anoFin int
@@ -58,6 +59,11 @@ func (c *NovedadController) AgregarNovedad() {
 				//traer el contrato
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=Id:"+strconv.Itoa(novedad.ContratoId.Id), &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &contrato)
+					if contrato[0].TipoNominaId == 410 {
+						idHonorarios = 152
+					} else {
+						idHonorarios = 87
+					}
 					novedad.ContratoId = &contrato[0]
 					//Si es devengo se añade el valor de una vez
 					if auxConcepto[0].NaturalezaConceptoNominaId == 423 {
@@ -112,9 +118,6 @@ func (c *NovedadController) AgregarNovedad() {
 						}
 
 						//Verificar que las cuotas no se pasen del tiempo restante del contrato
-
-						//Obtener el contrato
-
 						if contrato[0].FechaFin.Year() == novedad.FechaInicio.Year() {
 							if int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1 < novedad.Cuotas {
 								fmt.Println("Las cuotas superan los meses")
@@ -141,7 +144,8 @@ func (c *NovedadController) AgregarNovedad() {
 							var query = "ContratoId:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
 							if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 								LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
-								query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:87"
+								query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:" + strconv.Itoa(idHonorarios)
+								fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=" + query)
 								if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 									LimpiezaRespuestaRefactor(aux, &auxDetalle)
 									honorarios = auxDetalle[0].ValorCalculado
@@ -160,14 +164,14 @@ func (c *NovedadController) AgregarNovedad() {
 							//Verificar que el valor de los descuentos no supera la mitad de los honorarios
 							if auxConcepto[0].TipoConceptoNominaId == 419 {
 								if auxDetalle.TotalDescuentos+novedad.Valor > (honorarios / 2) {
-									fmt.Println("Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad: ", auxDetalle.TotalDescuentos+novedad.Valor > (honorarios/2))
+									fmt.Println("Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad: ", auxDetalle.TotalDescuentos+novedad.Valor, (honorarios / 2))
 									c.Data["message"] = "Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad"
 									c.Abort("400")
 									posible = false
 								}
 							} else if auxConcepto[0].TipoConceptoNominaId == 420 {
 								if auxDetalle.TotalDescuentos+((novedad.Valor/100)*honorarios) > (honorarios / 2) {
-									fmt.Println("Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad: ", auxDetalle.TotalDescuentos+((novedad.Valor/100)*honorarios) > (honorarios/2))
+									fmt.Println("Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad: ", auxDetalle.TotalDescuentos+((novedad.Valor/100)*honorarios), (honorarios / 2))
 									c.Data["message"] = "Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad"
 									c.Abort("400")
 									posible = false
