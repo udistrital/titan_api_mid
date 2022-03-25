@@ -96,7 +96,7 @@ func (c *NovedadController) AgregarNovedad() {
 							}
 						} else {
 							fmt.Println("No se pudo guardar la novedad", err)
-							c.Data["message"] = "Error, no se pudo guardar la novedad" + err.Error()
+							c.Data["mesaage"] = "Error, no se pudo guardar la novedad" + err.Error()
 							c.Abort("400")
 						}
 						//si es desuento
@@ -120,15 +120,15 @@ func (c *NovedadController) AgregarNovedad() {
 						//Verificar que las cuotas no se pasen del tiempo restante del contrato
 						if contrato[0].FechaFin.Year() == novedad.FechaInicio.Year() {
 							if int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1 < novedad.Cuotas {
-								fmt.Println("Las cuotas superan los meses", int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1, novedad.Cuotas, 1)
-								c.Data["Message"] = "Las cuotas superan los meses"
+								fmt.Println("Las cuotas superan los meses", int(contrato[0].FechaFin.Month()), int(fecha_actual.Month()), int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1, novedad.Cuotas, 1)
+								c.Data["mesaage"] = "Las cuotas superan los meses"
 								c.Abort("400")
 								posible = false
 							}
 						} else {
 							if int(contrato[0].FechaFin.Month())+13-int(fecha_actual.Month()) < novedad.Cuotas {
 								fmt.Println("Las cuotas superan los meses, ", int(contrato[0].FechaFin.Month())+13-int(fecha_actual.Month()), novedad.Cuotas, 2)
-								c.Data["Message"] = "Las cuotas superan los meses"
+								c.Data["mesaage"] = "Las cuotas superan los meses"
 								c.Abort("400")
 								posible = false
 							}
@@ -151,12 +151,12 @@ func (c *NovedadController) AgregarNovedad() {
 									honorarios = auxDetalle[0].ValorCalculado
 								} else {
 									fmt.Println("Error al obtener el valor de los honorarios: ", err)
-									c.Data["message"] = "Error al obtener el valor de los honorarios: " + err.Error()
+									c.Data["mesaage"] = "Error al obtener el valor de los honorarios: " + err.Error()
 									c.Abort("400")
 								}
 							} else {
 								fmt.Println("Error al obtener el contrato peliquidacion: ", err)
-								c.Data["message"] = "El contrato no está vigente para mes solicitado " + err.Error()
+								c.Data["mesaage"] = "El contrato no está vigente para mes solicitado " + err.Error()
 								c.Abort("400")
 							}
 
@@ -165,14 +165,14 @@ func (c *NovedadController) AgregarNovedad() {
 							if auxConcepto[0].TipoConceptoNominaId == 419 {
 								if auxDetalle.TotalDescuentos+novedad.Valor > (honorarios / 2) {
 									fmt.Println("Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad: ", auxDetalle.TotalDescuentos+novedad.Valor, (honorarios / 2))
-									c.Data["message"] = "Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad"
+									c.Data["mesaage"] = "Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad"
 									c.Abort("400")
 									posible = false
 								}
 							} else if auxConcepto[0].TipoConceptoNominaId == 420 {
 								if auxDetalle.TotalDescuentos+((novedad.Valor/100)*honorarios) > (honorarios / 2) {
 									fmt.Println("Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad: ", auxDetalle.TotalDescuentos+((novedad.Valor/100)*honorarios), (honorarios / 2))
-									c.Data["message"] = "Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad"
+									c.Data["mesaage"] = "Los descuentos superan la mitad de los honorarios, por favor verifique el valor de la novedad"
 									c.Abort("400")
 									posible = false
 								}
@@ -223,7 +223,7 @@ func (c *NovedadController) AgregarNovedad() {
 					}
 				} else {
 					fmt.Println("Error al obtener contrato: ", err)
-					c.Data["message"] = "Error, el contrato no existe: " + err.Error()
+					c.Data["mesaage"] = "Error, el contrato no existe: " + err.Error()
 					c.Abort("400")
 				}
 			}
@@ -263,7 +263,7 @@ func (c *NovedadController) EliminarNovedad() {
 			if err == nil {
 				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": novedad[0].Id}
 			} else {
-				c.Data["message"] = mensaje + err.Error()
+				c.Data["mesaage"] = mensaje + err.Error()
 				c.Abort("404")
 			}
 		} else {
@@ -564,7 +564,7 @@ func (c *NovedadController) AplicarOtrosi() {
 							fmt.Println("Detalle eliminado con exito")
 						} else {
 							fmt.Println("Error al eliminar detalle: ", err)
-							c.Data["message"] = "No se pudo eliminar el detalle " + err.Error()
+							c.Data["mesaage"] = "No se pudo eliminar el detalle " + err.Error()
 							c.Abort("403")
 						}
 					}
@@ -572,7 +572,7 @@ func (c *NovedadController) AplicarOtrosi() {
 						fmt.Println("contrato preliquidacion eliminado con exito")
 					} else {
 						fmt.Println("Error al eliminar contrato preliquidacion: ", err)
-						c.Data["message"] = "No se pudo eliminar el contrato_preliquidacion " + err.Error()
+						c.Data["mesaage"] = "No se pudo eliminar el contrato_preliquidacion " + err.Error()
 						c.Abort("403")
 					}
 
@@ -600,23 +600,23 @@ func (c *NovedadController) AplicarOtrosi() {
 
 				} else {
 					fmt.Println("Error al obtener detalles")
-					c.Data["message"] = "No hya detalles para ese contrato " + err.Error()
+					c.Data["mesaage"] = "No hya detalles para ese contrato " + err.Error()
 					c.Abort("403")
 				}
 			} else {
 				fmt.Println("Error al obtener contrato_preliquidacion")
-				c.Data["message"] = "No hay contrato Preliquidación para este contrato " + err.Error()
+				c.Data["mesaage"] = "No hay contrato Preliquidación para este contrato " + err.Error()
 				c.Abort("403")
 			}
 
 		} else {
 			fmt.Println("Error al obtener el contrato: ", err)
-			c.Data["message"] = "No existe ese contrato " + err.Error()
+			c.Data["mesaage"] = "No existe ese contrato " + err.Error()
 			c.Abort("403")
 		}
 	} else {
 		fmt.Println("Error al unmarshal de los datos del otro sí", err)
-		c.Data["message"] = "Los parámetros están más escritos" + err.Error()
+		c.Data["mesaage"] = "Los parámetros están más escritos" + err.Error()
 		c.Abort("403")
 	}
 	c.ServeJSON()

@@ -162,7 +162,7 @@ func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 
 	} else {
 		fmt.Println("Error al obtener detalle ", err)
-		c.Data["message"] = "No existe un contrato asociado al documento que sea vigente para la preliquidación " + err.Error()
+		c.Data["mesaage"] = "No existe un contrato asociado al documento que sea vigente para la preliquidación " + err.Error()
 		c.Abort("404")
 	}
 	c.ServeJSON()

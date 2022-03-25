@@ -73,7 +73,7 @@ func (c *ContratosController) ObtenerContratosDVE() {
 
 			} else {
 				fmt.Println("Error al obtener los contratos del docente ", err)
-				c.Data["message"] = "Error al generar orden de pago " + err.Error()
+				c.Data["mesaage"] = "Error al generar orden de pago " + err.Error()
 				c.Abort("404")
 			}
 		}
@@ -82,7 +82,7 @@ func (c *ContratosController) ObtenerContratosDVE() {
 
 	} else {
 		fmt.Println("Error al obtener contrato preliquidacion: ", err)
-		c.Data["message"] = "Error al generar orden de pago " + err.Error()
+		c.Data["mesaage"] = "Error al generar orden de pago " + err.Error()
 		c.Abort("404")
 	}
 

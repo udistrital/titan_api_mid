@@ -72,34 +72,34 @@ func (c *CumplidoController) ActualizarCumplido() {
 								fmt.Println("contrato general actualizado")
 							} else {
 								fmt.Println("Error al actualizar cumplido general: ", err)
-								c.Data["message"] = "Error al actualizar cumplido general: " + err.Error()
+								c.Data["mesaage"] = "Error al actualizar cumplido general: " + err.Error()
 								c.Abort("404")
 							}
 						}
 					} else {
 						fmt.Println("Error al obetener cumplidos: ", err)
-						c.Data["message"] = "Error al obtener cumplidos: " + err.Error()
+						c.Data["mesaage"] = "Error al obtener cumplidos: " + err.Error()
 						c.Abort("404")
 					}
 				} else {
 					fmt.Println("Error al actualizar cumplido: ", err)
-					c.Data["message"] = "Error al actualizar cumplido: " + err.Error()
+					c.Data["mesaage"] = "Error al actualizar cumplido: " + err.Error()
 					c.Abort("404")
 				}
 			} else {
 				fmt.Println("Error al actualizar cumplido: ", err)
-				c.Data["message"] = "Error al actualizar cumplido: " + err.Error()
+				c.Data["mesaage"] = "Error al actualizar cumplido: " + err.Error()
 				c.Abort("404")
 			}
 
 		} else {
 			fmt.Println("Error al obtener contrato preliquidación")
-			c.Data["message"] = "Error al obtener contrato preliquidacion " + err.Error()
+			c.Data["mesaage"] = "Error al obtener contrato preliquidacion " + err.Error()
 			c.Abort("404")
 		}
 	} else {
 		fmt.Println("Error al obtener contrato")
-		c.Data["message"] = "Error al obtener contrato " + err.Error()
+		c.Data["mesaage"] = "Error al obtener contrato " + err.Error()
 		c.Abort("404")
 	}
 	c.ServeJSON()
@@ -140,12 +140,12 @@ func (c *CumplidoController) ActualizarPreliquidado() {
 			}
 		} else {
 			fmt.Println("Error al obtener contrato preliquidación")
-			c.Data["message"] = "Error al obtener contrato preliquidacion " + err.Error()
+			c.Data["mesaage"] = "Error al obtener contrato preliquidacion " + err.Error()
 			c.Abort("404")
 		}
 	} else {
 		fmt.Println("Error al obtener contrato")
-		c.Data["message"] = "Error al obtener contrato " + err.Error()
+		c.Data["mesaage"] = "Error al obtener contrato " + err.Error()
 		c.Abort("404")
 	}
 	c.ServeJSON()
