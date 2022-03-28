@@ -164,11 +164,11 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 						contratoGeneral[0].PersonaId = contrato.PersonaId
 						contratoGeneral[0].TipoNominaId = contrato.TipoNominaId
 						contratoGeneral[0].Activo = true
-						contratoGeneral[0].FechaInicio = time.Date(anoIterativo, obtenerMes(mesIterativo), 1, 12, 0, 0, 0, time.UTC)
+						contratoGeneral[0].FechaInicio = time.Date(anoIterativo, time.Month(mesIterativo), 1, 12, 0, 0, 0, time.UTC)
 						if mesIterativo == 2 {
-							contratoGeneral[0].FechaFin = time.Date(anoIterativo, obtenerMes(mesIterativo), 28, 12, 0, 0, 0, time.UTC)
+							contratoGeneral[0].FechaFin = time.Date(anoIterativo, time.Month(mesIterativo), 28, 12, 0, 0, 0, time.UTC)
 						} else {
-							contratoGeneral[0].FechaFin = time.Date(anoIterativo, obtenerMes(mesIterativo), 30, 12, 0, 0, 0, time.UTC)
+							contratoGeneral[0].FechaFin = time.Date(anoIterativo, time.Month(mesIterativo), 30, 12, 0, 0, 0, time.UTC)
 						}
 
 						//Buscar el valor de los honorarios de los contratos que tiene el docente en ese mes
