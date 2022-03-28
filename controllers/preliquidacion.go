@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/udistrital/titan_api_mid/models"
@@ -26,7 +27,7 @@ func (c *PreliquidacionController) URLMapping() {
 // @Description Preliquida todos los meses del contrato que se le pase como parámetro
 // @Param	body		body 	models.Contrato		true		"body for DatosPreliquidacion content"
 // @Success 201 body is empty
-// @Failure 403 body is empty
+// @Failure 400 body is empty
 // @router / [post]
 func (c *PreliquidacionController) Preliquidar() {
 	var contrato models.Contrato
@@ -36,6 +37,10 @@ func (c *PreliquidacionController) Preliquidar() {
 			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contrato)
 				if contrato.TipoNominaId == 411 {
+					if contrato.FechaInicio.Day() == 31 {
+						contrato.FechaInicio = contrato.FechaInicio.Add(24 * time.Hour)
+						contrato.FechaFin = contrato.FechaFin.Add(24 * time.Hour)
+					}
 					liquidarCPS(contrato)
 				} else if contrato.TipoNominaId == 409 {
 					liquidarHCH(contrato, false)

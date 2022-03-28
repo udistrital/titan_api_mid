@@ -14,3 +14,8 @@ type Novedad struct {
 	FechaCreacion     string
 	FechaModificacion string
 }
+
+type MensajeNovedad struct {
+	Mensaje string
+	Estado  int //1: Las cuotas Superan los meses //2: Se supera el 50% los descuentos  //3: No hay problema
+}

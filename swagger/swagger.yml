@@ -369,6 +369,26 @@ paths:
             $ref: '#/definitions/models.Contrato'
         "400":
           description: the request contains incorrect syntax
+  /novedad/verificar_descuentos:
+    post:
+      tags:
+      - novedad
+      description: Verificar los valores de una novedad para ver si superan los descuentos
+      operationId: NovedadController.Verificar Novedad
+      parameters:
+      - in: body
+        name: novedad
+        description: Cuerpo de la novedad a guardar
+        required: true
+        schema:
+          $ref: '#/definitions/models.Novedad'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.MensajeNovedad'
+        "400":
+          description: the request contains incorrect syntax
   /preliquidacion/:
     post:
       tags:
@@ -385,7 +405,7 @@ paths:
       responses:
         "201":
           description: body is empty
-        "403":
+        "400":
           description: body is empty
   /preliquidacion/obtener_resumen_preliquidacion/{mes}/{ano}/{nomina}:
     get:
@@ -449,6 +469,9 @@ definitions:
     properties:
       Activo:
         type: boolean
+      Cdp:
+        type: integer
+        format: int64
       DependenciaId:
         type: integer
         format: int64
@@ -472,6 +495,9 @@ definitions:
       NumeroContrato:
         type: string
       PersonaId:
+        type: integer
+        format: int64
+      Rp:
         type: integer
         format: int64
       TipoNominaId:
@@ -621,6 +647,15 @@ definitions:
       VigenciaContrato:
         type: integer
         format: int64
+  models.MensajeNovedad:
+    title: MensajeNovedad
+    type: object
+    properties:
+      Estado:
+        type: integer
+        format: int64
+      Mensaje:
+        type: string
   models.Novedad:
     title: Novedad
     type: object

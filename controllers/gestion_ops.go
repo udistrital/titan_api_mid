@@ -65,24 +65,24 @@ func (c *GestionOpsController) GenerarOrdenPago() {
 
 				} else {
 					fmt.Println("Error al generar orden de pago: ", err)
-					c.Data["message"] = "Error al generar orden de pago " + err.Error()
+					c.Data["mesaage"] = "Error al generar orden de pago " + err.Error()
 					c.Abort("404")
 				}
 			} else {
 				fmt.Println("No se pudo actualizar la preliquidacion: ", err)
-				c.Data["message"] = "Error al actualizar la preliquidacion " + err.Error()
+				c.Data["mesaage"] = "Error al actualizar la preliquidacion " + err.Error()
 				c.Abort("404")
 			}
 
 		} else {
 			fmt.Println("Error al obtener contratos: ", err)
-			c.Data["message"] = "Error al obtener los cumplidos de los contratos " + err.Error()
+			c.Data["mesaage"] = "Error al obtener los cumplidos de los contratos " + err.Error()
 			c.Abort("404")
 		}
 
 	} else {
 		fmt.Println("Error al obtener la preliquidación: ", err)
-		c.Data["message"] = "Error al obtener la preliquidación " + err.Error()
+		c.Data["mesaage"] = "Error al obtener la preliquidación " + err.Error()
 		c.Abort("404")
 	}
 

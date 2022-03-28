@@ -162,7 +162,7 @@ func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 
 	} else {
 		fmt.Println("Error al obtener detalle ", err)
-		c.Data["message"] = "No existe un contrato asociado al documento que sea vigente para la preliquidación " + err.Error()
+		c.Data["mesaage"] = "No existe un contrato asociado al documento que sea vigente para la preliquidación " + err.Error()
 		c.Abort("404")
 	}
 	c.ServeJSON()
@@ -180,6 +180,7 @@ func encontrarResolucion(idResolucion int, resoluciones []models.DetalleDVE) (re
 */
 
 func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
+
 	var aux map[string]interface{}
 	var mesIterativo = int(novedad.FechaInicio.Month())
 	var anoIterativo = novedad.FechaInicio.Year()
@@ -189,7 +190,7 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
 	var detalleNuevo models.DetallePreliquidacion
 	var idHonorarios int
 	auxCuotas = novedad.Cuotas
-
+	fmt.Println(novedad)
 	if novedad.ContratoId.TipoNominaId == 410 {
 		idHonorarios = 152 //Salario Base
 	} else {
@@ -253,7 +254,7 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
 			}
 		}
 	}
-	return "", nil
+	return "No se generó ningún error", nil
 }
 
 func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) (mensaje string, err error) {
