@@ -218,7 +218,7 @@ func (c *NovedadController) AgregarNovedad() {
 	var contrato []models.Contrato
 	var auxConcepto []models.ConceptoNomina
 	var novedad models.Novedad
-	var fecha_actual = time.Now()
+	var fecha_actual = time.Date(2022, time.March, 15, 12, 0, 0, 0, time.Local)
 	var mesFin int
 	var anoFin int
 
@@ -234,9 +234,9 @@ func (c *NovedadController) AgregarNovedad() {
 			}
 			novedad.FechaInicio = fecha_actual
 			if mesFin == 2 {
-				novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 28, 0, 0, 0, 0, time.Local)
+				novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 28, 12, 0, 0, 0, time.Local)
 			} else {
-				novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 30, 0, 0, 0, 0, time.Local)
+				novedad.FechaFin = time.Date(anoFin, time.Month(mesFin), 30, 12, 0, 0, 0, time.Local)
 			}
 
 			//Traer el concepto de la novedad
