@@ -47,7 +47,11 @@ func liquidarHCH(contrato models.Contrato, general bool) {
 
 	semanasContrato := int(calcularSemanasContratoDVE(contrato.FechaInicio, contrato.FechaFin))
 	fmt.Println("SemanasContrato: ", semanasContrato)
-
+	if general {
+		predicados = append(predicados, models.Predicado{Nombre: "general(1)."})
+	} else {
+		predicados = append(predicados, models.Predicado{Nombre: "general(0)."})
+	}
 	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 	reglasbase := cargarReglasBase("HCH") + reglasAlivios + FormatoReglas(predicados)
