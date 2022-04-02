@@ -285,7 +285,7 @@ func liquidarHCH(contrato models.Contrato, general bool) {
 									} else if auxDetalle[j].ConceptoNominaId.Id == 572 {
 										valorFondoSub = auxDetalle[j].ValorCalculado
 									}
-								} else if auxDetalle[j].ContratoPreliquidacionId.ContratoId.NumeroContrato != "GENERAL"+strconv.Itoa(mesIterativo) && auxDetalle[j].ConceptoNominaId.Id == 152 {
+								} else if auxDetalle[j].ContratoPreliquidacionId.ContratoId.NumeroContrato != "GENERAL"+strconv.Itoa(mesIterativo) && auxDetalle[j].ConceptoNominaId.Id == 87 {
 									contratosCambio = append(contratosCambio, auxDetalle[j].ContratoPreliquidacionId.ContratoId.Id)
 								}
 							}
