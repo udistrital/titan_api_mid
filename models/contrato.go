@@ -16,6 +16,7 @@ type Contrato struct {
 	DependenciaId     int
 	Cdp               int
 	Rp                int
+	Unico             bool
 	Activo            bool
 	FechaCreacion     string
 	FechaModificacion string
