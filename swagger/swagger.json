@@ -748,6 +748,9 @@
                     "type": "integer",
                     "format": "int64"
                 },
+                "Unico": {
+                    "type": "boolean"
+                },
                 "ValorContrato": {
                     "type": "number",
                     "format": "double"

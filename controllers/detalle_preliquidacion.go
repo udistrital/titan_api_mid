@@ -39,7 +39,7 @@ func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
 	vigencia := c.Ctx.Input.Param(":vigencia")
 	documento := c.Ctx.Input.Param(":documento")
 
-	detalle, err := TraerDetalleMensual(ano, mes, contrato, vigencia, documento, true)
+	detalle, err := TraerDetalleMensual(ano, mes, contrato, vigencia, documento, true, false)
 
 	if err == nil {
 		c.Ctx.Output.SetStatus(201)
@@ -52,7 +52,7 @@ func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
 	c.ServeJSON()
 }
 
-func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS bool) (detalle models.Detalle, err error) {
+func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS bool, HCS bool) (detalle models.Detalle, err error) {
 	var aux map[string]interface{}
 	var tempDetalle []models.DetallePreliquidacion
 	var query = "ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + vigencia + ",ContratoPreliquidacionId.ContratoId.Documento:" + documento
@@ -64,7 +64,9 @@ func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS boo
 			if tempDetalle[i].ConceptoNominaId.Id == 574 || tempDetalle[i].ConceptoNominaId.Id == 573 {
 				fmt.Println("Salto")
 			} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
-				if CPS && (tempDetalle[i].ConceptoNominaId.Id == 568 || tempDetalle[i].ConceptoNominaId.Id == 569 || tempDetalle[i].ConceptoNominaId.Id == 570) {
+				if HCS && tempDetalle[i].ConceptoNominaId.Id == 570 {
+					detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
+				} else if CPS && (tempDetalle[i].ConceptoNominaId.Id == 568 || tempDetalle[i].ConceptoNominaId.Id == 569 || tempDetalle[i].ConceptoNominaId.Id == 570) {
 					detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
 				} else {
 					detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
@@ -96,11 +98,11 @@ func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS boo
 // @Failure 400 the request contains incorrect syntax
 // @router /obtener_detalle_DVE/:ano/:mes/:documento/:nomina [get]
 func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
-
 	ano := c.Ctx.Input.Param(":ano")
 	mes := c.Ctx.Input.Param(":mes")
 	documento := c.Ctx.Input.Param(":documento")
 	nomina := c.Ctx.Input.Param(":nomina")
+	var auxDetalle models.Detalle
 
 	var aux map[string]interface{}
 	//var vinculacion []models.VinculacionDocente
@@ -148,10 +150,14 @@ func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 		*/
 		//Agregar los detalles de todos los contratos
 		for i := 0; i < len(contratoPreliquidacion); i++ {
-			auxDetalle, err := TraerDetalleMensual(ano, mes, contratoPreliquidacion[i].ContratoId.NumeroContrato, strconv.Itoa(contratoPreliquidacion[i].ContratoId.Vigencia), documento, false)
+			if nomina == "416" {
+				auxDetalle, _ = TraerDetalleMensual(ano, mes, contratoPreliquidacion[i].ContratoId.NumeroContrato, strconv.Itoa(contratoPreliquidacion[i].ContratoId.Vigencia), documento, false, true)
+			} else {
+				auxDetalle, _ = TraerDetalleMensual(ano, mes, contratoPreliquidacion[i].ContratoId.NumeroContrato, strconv.Itoa(contratoPreliquidacion[i].ContratoId.Vigencia), documento, false, false)
+			}
+
 			if err == nil {
 				detallesDVE = append(detallesDVE, auxDetalle)
-
 				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detallesDVE}
 			} else {
 				c.Data["mesaage"] = "Error al obtener detalle de 1 o más contratos"

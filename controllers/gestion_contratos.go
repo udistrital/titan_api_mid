@@ -82,7 +82,7 @@ func (c *ContratosController) ObtenerContratosDVE() {
 
 	} else {
 		fmt.Println("Error al obtener contrato preliquidacion: ", err)
-		c.Data["mesaage"] = "Error al generar orden de pago " + err.Error()
+		c.Data["mesaage"] = "Error al obtener contratos" + err.Error()
 		c.Abort("404")
 	}
 
