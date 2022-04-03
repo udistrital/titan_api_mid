@@ -14,6 +14,7 @@ type Contrato struct {
 	FechaFin          time.Time
 	ValorContrato     float64
 	DependenciaId     int
+	ProyectoId        int
 	Cdp               int
 	Rp                int
 	Unico             bool
