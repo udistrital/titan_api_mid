@@ -259,13 +259,18 @@ func liquidarHCH(contrato models.Contrato, general bool) {
 					}
 					//Liquidar el nuevo contrato
 					liquidarHCH(contratoGeneral[0], true)
-					//Actualizar registros de la reterfuente y fondos por regla de 3 para ese mes
+					//Actualizar registros de los valores calculados por regla de 3 para ese mes
 
 					query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",ContratoPreliquidacionId.ContratoId.Documento:" + contrato.Documento + ",ContratoPreliquidacionId.ContratoId.TipoNominaId:409"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &auxDetalle)
 						if auxDetalle[0].Id != 0 {
 							var totalHonorarios float64
+							var valorIbc float64
+							var valorSalud float64
+							var valorPension float64
+							var valorArl float64
+							var valorReteica float64
 							var valorMensual float64
 							var valorRetefuente float64
 							var valorFondoSol float64
@@ -284,6 +289,16 @@ func liquidarHCH(contrato models.Contrato, general bool) {
 										valorFondoSol = auxDetalle[j].ValorCalculado
 									} else if auxDetalle[j].ConceptoNominaId.Id == 572 {
 										valorFondoSub = auxDetalle[j].ValorCalculado
+									} else if auxDetalle[j].ConceptoNominaId.Id == 568 {
+										valorSalud = auxDetalle[j].ValorCalculado
+									} else if auxDetalle[j].ConceptoNominaId.Id == 569 {
+										valorPension = auxDetalle[j].ValorCalculado
+									} else if auxDetalle[j].ConceptoNominaId.Id == 570 {
+										valorArl = auxDetalle[j].ValorCalculado
+									} else if auxDetalle[j].ConceptoNominaId.Id == 521 {
+										valorIbc = auxDetalle[j].ValorCalculado
+									} else if auxDetalle[j].ConceptoNominaId.Id == 545 {
+										valorReteica = auxDetalle[j].ValorCalculado
 									}
 								} else if auxDetalle[j].ContratoPreliquidacionId.ContratoId.NumeroContrato != "GENERAL"+strconv.Itoa(mesIterativo) && auxDetalle[j].ConceptoNominaId.Id == 87 {
 									contratosCambio = append(contratosCambio, auxDetalle[j].ContratoPreliquidacionId.ContratoId.Id)
@@ -322,9 +337,59 @@ func liquidarHCH(contrato models.Contrato, general bool) {
 												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorFondoSol)
 												//Enviar a actualización
 												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
-													fmt.Println("Fondo sub actualizado actualizada")
+													fmt.Println("Fondo sub actualizado")
 												} else {
 													fmt.Println("No se pudo actualizar fondo sub")
+												}
+											} else if auxDetalle[k].ConceptoNominaId.Id == 568 {
+												detalleEnvio = auxDetalle[k]
+												//Actualizar valor
+												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorSalud)
+												//Enviar a actualización
+												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+													fmt.Println("Salud actualizada")
+												} else {
+													fmt.Println("No se pudo actualizar Salud")
+												}
+											} else if auxDetalle[k].ConceptoNominaId.Id == 569 {
+												detalleEnvio = auxDetalle[k]
+												//Actualizar valor
+												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorPension)
+												//Enviar a actualización
+												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+													fmt.Println("Pensión actualizada")
+												} else {
+													fmt.Println("No se pudo actualizar Pensión")
+												}
+											} else if auxDetalle[k].ConceptoNominaId.Id == 570 {
+												detalleEnvio = auxDetalle[k]
+												//Actualizar valor
+												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorArl)
+												//Enviar a actualización
+												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+													fmt.Println("Arl actualizada")
+												} else {
+													fmt.Println("No se pudo actualizar Arl")
+												}
+											} else if auxDetalle[k].ConceptoNominaId.Id == 521 {
+												detalleEnvio = auxDetalle[k]
+												//Actualizar valor
+												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorIbc)
+												//Enviar a actualización
+												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+													fmt.Println("Ibc actualizado")
+												} else {
+													fmt.Println("No se pudo actualizar ibc")
+												}
+											} else if auxDetalle[k].ConceptoNominaId.Id == 545 {
+												detalleEnvio = auxDetalle[k]
+												//Actualizar valor
+												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorReteica)
+												//Enviar a actualización
+												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+													fmt.Println("Reteica actualizada")
+												} else {
+													fmt.Println("No se pudo actualizar reteica")
 												}
 											} else if auxDetalle[k].ConceptoNominaId.Id == 572 {
 												detalleEnvio = auxDetalle[k]
