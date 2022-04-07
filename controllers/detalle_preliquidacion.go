@@ -269,25 +269,20 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) (mensa
 	var contratoPreliquidacion []models.ContratoPreliquidacion
 	var detalle []models.DetallePreliquidacion
 
-	var mesFin int
-	if fecha_actual.Year() == novedad.FechaFin.Year() {
-		mesFin = int(novedad.FechaFin.Month())
-	} else {
-		mesFin = 12
-	}
+	mesFin := int(novedad.FechaFin.Month())
 
 	for i := int(fecha_actual.Month()); i <= mesFin; i++ {
 		var query = "ContratoId.NumeroContrato:" + novedad.ContratoId.NumeroContrato + ",PreliquidacionId.Ano:" + strconv.Itoa(fecha_actual.Year()) + ",PreliquidacionId.Mes:" + strconv.Itoa(i)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
 			LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
 			//Eliminar el Concepto de la liquidacion de ese mes
-			query := "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:" + strconv.Itoa(novedad.ConceptoNominaId.Id)
+			query := "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId.Id:" + strconv.Itoa(novedad.ConceptoNominaId.Id)
 			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &detalle)
 				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalle[0].Id), "DELETE", &aux, nil); err == nil {
 					fmt.Println("Detalle de novedad eliminado con éxtio")
 					//Actualizar fecha de finalización de la novedad
-					novedad.FechaFin = time.Now()
+					novedad.FechaFin = fecha_actual
 					novedad.Activo = false
 					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad/"+strconv.Itoa(novedad.Id), "PUT", &aux, novedad); err == nil {
 						fmt.Println("Novedad Actualizada")

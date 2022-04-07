@@ -47,9 +47,10 @@ func (c *PreliquidacionController) Preliquidar() {
 				} else if contrato.TipoNominaId == 410 {
 					liquidarHCS(contrato, false)
 				}
+				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
 			} else {
 				fmt.Println("No se pudo guardar el contrato", err)
-				c.Data["mesaage"] = "La fecha inicio no puede estar después de la fecha fin"
+				c.Data["mesaage"] = "No se pudo guardar el contrato: " + err.Error()
 				c.Abort("400")
 			}
 		} else {
