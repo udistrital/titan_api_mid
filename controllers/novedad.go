@@ -311,15 +311,16 @@ func (c *NovedadController) AgregarNovedad() {
 // @router /eliminar_novedad/:id [get]
 func (c *NovedadController) EliminarNovedad() {
 	var id = c.Ctx.Input.Param(":id")
-	var fecha_actual = time.Now()
+	var fecha_actual = time.Date(2022, time.March, 15, 12, 0, 0, 0, time.UTC)
 	var aux map[string]interface{}
 	var novedad []models.Novedad
 	//Verificar cómo se van a enviar los datos del contrato al trabajar el front
 
 	//Buscar la novedad
+	fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/novedad?limit=-1&query=Id:" + id)
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad?limit=-1&query=Id:"+id, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &novedad)
-		if novedad[0].ConceptoNominaId.TipoConceptoNominaId == 419 || novedad[0].ConceptoNominaId.TipoConceptoNominaId == 420 {
+		if novedad[0].Id != 0 {
 			mensaje, err := EliminarValorNovedad(novedad[0], fecha_actual)
 			if err == nil {
 				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": novedad[0].Id}
@@ -328,7 +329,8 @@ func (c *NovedadController) EliminarNovedad() {
 				c.Abort("404")
 			}
 		} else {
-			c.Data["mesaage"] = "Error, no se pudo eliminar la novedad: " + err.Error()
+			fmt.Println("no se pudo eliminar la novedad: ", novedad[0])
+			c.Data["mesaage"] = "Error, No se encontró la novedad: " + err.Error()
 			c.Abort("404")
 		}
 	} else {
