@@ -54,6 +54,11 @@ func init() {
 				&controllers.ContratosController{},
 			),
 		),
+		beego.NSNamespace("/desagregado_hcs",
+			beego.NSInclude(
+				&controllers.DesagregadoHCSController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }

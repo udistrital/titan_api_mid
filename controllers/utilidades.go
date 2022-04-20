@@ -240,32 +240,3 @@ func Roundf(x float64) float64 {
 	}
 	return t
 }
-
-func esNovedad(id int) (res bool) {
-	switch id {
-	case 568:
-		return false
-	case 569:
-		return false
-	case 570:
-		return false
-	case 64:
-		return false
-	case 170:
-		return false
-	case 572:
-		return false
-	case 567:
-		return false
-	case 545:
-		return false
-	case 547:
-		return false
-	case 578:
-		return false
-	case 542:
-		return false
-	default:
-		return true
-	}
-}
