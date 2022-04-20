@@ -110,6 +110,26 @@ paths:
               $ref: '#/definitions/models.ContratoDVE'
         "403":
           description: body is empty
+  /desagregado_hcs/:
+    post:
+      tags:
+      - desagregado_hcs
+      description: Obtener valores desagregados de los contratos de VE para Salarios
+      operationId: DesagregadoHCSController.Obtener Desagregado HCS
+      parameters:
+      - in: body
+        name: body
+        description: Dettales de la vinculación del contrato
+        required: true
+        schema:
+          $ref: '#/definitions/models.DatosVinculacion'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.DesagregadoContratoHCS'
+        "403":
+          description: body is empty
   /detalle_preliquidacion/obtener_detalle_CT/{ano}/{mes}/{contrato}/{vigencia}/{documento}:
     get:
       tags:
@@ -565,6 +585,61 @@ definitions:
         type: boolean
       ResponsableIva:
         type: boolean
+  models.DatosVinculacion:
+    title: DatosVinculacion
+    type: object
+    properties:
+      Categoria:
+        type: string
+      Dedicacion:
+        type: string
+      Documento:
+        type: integer
+        format: int64
+      HorasSemanales:
+        type: integer
+        format: int64
+      NumeroContrato:
+        type: string
+      NumeroSemanas:
+        type: integer
+        format: int64
+      Vigencia:
+        type: integer
+        format: int64
+  models.DesagregadoContratoHCS:
+    title: DesagregadoContratoHCS
+    type: object
+    properties:
+      BonificacionServicios:
+        type: number
+        format: double
+      Cesantias:
+        type: number
+        format: double
+      InteresesCesantias:
+        type: number
+        format: double
+      NumeroContrato:
+        type: string
+      PrimaNavidad:
+        type: number
+        format: double
+      PrimaServicios:
+        type: number
+        format: double
+      PrimaVacaciones:
+        type: number
+        format: double
+      SueldoBasico:
+        type: number
+        format: double
+      Vacaciones:
+        type: number
+        format: double
+      Vigencia:
+        type: integer
+        format: int64
   models.Detalle:
     title: Detalle
     type: object

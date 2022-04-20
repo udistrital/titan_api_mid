@@ -34,6 +34,15 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DesagregadoHCSController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DesagregadoHCSController"],
+        beego.ControllerComments{
+            Method: "ObtenerDesagregado",
+            Router: "/",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DetallePreliquidacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:DetallePreliquidacionController"],
         beego.ControllerComments{
             Method: "ObtenerDetalleCT",
