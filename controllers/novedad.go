@@ -523,45 +523,52 @@ func (c *NovedadController) CederContrato() {
 							valorNuevo = valorNuevo + detalles[j].ValorCalculado
 						}
 					}
+					//Agregar el nuevo contrato
+					contratoNuevo.Id = 0
+					contratoNuevo.Documento = sucesor.DocumentoNuevo
+					contratoNuevo.NombreCompleto = sucesor.NombreCompleto
+					contratoNuevo.Vigencia = contrato[0].Vigencia
+					contratoNuevo.FechaInicio = sucesor.FechaInicio
+					contratoNuevo, _ = registrarContrato(contratoNuevo)
+
+					contrato[0].FechaFin = sucesor.FechaInicio.Add(24 * time.Hour * -1)
+					//Actualizar fecha de finalización del contrato
+					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contrato[0]); err == nil {
+						fmt.Println("Contrato Actualizado")
+					} else {
+						fmt.Println("Error al actualizar el contrato: ", err)
+					}
+
+					if contrato[0].FechaInicio.Day() == 31 {
+						contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour)
+						contrato[0].FechaInicio = contrato[0].FechaInicio.Add(24 * time.Hour)
+					}
+
+					if contrato[0].FechaInicio.Month() != sucesor.FechaInicio.Month() && contrato[0].FechaInicio.Year() != sucesor.FechaInicio.Year() {
+						contrato[0].FechaInicio = time.Date(sucesor.FechaInicio.Year(), sucesor.FechaInicio.Month(), 1, 12, 0, 0, 0, time.UTC)
+					} else {
+						contrato[0].FechaInicio = time.Date(sucesor.FechaInicio.Year(), sucesor.FechaInicio.Month(), contrato[0].FechaInicio.Day(), 12, 0, 0, 0, time.UTC)
+					}
+
+					//El valor del contrato nuevo es lo que queda del contrato pasado (no se almacena, es únicamente para cálculos)
+					if sucesor.FechaInicio.Day() == 1 {
+						contratoNuevo.ValorContrato = valorViejo - valorNuevo
+						fmt.Println("Liquidando nuevo:", contratoNuevo.NumeroContrato, " de ", contratoNuevo.NombreCompleto)
+						liquidarCPS(contratoNuevo)
+					} else {
+						contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day())
+						contratoNuevo.ValorContrato = valorViejo - valorNuevo - valorDia*float64(contrato[0].FechaFin.Day())
+						fmt.Println("Liquidando actual:", contrato[0])
+						liquidarCPS(contrato[0])
+						fmt.Println("Liquidando nuevo:", contratoNuevo)
+						liquidarCPS(contratoNuevo)
+					}
 				} else {
-					fmt.Println("Error al obtener detalles")
+					fmt.Println("Error al obtener detalles: ", err)
+					c.Data["mesaage"] = "Error al obtener lo liquidado previamente " + err.Error()
+					c.Abort("400")
 				}
 
-				//Agregar el nuevo contrato
-				contratoNuevo.Id = 0
-				contratoNuevo.Documento = sucesor.DocumentoNuevo
-				contratoNuevo.NombreCompleto = sucesor.NombreCompleto
-				contratoNuevo.Vigencia = contrato[0].Vigencia
-				contratoNuevo.FechaInicio = sucesor.FechaInicio
-				contratoNuevo, _ = registrarContrato(contratoNuevo)
-
-				contrato[0].FechaFin = sucesor.FechaInicio.Add(24 * time.Hour * -1)
-				//Actualizar fecha de finalización del contrato
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contrato[0]); err == nil {
-					fmt.Println("Contrato Actualizado")
-				} else {
-					fmt.Println("Error al actualizar el contrato: ", err)
-				}
-
-				if contrato[0].FechaInicio.Month() != sucesor.FechaInicio.Month() && contrato[0].FechaInicio.Year() != sucesor.FechaInicio.Year() {
-					contrato[0].FechaInicio = time.Date(sucesor.FechaInicio.Year(), sucesor.FechaInicio.Month(), 1, 12, 0, 0, 0, time.UTC)
-				} else {
-					contrato[0].FechaInicio = time.Date(sucesor.FechaInicio.Year(), sucesor.FechaInicio.Month(), contrato[0].FechaInicio.Day(), 12, 0, 0, 0, time.UTC)
-				}
-
-				//El valor del contrato nuevo es lo que queda del contrato pasado (no se almacena, es únicamente para cálculos)
-				if sucesor.FechaInicio.Day() == 1 {
-					contratoNuevo.ValorContrato = valorViejo - valorNuevo
-					fmt.Println("Liquidando nuevo:", contratoNuevo.NumeroContrato, " de ", contratoNuevo.NombreCompleto)
-					liquidarCPS(contratoNuevo)
-				} else {
-					contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day())
-					contratoNuevo.ValorContrato = valorViejo - valorNuevo - valorDia*float64(contrato[0].FechaFin.Day())
-					fmt.Println("Liquidando actual:", contrato[0])
-					liquidarCPS(contrato[0])
-					fmt.Println("Liquidando nuevo:", contratoNuevo)
-					liquidarCPS(contratoNuevo)
-				}
 			} else {
 				fmt.Println("El contrato no puede ser cedido, debido que la fecha fin está antes de la fecha inicio")
 				c.Data["mesaage"] = "El contrato no puede ser cedido, por favor verifique fechas"

@@ -41,6 +41,7 @@ func liquidarCPS(contrato models.Contrato) {
 
 	diasContrato, _ = CalcularDias(contrato.FechaInicio, contrato.FechaFin)
 	diasContrato = diasContrato + 1 //dia inclusive
+	fmt.Println("Días contrato: ", diasContrato)
 
 	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", diasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
