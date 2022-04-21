@@ -599,6 +599,8 @@ definitions:
       HorasSemanales:
         type: integer
         format: int64
+      NivelAcademico:
+        type: string
       NumeroContrato:
         type: string
       NumeroSemanas:
