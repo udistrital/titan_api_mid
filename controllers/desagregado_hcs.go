@@ -48,9 +48,9 @@ func (c *DesagregadoHCSController) ObtenerDesagregado() {
 
 		lowCategoria = strings.ToLower(vinculacion.Categoria)
 		predicados = append(predicados, models.Predicado{Nombre: "horas_semanales(" + strconv.Itoa(vinculacion.HorasSemanales) + ")."})
-		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + strconv.Itoa(vinculacion.Documento) + "," + strconv.Itoa(vinculacion.NumeroSemanas) + "," + strconv.Itoa(vinculacion.Vigencia) + ")."})
+		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + vinculacion.Documento + "," + strconv.Itoa(vinculacion.NumeroSemanas) + "," + strconv.Itoa(vinculacion.Vigencia) + ")."})
 		reglasbase := cargarReglasBase("HCS") + FormatoReglas(predicados)
-		desagregado = golog.DesagregarContrato(reglasbase, lowCategoria, strconv.Itoa(vinculacion.Documento), lowDedicacion, strconv.Itoa(vinculacion.Vigencia))
+		desagregado = golog.DesagregarContrato(reglasbase, lowCategoria, vinculacion.Documento, lowDedicacion, strconv.Itoa(vinculacion.Vigencia))
 		desagregado.NumeroContrato = vinculacion.NumeroContrato
 		desagregado.Vigencia = vinculacion.Vigencia
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": desagregado}
