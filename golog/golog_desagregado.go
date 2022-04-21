@@ -13,7 +13,6 @@ func DesagregarContrato(reglas string, categoria string, cedula string, dedicaci
 	var nombreConcepto string
 	var valorCalculado float64
 	var idConcepto int
-	fmt.Println(reglas)
 	m := NewMachine().Consult(reglas)
 	fmt.Println("desagregado(" + categoria + "," + cedula + "," + dedicacion + "," + ano + ",N,V).")
 	total := m.ProveAll("desagregado(" + categoria + "," + cedula + "," + dedicacion + "," + ano + ",N,V).")
