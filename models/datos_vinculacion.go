@@ -8,4 +8,5 @@ type DatosVinculacion struct {
 	Categoria      string
 	NumeroSemanas  int
 	HorasSemanales int
+	NivelAcademico string
 }
