@@ -881,8 +881,7 @@
                     "type": "string"
                 },
                 "Documento": {
-                    "type": "integer",
-                    "format": "int64"
+                    "type": "string"
                 },
                 "HorasSemanales": {
                     "type": "integer",
