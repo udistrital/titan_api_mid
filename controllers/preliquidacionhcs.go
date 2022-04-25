@@ -261,7 +261,6 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 					liquidarHCS(contratoGeneral[0], true)
 
 					//Actualizar registros de la reterfuente y fondos por regla de 3 para ese mes
-
 					query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",ContratoPreliquidacionId.ContratoId.Documento:" + contrato.Documento + ",ContratoPreliquidacionId.ContratoId.TipoNominaId:410"
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &auxDetalle)
@@ -276,9 +275,12 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 							var valorRetefuente float64
 							var valorFondoSol float64
 							var valorFondoSub float64
+							var valorSaludUniversidad float64
+							var valorPensionUniversidad float64
 							var detalleEnvio models.DetallePreliquidacion
 							var contratosCambio []int //Ids de los contratos que necesitan el ajuste.
 
+							contratosCambio = nil
 							//Obtener los honorarios y el detalle de los valores que necesitan cambio
 							for j := 0; j < len(auxDetalle); j++ {
 								if auxDetalle[j].ContratoPreliquidacionId.ContratoId.NumeroContrato == "GENERAL"+strconv.Itoa(mesIterativo) {
@@ -300,6 +302,10 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 										valorIbc = auxDetalle[j].ValorCalculado
 									} else if auxDetalle[j].ConceptoNominaId.Id == 545 {
 										valorReteica = auxDetalle[j].ValorCalculado
+									} else if auxDetalle[j].ConceptoNominaId.Id == 579 {
+										valorSaludUniversidad = auxDetalle[j].ValorCalculado
+									} else if auxDetalle[j].ConceptoNominaId.Id == 580 {
+										valorPensionUniversidad = auxDetalle[j].ValorCalculado
 									}
 								} else if auxDetalle[j].ContratoPreliquidacionId.ContratoId.NumeroContrato != "GENERAL"+strconv.Itoa(mesIterativo) && auxDetalle[j].ConceptoNominaId.Id == 152 {
 									contratosCambio = append(contratosCambio, auxDetalle[j].ContratoPreliquidacionId.ContratoId.Id)
@@ -307,6 +313,7 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 							}
 
 							//Recorrer y cambiar los valores teniendo en cuenta su aporte a salud y pension
+
 							for j := 0; j < len(contratosCambio); j++ {
 								//Obtener detalles
 								query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contratosCambio[j])
@@ -401,6 +408,26 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 													fmt.Println("Fondo Sol Actualizado actualizada")
 												} else {
 													fmt.Println("No se pudo actualizar fondo sol")
+												}
+											} else if auxDetalle[k].ConceptoNominaId.Id == 579 {
+												detalleEnvio = auxDetalle[k]
+												//Actualizar valor
+												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorSaludUniversidad)
+												//Enviar a actualización
+												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+													fmt.Println("Aporte Salud universidad Actualizado actualizada")
+												} else {
+													fmt.Println("No se pudo actualizar salud universidad")
+												}
+											} else if auxDetalle[k].ConceptoNominaId.Id == 580 {
+												detalleEnvio = auxDetalle[k]
+												//Actualizar valor
+												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorPensionUniversidad)
+												//Enviar a actualización
+												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+													fmt.Println("Aporte Pensión Universidad actualizado")
+												} else {
+													fmt.Println("No se pudo actualizar Pensión Universidad")
 												}
 											}
 										}
