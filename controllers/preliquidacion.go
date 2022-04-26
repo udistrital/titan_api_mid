@@ -32,6 +32,7 @@ func (c *PreliquidacionController) URLMapping() {
 func (c *PreliquidacionController) Preliquidar() {
 	var contrato models.Contrato
 	var aux map[string]interface{}
+	fmt.Println("Hola Mundo producción")
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &contrato); err == nil {
 		if contrato.FechaInicio.Before(contrato.FechaFin) {
 			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
