@@ -288,26 +288,46 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 								if auxDetalle[j].ContratoPreliquidacionId.ContratoId.NumeroContrato == "GENERAL"+strconv.Itoa(mesIterativo) {
 									if auxDetalle[j].ConceptoNominaId.Id == 152 {
 										totalHonorarios = auxDetalle[j].ValorCalculado
+										fmt.Println("Total honorarios:", totalHonorarios)
 									} else if auxDetalle[j].ConceptoNominaId.Id == 64 {
 										valorRetefuente = auxDetalle[j].ValorCalculado
+										fmt.Println("Total retefuente:", valorRetefuente)
 									} else if auxDetalle[j].ConceptoNominaId.Id == 170 {
 										valorFondoSol = auxDetalle[j].ValorCalculado
+										fmt.Println("Total fondo sol:", valorFondoSol)
+
 									} else if auxDetalle[j].ConceptoNominaId.Id == 572 {
 										valorFondoSub = auxDetalle[j].ValorCalculado
+										fmt.Println("Total fondo sub:", valorFondoSub)
+
 									} else if auxDetalle[j].ConceptoNominaId.Id == 568 {
 										valorSalud = auxDetalle[j].ValorCalculado
+										fmt.Println("Total Salud:", valorSalud)
+
 									} else if auxDetalle[j].ConceptoNominaId.Id == 569 {
 										valorPension = auxDetalle[j].ValorCalculado
+										fmt.Println("Total Pension:", valorPension)
+
 									} else if auxDetalle[j].ConceptoNominaId.Id == 570 {
 										valorArl = auxDetalle[j].ValorCalculado
+										fmt.Println("Total Arl:", valorArl)
+
 									} else if auxDetalle[j].ConceptoNominaId.Id == 521 {
 										valorIbc = auxDetalle[j].ValorCalculado
+										fmt.Println("Total ibc:", valorIbc)
+
 									} else if auxDetalle[j].ConceptoNominaId.Id == 545 {
 										valorReteica = auxDetalle[j].ValorCalculado
+										fmt.Println("Total reteica:", valorReteica)
+
 									} else if auxDetalle[j].ConceptoNominaId.Id == 579 {
 										valorSaludUniversidad = auxDetalle[j].ValorCalculado
+										fmt.Println("Total salud Universidad:", valorSaludUniversidad)
+
 									} else if auxDetalle[j].ConceptoNominaId.Id == 580 {
 										valorPensionUniversidad = auxDetalle[j].ValorCalculado
+										fmt.Println("Total Pensión universidad:", valorPensionUniversidad)
+
 									}
 								} else if auxDetalle[j].ConceptoNominaId.Id == 152 {
 									esta := false
@@ -337,6 +357,7 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 										for k := 0; k < len(auxDetalle); k++ {
 											if auxDetalle[k].ConceptoNominaId.Id == 152 {
 												valorMensual = auxDetalle[k].ValorCalculado
+												fmt.Println("Honorarios para el contrato: ", valorMensual)
 											}
 										}
 										//Hacer regla de 3
