@@ -444,7 +444,7 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 												} else {
 													fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
 												}
-											} else if auxDetalle[k].ConceptoNominaId.Id == 579 {
+											} else if auxDetalle[k].ConceptoNominaId.Id == 576 {
 												detalleEnvio = auxDetalle[k]
 												//Actualizar valor
 												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorSaludUniversidad)
@@ -454,7 +454,7 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 												} else {
 													fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
 												}
-											} else if auxDetalle[k].ConceptoNominaId.Id == 580 {
+											} else if auxDetalle[k].ConceptoNominaId.Id == 577 {
 												detalleEnvio = auxDetalle[k]
 												//Actualizar valor
 												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorPensionUniversidad)
