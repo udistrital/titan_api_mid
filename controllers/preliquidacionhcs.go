@@ -269,7 +269,6 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 						query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",ContratoPreliquidacionId.ContratoId.Documento:" + contrato.Documento + ",ContratoPreliquidacionId.ContratoId.TipoNominaId:410"
 						fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=" + query)
 						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-							time.Sleep(time.Second * 2)
 							jsonData, errorJSON := json.Marshal(aux["Data"])
 							if errorJSON == nil {
 
