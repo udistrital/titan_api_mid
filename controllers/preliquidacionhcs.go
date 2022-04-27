@@ -261,7 +261,7 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 					}
 					liquidarHCS(contratoGeneral[0], true)
 
-					if contrato.Unico {
+					if !contrato.Unico {
 						//Actualizar registros de la reterfuente y fondos por regla de 3 para ese mes
 						fmt.Println("Esta es la petición que hace:")
 						query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",ContratoPreliquidacionId.ContratoId.Documento:" + contrato.Documento + ",ContratoPreliquidacionId.ContratoId.TipoNominaId:410"
