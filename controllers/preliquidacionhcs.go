@@ -52,9 +52,10 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 	fmt.Println("SemanasContrato: ", semanasContrato)
 	if general || contrato.Unico {
 		predicados = append(predicados, models.Predicado{Nombre: "general(1)."})
-		fmt.Println("El contrato es general o único")
+		fmt.Println("El contrato es general o único, se carga regla")
 	} else {
 		predicados = append(predicados, models.Predicado{Nombre: "general(0)."})
+		fmt.Println("El docente tiene varios contratos, no se carga regla de único")
 	}
 	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
@@ -262,6 +263,7 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 					liquidarHCS(contratoGeneral[0], true)
 
 					if !contrato.Unico {
+						fmt.Println("El contrato no es único, se requiere regla de 3")
 						//Actualizar registros de la reterfuente y fondos por regla de 3 para ese mes
 						fmt.Println("Esta es la petición que hace:")
 						query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",ContratoPreliquidacionId.ContratoId.Documento:" + contrato.Documento + ",ContratoPreliquidacionId.ContratoId.TipoNominaId:410"
@@ -462,7 +464,6 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 														detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorPensionUniversidad)
 														if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
 															fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
-
 														} else {
 															fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
 														}
@@ -475,6 +476,8 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 											fmt.Println("Error al obtener los detalles del contrato")
 										}
 									}
+								} else {
+									fmt.Println("El ibc del contrato general no supera el mínimo, no se requiere de acutalización")
 								}
 							} else {
 								fmt.Println("No se encotraron detalles: ", errorJSON)
@@ -482,6 +485,8 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 						} else {
 							fmt.Println("Error al actualizar los conceptos en los contratos")
 						}
+					} else {
+						fmt.Println("El contrato es único, no requiere de actualización")
 					}
 
 				} else {
