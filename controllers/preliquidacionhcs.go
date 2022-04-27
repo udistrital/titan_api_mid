@@ -261,224 +261,229 @@ func liquidarHCS(contrato models.Contrato, general bool) {
 					}
 					liquidarHCS(contratoGeneral[0], true)
 
-					//Actualizar registros de la reterfuente y fondos por regla de 3 para ese mes
-					fmt.Println("Esta es la petición que hace:")
-					query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",ContratoPreliquidacionId.ContratoId.Documento:" + contrato.Documento + ",ContratoPreliquidacionId.ContratoId.TipoNominaId:410"
-					fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=" + query)
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-						time.Sleep(time.Second * 2)
-						jsonData, errorJSON := json.Marshal(aux["Data"])
-						if errorJSON == nil {
+					if contrato.Unico {
+						//Actualizar registros de la reterfuente y fondos por regla de 3 para ese mes
+						fmt.Println("Esta es la petición que hace:")
+						query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",ContratoPreliquidacionId.ContratoId.Documento:" + contrato.Documento + ",ContratoPreliquidacionId.ContratoId.TipoNominaId:410"
+						fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=" + query)
+						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+							time.Sleep(time.Second * 2)
+							jsonData, errorJSON := json.Marshal(aux["Data"])
+							if errorJSON == nil {
 
-							json.Unmarshal(jsonData, &auxDetalle)
-							fmt.Println("Este es el JSON que se obtiene:")
-							fmt.Println(auxDetalle)
+								json.Unmarshal(jsonData, &auxDetalle)
+								fmt.Println("Este es el JSON que se obtiene:")
+								fmt.Println(auxDetalle)
 
-							var totalHonorarios float64
-							var valorIbc float64
-							var valorSalud float64
-							var valorPension float64
-							var valorArl float64
-							var valorMensual float64
-							var valorRetefuente float64
-							var valorFondoSol float64
-							var valorFondoSub float64
-							var valorSaludUniversidad float64
-							var valorPensionUniversidad float64
-							var detalleEnvio models.DetallePreliquidacion
-							var contratosCambio []int //Ids de los contratos que necesitan el ajuste.
+								var totalHonorarios float64
+								var valorIbc float64
+								var valorSalud float64
+								var valorPension float64
+								var valorArl float64
+								var valorMensual float64
+								var valorRetefuente float64
+								var valorFondoSol float64
+								var valorFondoSub float64
+								var valorSaludUniversidad float64
+								var valorPensionUniversidad float64
+								var detalleEnvio models.DetallePreliquidacion
+								var contratosCambio []int //Ids de los contratos que necesitan el ajuste.
 
-							contratosCambio = nil
-							fmt.Println("Tamaño arreglo: ", len(auxDetalle))
-							//Obtener los honorarios y el detalle de los valores que necesitan cambio
-							for j := 0; j < len(auxDetalle); j++ {
-								fmt.Println("Numero de contrato a evaluar:", auxDetalle[j].ContratoPreliquidacionId.ContratoId.NumeroContrato)
-								fmt.Println("Id del detalle a evaluar: ", auxDetalle[j].Id)
+								contratosCambio = nil
+								fmt.Println("Tamaño arreglo: ", len(auxDetalle))
+								//Obtener los honorarios y el detalle de los valores que necesitan cambio
+								for j := 0; j < len(auxDetalle); j++ {
+									fmt.Println("Numero de contrato a evaluar:", auxDetalle[j].ContratoPreliquidacionId.ContratoId.NumeroContrato)
+									fmt.Println("Id del detalle a evaluar: ", auxDetalle[j].Id)
 
-								if auxDetalle[j].ContratoPreliquidacionId.ContratoId.NumeroContrato == "GENERAL"+strconv.Itoa(mesIterativo) {
-									fmt.Println("Entro al general")
-									fmt.Println(auxDetalle[j].ConceptoNominaId.Id, auxDetalle[j].ConceptoNominaId.AliasConcepto)
+									if auxDetalle[j].ContratoPreliquidacionId.ContratoId.NumeroContrato == "GENERAL"+strconv.Itoa(mesIterativo) {
+										fmt.Println("Entro al general")
+										fmt.Println(auxDetalle[j].ConceptoNominaId.Id, auxDetalle[j].ConceptoNominaId.AliasConcepto)
 
-									if auxDetalle[j].ConceptoNominaId.Id == 152 {
-										totalHonorarios = auxDetalle[j].ValorCalculado
-										fmt.Println("Total honorarios:", totalHonorarios)
-										fmt.Println("------------------------------------------------------------")
-									} else if auxDetalle[j].ConceptoNominaId.Id == 64 {
-										valorRetefuente = auxDetalle[j].ValorCalculado
-										fmt.Println("Total retefuente:", valorRetefuente)
-										fmt.Println("------------------------------------------------------------")
-									} else if auxDetalle[j].ConceptoNominaId.Id == 170 {
-										valorFondoSol = auxDetalle[j].ValorCalculado
-										fmt.Println("Total fondo sol:", valorFondoSol)
-										fmt.Println("------------------------------------------------------------")
-									} else if auxDetalle[j].ConceptoNominaId.Id == 572 {
-										valorFondoSub = auxDetalle[j].ValorCalculado
-										fmt.Println("Total fondo sub:", valorFondoSub)
-										fmt.Println("------------------------------------------------------------")
-									} else if auxDetalle[j].ConceptoNominaId.Id == 568 {
-										valorSalud = auxDetalle[j].ValorCalculado
-										fmt.Println("Total Salud:", valorSalud)
-										fmt.Println("------------------------------------------------------------")
-									} else if auxDetalle[j].ConceptoNominaId.Id == 569 {
-										valorPension = auxDetalle[j].ValorCalculado
-										fmt.Println("Total Pension:", valorPension)
-										fmt.Println("------------------------------------------------------------")
-									} else if auxDetalle[j].ConceptoNominaId.Id == 570 {
-										valorArl = auxDetalle[j].ValorCalculado
-										fmt.Println("Total Arl:", valorArl)
-										fmt.Println("------------------------------------------------------------")
-									} else if auxDetalle[j].ConceptoNominaId.Id == 521 {
-										valorIbc = auxDetalle[j].ValorCalculado
-										fmt.Println("Total ibc:", valorIbc)
-										fmt.Println("------------------------------------------------------------")
-									} else if auxDetalle[j].ConceptoNominaId.Id == 576 {
-										valorSaludUniversidad = auxDetalle[j].ValorCalculado
-										fmt.Println("Total salud Universidad:", valorSaludUniversidad)
-										fmt.Println("------------------------------------------------------------")
-									} else if auxDetalle[j].ConceptoNominaId.Id == 577 {
-										valorPensionUniversidad = auxDetalle[j].ValorCalculado
-										fmt.Println("Total Pensión universidad:", valorPensionUniversidad)
-										fmt.Println("------------------------------------------------------------")
-									}
-								} else if auxDetalle[j].ConceptoNominaId.Id == 152 {
-
-									fmt.Println("No soy un contrato general")
-									esta := false
-									for z := 0; z < len(contratosCambio); z++ {
-										if auxDetalle[j].ContratoPreliquidacionId.ContratoId.Id == contratosCambio[z] {
-											esta = true
+										if auxDetalle[j].ConceptoNominaId.Id == 152 {
+											totalHonorarios = auxDetalle[j].ValorCalculado
+											fmt.Println("Total honorarios:", totalHonorarios)
+											fmt.Println("------------------------------------------------------------")
+										} else if auxDetalle[j].ConceptoNominaId.Id == 64 {
+											valorRetefuente = auxDetalle[j].ValorCalculado
+											fmt.Println("Total retefuente:", valorRetefuente)
+											fmt.Println("------------------------------------------------------------")
+										} else if auxDetalle[j].ConceptoNominaId.Id == 170 {
+											valorFondoSol = auxDetalle[j].ValorCalculado
+											fmt.Println("Total fondo sol:", valorFondoSol)
+											fmt.Println("------------------------------------------------------------")
+										} else if auxDetalle[j].ConceptoNominaId.Id == 572 {
+											valorFondoSub = auxDetalle[j].ValorCalculado
+											fmt.Println("Total fondo sub:", valorFondoSub)
+											fmt.Println("------------------------------------------------------------")
+										} else if auxDetalle[j].ConceptoNominaId.Id == 568 {
+											valorSalud = auxDetalle[j].ValorCalculado
+											fmt.Println("Total Salud:", valorSalud)
+											fmt.Println("------------------------------------------------------------")
+										} else if auxDetalle[j].ConceptoNominaId.Id == 569 {
+											valorPension = auxDetalle[j].ValorCalculado
+											fmt.Println("Total Pension:", valorPension)
+											fmt.Println("------------------------------------------------------------")
+										} else if auxDetalle[j].ConceptoNominaId.Id == 570 {
+											valorArl = auxDetalle[j].ValorCalculado
+											fmt.Println("Total Arl:", valorArl)
+											fmt.Println("------------------------------------------------------------")
+										} else if auxDetalle[j].ConceptoNominaId.Id == 521 {
+											valorIbc = auxDetalle[j].ValorCalculado
+											fmt.Println("Total ibc:", valorIbc)
+											fmt.Println("------------------------------------------------------------")
+										} else if auxDetalle[j].ConceptoNominaId.Id == 576 {
+											valorSaludUniversidad = auxDetalle[j].ValorCalculado
+											fmt.Println("Total salud Universidad:", valorSaludUniversidad)
+											fmt.Println("------------------------------------------------------------")
+										} else if auxDetalle[j].ConceptoNominaId.Id == 577 {
+											valorPensionUniversidad = auxDetalle[j].ValorCalculado
+											fmt.Println("Total Pensión universidad:", valorPensionUniversidad)
+											fmt.Println("------------------------------------------------------------")
 										}
-									}
+									} else if auxDetalle[j].ConceptoNominaId.Id == 152 {
 
-									if !esta {
-										contratosCambio = append(contratosCambio, auxDetalle[j].ContratoPreliquidacionId.ContratoId.Id)
-										fmt.Println("Contrato agregado: ", auxDetalle[j].ContratoPreliquidacionId.ContratoId.Id)
-									}
-								}
-							}
-
-							//Recorrer y cambiar los valores teniendo en cuenta su aporte a salud y pension
-							fmt.Println("Contratos a cambiar: ", contratosCambio)
-							for j := 0; j < len(contratosCambio); j++ {
-								//Obtener detalles
-								fmt.Println("Cambiando contrato con id: ", contratosCambio[j])
-								query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contratosCambio[j])
-								if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-									LimpiezaRespuestaRefactor(aux, &auxDetalle)
-									if auxDetalle[0].Id != 0 {
-										//Obtener los honorarios para hacer regla de 3
-										for k := 0; k < len(auxDetalle); k++ {
-											if auxDetalle[k].ConceptoNominaId.Id == 152 {
-												valorMensual = auxDetalle[k].ValorCalculado
-												fmt.Println("Honorarios para el contrato: ", valorMensual)
+										fmt.Println("No soy un contrato general")
+										esta := false
+										for z := 0; z < len(contratosCambio); z++ {
+											if auxDetalle[j].ContratoPreliquidacionId.ContratoId.Id == contratosCambio[z] {
+												esta = true
 											}
 										}
-										//Hacer regla de 3
-										for k := 0; k < len(auxDetalle); k++ {
-											if auxDetalle[k].ConceptoNominaId.Id == 64 {
-												detalleEnvio = auxDetalle[k]
-												//Actualizar valor
-												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorRetefuente)
-												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
-													fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
-												} else {
-													fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
-												}
-											} else if auxDetalle[k].ConceptoNominaId.Id == 170 {
-												detalleEnvio = auxDetalle[k]
-												//Actualizar valor
-												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorFondoSol)
-												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
-													fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
 
-												} else {
-													fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
-												}
-											} else if auxDetalle[k].ConceptoNominaId.Id == 568 {
-												detalleEnvio = auxDetalle[k]
-												//Actualizar valor
-												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorSalud)
-												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
-													fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
-
-												} else {
-													fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
-												}
-											} else if auxDetalle[k].ConceptoNominaId.Id == 569 {
-												detalleEnvio = auxDetalle[k]
-												//Actualizar valor
-												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorPension)
-												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
-													fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
-
-												} else {
-													fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
-												}
-											} else if auxDetalle[k].ConceptoNominaId.Id == 570 {
-												detalleEnvio = auxDetalle[k]
-												//Actualizar valor
-												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorArl)
-												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
-													fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
-
-												} else {
-													fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
-												}
-											} else if auxDetalle[k].ConceptoNominaId.Id == 521 {
-												detalleEnvio = auxDetalle[k]
-												//Actualizar valor
-												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorIbc)
-												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
-													fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
-
-												} else {
-													fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
-												}
-											} else if auxDetalle[k].ConceptoNominaId.Id == 572 {
-												detalleEnvio = auxDetalle[k]
-												//Actualizar valor
-												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorFondoSub)
-												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
-													fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
-
-												} else {
-													fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
-												}
-											} else if auxDetalle[k].ConceptoNominaId.Id == 576 {
-												detalleEnvio = auxDetalle[k]
-												//Actualizar valor
-												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorSaludUniversidad)
-												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
-													fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
-
-												} else {
-													fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
-												}
-											} else if auxDetalle[k].ConceptoNominaId.Id == 577 {
-												detalleEnvio = auxDetalle[k]
-												//Actualizar valor
-												detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorPensionUniversidad)
-												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
-													fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
-
-												} else {
-													fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
-												}
-											}
+										if !esta {
+											contratosCambio = append(contratosCambio, auxDetalle[j].ContratoPreliquidacionId.ContratoId.Id)
+											fmt.Println("Contrato agregado: ", auxDetalle[j].ContratoPreliquidacionId.ContratoId.Id)
 										}
-									} else {
-										fmt.Println("No hay conceptos para el contrato: ", contratosCambio[j])
 									}
-								} else {
-									fmt.Println("Error al obtener los detalles del contrato")
 								}
+
+								if totalHonorarios <= 1000000 {
+									//Recorrer y cambiar los valores teniendo en cuenta su aporte a salud y pension
+									fmt.Println("Contratos a cambiar: ", contratosCambio)
+									for j := 0; j < len(contratosCambio); j++ {
+										//Obtener detalles
+										fmt.Println("Cambiando contrato con id: ", contratosCambio[j])
+										query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contratosCambio[j])
+										if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+											LimpiezaRespuestaRefactor(aux, &auxDetalle)
+											if auxDetalle[0].Id != 0 {
+												//Obtener los honorarios para hacer regla de 3
+												for k := 0; k < len(auxDetalle); k++ {
+													if auxDetalle[k].ConceptoNominaId.Id == 152 {
+														valorMensual = auxDetalle[k].ValorCalculado
+														fmt.Println("Honorarios para el contrato: ", valorMensual)
+													}
+												}
+												//Hacer regla de 3
+												for k := 0; k < len(auxDetalle); k++ {
+													if auxDetalle[k].ConceptoNominaId.Id == 64 {
+														detalleEnvio = auxDetalle[k]
+														//Actualizar valor
+														detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorRetefuente)
+														if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+															fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
+														} else {
+															fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
+														}
+													} else if auxDetalle[k].ConceptoNominaId.Id == 170 {
+														detalleEnvio = auxDetalle[k]
+														//Actualizar valor
+														detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorFondoSol)
+														if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+															fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
+
+														} else {
+															fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
+														}
+													} else if auxDetalle[k].ConceptoNominaId.Id == 568 {
+														detalleEnvio = auxDetalle[k]
+														//Actualizar valor
+														detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorSalud)
+														if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+															fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
+
+														} else {
+															fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
+														}
+													} else if auxDetalle[k].ConceptoNominaId.Id == 569 {
+														detalleEnvio = auxDetalle[k]
+														//Actualizar valor
+														detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorPension)
+														if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+															fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
+
+														} else {
+															fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
+														}
+													} else if auxDetalle[k].ConceptoNominaId.Id == 570 {
+														detalleEnvio = auxDetalle[k]
+														//Actualizar valor
+														detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorArl)
+														if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+															fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
+
+														} else {
+															fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
+														}
+													} else if auxDetalle[k].ConceptoNominaId.Id == 521 {
+														detalleEnvio = auxDetalle[k]
+														//Actualizar valor
+														detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorIbc)
+														if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+															fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
+
+														} else {
+															fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
+														}
+													} else if auxDetalle[k].ConceptoNominaId.Id == 572 {
+														detalleEnvio = auxDetalle[k]
+														//Actualizar valor
+														detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorFondoSub)
+														if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+															fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
+
+														} else {
+															fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
+														}
+													} else if auxDetalle[k].ConceptoNominaId.Id == 576 {
+														detalleEnvio = auxDetalle[k]
+														//Actualizar valor
+														detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorSaludUniversidad)
+														if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+															fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
+
+														} else {
+															fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
+														}
+													} else if auxDetalle[k].ConceptoNominaId.Id == 577 {
+														detalleEnvio = auxDetalle[k]
+														//Actualizar valor
+														detalleEnvio.ValorCalculado = math.Round((valorMensual / totalHonorarios) * valorPensionUniversidad)
+														if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalleEnvio.Id), "PUT", &aux, detalleEnvio); err == nil {
+															fmt.Println("Se ha actualizado: ", detalleEnvio.ConceptoNominaId.AliasConcepto, " con el valor de: ", detalleEnvio.ValorCalculado)
+
+														} else {
+															fmt.Println("Error al actualizar el valor de: ", detalleEnvio.ConceptoNominaId.AliasConcepto)
+														}
+													}
+												}
+											} else {
+												fmt.Println("No hay conceptos para el contrato: ", contratosCambio[j])
+											}
+										} else {
+											fmt.Println("Error al obtener los detalles del contrato")
+										}
+									}
+								}
+							} else {
+								fmt.Println("No se encotraron detalles: ", errorJSON)
 							}
 						} else {
-							fmt.Println("No se encotraron detalles: ", errorJSON)
+							fmt.Println("Error al actualizar los conceptos en los contratos")
 						}
-					} else {
-						fmt.Println("Error al actualizar los conceptos en los contratos")
 					}
+
 				} else {
 					fmt.Println("Error buscar contrato general mensual: ", err)
 				}
