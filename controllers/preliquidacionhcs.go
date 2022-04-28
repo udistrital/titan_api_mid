@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"strconv"
-	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/udistrital/titan_api_mid/golog"
@@ -85,7 +84,6 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 			//Calcular semanas a liquidar
 			if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
 				//para el mes inicial
-				fmt.Println("Entro al mes inicial")
 				//Calcular el numero de días
 				diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
 				semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
@@ -100,16 +98,13 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 				if semanas <= 1 {
 					semanas_liquidadas = 1
 					detallePreliquidacion.DiasLiquidados = 1
-					fmt.Println("Semanas: ", semanas)
 				} else {
 					semanas_liquidadas = int(Roundf(semanas))
 					detallePreliquidacion.DiasLiquidados = float64(semanas)
-					fmt.Println("Semanas: ", semanas)
 				}
 
 			} else if mesIterativo == int(contrato.FechaFin.Month()) && contrato.FechaFin.Year() == anoIterativo {
 				//Para el mes final
-				fmt.Println("Entro al mes final")
 
 				//Contar las semanas liquidadas
 				var aux map[string]interface{}
@@ -142,8 +137,6 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 						mes = mes + 1
 					}
 				}
-				fmt.Println("Semanas Econtradas: ", semanas_liquidadas)
-				fmt.Println("Semanas del contrato: ", semanasContrato)
 
 				semanas_liquidadas = semanasContrato - semanas_liquidadas
 				detallePreliquidacion.DiasLiquidados = float64(semanas_liquidadas)
@@ -157,13 +150,12 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 				}
 
 			} else {
-				fmt.Println("Entro al mes intermedio")
 				semanas_liquidadas = 4
 				detallePreliquidacion.DiasLiquidados = 4
 				porcentaje_ibc = 1
 			}
 
-			reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").periodo(" + strconv.Itoa(contrato.Vigencia) + ")." + "semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
+			reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
 
 			if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general {
 				auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion, true)
@@ -177,9 +169,8 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 
 			if !general {
 				fmt.Println("Liquidando Contrato General")
-				liquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc)
+				LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "410")
 				if !contrato.Unico {
-					//nueva lógica
 					var contratosDocente []models.Contrato = nil
 					var contratoPreliquidacionDocente []models.ContratoPreliquidacion = nil
 					var auxValor []models.DetallePreliquidacion
@@ -480,124 +471,6 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 		} else {
 			fmt.Println("Error al consultar preliquidaciones")
 		}
-		preliquidacion[0].Id = 0  //Para evitar errores al obtener la preliquidación del siguiente mes
-		contratoGeneral[0].Id = 0 //Para no obtener problemas con el contrato General del siguiente mes
+		preliquidacion[0].Id = 0 //Para evitar errores al obtener la preliquidación del siguiente mes
 	}
-}
-
-func liquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models.Contrato, preliquidacion models.Preliquidacion, porcentaje float64) {
-	var aux map[string]interface{}
-	var contratoGeneral []models.Contrato
-	var contratosDocente []models.ContratoPreliquidacion
-	var auxDetalle []models.DetallePreliquidacion
-
-	query := "NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(anoIterativo) + ",Documento:" + contrato.Documento + ",TipoNominaId:410"
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
-		LimpiezaRespuestaRefactor(aux, &contratoGeneral)
-		if contratoGeneral[0].Id == 0 {
-			//Crear contrato General
-
-			contratoGeneral[0].NumeroContrato = "GENERAL" + strconv.Itoa(mesIterativo)
-			contratoGeneral[0].Vigencia = anoIterativo
-			contratoGeneral[0].NombreCompleto = contrato.NombreCompleto
-			contratoGeneral[0].Documento = contrato.Documento
-			contratoGeneral[0].PersonaId = contrato.PersonaId
-			contratoGeneral[0].TipoNominaId = contrato.TipoNominaId
-			contratoGeneral[0].Activo = true
-			contratoGeneral[0].FechaInicio = time.Date(anoIterativo, time.Month(mesIterativo), 1, 12, 0, 0, 0, time.UTC)
-			if mesIterativo == 2 {
-				contratoGeneral[0].FechaFin = time.Date(anoIterativo, time.Month(mesIterativo), 28, 12, 0, 0, 0, time.UTC)
-			} else {
-				contratoGeneral[0].FechaFin = time.Date(anoIterativo, time.Month(mesIterativo), 30, 12, 0, 0, 0, time.UTC)
-			}
-
-			//Buscar el valor de los honorarios de los contratos que tiene el docente en ese mes
-			query = "PreliquidacionId.Id:" + strconv.Itoa(preliquidacion.Id) + ",ContratoId.Documento:" + contrato.Documento + ",ContratoId.TipoNominaId:410"
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-				LimpiezaRespuestaRefactor(aux, &contratosDocente)
-				if len(contratosDocente) >= 1 { //Tiene más de dos contratos
-					//Sumar valores de los honorarios para obtener el valor total de ese mes
-					contratoGeneral[0].ValorContrato = 0
-					for i := 0; i < len(contratosDocente); i++ {
-						//Sumar los honorarios de el mes presente para obtener el IBC
-						query := "ContratoPreliquidacionId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",ConceptoNominaId.Id:152"
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-							LimpiezaRespuestaRefactor(aux, &auxDetalle)
-							contratoGeneral[0].ValorContrato = contratoGeneral[0].ValorContrato + auxDetalle[0].ValorCalculado
-						} else {
-							fmt.Println("Error al obtener los honorarios para el contrato :", contratosDocente[i].ContratoId.NumeroContrato, " ", err)
-						}
-					}
-				}
-			} else {
-				fmt.Println("Error al obtener los contratos vigentes para el mes actual: ", err)
-			}
-
-			//Registrar el contrato nuevo
-			contratoGeneral[0], _ = registrarContrato(contratoGeneral[0])
-		} else {
-			fmt.Println("Contrato Encontrado: ", contratoGeneral[0])
-
-			//Eliminar los detalles del contrato General
-			query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contratoGeneral[0].Id) + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + strconv.Itoa(anoIterativo)
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-				LimpiezaRespuestaRefactor(aux, &auxDetalle)
-				idContratoPeliquidacion := auxDetalle[0].ContratoPreliquidacionId.Id
-				for j := 0; j < len(auxDetalle); j++ {
-					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(auxDetalle[j].Id), "DELETE", &aux, nil); err == nil {
-						fmt.Println("Detalle Eliminado")
-					} else {
-						fmt.Println("Error al eliminar detalle: ", err)
-					}
-				}
-				//Eliminar el contrato_preliquidación
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(idContratoPeliquidacion), "DELETE", &aux, nil); err == nil {
-					fmt.Println("contrato Preliquidacion Eliminado")
-					//Actualizar el valor del contrato general
-					//Buscar el valor de los honorarios de los contratos que tiene el docente en ese mes
-					contratoGeneral[0].ValorContrato = 0
-					query = "PreliquidacionId.Id:" + strconv.Itoa(preliquidacion.Id) + ",ContratoId.Documento:" + contrato.Documento
-					fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-						LimpiezaRespuestaRefactor(aux, &contratosDocente)
-						if len(contratosDocente) >= 1 { //Tiene más de un contrato
-							//Sumar valores de los honorarios para obtener el valor total de ese mes
-							for i := 0; i < len(contratosDocente); i++ {
-								//Sumar los honorarios de el mes presente para obtener el IBC
-								if contratosDocente[i].ContratoId.Id != contratoGeneral[0].Id {
-									query := "ContratoPreliquidacionId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",ConceptoNominaId.Id:152"
-									if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-										LimpiezaRespuestaRefactor(aux, &auxDetalle)
-										contratoGeneral[0].ValorContrato = contratoGeneral[0].ValorContrato + auxDetalle[0].ValorCalculado
-									} else {
-										fmt.Println("Error al obtener los honorarios para el contrato :", contratosDocente[i].ContratoId.NumeroContrato, " ", err)
-									}
-								}
-							}
-							//Actualizar
-
-							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contratoGeneral[0].Id), "PUT", &aux, contratoGeneral[0]); err == nil {
-								fmt.Println("Valor Actualizado")
-							} else {
-								fmt.Println("Error al actualizar valor del contrato")
-							}
-						}
-					} else {
-						fmt.Println("Error al obtener los contratos vigentes para el mes actual: ", err)
-					}
-				} else {
-					fmt.Println("Error al eliminar contrato_preliquidacion: ", err)
-				}
-			} else {
-				fmt.Println("Error al obtener los detalles para el contrato general del mes")
-			}
-		}
-		liquidarHCS(contratoGeneral[0], true, porcentaje)
-	} else {
-		fmt.Println("Error al buscar contrato general:", err)
-	}
-}
-
-func actualizarValores() {
-
 }
