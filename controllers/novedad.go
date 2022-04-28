@@ -311,7 +311,7 @@ func (c *NovedadController) AgregarNovedad() {
 // @router /eliminar_novedad/:id [get]
 func (c *NovedadController) EliminarNovedad() {
 	var id = c.Ctx.Input.Param(":id")
-	var fecha_actual = time.Date(2022, time.March, 15, 12, 0, 0, 0, time.UTC)
+	var fecha_actual = time.Now()
 	var aux map[string]interface{}
 	var novedad []models.Novedad
 	//Verificar cómo se van a enviar los datos del contrato al trabajar el front
@@ -427,11 +427,7 @@ func (c *NovedadController) CancelarContrato() {
 		contrato[0].ValorContrato = valorDia * float64(fecha_actual.Day())
 	}
 
-	if contrato[0].TipoNominaId == 411 {
-		liquidarCPS(contrato[0])
-	} else if contrato[0].TipoNominaId == 409 {
-		liquidarHCH(contrato[0], false)
-	}
+	liquidarCPS(contrato[0])
 
 	c.ServeJSON()
 }

@@ -44,7 +44,7 @@ func (c *PreliquidacionController) Preliquidar() {
 					}
 					liquidarCPS(contrato)
 				} else if contrato.TipoNominaId == 409 {
-					liquidarHCH(contrato, false)
+					liquidarHCH(contrato, false, 0)
 				} else if contrato.TipoNominaId == 410 {
 					liquidarHCS(contrato, false, 0)
 				}
