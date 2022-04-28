@@ -46,7 +46,7 @@ func (c *PreliquidacionController) Preliquidar() {
 				} else if contrato.TipoNominaId == 409 {
 					liquidarHCH(contrato, false)
 				} else if contrato.TipoNominaId == 410 {
-					liquidarHCS(contrato, false)
+					liquidarHCS(contrato, false, 0)
 				}
 				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
 			} else {
