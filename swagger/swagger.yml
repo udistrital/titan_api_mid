@@ -528,6 +528,9 @@ definitions:
         format: int64
       Unico:
         type: boolean
+      Vacaciones:
+        type: number
+        format: double
       ValorContrato:
         type: number
         format: double
