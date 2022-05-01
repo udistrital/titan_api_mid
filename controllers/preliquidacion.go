@@ -34,6 +34,22 @@ func (c *PreliquidacionController) Preliquidar() {
 	var aux map[string]interface{}
 	fmt.Println("Hola Mundo producción")
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &contrato); err == nil {
+		fmt.Println("Contrato Recibido: ")
+		fmt.Println("Numero de contrato: ", contrato.NumeroContrato)
+		fmt.Println("Documento: ", contrato.Documento)
+		fmt.Println("Dependencia : ", contrato.DependenciaId)
+		fmt.Println("Fecha Inicio: ", contrato.FechaInicio)
+		fmt.Println("Fecha Fin: ", contrato.FechaFin)
+		fmt.Println("Nombre completo: ", contrato.NombreCompleto)
+		fmt.Println("Valor Contrato: ", contrato.ValorContrato)
+		fmt.Println("Vacaciones: ", contrato.Vacaciones)
+		fmt.Println("Unico: ", contrato.Unico)
+		fmt.Println("Cdp: ", contrato.Cdp)
+		fmt.Println("Rp: ", contrato.Rp)
+		fmt.Println("Vigencia: ", contrato.Vigencia)
+		fmt.Println("Tipo Nomina: ", contrato.TipoNominaId)
+		fmt.Println("Activo: ", contrato.Activo)
+
 		if contrato.FechaInicio.Before(contrato.FechaFin) {
 			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contrato)

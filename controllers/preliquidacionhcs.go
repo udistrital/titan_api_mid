@@ -83,7 +83,6 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 			//Calcular semanas a liquidar
 			if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
 				//para el mes inicial
-				fmt.Println("Vacaciones: ", contrato.Vacaciones)
 				predicados = append(predicados, models.Predicado{Nombre: "vacaciones(" + fmt.Sprintf("%f", contrato.Vacaciones) + ")."})
 				//Calcular el numero de días
 				diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
@@ -106,7 +105,6 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 
 			} else if mesIterativo == int(contrato.FechaFin.Month()) && contrato.FechaFin.Year() == anoIterativo {
 				//Para el mes final
-				fmt.Println("Vacaciones: ", contrato.Vacaciones)
 				predicados = append(predicados, models.Predicado{Nombre: "vacaciones(" + fmt.Sprintf("%f", contrato.Vacaciones) + ")."})
 
 				//Contar las semanas liquidadas
@@ -159,7 +157,6 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 					predicados = append(predicados, models.Predicado{Nombre: "vacaciones(0)."})
 
 				}
-
 				semanas_liquidadas = 4
 				detallePreliquidacion.DiasLiquidados = 4
 				porcentaje_ibc = 1
