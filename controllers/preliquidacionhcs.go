@@ -57,7 +57,6 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 	}
 	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
-	reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
 
 	for {
 
@@ -84,6 +83,8 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 			//Calcular semanas a liquidar
 			if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
 				//para el mes inicial
+				fmt.Println("Vacaciones: ", contrato.Vacaciones)
+				predicados = append(predicados, models.Predicado{Nombre: "vacaciones(" + fmt.Sprintf("%f", contrato.Vacaciones) + ")."})
 				//Calcular el numero de días
 				diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
 				semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
@@ -105,6 +106,8 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 
 			} else if mesIterativo == int(contrato.FechaFin.Month()) && contrato.FechaFin.Year() == anoIterativo {
 				//Para el mes final
+				fmt.Println("Vacaciones: ", contrato.Vacaciones)
+				predicados = append(predicados, models.Predicado{Nombre: "vacaciones(" + fmt.Sprintf("%f", contrato.Vacaciones) + ")."})
 
 				//Contar las semanas liquidadas
 				var aux map[string]interface{}
@@ -150,10 +153,19 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 				}
 
 			} else {
+				if general {
+					predicados = append(predicados, models.Predicado{Nombre: "vacaciones(" + fmt.Sprintf("%f", contrato.Vacaciones) + ")."})
+				} else {
+					predicados = append(predicados, models.Predicado{Nombre: "vacaciones(0)."})
+
+				}
+
 				semanas_liquidadas = 4
 				detallePreliquidacion.DiasLiquidados = 4
 				porcentaje_ibc = 1
 			}
+
+			reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
 
 			reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
 
