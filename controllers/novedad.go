@@ -44,7 +44,8 @@ func (c *NovedadController) VerificarDescuentos() {
 	var honorarios float64
 	var descuentos float64
 	var idHonorarios int
-	var fecha_actual = time.Now()
+	var fecha_actual = time.Date(2022, time.April, 15, 12, 0, 0, 0, time.UTC)
+        //var fecha_actual = time.Now()
 	var anoFin int
 	var mesFin int
 	var mesIterativo int
