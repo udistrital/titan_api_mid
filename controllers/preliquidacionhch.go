@@ -101,7 +101,10 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) {
 				} else {
 					semanas_liquidadas = int(Roundf(semanas + 0.5))
 					detallePreliquidacion.DiasLiquidados = float64(semanas)
-					fmt.Println("Semanas: ", semanas)
+					fmt.Println("Semanas: ", semanas_liquidadas)
+					if semanas_liquidadas > 4 {
+						semanas_liquidadas = 4
+					}
 				}
 			} else if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
 				//para el mes inicial
