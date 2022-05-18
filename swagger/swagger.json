@@ -736,6 +736,9 @@
                     "type": "integer",
                     "format": "int64"
                 },
+                "Completo": {
+                    "type": "boolean"
+                },
                 "DependenciaId": {
                     "type": "integer",
                     "format": "int64"
