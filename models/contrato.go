@@ -19,6 +19,7 @@ type Contrato struct {
 	Cdp               int
 	Rp                int
 	Unico             bool
+	Completo          bool
 	Activo            bool
 	FechaCreacion     string
 	FechaModificacion string
