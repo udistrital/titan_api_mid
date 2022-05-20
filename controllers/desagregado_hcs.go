@@ -42,8 +42,10 @@ func (c *DesagregadoHCSController) ObtenerDesagregado() {
 			} else {
 				lowDedicacion = "hcpre"
 			}
+			predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(0)."})
 		} else {
 			lowDedicacion = strings.ToLower(vinculacion.Dedicacion)
+			predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(1)."})
 		}
 
 		lowCategoria = strings.ToLower(vinculacion.Categoria)

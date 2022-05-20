@@ -92,7 +92,6 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) {
 				} else {
 					porcentaje_ibc = semanas / 30
 				}
-				semanas = semanas / 7
 				semanas_liquidadas = semanasContrato
 			} else if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
 				//para el mes inicial
