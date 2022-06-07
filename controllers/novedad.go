@@ -44,7 +44,7 @@ func (c *NovedadController) VerificarDescuentos() {
 	var honorarios float64
 	var descuentos float64
 	var idHonorarios int
-	var fecha_actual = time.Date(2022, time.March, 15, 12, 0, 0, 0, time.UTC)
+	var fecha_actual = time.Date(2022, time.May, 15, 12, 0, 0, 0, time.UTC)
 	//var fecha_actual = time.Now()
 	var anoFin int
 	var mesFin int
@@ -219,7 +219,7 @@ func (c *NovedadController) AgregarNovedad() {
 	var contrato []models.Contrato
 	var auxConcepto []models.ConceptoNomina
 	var novedad models.Novedad
-	var fecha_actual = time.Date(2022, time.March, 15, 12, 0, 0, 0, time.UTC)
+	var fecha_actual = time.Date(2022, time.May, 15, 12, 0, 0, 0, time.UTC)
 	//var fecha_actual = time.Now()
 	var mesFin int
 	var anoFin int
