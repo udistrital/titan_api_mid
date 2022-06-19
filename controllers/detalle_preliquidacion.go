@@ -28,7 +28,7 @@ func (c *DetallePreliquidacionController) URLMapping() {
 // @Param	contrato		path 	string	true		"Contrato a buscar"
 // @Param	vigencia		path 	string	true		"vigencia del contrato"
 // @Param	documento		path 	string	true		"Documento del contratista"
-// @Success 201 {object} models.Detalle
+// @Success 201 {object} []models.Detalle
 // @Failure 403 body is empty
 // @router /obtener_detalle_CT/:ano/:mes/:contrato/:vigencia/:documento [get]
 func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
@@ -52,37 +52,54 @@ func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
 	c.ServeJSON()
 }
 
-func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS bool, HCS bool) (detalle models.Detalle, err error) {
+func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS bool, HCS bool) (detalle []models.Detalle, err error) {
 	var aux map[string]interface{}
 	var tempDetalle []models.DetallePreliquidacion
-	var query = "ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + vigencia + ",ContratoPreliquidacionId.ContratoId.Documento:" + documento
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-		LimpiezaRespuestaRefactor(aux, &tempDetalle)
-		detalle.Contrato = tempDetalle[0].ContratoPreliquidacionId.ContratoId.NumeroContrato
-		detalle.Vigencia = tempDetalle[0].ContratoPreliquidacionId.ContratoId.Vigencia
-		for i := 0; i < len(tempDetalle); i++ {
-			if tempDetalle[i].ConceptoNominaId.Id == 574 || tempDetalle[i].ConceptoNominaId.Id == 573 {
-				fmt.Println("Salto")
-			} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
-				if HCS && tempDetalle[i].ConceptoNominaId.Id == 570 {
-					detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
-				} else if CPS && (tempDetalle[i].ConceptoNominaId.Id == 568 || tempDetalle[i].ConceptoNominaId.Id == 569 || tempDetalle[i].ConceptoNominaId.Id == 570) {
-					detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
+	var auxDetalle models.Detalle
+	var auxContratos []models.Contrato
+	var query = "NumeroContrato:" + contrato + ",Vigencia:" + vigencia + ",Documento:" + documento
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+		LimpiezaRespuestaRefactor(aux, &auxContratos)
+		if auxContratos[0].Id != 0 {
+			for j := 0; j < len(auxContratos); j++ {
+				query = "ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(auxContratos[j].Id)
+				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					LimpiezaRespuestaRefactor(aux, &tempDetalle)
+					auxDetalle.Contrato = tempDetalle[0].ContratoPreliquidacionId.ContratoId.NumeroContrato
+					auxDetalle.Vigencia = tempDetalle[0].ContratoPreliquidacionId.ContratoId.Vigencia
+					for i := 0; i < len(tempDetalle); i++ {
+						if tempDetalle[i].ConceptoNominaId.Id == 574 || tempDetalle[i].ConceptoNominaId.Id == 573 {
+							fmt.Println("Salto")
+						} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
+							if HCS && tempDetalle[i].ConceptoNominaId.Id == 570 {
+								auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
+							} else if CPS && (tempDetalle[i].ConceptoNominaId.Id == 568 || tempDetalle[i].ConceptoNominaId.Id == 569 || tempDetalle[i].ConceptoNominaId.Id == 570) {
+								auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
+							} else {
+								auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
+								auxDetalle.TotalDescuentos = auxDetalle.TotalDescuentos + tempDetalle[i].ValorCalculado
+							}
+						} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
+							auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
+							auxDetalle.TotalDevengado = auxDetalle.TotalDevengado + tempDetalle[i].ValorCalculado
+						} else {
+							auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
+						}
+					}
+					auxDetalle.TotalPago = auxDetalle.TotalDevengado - auxDetalle.TotalDescuentos
+					detalle = append(detalle, auxDetalle)
 				} else {
-					detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
-					detalle.TotalDescuentos = detalle.TotalDescuentos + tempDetalle[i].ValorCalculado
+					fmt.Println("Error al obtener detalle ", err)
+					return detalle, err
 				}
-			} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
-				detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
-				detalle.TotalDevengado = detalle.TotalDevengado + tempDetalle[i].ValorCalculado
-			} else {
-				detalle.Detalle = append(detalle.Detalle, tempDetalle[i])
 			}
+			return detalle, nil
+		} else {
+			fmt.Println("Error al obtener contrato o contratos ", err)
+			return detalle, err
 		}
-		detalle.TotalPago = detalle.TotalDevengado - detalle.TotalDescuentos
-		return detalle, nil
 	} else {
-		fmt.Println("Error al obtener detalle ", err)
+		fmt.Println("Error al obtener contrato o contratos ", err)
 		return detalle, err
 	}
 }
@@ -102,7 +119,7 @@ func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 	mes := c.Ctx.Input.Param(":mes")
 	documento := c.Ctx.Input.Param(":documento")
 	nomina := c.Ctx.Input.Param(":nomina")
-	var auxDetalle models.Detalle
+	var auxDetalle []models.Detalle
 
 	var aux map[string]interface{}
 	//var vinculacion []models.VinculacionDocente
@@ -157,7 +174,7 @@ func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 			}
 
 			if err == nil {
-				detallesDVE = append(detallesDVE, auxDetalle)
+				detallesDVE = append(detallesDVE, auxDetalle[0])
 				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detallesDVE}
 			} else {
 				c.Data["mesaage"] = "Error al obtener detalle de 1 o más contratos"

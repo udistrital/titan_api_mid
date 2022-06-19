@@ -240,7 +240,10 @@
                     "201": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/models.Detalle"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Detalle"
+                            }
                         }
                     },
                     "403": {
