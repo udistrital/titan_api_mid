@@ -255,7 +255,6 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
 					fmt.Println("Error al agregar concepto", err)
 					return "Error al agregar concepto", err
 				}
-				//Agregar la novedad a los detalles de esa preliquidacion
 			} else {
 				fmt.Println("Error al obtener el valor de los honorarios ", err)
 				return "Error al obtener el valor de los honorarios ", err
