@@ -166,7 +166,9 @@ paths:
         "201":
           description: ""
           schema:
-            $ref: '#/definitions/models.Detalle'
+            type: array
+            items:
+              $ref: '#/definitions/models.Detalle'
         "403":
           description: body is empty
   /detalle_preliquidacion/obtener_detalle_DVE/{ano}/{mes}/{documento}/{nomina}:
