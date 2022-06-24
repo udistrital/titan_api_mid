@@ -638,10 +638,10 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "body is empty"
+                        "description": "object models.Contrato"
                     },
-                    "400": {
-                        "description": "body is empty"
+                    "404": {
+                        "description": "not found resource"
                     }
                 }
             }

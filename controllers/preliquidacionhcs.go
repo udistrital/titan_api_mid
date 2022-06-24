@@ -17,7 +17,7 @@ type PreliquidacionHcSController struct {
 	beego.Controller
 }
 
-func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
+func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (mensaje string, err error) {
 	var mesIterativo int              //mes para iterar en el ciclo para liquidar todos los meses de una vez
 	var anoIterativo int              //Ano iterativo a la hora de liquidar
 	var predicados []models.Predicado //variable para inyectar reglas
@@ -36,107 +36,79 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 	var emergencia int //Varibale para evitar loop infinito
 
 	if err == nil {
-		reglasAlivios, contratoPreliquidacion = CargarDatosRetefuente(int(cedula))
+		reglasAlivios, contratoPreliquidacion, err = CargarDatosRetefuente(int(cedula))
 	}
 
-	mesIterativo = int(contrato.FechaInicio.Month())
-	anoIterativo = contrato.Vigencia
+	if err == nil {
+		mesIterativo = int(contrato.FechaInicio.Month())
+		anoIterativo = contrato.Vigencia
 
-	//Obtener las semanas del contrato
+		//Obtener las semanas del contrato
 
-	semanasContrato := int(calcularSemanasContratoDVE(contrato.FechaInicio, contrato.FechaFin))
-	fmt.Println("SemanasContrato: ", semanasContrato)
+		semanasContrato := int(calcularSemanasContratoDVE(contrato.FechaInicio, contrato.FechaFin))
+		fmt.Println("SemanasContrato: ", semanasContrato)
 
-	//Regla para único o general (para apoximar el ibc al tope mínimo)
-	if general || contrato.Unico {
-		predicados = append(predicados, models.Predicado{Nombre: "general(1)."})
-		fmt.Println("El contrato es general o único, se carga regla")
-	} else {
-		predicados = append(predicados, models.Predicado{Nombre: "general(0)."})
-		fmt.Println("El docente tiene varios contratos, no se carga regla de único")
-	}
+		//Regla para único o general (para apoximar el ibc al tope mínimo)
+		if general || contrato.Unico {
+			predicados = append(predicados, models.Predicado{Nombre: "general(1)."})
+			fmt.Println("El contrato es general o único, se carga regla")
+		} else {
+			predicados = append(predicados, models.Predicado{Nombre: "general(0)."})
+			fmt.Println("El docente tiene varios contratos, no se carga regla de único")
+		}
 
-	//Si el contrato es completo se tomarán las vacaciones que calcule
-	if contrato.Completo {
-		predicados = append(predicados, models.Predicado{Nombre: "completo(1)."})
-		fmt.Println("El contrato es completo, no requiere vacaciones")
-	} else {
-		predicados = append(predicados, models.Predicado{Nombre: "completo(0)."})
-		fmt.Println("El contrato no es completo, requiere de las vacaciones")
-	}
-	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
-	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+		//Si el contrato es completo se tomarán las vacaciones que calcule
+		if contrato.Completo {
+			predicados = append(predicados, models.Predicado{Nombre: "completo(1)."})
+			fmt.Println("El contrato es completo, no requiere vacaciones")
+		} else {
+			predicados = append(predicados, models.Predicado{Nombre: "completo(0)."})
+			fmt.Println("El contrato no es completo, requiere de las vacaciones")
+		}
+		predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
+		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 
-	for {
+		for {
 
-		fmt.Println("Mes: ", mesIterativo)
-		fmt.Println("Año: ", anoIterativo)
-		reglasNuevas = ""
-		query := "Ano:" + strconv.Itoa(anoIterativo) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:416"
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
-			LimpiezaRespuestaRefactor(aux, &preliquidacion)
-			//En caso de que no exista la preliqudacion la crea
-			if preliquidacion[0].Id == 0 {
-				preliquidacion[0] = registrarPreliquidacion(contrato.Vigencia, mesIterativo, 476, 416)
-				contratoPreliquidacion = registrarContratoPreliquidacion(preliquidacion[0].Id, contrato.Id, contratoPreliquidacion)
-			} else {
-				//En caso contrario únicamente crea el contrato_preliquidación y lo asocia directamente
-				contratoPreliquidacion = registrarContratoPreliquidacion(preliquidacion[0].Id, contrato.Id, contratoPreliquidacion)
-			}
-
-			detallePreliquidacion.ContratoPreliquidacionId = &contratoPreliquidacion
-			detallePreliquidacion.TipoPreliquidacionId = 397
-			detallePreliquidacion.Activo = true
-			detallePreliquidacion.EstadoDisponibilidadId = 426
-			_, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
-
-			//Calcular semanas a liquidar
-			if contrato.FechaInicio.Month() == contrato.FechaFin.Month() && contrato.FechaInicio.Year() == contrato.FechaFin.Year() {
-				//Contratos de un único mes
-				//Calcular el numero de días
-				predicados = append(predicados, models.Predicado{Nombre: "vacaciones(" + fmt.Sprintf("%f", contrato.Vacaciones) + ")."})
-				diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
-				semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
-				if porcentaje != 0 {
-					porcentaje_ibc = porcentaje
+			fmt.Println("Mes: ", mesIterativo)
+			fmt.Println("Año: ", anoIterativo)
+			reglasNuevas = ""
+			query := "Ano:" + strconv.Itoa(anoIterativo) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:416"
+			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
+				LimpiezaRespuestaRefactor(aux, &preliquidacion)
+				//En caso de que no exista la preliqudacion la crea
+				if preliquidacion[0].Id == 0 {
+					preliquidacion[0] = registrarPreliquidacion(contrato.Vigencia, mesIterativo, 476, 416)
+					contratoPreliquidacion = registrarContratoPreliquidacion(preliquidacion[0].Id, contrato.Id, contratoPreliquidacion)
 				} else {
-					porcentaje_ibc = semanas / 30
+					//En caso contrario únicamente crea el contrato_preliquidación y lo asocia directamente
+					contratoPreliquidacion = registrarContratoPreliquidacion(preliquidacion[0].Id, contrato.Id, contratoPreliquidacion)
 				}
 
-				semanas_liquidadas = semanasContrato
-			} else if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
-				//para el mes inicial
-				predicados = append(predicados, models.Predicado{Nombre: "vacaciones(" + fmt.Sprintf("%f", contrato.Vacaciones) + ")."})
-				//Calcular el numero de días
-				diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
-				semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
+				detallePreliquidacion.ContratoPreliquidacionId = &contratoPreliquidacion
+				detallePreliquidacion.TipoPreliquidacionId = 397
+				detallePreliquidacion.Activo = true
+				detallePreliquidacion.EstadoDisponibilidadId = 426
+				_, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
 
-				if porcentaje != 0 {
-					porcentaje_ibc = porcentaje
-				} else {
-					porcentaje_ibc = semanas / 30
-				}
-				semanas = semanas / 7
-
-				if semanas <= 1 {
-					semanas_liquidadas = 1
-					detallePreliquidacion.DiasLiquidados = 1
-				} else {
-					semanas_liquidadas = int(Roundf(semanas))
-					detallePreliquidacion.DiasLiquidados = float64(semanas)
-				}
-
-				semanasContrato = semanasContrato - semanas_liquidadas
-			} else {
-				//Resto de meses
-				if general {
+				//Calcular semanas a liquidar
+				if contrato.FechaInicio.Month() == contrato.FechaFin.Month() && contrato.FechaInicio.Year() == contrato.FechaFin.Year() {
+					//Contratos de un único mes
+					//Calcular el numero de días
 					predicados = append(predicados, models.Predicado{Nombre: "vacaciones(" + fmt.Sprintf("%f", contrato.Vacaciones) + ")."})
-				} else {
-					predicados = append(predicados, models.Predicado{Nombre: "vacaciones(0)."})
+					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
+					semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
+					if porcentaje != 0 {
+						porcentaje_ibc = porcentaje
+					} else {
+						porcentaje_ibc = semanas / 30
+					}
 
-				}
-				semanas_liquidadas = 4
-				if semanasContrato-semanas_liquidadas <= 0 {
+					semanas_liquidadas = semanasContrato
+				} else if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
+					//para el mes inicial
+					predicados = append(predicados, models.Predicado{Nombre: "vacaciones(" + fmt.Sprintf("%f", contrato.Vacaciones) + ")."})
+					//Calcular el numero de días
 					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
 					semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
 
@@ -145,64 +117,98 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) {
 					} else {
 						porcentaje_ibc = semanas / 30
 					}
-					semanas_liquidadas = semanasContrato
-					detallePreliquidacion.DiasLiquidados = float64(semanasContrato)
-					semanasContrato = 0
-					contrato.FechaFin = time.Date(anoIterativo, time.Month(mesIterativo), 30, 12, 0, 0, 0, time.UTC)
-				} else {
+					semanas = semanas / 7
+
+					if semanas <= 1 {
+						semanas_liquidadas = 1
+						detallePreliquidacion.DiasLiquidados = 1
+					} else {
+						semanas_liquidadas = int(Roundf(semanas))
+						detallePreliquidacion.DiasLiquidados = float64(semanas)
+					}
+
 					semanasContrato = semanasContrato - semanas_liquidadas
-					detallePreliquidacion.DiasLiquidados = 4
-					porcentaje_ibc = 1
-				}
-			}
-
-			reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
-
-			reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
-
-			if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general {
-				reglasNuevas = reglasNuevas + "mesFinal(1)."
-				auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion, true)
-			} else {
-				reglasNuevas = reglasNuevas + "mesFinal(0)."
-				auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion, false)
-			}
-
-			for j := 0; j < len(auxDetalle); j++ {
-				registrarDetallePreliquidacion(auxDetalle[j])
-			}
-
-			if !general {
-				fmt.Println("Liquidando Contrato General")
-				LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "410")
-				if !contrato.Unico {
-					fmt.Println("Realizando Regla de 3 con los conceptos de ibc")
-					ReglaDe3(contrato, mesIterativo, anoIterativo)
 				} else {
-					fmt.Println("El contrato es único, no requiere de actualización")
-				}
-			}
+					//Resto de meses
+					if general {
+						predicados = append(predicados, models.Predicado{Nombre: "vacaciones(" + fmt.Sprintf("%f", contrato.Vacaciones) + ")."})
+					} else {
+						predicados = append(predicados, models.Predicado{Nombre: "vacaciones(0)."})
 
-			if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() {
-				break
-			} else {
-				if mesIterativo == 12 {
-					mesIterativo = 1
-					anoIterativo = anoIterativo + 1
+					}
+					semanas_liquidadas = 4
+					if semanasContrato-semanas_liquidadas <= 0 {
+						diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
+						semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
+
+						if porcentaje != 0 {
+							porcentaje_ibc = porcentaje
+						} else {
+							porcentaje_ibc = semanas / 30
+						}
+						semanas_liquidadas = semanasContrato
+						detallePreliquidacion.DiasLiquidados = float64(semanasContrato)
+						semanasContrato = 0
+						contrato.FechaFin = time.Date(anoIterativo, time.Month(mesIterativo), 30, 12, 0, 0, 0, time.UTC)
+					} else {
+						semanasContrato = semanasContrato - semanas_liquidadas
+						detallePreliquidacion.DiasLiquidados = 4
+						porcentaje_ibc = 1
+					}
+				}
+
+				reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
+
+				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
+
+				if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general {
+					reglasNuevas = reglasNuevas + "mesFinal(1)."
+					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion, true)
 				} else {
-					mesIterativo = mesIterativo + 1
-
+					reglasNuevas = reglasNuevas + "mesFinal(0)."
+					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion, false)
 				}
-				emergencia = emergencia + 1
+
+				for j := 0; j < len(auxDetalle); j++ {
+					registrarDetallePreliquidacion(auxDetalle[j])
+				}
+
+				if !general {
+					fmt.Println("Liquidando Contrato General")
+					LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "410")
+					if !contrato.Unico {
+						fmt.Println("Realizando Regla de 3 con los conceptos de ibc")
+						ReglaDe3(contrato, mesIterativo, anoIterativo)
+					} else {
+						fmt.Println("El contrato es único, no requiere de actualización")
+					}
+				}
+
+				if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() {
+					break
+				} else {
+					if mesIterativo == 12 {
+						mesIterativo = 1
+						anoIterativo = anoIterativo + 1
+					} else {
+						mesIterativo = mesIterativo + 1
+
+					}
+					emergencia = emergencia + 1
+				}
+				if emergencia == 12 {
+					break
+				}
+			} else {
+				fmt.Println("Error al consultar preliquidaciones")
 			}
-			if emergencia == 12 {
-				break
-			}
-		} else {
-			fmt.Println("Error al consultar preliquidaciones")
+			preliquidacion[0].Id = 0 //Para evitar errores al obtener la preliquidación del siguiente mes
 		}
-		preliquidacion[0].Id = 0 //Para evitar errores al obtener la preliquidación del siguiente mes
+	} else {
+		fmt.Println("Error al consultar información en Ágora")
+		return "Error al consultar información en Ágora: ", err
 	}
+	return "", nil
 }
 
 func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
