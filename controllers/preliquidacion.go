@@ -26,12 +26,13 @@ func (c *PreliquidacionController) URLMapping() {
 // @Title Preliquidar Contrato
 // @Description Preliquida todos los meses del contrato que se le pase como parámetro
 // @Param	body		body 	models.Contrato		true		"body for DatosPreliquidacion content"
-// @Success 201 body is empty
-// @Failure 400 body is empty
+// @Success 201 object models.Contrato
+// @Failure 404 not found resource
 // @router / [post]
 func (c *PreliquidacionController) Preliquidar() {
 	var contrato models.Contrato
 	var aux map[string]interface{}
+	var mensaje string
 	fmt.Println("Hola Mundo producción")
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &contrato); err == nil {
 		fmt.Println("Contrato Recibido: ")
@@ -58,32 +59,67 @@ func (c *PreliquidacionController) Preliquidar() {
 						contrato.FechaInicio = contrato.FechaInicio.Add(24 * time.Hour)
 						contrato.FechaFin = contrato.FechaFin.Add(24 * time.Hour)
 					}
-					liquidarCPS(contrato)
+					mensaje, err = liquidarCPS(contrato)
+					if err == nil {
+						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
+					} else {
+						c.Data["mesaage"] = mensaje + err.Error()
+						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
+							fmt.Println("Contrato eliminado")
+						} else {
+							c.Data["mesaage"] = "Error al eliminar el contrato que no se liquidó: " + err.Error()
+							c.Abort("404")
+						}
+						c.Abort("404")
+					}
 				} else if contrato.TipoNominaId == 409 {
-					liquidarHCH(contrato, false, 0)
+					mensaje, err = liquidarHCH(contrato, false, 0)
+					if err == nil {
+						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
+					} else {
+						c.Data["mesaage"] = mensaje + err.Error()
+						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
+							fmt.Println("Contrato eliminado")
+						} else {
+							c.Data["mesaage"] = "Error al eliminar el contrato que no se liquidó: " + err.Error()
+							c.Abort("404")
+						}
+						c.Abort("404")
+					}
 				} else if contrato.TipoNominaId == 410 {
-					liquidarHCS(contrato, false, 0)
+					mensaje, err = liquidarHCS(contrato, false, 0)
+					if err == nil {
+						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
+					} else {
+						c.Data["mesaage"] = mensaje + err.Error()
+						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
+							fmt.Println("Contrato eliminado")
+						} else {
+							c.Data["mesaage"] = "Error al eliminar el contrato que no se liquidó: " + err.Error()
+							c.Abort("404")
+						}
+						c.Abort("404")
+					}
 				}
-				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
 			} else {
 				fmt.Println("No se pudo guardar el contrato", err)
 				c.Data["mesaage"] = "No se pudo guardar el contrato: " + err.Error()
-				c.Abort("400")
+				c.Abort("404")
 			}
 		} else {
 			fmt.Println("La fecha inicio no puede estar después de la fecha fin")
 			c.Data["mesaage"] = "La fecha inicio no puede estar después de la fecha fin"
-			c.Abort("400")
+			c.Abort("404")
 		}
 	} else {
 		fmt.Println("Error al unmarshal del contrato: ", err)
 		c.Data["mesaage"] = "Error service POST: The request contains an incorrect data type or an invalid parameter"
-		c.Abort("400")
+		c.Abort("404")
 	}
 	c.ServeJSON()
 }
 
-func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.ContratoPreliquidacion) {
+func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.ContratoPreliquidacion, err error) {
 
 	var aux map[string]interface{}
 	var tempPersonaNatural models.PersonaNatural
@@ -150,39 +186,43 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 			}
 		} else {
 			fmt.Println("Error al unmarshal del JSON: ", err)
-			reglas = reglas + "dependientes(0)."
-			reglas = reglas + "medicina_prepagada(0)."
-			reglas = reglas + "pensionado(0)."
-			reglas = reglas + "intereses_vivienda(0)."
-			reglas = reglas + "reteiva(0)."
-			reglas = reglas + "pension_voluntaria(0)."
-			reglas = reglas + "afc(0)."
-			alivios.PensionVoluntaria = 0
-			alivios.Afc = 0
-			alivios.ResponsableIva = false
-			alivios.Dependientes = false
-			alivios.MedicinaPrepagadaUvt = 0
-			alivios.Pensionado = false
-			alivios.InteresesVivienda = 0
+			return "Error al unmarshal del JSON de Ágora: ", alivios, err
+			/*
+				reglas = reglas + "dependientes(0)."
+				reglas = reglas + "medicina_prepagada(0)."
+				reglas = reglas + "pensionado(0)."
+				reglas = reglas + "intereses_vivienda(0)."
+				reglas = reglas + "reteiva(0)."
+				reglas = reglas + "pension_voluntaria(0)."
+				reglas = reglas + "afc(0)."
+				alivios.PensionVoluntaria = 0
+				alivios.Afc = 0
+				alivios.ResponsableIva = false
+				alivios.Dependientes = false
+				alivios.MedicinaPrepagadaUvt = 0
+				alivios.Pensionado = false
+				alivios.InteresesVivienda = 0
+			*/
 		}
 	} else {
 		fmt.Println("error al consultar en Ágora", err)
-		reglas = reglas + "dependientes(0)."
-		reglas = reglas + "medicina_prepagada(0)."
-		reglas = reglas + "pensionado(0)."
-		reglas = reglas + "intereses_vivienda(0)."
-		reglas = reglas + "reteiva(0)."
-		reglas = reglas + "pension_voluntaria(0)."
-		reglas = reglas + "afc(0)."
-		alivios.PensionVoluntaria = 0
-		alivios.Afc = 0
-		alivios.ResponsableIva = false
-		alivios.Dependientes = false
-		alivios.MedicinaPrepagadaUvt = 0
-		alivios.Pensionado = false
-		alivios.InteresesVivienda = 0
+		return "error al consultar en Ágora: ", alivios, err
+		//reglas = reglas + "dependientes(0)."
+		//reglas = reglas + "medicina_prepagada(0)."
+		//reglas = reglas + "pensionado(0)."
+		//reglas = reglas + "intereses_vivienda(0)."
+		//reglas = reglas + "reteiva(0)."
+		//reglas = reglas + "pension_voluntaria(0)."
+		//reglas = reglas + "afc(0)."
+		//alivios.PensionVoluntaria = 0
+		//alivios.Afc = 0
+		//alivios.ResponsableIva = false
+		//alivios.Dependientes = false
+		//alivios.MedicinaPrepagadaUvt = 0
+		//alivios.Pensionado = false
+		//alivios.InteresesVivienda = 0
 	}
-	return reglas, alivios
+	return reglas, alivios, nil
 }
 
 // Resumen de la preliquidacion ...

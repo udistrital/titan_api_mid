@@ -426,9 +426,9 @@ paths:
           $ref: '#/definitions/models.Contrato'
       responses:
         "201":
-          description: body is empty
-        "400":
-          description: body is empty
+          description: object models.Contrato
+        "404":
+          description: not found resource
   /preliquidacion/obtener_resumen_preliquidacion/{mes}/{ano}/{nomina}:
     get:
       tags:
