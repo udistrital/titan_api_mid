@@ -51,7 +51,12 @@ func (c *NovedadController) VerificarDescuentos() {
 	var mesIterativo int
 	var anoIterativo int
 
-	res.Estado = 3
+	const CUOTAS_SUPERADAS = 1
+	const DESCUENTOS_SUPERADOS = 2
+	const CONCEPTO_EXISTENTE = 3
+	const SIN_PROBLEMA = 4
+
+	res.Estado = SIN_PROBLEMA
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &novedad); err == nil {
 		if novedad.Cuotas >= 0 {
 			//Traer el concepto de la novedad para validar si es devengo o descuento
@@ -90,14 +95,14 @@ func (c *NovedadController) VerificarDescuentos() {
 							if int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1 < novedad.Cuotas {
 								fmt.Println("Las cuotas superan los meses", int(contrato[0].FechaFin.Month()), int(fecha_actual.Month()), int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1, novedad.Cuotas, 1)
 								res.Mensaje = "Las cuotas superan los meses"
-								res.Estado = 1
+								res.Estado = CUOTAS_SUPERADAS
 								c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "successful", "Data": res}
 							}
 						} else {
 							if int(contrato[0].FechaFin.Month())+13-int(fecha_actual.Month()) < novedad.Cuotas {
 								fmt.Println("Las cuotas superan los meses, ", int(contrato[0].FechaFin.Month())+13-int(fecha_actual.Month()), novedad.Cuotas, 2)
 								res.Mensaje = "Las cuotas superan los meses"
-								res.Estado = 1
+								res.Estado = CUOTAS_SUPERADAS
 								c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "successful", "Data": res}
 							}
 						}
@@ -119,17 +124,24 @@ func (c *NovedadController) VerificarDescuentos() {
 										if auxDetalle[0].Id != 0 {
 											descuentos = 0
 											for i := 0; i < len(auxDetalle); i++ {
-												if auxDetalle[i].ConceptoNominaId.Id == idHonorarios {
-													honorarios = auxDetalle[i].ValorCalculado
-												} else if auxDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 && auxDetalle[i].ConceptoNominaId.Id != 64 {
-													descuentos = descuentos + auxDetalle[i].ValorCalculado
+												if auxDetalle[i].ConceptoNominaId.Id == novedad.ConceptoNominaId.Id {
+													res.Mensaje = "El concepto ya existe en el mes " + strconv.Itoa(mesIterativo) + " del año " + strconv.Itoa(anoIterativo) + " no es posible agregarlo"
+													res.Estado = CONCEPTO_EXISTENTE
+													c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "successful", "Data": res}
+													break
+												} else {
+													if auxDetalle[i].ConceptoNominaId.Id == idHonorarios {
+														honorarios = auxDetalle[i].ValorCalculado
+													} else if auxDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 && auxDetalle[i].ConceptoNominaId.Id != 64 {
+														descuentos = descuentos + auxDetalle[i].ValorCalculado
+													}
 												}
 											}
 											//Si es fijo
 											if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 {
 												if (novedad.Valor + descuentos) > (honorarios / 2) {
 													res.Mensaje = "Se superan el tope de descuentos del mes " + strconv.Itoa(mesIterativo) + " del año " + strconv.Itoa(anoIterativo)
-													res.Estado = 2
+													res.Estado = DESCUENTOS_SUPERADOS
 													c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "successful", "Data": res}
 													break
 												}
@@ -137,7 +149,7 @@ func (c *NovedadController) VerificarDescuentos() {
 											} else if novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
 												if (honorarios*(novedad.Valor/100) + descuentos) > (honorarios / 2) {
 													res.Mensaje = "Se superan el tope de descuentos del mes " + strconv.Itoa(mesIterativo) + " del año " + strconv.Itoa(anoIterativo)
-													res.Estado = 2
+													res.Estado = DESCUENTOS_SUPERADOS
 													c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "successful", "Data": res}
 													break
 												}
@@ -198,9 +210,9 @@ func (c *NovedadController) VerificarDescuentos() {
 		c.Abort("400")
 	}
 
-	if res.Estado == 3 {
+	if res.Estado == SIN_PROBLEMA {
 		res.Mensaje = "No hay Problema para agregar la novedad"
-		res.Estado = 3
+		res.Estado = SIN_PROBLEMA
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "successful", "Data": res}
 	}
 	c.ServeJSON()
@@ -258,10 +270,27 @@ func (c *NovedadController) AgregarNovedad() {
 									novedad = auxNovedad[0]
 									//Agregar el Valor al detalle
 									fmt.Println("Novedad a enviar: ", novedad)
-									mensaje, err := AgregarValorNovedad(novedad)
+									mensaje, err, ids_detalles := AgregarValorNovedad(novedad)
 									if err == nil {
 										c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": novedad}
 									} else {
+										//Se hace rollback de lo agregado previamente
+										if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad/"+strconv.Itoa(novedad.Id), "DELETE", &aux, nil); err == nil {
+											for i := 0; i < len(ids_detalles); i++ {
+												if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(ids_detalles[i].Id), "DELETE", &aux, nil); err == nil {
+													fmt.Println("Concepto Eliminado")
+												} else {
+													c.Data["mesaage"] = "Error al eliminar detalle preliquidacion de la novedad" + err.Error()
+													c.Abort("404")
+												}
+											}
+											c.Data["mesaage"] = "Se hizo rollback, el concepto ya existe en una preliquidación de uno de los meses afectados"
+											c.Abort("404")
+										} else {
+											c.Data["mesaage"] = "Error al eliminar la novedad" + err.Error()
+											c.Abort("404")
+										}
+
 										c.Data["mesaage"] = mensaje + err.Error()
 										c.Abort("404")
 									}

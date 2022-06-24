@@ -202,7 +202,7 @@ func encontrarResolucion(idResolucion int, resoluciones []models.DetalleDVE) (re
 }
 */
 
-func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
+func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error, ids_detalles []models.DetallePreliquidacion) {
 
 	var aux map[string]interface{}
 	var mesIterativo = int(novedad.FechaInicio.Month())
@@ -212,6 +212,7 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
 	var honorarios []models.DetallePreliquidacion
 	var detalleNuevo models.DetallePreliquidacion
 	var idHonorarios int
+	ids_detalles = []models.DetallePreliquidacion{}
 	auxCuotas = novedad.Cuotas
 	fmt.Println(novedad)
 	if novedad.ContratoId.TipoNominaId == 410 {
@@ -249,19 +250,20 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
 					detalleNuevo.ValorCalculado = math.Round((honorarios[0].ValorCalculado * (novedad.Valor / 100)))
 				}
 
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/", "POST", &aux, detalleNuevo); err == nil {
+				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/", "POST", &detalleNuevo, detalleNuevo); err == nil {
 					fmt.Println("Concepto Añadido")
+					ids_detalles = append(ids_detalles, detalleNuevo)
 				} else {
 					fmt.Println("Error al agregar concepto", err)
-					return "Error al agregar concepto", err
+					return "Error al agregar concepto", err, ids_detalles
 				}
 			} else {
 				fmt.Println("Error al obtener el valor de los honorarios ", err)
-				return "Error al obtener el valor de los honorarios ", err
+				return "Error al obtener el valor de los honorarios ", err, ids_detalles
 			}
 		} else {
 			fmt.Println("Error al intentar obtener el id del contrato_preliquidación ", err)
-			return "Error al intentar obtener el id del contrato_preliquidación ", err
+			return "Error al intentar obtener el id del contrato_preliquidación ", err, ids_detalles
 		}
 		auxCuotas = auxCuotas - 1
 
@@ -276,7 +278,7 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error) {
 			}
 		}
 	}
-	return "No se generó ningún error", nil
+	return "No se generó ningún error", nil, ids_detalles
 }
 
 func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) (mensaje string, err error) {
