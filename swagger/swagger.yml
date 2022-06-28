@@ -777,6 +777,9 @@ definitions:
     title: OtroSi
     type: object
     properties:
+      Cdp:
+        type: integer
+        format: int64
       Documento:
         type: string
       FechaFin:
@@ -784,6 +787,12 @@ definitions:
         format: datetime
       NumeroContrato:
         type: string
+      Rp:
+        type: integer
+        format: int64
+      Valor:
+        type: number
+        format: double
       Vigencia:
         type: integer
         format: int64
