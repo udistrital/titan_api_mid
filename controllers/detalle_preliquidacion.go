@@ -54,46 +54,56 @@ func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
 
 func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS bool, HCS bool) (detalle []models.Detalle, err error) {
 	var aux map[string]interface{}
-	var tempDetalle []models.DetallePreliquidacion
-	var auxDetalle models.Detalle
 	var auxContratos []models.Contrato
+	var contrato_preliquidacion []models.ContratoPreliquidacion
+
 	var query = "NumeroContrato:" + contrato + ",Vigencia:" + vigencia + ",Documento:" + documento
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &auxContratos)
 		if auxContratos[0].Id != 0 {
+			fmt.Println("Contratos obtenidos: ", len(auxContratos))
 			for j := 0; j < len(auxContratos); j++ {
-				query = "ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(auxContratos[j].Id)
-				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-					LimpiezaRespuestaRefactor(aux, &tempDetalle)
-					auxDetalle.Contrato = tempDetalle[0].ContratoPreliquidacionId.ContratoId.NumeroContrato
-					auxDetalle.Vigencia = tempDetalle[0].ContratoPreliquidacionId.ContratoId.Vigencia
-					for i := 0; i < len(tempDetalle); i++ {
-						if tempDetalle[i].ConceptoNominaId.Id == 574 || tempDetalle[i].ConceptoNominaId.Id == 573 {
-							fmt.Println("Salto")
-						} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
-							if HCS && tempDetalle[i].ConceptoNominaId.Id == 570 {
-								auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
-							} else if CPS && (tempDetalle[i].ConceptoNominaId.Id == 568 || tempDetalle[i].ConceptoNominaId.Id == 569 || tempDetalle[i].ConceptoNominaId.Id == 570) {
-								auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
-							} else {
-								auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
-								auxDetalle.TotalDescuentos = auxDetalle.TotalDescuentos + tempDetalle[i].ValorCalculado
+				query = "PreliquidacionId.Ano:" + ano + ",PreliquidacionId.Mes:" + mes + ",ContratoId.Id:" + strconv.Itoa(auxContratos[j].Id)
+				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
+					if contrato_preliquidacion[0].Id != 0 {
+						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId.Id:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
+							var tempDetalle []models.DetallePreliquidacion
+							var auxDetalle models.Detalle
+							LimpiezaRespuestaRefactor(aux, &tempDetalle)
+							auxDetalle.Contrato = tempDetalle[0].ContratoPreliquidacionId.ContratoId.NumeroContrato
+							auxDetalle.Vigencia = tempDetalle[0].ContratoPreliquidacionId.ContratoId.Vigencia
+							for i := 0; i < len(tempDetalle); i++ {
+								if tempDetalle[i].ConceptoNominaId.Id == 574 || tempDetalle[i].ConceptoNominaId.Id == 573 {
+									fmt.Println("Salto")
+								} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
+									if HCS && tempDetalle[i].ConceptoNominaId.Id == 570 {
+										auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
+									} else if CPS && (tempDetalle[i].ConceptoNominaId.Id == 568 || tempDetalle[i].ConceptoNominaId.Id == 569 || tempDetalle[i].ConceptoNominaId.Id == 570) {
+										auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
+									} else {
+										auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
+										auxDetalle.TotalDescuentos = auxDetalle.TotalDescuentos + tempDetalle[i].ValorCalculado
+									}
+								} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
+									auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
+									auxDetalle.TotalDevengado = auxDetalle.TotalDevengado + tempDetalle[i].ValorCalculado
+								} else {
+									auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
+								}
 							}
-						} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 423 {
-							auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
-							auxDetalle.TotalDevengado = auxDetalle.TotalDevengado + tempDetalle[i].ValorCalculado
+							auxDetalle.TotalPago = auxDetalle.TotalDevengado - auxDetalle.TotalDescuentos
+							detalle = append(detalle, auxDetalle)
 						} else {
-							auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
+							fmt.Println("Error al obtener detalle ", err)
+							return detalle, err
 						}
 					}
-					auxDetalle.TotalPago = auxDetalle.TotalDevengado - auxDetalle.TotalDescuentos
-					detalle = append(detalle, auxDetalle)
 				} else {
-					fmt.Println("Error al obtener detalle ", err)
+					fmt.Println("Error al obtener detalle preliquidación ", err)
 					return detalle, err
 				}
 			}
-			return detalle, nil
 		} else {
 			fmt.Println("Error al obtener contrato o contratos ", err)
 			return detalle, err
@@ -102,6 +112,7 @@ func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS boo
 		fmt.Println("Error al obtener contrato o contratos ", err)
 		return detalle, err
 	}
+	return detalle, nil
 }
 
 // Get ...
@@ -202,7 +213,7 @@ func encontrarResolucion(idResolucion int, resoluciones []models.DetalleDVE) (re
 }
 */
 
-func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error, ids_detalles []models.DetallePreliquidacion) {
+func AgregarValorNovedad(novedad models.Novedad) (mensaje string, ids_detalles []models.DetallePreliquidacion, err error) {
 
 	var aux map[string]interface{}
 	var mesIterativo = int(novedad.FechaInicio.Month())
@@ -255,15 +266,15 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error, ids
 					ids_detalles = append(ids_detalles, detalleNuevo)
 				} else {
 					fmt.Println("Error al agregar concepto", err)
-					return "Error al agregar concepto", err, ids_detalles
+					return "Error al agregar concepto", ids_detalles, err
 				}
 			} else {
 				fmt.Println("Error al obtener el valor de los honorarios ", err)
-				return "Error al obtener el valor de los honorarios ", err, ids_detalles
+				return "Error al obtener el valor de los honorarios ", ids_detalles, err
 			}
 		} else {
 			fmt.Println("Error al intentar obtener el id del contrato_preliquidación ", err)
-			return "Error al intentar obtener el id del contrato_preliquidación ", err, ids_detalles
+			return "Error al intentar obtener el id del contrato_preliquidación ", ids_detalles, err
 		}
 		auxCuotas = auxCuotas - 1
 
@@ -278,7 +289,7 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, err error, ids
 			}
 		}
 	}
-	return "No se generó ningún error", nil, ids_detalles
+	return "No se generó ningún error", ids_detalles, nil
 }
 
 func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) (mensaje string, err error) {

@@ -1140,6 +1140,10 @@
             "title": "OtroSi",
             "type": "object",
             "properties": {
+                "Cdp": {
+                    "type": "integer",
+                    "format": "int64"
+                },
                 "Documento": {
                     "type": "string"
                 },
@@ -1149,6 +1153,14 @@
                 },
                 "NumeroContrato": {
                     "type": "string"
+                },
+                "Rp": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "Valor": {
+                    "type": "number",
+                    "format": "double"
                 },
                 "Vigencia": {
                     "type": "integer",
