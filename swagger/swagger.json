@@ -421,8 +421,8 @@
                 }
             }
         },
-        "/novedad/cancelar_contrato/{NumeroContrato}/{Vigencia}/{Documento}": {
-            "get": {
+        "/novedad/cancelar_contrato": {
+            "post": {
                 "tags": [
                     "novedad"
                 ],
@@ -430,27 +430,12 @@
                 "operationId": "NovedadController.Registrar Cancelacion",
                 "parameters": [
                     {
-                        "in": "path",
-                        "name": "NumeroContrato",
-                        "description": "Numero del contrato que se va a cancelar",
+                        "in": "body",
+                        "name": "novedad",
+                        "description": "Datos del contrato a cancelar",
+                        "required": true,
                         "schema": {
-                            "$ref": "#/definitions/true"
-                        }
-                    },
-                    {
-                        "in": "path",
-                        "name": "Vigencia",
-                        "description": "Vigencia del contrato que se va a cancelar",
-                        "schema": {
-                            "$ref": "#/definitions/true"
-                        }
-                    },
-                    {
-                        "in": "path",
-                        "name": "Documento",
-                        "description": "Documento del contratista",
-                        "schema": {
-                            "$ref": "#/definitions/true"
+                            "$ref": "#/definitions/models.Cancelacion"
                         }
                     }
                 ],
@@ -691,6 +676,26 @@
         }
     },
     "definitions": {
+        "models.Cancelacion": {
+            "title": "Cancelacion",
+            "type": "object",
+            "properties": {
+                "Documento": {
+                    "type": "string"
+                },
+                "FechaCancelacion": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "NumeroContrato": {
+                    "type": "string"
+                },
+                "Vigencia": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
         "models.ConceptoNomina": {
             "title": "ConceptoNomina",
             "type": "object",

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/udistrital/titan_api_mid/models"
@@ -55,10 +54,6 @@ func (c *PreliquidacionController) Preliquidar() {
 			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contrato)
 				if contrato.TipoNominaId == 411 {
-					if contrato.FechaInicio.Day() == 31 {
-						contrato.FechaInicio = contrato.FechaInicio.Add(24 * time.Hour)
-						contrato.FechaFin = contrato.FechaFin.Add(24 * time.Hour)
-					}
 					mensaje, err = liquidarCPS(contrato)
 					if err == nil {
 						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
@@ -126,6 +121,7 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 	var alivios models.ContratoPreliquidacion
 	reglas = ""
 	query := strconv.Itoa(cedula)
+	fmt.Println(beego.AppConfig.String("UrlArgoWso2") + "/informacion_persona_natural/" + query)
 	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
 
 		jsonPersonaNatural, errorJSON := json.Marshal(aux["informacion_persona_natural"])
@@ -203,24 +199,27 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 				alivios.Pensionado = false
 				alivios.InteresesVivienda = 0
 			*/
+
 		}
 	} else {
 		fmt.Println("error al consultar en Ágora", err)
 		return "error al consultar en Ágora: ", alivios, err
-		//reglas = reglas + "dependientes(0)."
-		//reglas = reglas + "medicina_prepagada(0)."
-		//reglas = reglas + "pensionado(0)."
-		//reglas = reglas + "intereses_vivienda(0)."
-		//reglas = reglas + "reteiva(0)."
-		//reglas = reglas + "pension_voluntaria(0)."
-		//reglas = reglas + "afc(0)."
-		//alivios.PensionVoluntaria = 0
-		//alivios.Afc = 0
-		//alivios.ResponsableIva = false
-		//alivios.Dependientes = false
-		//alivios.MedicinaPrepagadaUvt = 0
-		//alivios.Pensionado = false
-		//alivios.InteresesVivienda = 0
+		/*
+			reglas = reglas + "dependientes(0)."
+			reglas = reglas + "medicina_prepagada(0)."
+			reglas = reglas + "pensionado(0)."
+			reglas = reglas + "intereses_vivienda(0)."
+			reglas = reglas + "reteiva(0)."
+			reglas = reglas + "pension_voluntaria(0)."
+			reglas = reglas + "afc(0)."
+			alivios.PensionVoluntaria = 0
+			alivios.Afc = 0
+			alivios.ResponsableIva = false
+			alivios.Dependientes = false
+			alivios.MedicinaPrepagadaUvt = 0
+			alivios.Pensionado = false
+			alivios.InteresesVivienda = 0
+		*/
 	}
 	return reglas, alivios, nil
 }
