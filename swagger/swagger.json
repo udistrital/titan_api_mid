@@ -390,44 +390,13 @@
                 }
             }
         },
-        "/novedad/agregar_novedad": {
+        "/novedadCPS/cancelar_contrato": {
             "post": {
                 "tags": [
-                    "novedad"
-                ],
-                "description": "Agregar Novedad a un contrato y liquidar nuevamente",
-                "operationId": "NovedadController.Agregar Novedad",
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name": "novedad",
-                        "description": "Cuerpo de la novedad a guardar",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Novedad"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/models.Novedad"
-                        }
-                    },
-                    "400": {
-                        "description": "the request contains incorrect syntax"
-                    }
-                }
-            }
-        },
-        "/novedad/cancelar_contrato": {
-            "post": {
-                "tags": [
-                    "novedad"
+                    "novedadCPS"
                 ],
                 "description": "Maneja la novedad contractual de cancelación",
-                "operationId": "NovedadController.Registrar Cancelacion",
+                "operationId": "NovedadCPSController.Registrar Cancelacion",
                 "parameters": [
                     {
                         "in": "body",
@@ -452,13 +421,13 @@
                 }
             }
         },
-        "/novedad/ceder_contrato": {
+        "/novedadCPS/ceder_contrato": {
             "post": {
                 "tags": [
-                    "novedad"
+                    "novedadCPS"
                 ],
                 "description": "Maneja la novedad contractual de cesión de contrato",
-                "operationId": "NovedadController.Ceder Contrato",
+                "operationId": "NovedadCPSController.Ceder Contrato",
                 "parameters": [
                     {
                         "in": "body",
@@ -483,40 +452,13 @@
                 }
             }
         },
-        "/novedad/eliminar_novedad/{id}": {
-            "get": {
-                "tags": [
-                    "novedad"
-                ],
-                "description": "Eliminar Novedad Novedad a un contrato y liquidar nuevamente",
-                "operationId": "NovedadController.Eliminar Novedad",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "description": "Id de la novedad que se va retirar",
-                        "schema": {
-                            "$ref": "#/definitions/true"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "models.Novedad.Id"
-                    },
-                    "400": {
-                        "description": "the request contains incorrect syntax"
-                    }
-                }
-            }
-        },
-        "/novedad/otrosi_contrato": {
+        "/novedadCPS/otrosi_contrato": {
             "post": {
                 "tags": [
-                    "novedad"
+                    "novedadCPS"
                 ],
                 "description": "Aplicar novedad contractual de otro sí",
-                "operationId": "NovedadController.Aplicar Oro sí",
+                "operationId": "NovedadCPSController.Aplicar Oro sí",
                 "parameters": [
                     {
                         "in": "body",
@@ -541,13 +483,13 @@
                 }
             }
         },
-        "/novedad/suspender_contrato": {
+        "/novedadCPS/suspender_contrato": {
             "post": {
                 "tags": [
-                    "novedad"
+                    "novedadCPS"
                 ],
                 "description": "Maneja la novedad contractual de Suspensión de Contrato",
-                "operationId": "NovedadController.Suspender Contrato",
+                "operationId": "NovedadCPSController.Suspender Contrato",
                 "parameters": [
                     {
                         "in": "body",
@@ -572,13 +514,102 @@
                 }
             }
         },
-        "/novedad/verificar_descuentos": {
+        "/novedadVE/agregar_novedad": {
             "post": {
                 "tags": [
-                    "novedad"
+                    "novedadVE"
+                ],
+                "description": "Agregar Novedad a un contrato y liquidar nuevamente",
+                "operationId": "NovedadVEController.Agregar Novedad",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "novedad",
+                        "description": "Cuerpo de la novedad a guardar",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Novedad"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Novedad"
+                        }
+                    },
+                    "400": {
+                        "description": "the request contains incorrect syntax"
+                    }
+                }
+            }
+        },
+        "/novedadVE/eliminar_novedad/{id}": {
+            "get": {
+                "tags": [
+                    "novedadVE"
+                ],
+                "description": "Eliminar Novedad Novedad a un contrato y liquidar nuevamente",
+                "operationId": "NovedadVEController.Eliminar Novedad",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "description": "Id de la novedad que se va retirar",
+                        "schema": {
+                            "$ref": "#/definitions/true"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "models.Novedad.Id"
+                    },
+                    "400": {
+                        "description": "the request contains incorrect syntax"
+                    }
+                }
+            }
+        },
+        "/novedadVE/generar_adicion": {
+            "post": {
+                "tags": [
+                    "novedadVE"
+                ],
+                "description": "Maneja la novedad contractual de Adición de horas para contratos de docentes de VE",
+                "operationId": "NovedadVEController.Adicionar horas VE",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Adición",
+                        "description": "Datos de la adición",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Adicion"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
+                    },
+                    "400": {
+                        "description": "the request contains incorrect syntax"
+                    }
+                }
+            }
+        },
+        "/novedadVE/verificar_descuentos": {
+            "post": {
+                "tags": [
+                    "novedadVE"
                 ],
                 "description": "Verificar los valores de una novedad para ver si superan los descuentos",
-                "operationId": "NovedadController.Verificar Novedad",
+                "operationId": "NovedadVEController.Verificar Novedad",
                 "parameters": [
                     {
                         "in": "body",
@@ -676,6 +707,55 @@
         }
     },
     "definitions": {
+        "models.Adicion": {
+            "title": "Adicion",
+            "type": "object",
+            "properties": {
+                "Categoria": {
+                    "type": "string"
+                },
+                "Cdp": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "Dedicacion": {
+                    "type": "string"
+                },
+                "Documento": {
+                    "type": "string"
+                },
+                "FechaInicio": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "HorasSemanales": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "NivelAcademico": {
+                    "type": "string"
+                },
+                "NumeroContrato": {
+                    "type": "string"
+                },
+                "NumeroSemanas": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "RpActual": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "RpNuevo": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "Vigencia": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
         "models.Cancelacion": {
             "title": "Cancelacion",
             "type": "object",
