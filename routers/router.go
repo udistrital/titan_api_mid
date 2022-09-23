@@ -33,9 +33,14 @@ func init() {
 			),
 		),
 
-		beego.NSNamespace("/novedad",
+		beego.NSNamespace("/novedadCPS",
 			beego.NSInclude(
-				&controllers.NovedadController{},
+				&controllers.NovedadCPSController{},
+			),
+		),
+		beego.NSNamespace("/novedadVE",
+			beego.NSInclude(
+				&controllers.NovedadVEController{},
 			),
 		),
 		beego.NSNamespace("/contrato_preliquidacion",
