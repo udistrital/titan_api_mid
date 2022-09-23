@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/udistrital/titan_api_mid/golog"
@@ -35,6 +36,11 @@ func liquidarCPS(contrato models.Contrato) (mensaje string, err error) {
 
 	if err == nil {
 		reglasAlivios, contratoPreliquidacion, err = CargarDatosRetefuente(int(cedula))
+	}
+
+	if contrato.FechaInicio.Day() == 31 {
+		contrato.FechaInicio = contrato.FechaInicio.Add(24 * time.Hour)
+		contrato.FechaFin = contrato.FechaFin.Add(24 * time.Hour)
 	}
 
 	if err == nil {

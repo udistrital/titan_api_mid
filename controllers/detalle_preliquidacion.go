@@ -55,16 +55,18 @@ func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
 func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS bool, HCS bool) (detalle []models.Detalle, err error) {
 	var aux map[string]interface{}
 	var auxContratos []models.Contrato
-	var contrato_preliquidacion []models.ContratoPreliquidacion
 
 	var query = "NumeroContrato:" + contrato + ",Vigencia:" + vigencia + ",Documento:" + documento
+	//fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=" + query)
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &auxContratos)
 		if auxContratos[0].Id != 0 {
 			fmt.Println("Contratos obtenidos: ", len(auxContratos))
 			for j := 0; j < len(auxContratos); j++ {
 				query = "PreliquidacionId.Ano:" + ano + ",PreliquidacionId.Mes:" + mes + ",ContratoId.Id:" + strconv.Itoa(auxContratos[j].Id)
+				fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					var contrato_preliquidacion []models.ContratoPreliquidacion
 					LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 					if contrato_preliquidacion[0].Id != 0 {
 						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId.Id:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
@@ -94,10 +96,13 @@ func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS boo
 							}
 							auxDetalle.TotalPago = auxDetalle.TotalDevengado - auxDetalle.TotalDescuentos
 							detalle = append(detalle, auxDetalle)
+							fmt.Println("Agrego el contrato con id: ", auxDetalle.Detalle[0].ContratoPreliquidacionId.ContratoId.Id)
 						} else {
 							fmt.Println("Error al obtener detalle ", err)
 							return detalle, err
 						}
+					} else {
+						fmt.Println("Contrato no válido para ese mes")
 					}
 				} else {
 					fmt.Println("Error al obtener detalle preliquidación ", err)
