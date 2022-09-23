@@ -120,6 +120,7 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 	var tempPersonaNatural models.PersonaNatural
 	var alivios models.ContratoPreliquidacion
 	reglas = ""
+
 	query := strconv.Itoa(cedula)
 	fmt.Println(beego.AppConfig.String("UrlArgoWso2") + "/informacion_persona_natural/" + query)
 	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
@@ -183,44 +184,27 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 		} else {
 			fmt.Println("Error al unmarshal del JSON: ", err)
 			return "Error al unmarshal del JSON de Ágora: ", alivios, err
-			/*
-				reglas = reglas + "dependientes(0)."
-				reglas = reglas + "medicina_prepagada(0)."
-				reglas = reglas + "pensionado(0)."
-				reglas = reglas + "intereses_vivienda(0)."
-				reglas = reglas + "reteiva(0)."
-				reglas = reglas + "pension_voluntaria(0)."
-				reglas = reglas + "afc(0)."
-				alivios.PensionVoluntaria = 0
-				alivios.Afc = 0
-				alivios.ResponsableIva = false
-				alivios.Dependientes = false
-				alivios.MedicinaPrepagadaUvt = 0
-				alivios.Pensionado = false
-				alivios.InteresesVivienda = 0
-			*/
-
 		}
 	} else {
 		fmt.Println("error al consultar en Ágora", err)
 		return "error al consultar en Ágora: ", alivios, err
-		/*
-			reglas = reglas + "dependientes(0)."
-			reglas = reglas + "medicina_prepagada(0)."
-			reglas = reglas + "pensionado(0)."
-			reglas = reglas + "intereses_vivienda(0)."
-			reglas = reglas + "reteiva(0)."
-			reglas = reglas + "pension_voluntaria(0)."
-			reglas = reglas + "afc(0)."
-			alivios.PensionVoluntaria = 0
-			alivios.Afc = 0
-			alivios.ResponsableIva = false
-			alivios.Dependientes = false
-			alivios.MedicinaPrepagadaUvt = 0
-			alivios.Pensionado = false
-			alivios.InteresesVivienda = 0
-		*/
 	}
+	/*
+		reglas = reglas + "dependientes(0)."
+		reglas = reglas + "medicina_prepagada(0)."
+		reglas = reglas + "pensionado(0)."
+		reglas = reglas + "intereses_vivienda(0)."
+		reglas = reglas + "reteiva(0)."
+		reglas = reglas + "pension_voluntaria(0)."
+		reglas = reglas + "afc(0)."
+		alivios.PensionVoluntaria = 0
+		alivios.Afc = 0
+		alivios.ResponsableIva = false
+		alivios.Dependientes = false
+		alivios.MedicinaPrepagadaUvt = 0
+		alivios.Pensionado = false
+		alivios.InteresesVivienda = 0
+	*/
 	return reglas, alivios, nil
 }
 

@@ -29,32 +29,12 @@ func (c *DesagregadoHCSController) URLMapping() {
 func (c *DesagregadoHCSController) ObtenerDesagregado() {
 
 	var vinculacion models.DatosVinculacion
-	var predicados []models.Predicado
 	var desagregado models.DesagregadoContratoHCS
 
-	var lowCategoria string  //Categoría en minúscula
-	var lowDedicacion string //Dedicacion en minúscula
-
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &vinculacion); err == nil {
-		if vinculacion.Dedicacion == "HCP" {
-			if vinculacion.NivelAcademico == "POSGRADO" {
-				lowDedicacion = "hcpos"
-			} else {
-				lowDedicacion = "hcpre"
-			}
-			predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(0)."})
-		} else {
-			lowDedicacion = strings.ToLower(vinculacion.Dedicacion)
-			predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(1)."})
-		}
 
-		lowCategoria = strings.ToLower(vinculacion.Categoria)
-		predicados = append(predicados, models.Predicado{Nombre: "horas_semanales(" + strconv.Itoa(vinculacion.HorasSemanales) + ")."})
-		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + vinculacion.Documento + "," + strconv.Itoa(vinculacion.NumeroSemanas) + "," + strconv.Itoa(vinculacion.Vigencia) + ")."})
-		reglasbase := cargarReglasBase("HCS") + FormatoReglas(predicados)
-		desagregado = golog.DesagregarContrato(reglasbase, lowCategoria, vinculacion.Documento, lowDedicacion, strconv.Itoa(vinculacion.Vigencia))
-		desagregado.NumeroContrato = vinculacion.NumeroContrato
-		desagregado.Vigencia = vinculacion.Vigencia
+		desagregado = Desagregar(vinculacion)
+
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": desagregado}
 	} else {
 		fmt.Println("Error al obtener detalles del contrato")
@@ -62,4 +42,32 @@ func (c *DesagregadoHCSController) ObtenerDesagregado() {
 		c.Abort("400")
 	}
 	c.ServeJSON()
+}
+
+func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.DesagregadoContratoHCS) {
+
+	var predicados []models.Predicado
+	var lowCategoria string  //Categoría en minúscula
+	var lowDedicacion string //Dedicacion en minúscula
+
+	if vinculacion.Dedicacion == "HCP" {
+		if vinculacion.NivelAcademico == "POSGRADO" {
+			lowDedicacion = "hcpos"
+		} else {
+			lowDedicacion = "hcpre"
+		}
+		predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(0)."})
+	} else {
+		lowDedicacion = strings.ToLower(vinculacion.Dedicacion)
+		predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(1)."})
+	}
+
+	lowCategoria = strings.ToLower(vinculacion.Categoria)
+	predicados = append(predicados, models.Predicado{Nombre: "horas_semanales(" + strconv.Itoa(vinculacion.HorasSemanales) + ")."})
+	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + vinculacion.Documento + "," + strconv.Itoa(vinculacion.NumeroSemanas) + "," + strconv.Itoa(vinculacion.Vigencia) + ")."})
+	reglasbase := cargarReglasBase("HCS") + FormatoReglas(predicados)
+	desagregado = golog.DesagregarContrato(reglasbase, lowCategoria, vinculacion.Documento, lowDedicacion, strconv.Itoa(vinculacion.Vigencia))
+	desagregado.NumeroContrato = vinculacion.NumeroContrato
+	desagregado.Vigencia = vinculacion.Vigencia
+	return desagregado
 }
