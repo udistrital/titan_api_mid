@@ -382,8 +382,9 @@ func (c *NovedadCPSController) AplicarOtrosi() {
 				contratoNuevo = contrato[0]
 				//Seteamos nuevos valores
 				contratoNuevo.Id = 0
+				//si el contrato origninal termina el 30 se corre uno el mes y se pone el dia al 1ro
 				if contrato[0].FechaFin.Day() == 30 {
-					contratoNuevo.FechaInicio = time.Date(contrato[0].FechaFin.Year(), contrato[0].FechaFin.Month()+1, contrato[0].FechaFin.Day(), 12, 0, 0, 0, time.Local)
+					contratoNuevo.FechaInicio = time.Date(contrato[0].FechaFin.Year(), contrato[0].FechaFin.Month()+1,01, 12, 0, 0, 0, time.Local)
 				} else {
 					contratoNuevo.FechaInicio = contrato[0].FechaFin.Add(24 * time.Hour)
 				}
