@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/udistrital/titan_api_mid/golog"
@@ -179,11 +180,11 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 						//nueva lógica
 						var contratosDocente []models.Contrato = nil
 						var contratoPreliquidacionDocente []models.ContratoPreliquidacion = nil
-						var auxValor []models.DetallePreliquidacion
-						var ibcGeneral float64
-						var salarioGeneral float64
+						//var auxValor []models.DetallePreliquidacion
+						//var ibcGeneral float64
+						//var salarioGeneral float64
 						var contratosCambio []int
-						var cambioNecesario bool = false
+						var cambioNecesario bool = true
 
 						//Obtener los valores del ibc liquidado para saber si es necesario realizar actualizacion
 						query := "Documento:" + contrato.Documento + ",TipoNominaId:409,Vigencia:" + strconv.Itoa(contrato.Vigencia)
@@ -193,12 +194,15 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 								for i := 0; i < len(contratosDocente); i++ {
 									query = "ContratoId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
 									if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+										contratoPreliquidacionDocente = nil
 										LimpiezaRespuestaRefactor(aux, &contratoPreliquidacionDocente)
 										if contratoPreliquidacionDocente[0].Id != 0 {
 											if contratosDocente[i].NumeroContrato != "GENERAL"+strconv.Itoa(mesIterativo) {
-												fmt.Println("Agrego el contrato: ", contratosDocente[i].NumeroContrato)
-												contratosCambio = append(contratosCambio, contratoPreliquidacionDocente[0].Id)
-											} else {
+												if !strings.HasPrefix(contratosDocente[i].NumeroContrato, "GENERAL") {
+													fmt.Println("Agrego el contrato: ", contratosDocente[i].NumeroContrato)
+													contratosCambio = append(contratosCambio, contratoPreliquidacionDocente[0].Id)
+												}
+											} /*else {
 												if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId.Id:"+strconv.Itoa(contratoPreliquidacionDocente[0].Id)+",ConceptoNominaId.Id:521", &aux); err == nil {
 													LimpiezaRespuestaRefactor(aux, &auxValor)
 													if auxValor[0].Id != 0 {
@@ -224,7 +228,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 													cambioNecesario = true
 													break
 												}
-											}
+											}*/
 										} else {
 											fmt.Println("No se encontraron preliquidaciones asociadas al contrato: ", contratosDocente[i].NumeroContrato)
 										}
