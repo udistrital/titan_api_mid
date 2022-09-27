@@ -315,7 +315,7 @@ func (c *NovedadCPSController) CederContrato() {
 								liquidarCPS(contratoNuevo)
 							} else {
 								contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day()-contrato[0].FechaInicio.Day()+1)
-								contratoNuevo.ValorContrato = valorViejo - contrato[0].ValorContrato
+								contratoNuevo.ValorContrato = valorViejo -valorNuevo- contrato[0].ValorContrato
 								fmt.Println("Liquidando actual:", contrato[0])
 								liquidarCPS(contrato[0])
 								fmt.Println("Liquidando nuevo:", contratoNuevo)
