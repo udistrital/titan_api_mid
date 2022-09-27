@@ -308,6 +308,7 @@ func (c *NovedadCPSController) CederContrato() {
 							//El valor del contrato nuevo es lo que queda del contrato pasado (no se almacena, es únicamente para cálculos)
 							fmt.Println("valorNuevo:", valorNuevo)
 							fmt.Println("valorViejo:", valorViejo)
+							fmt.Println("valorDia:", valorDia)
 							if sucesor.FechaInicio.Day() == 1 {
 								contratoNuevo.ValorContrato = valorViejo - valorNuevo
 								fmt.Println("Liquidando nuevo:", contratoNuevo.NumeroContrato, " de ", contratoNuevo.NombreCompleto)
