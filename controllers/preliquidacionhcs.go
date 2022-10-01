@@ -269,7 +269,8 @@ func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
 					fmt.Println("Error al obtener el contrato preliquidación para el contrato: ", contratosDocente[i].NumeroContrato)
 				}
 			}
-
+	//por defecto que se realice la regla de 3
+cambioNecesario = true
 			//Hacer regla de 3 en caso de que el cambio sea necesario
 			if cambioNecesario {
 				//obtener el contrato general
