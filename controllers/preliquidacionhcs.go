@@ -215,7 +215,7 @@ func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
 	var salarioGeneral float64
 	var contratosCambio []int
 	var cambioNecesario bool = false
-	fmt.Println("Ingreso a regla de 3)
+	fmt.Println("Ingreso a regla de 3")
 	//Obtener los valores del ibc liquidado para saber si es necesario realizar actualizacion
 	query := "Documento:" + contrato.Documento + ",TipoNominaId:410,Vigencia:" + strconv.Itoa(contrato.Vigencia)
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
