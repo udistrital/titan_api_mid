@@ -215,13 +215,13 @@ func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
 	var salarioGeneral float64
 	var contratosCambio []int
 	var cambioNecesario bool = false
-
+	fmt.Println("Ingreso a regla de 3)
 	//Obtener los valores del ibc liquidado para saber si es necesario realizar actualizacion
 	query := "Documento:" + contrato.Documento + ",TipoNominaId:410,Vigencia:" + strconv.Itoa(contrato.Vigencia)
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
 		if contratosDocente[0].Id != 0 {
-			fmt.Println("Tamaño arreglo: ", len(contratosDocente))
+			fmt.Println("Tamaño arreglo contratos: ", len(contratosDocente))
 			for i := 0; i < len(contratosDocente); i++ {
 				fmt.Println("iteracion: ", i)
 				fmt.Println(contratosDocente[i].NumeroContrato)
