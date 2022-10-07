@@ -306,7 +306,8 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) (mensa
 	mesFin := int(novedad.FechaFin.Month())
 
 	for i := int(fecha_actual.Month()); i <= mesFin; i++ {
-		var query = "ContratoId.NumeroContrato:" + novedad.ContratoId.NumeroContrato + ",PreliquidacionId.Ano:" + strconv.Itoa(fecha_actual.Year()) + ",PreliquidacionId.Mes:" + strconv.Itoa(i)
+		var query = "ContratoId.Id:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Ano:" + strconv.Itoa(fecha_actual.Year()) + ",PreliquidacionId.Mes:" + strconv.Itoa(i)
+		fmt.Println("consulta contrato preliquidacion ", query)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
 			LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
 			//Eliminar el Concepto de la liquidacion de ese mes
