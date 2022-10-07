@@ -361,7 +361,7 @@ func (c *NovedadVEController) EliminarNovedad() {
 	var aux map[string]interface{}
 	var novedad []models.Novedad
 	//Verificar cómo se van a enviar los datos del contrato al trabajar el front
-
+	fmt.Println("novedad_Id: ", id)
 	//Buscar la novedad
 	fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/novedad?limit=-1&query=Id:" + id)
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad?limit=-1&query=Id:"+id, &aux); err == nil {
