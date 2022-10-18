@@ -370,8 +370,8 @@ func (c *NovedadCPSController) AplicarOtrosi() {
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &otro_si); err == nil {
 		//traer el contrato
-
-		query := "NumeroContrato:" + otro_si.NumeroContrato + ",Vigencia:" + strconv.Itoa(otro_si.Vigencia) + ",Documento:" + otro_si.Documento
+		//para CPS solo se requiere el numero de contrato y la vigencia
+		query := "NumeroContrato:" + otro_si.NumeroContrato + ",Vigencia:" + strconv.Itoa(otro_si.Vigencia)
 		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=" + query)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
