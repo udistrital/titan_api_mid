@@ -181,7 +181,8 @@ func (c *NovedadCPSController) CederContrato() {
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &sucesor); err == nil {
 
 		//Traer el contrato a cancelar
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+sucesor.NumeroContrato+",Vigencia:"+strconv.Itoa(sucesor.Vigencia)+",Documento:"+sucesor.DocumentoActual, &aux); err == nil {
+		//No se requiere el numero de documento para CPS
+		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+sucesor.NumeroContrato+",Vigencia:"+strconv.Itoa(sucesor.Vigencia)+",TipoNominaId:411", &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			if contrato[0].Id != 0 {
 				//Ordenar los contratos para tomar el más reciente
