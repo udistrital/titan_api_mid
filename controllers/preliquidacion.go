@@ -123,7 +123,7 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 
 	query := strconv.Itoa(cedula)
 	fmt.Println(beego.AppConfig.String("UrlArgoWso2") + "/informacion_persona_natural/" + query)
-	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+beego.AppConfig.String("Wso2")+beego.AppConfig.String("ArgoWso2Context")+"/informacion_persona_natural/"+query, &aux); err == nil {
 
 		jsonPersonaNatural, errorJSON := json.Marshal(aux["informacion_persona_natural"])
 		if errorJSON == nil {
