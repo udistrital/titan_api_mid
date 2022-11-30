@@ -270,6 +270,7 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 			//Buscar el valor de los honorarios de los contratos que tiene el docente en ese mes
 
 			query = "PreliquidacionId.Id:" + strconv.Itoa(preliquidacion.Id) + ",ContratoId.Documento:" + contrato.Documento + ",ContratoId.TipoNominaId:" + nomina
+			fmt.Println("honorarios para general: ", query)
 			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contratosDocente)
 				if len(contratosDocente) >= 1 { //Tiene más de dos contratos
