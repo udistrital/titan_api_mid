@@ -301,6 +301,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 															auxDetalle = nil
 															var detalleEnvio models.DetallePreliquidacion
 															for i := 0; i < len(contratosCambio); i++ {
+																fmt.Println("query: ", beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contratosCambio[i])
 																if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contratosCambio[i]), &aux); err == nil {
 																	LimpiezaRespuestaRefactor(aux, &auxDetalle)
 																	if auxDetalle[0].Id != 0 {
