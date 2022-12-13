@@ -165,7 +165,7 @@ func registrarDetallePreliquidacion(detallePreliquidacion models.DetallePreliqui
 func registrarContrato(contrato models.Contrato) (respuesta models.Contrato, err error) {
 	var response map[string]interface{}
 	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &response, contrato); err == nil {
-		fmt.Println("Contrato guardado con éxito")
+		fmt.Println("Contrato guardado con éxito ", response)
 		LimpiezaRespuestaRefactor(response, &respuesta)
 	} else {
 		fmt.Println("Error al guardar contrato", err)
