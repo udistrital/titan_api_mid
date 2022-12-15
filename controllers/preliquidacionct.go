@@ -31,9 +31,7 @@ func liquidarCPS(contrato models.Contrato) (mensaje string, err error) {
 	var reglasNuevas string //reglas a usar en cada iteracion
 	var diasContrato float64
 	var emergencia int //Varibale para evitar loop infinito
-
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
-
 	if err == nil {
 		reglasAlivios, contratoPreliquidacion, err = CargarDatosRetefuente(int(cedula))
 	}
@@ -76,7 +74,6 @@ func liquidarCPS(contrato models.Contrato) (mensaje string, err error) {
 				diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
 				detallePreliquidacion.DiasLiquidados, _ = strconv.ParseFloat(diasALiquidar, 64)
 				reglasNuevas = reglasNuevas + reglasbase + "dias_liquidados(" + contrato.Documento + "," + diasALiquidar + ")."
-
 				auxDetalle = golog.LiquidarMesCPS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion)
 				for j := 0; j < len(auxDetalle); j++ {
 					registrarDetallePreliquidacion(auxDetalle[j])
@@ -90,12 +87,8 @@ func liquidarCPS(contrato models.Contrato) (mensaje string, err error) {
 						anoIterativo = anoIterativo + 1
 					} else {
 						mesIterativo = mesIterativo + 1
-
 					}
 					emergencia = emergencia + 1
-				}
-				if emergencia == 12 {
-					break
 				}
 			} else {
 				fmt.Println("Error al consultar preliquidaciones")
@@ -104,6 +97,7 @@ func liquidarCPS(contrato models.Contrato) (mensaje string, err error) {
 			preliquidacion[0].Id = 0 //Para evitar errores al obtener la preliquidación del siguiente mes
 		}
 	} else {
+		fmt.Println("ERROR")
 		return "Error al consultar información en Ágora: ", err
 	}
 	return "", nil
