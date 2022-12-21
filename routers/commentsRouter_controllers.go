@@ -108,6 +108,15 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadCPSController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadCPSController"],
         beego.ControllerComments{
+            Method: "ReiniciarContrato",
+            Router: "/reiniciar_contrato",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadCPSController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadCPSController"],
+        beego.ControllerComments{
             Method: "SuspenderContrato",
             Router: "/suspender_contrato",
             AllowHTTPMethods: []string{"post"},
