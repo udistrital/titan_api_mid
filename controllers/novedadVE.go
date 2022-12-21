@@ -470,6 +470,7 @@ func (c *NovedadVEController) GenerarAdicion() {
 	c.ServeJSON()
 }
 
+/*
 // Post ...
 // @Title Aplicar Reducción
 // @Description Maneja la novedad contractual de Adición de horas para contratos de docentes de VE
@@ -478,4 +479,4 @@ func (c *NovedadVEController) GenerarAdicion() {
 // @Failure 400 the request contains incorrect syntax
 // @router /aplicar_reduccion [post]
 func (c *NovedadVEController) aplicarReduccion() {
-}
+}*/
