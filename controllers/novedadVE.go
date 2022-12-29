@@ -514,8 +514,14 @@ func (c *NovedadVEController) AplicarAnulacion() {
 						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &detalles)
 							for j := 0; j < len(detalles); j++ {
-								if detalles[j].ConceptoNominaId.Id == 87 {
-									valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
+								if contrato[0].TipoNominaId == 410 {
+									if detalles[j].ConceptoNominaId.Id == 152 {
+										valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
+									}
+								} else {
+									if detalles[j].ConceptoNominaId.Id == 87 {
+										valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
+									}
 								}
 								if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
 									fmt.Println("Detalle eliminado con éxito")
@@ -573,7 +579,11 @@ func (c *NovedadVEController) AplicarAnulacion() {
 					if anulacion.FechaAnulacion.Day() != 30 {
 
 						contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
-						mensaje, err = liquidarHCH(contrato[0], false, 0)
+						if contrato[0].TipoNominaId == 409 {
+							mensaje, err = liquidarHCH(contrato[0], false, 0)
+						} else if contrato[0].TipoNominaId == 410 {
+							mensaje, err = liquidarHCS(contrato[0], false, 0)
+						}
 
 						if err == nil {
 							c.Ctx.Output.SetStatus(201)
