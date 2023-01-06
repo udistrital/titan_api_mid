@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -25,6 +26,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (me
 	var contratoPreliquidacion models.ContratoPreliquidacion
 	var detallePreliquidacion models.DetallePreliquidacion
 	var aux map[string]interface{}
+	var unico bool = true
 	var auxDetalle []models.DetallePreliquidacion
 	var reglasAlivios string
 	var reglasNuevas string //reglas a usar en cada iteracion
@@ -34,6 +36,25 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (me
 
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 	var emergencia int //Varibale para evitar loop infinito
+
+	// Buscar si existen contratos vigentes para el docente
+	query := "Documento:" + contrato.Documento + ",TipoNominaId:410"
+	var contratosDocente []models.Contrato = nil
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+		LimpiezaRespuestaRefactor(aux, &contratosDocente)
+
+		for i := 0; i < len(contratosDocente); i++ {
+			// Si existe algun contrato (que no sea GENERAL) que termine despues de la fecha de inicio del contrato que se va a crear entonces unico es falso
+			if contrato.FechaInicio.Before(contratosDocente[i].FechaFin) && !strings.Contains(contratosDocente[i].NumeroContrato, "GENERAL") &&
+				contratosDocente[i].NumeroContrato != contrato.NumeroContrato {
+				unico = false
+			}
+		}
+		contrato.Unico = unico
+
+	} else {
+		fmt.Println("Error al buscar contratos adicionales para el docente: ", err)
+	}
 
 	if err == nil {
 		reglasAlivios, contratoPreliquidacion, err = CargarDatosRetefuente(int(cedula))
@@ -253,10 +274,9 @@ func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
 							} else {
 								fmt.Println("Error al obtener el valor del ibc para el contrato: ", contratosDocente[i].NumeroContrato)
 							}
-							fmt.Println("salarioGeneral: ",salarioGeneral)
-							fmt.Println("ibcGeneral: ",ibcGeneral)
-							fmt.Println("contratosDocente: ",contratosDocente)
-							
+							fmt.Println("salarioGeneral: ", salarioGeneral)
+							fmt.Println("ibcGeneral: ", ibcGeneral)
+							fmt.Println("contratosDocente: ", contratosDocente)
 							if salarioGeneral < ibcGeneral && len(contratosDocente) > 2 {
 								cambioNecesario = true
 								break
@@ -269,8 +289,8 @@ func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
 					fmt.Println("Error al obtener el contrato preliquidación para el contrato: ", contratosDocente[i].NumeroContrato)
 				}
 			}
-	//por defecto que se realice la regla de 3
-cambioNecesario = true
+			//por defecto que se realice la regla de 3
+			cambioNecesario = true
 			//Hacer regla de 3 en caso de que el cambio sea necesario
 			if cambioNecesario {
 				//obtener el contrato general

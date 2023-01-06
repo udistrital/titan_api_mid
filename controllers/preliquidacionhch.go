@@ -26,6 +26,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 	var contratoPreliquidacion models.ContratoPreliquidacion
 	var detallePreliquidacion models.DetallePreliquidacion
 	var aux map[string]interface{}
+	var unico bool = true
 	var auxDetalle []models.DetallePreliquidacion
 	var reglasAlivios string
 	var reglasNuevas string //reglas a usar en cada iteracion
@@ -35,6 +36,24 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 	var emergencia int //Varibale para evitar loop infinito
 
+	// Buscar si existen contratos vigentes para el docente
+	query := "Documento:" + contrato.Documento + ",TipoNominaId:409"
+	var contratosDocente []models.Contrato = nil
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+		LimpiezaRespuestaRefactor(aux, &contratosDocente)
+
+		for i := 0; i < len(contratosDocente); i++ {
+			// Si existe algun contrato (que no sea GENERAL) que termine despues de la fecha de inicio del contrato que se va a crear entonces unico es falso
+			if contrato.FechaInicio.Before(contratosDocente[i].FechaFin) && !strings.Contains(contratosDocente[i].NumeroContrato, "GENERAL") &&
+				contratosDocente[i].NumeroContrato != contrato.NumeroContrato {
+				unico = false
+			}
+		}
+		contrato.Unico = unico
+
+	} else {
+		fmt.Println("Error al buscar contratos adicionales para el docente: ", err)
+	}
 	//Para el valor de regla de 3
 
 	//Para el contrato general
