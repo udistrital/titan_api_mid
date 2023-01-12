@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -246,8 +247,10 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 	var contratoGeneral []models.Contrato
 	var contratosDocente []models.ContratoPreliquidacion
 	var auxDetalle []models.DetallePreliquidacion
+	var flag bool = true
 
 	query := "NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(anoIterativo) + ",Documento:" + contrato.Documento + ",TipoNominaId:" + nomina
+	fmt.Println("QUERY ", query)
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratoGeneral)
 		if contratoGeneral[0].Id == 0 {
@@ -320,7 +323,7 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 					query = "PreliquidacionId.Id:" + strconv.Itoa(preliquidacion.Id) + ",ContratoId.Documento:" + contrato.Documento
 					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &contratosDocente)
-						if len(contratosDocente) >= 1 { //Tiene más de un contrato
+						if len(contratosDocente) >= 1 && contratosDocente[0].Id != 0 { //Tiene más de un contrato
 							//Sumar valores de los honorarios para obtener el valor total de ese mes
 							for i := 0; i < len(contratosDocente); i++ {
 								//Sumar los honorarios de el mes presente para obtener el IBC
@@ -346,6 +349,8 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 							} else {
 								fmt.Println("Error al actualizar valor del contrato")
 							}
+						} else {
+							flag = false
 						}
 					} else {
 						fmt.Println("Error al obtener los contratos vigentes para el mes actual: ", err)
@@ -358,12 +363,78 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 			}
 		}
 
-		if nomina == "410" {
+		if nomina == "410" && flag {
 			liquidarHCS(contratoGeneral[0], true, porcentaje)
-		} else {
+		} else if nomina == "409" && flag {
 			liquidarHCH(contratoGeneral[0], true, porcentaje)
 		}
 	} else {
 		fmt.Println("Error al buscar contrato general:", err)
 	}
+}
+
+func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time) {
+
+	var aux map[string]interface{}
+	var preliquidacion []models.Preliquidacion
+
+	anio_aux := int(fecha_anulacion.Year())
+	mes_aux := int(fecha_anulacion.Month()) + 1
+
+	for {
+		var contratosDocente []models.Contrato = nil
+		var contratoPreliquidacionDocente []models.ContratoPreliquidacion = nil
+		var contratosCambio []int
+		query := "Documento:" + contrato.Documento + ",TipoNominaId:" + strconv.Itoa(contrato.TipoNominaId) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia)
+		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+			LimpiezaRespuestaRefactor(aux, &contratosDocente)
+			if contratosDocente[0].Id != 0 {
+				for i := 0; i < len(contratosDocente); i++ {
+					query = "ContratoId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mes_aux) + ",PreliquidacionId.Ano:" + strconv.Itoa(anio_aux)
+					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+						contratoPreliquidacionDocente = nil
+						LimpiezaRespuestaRefactor(aux, &contratoPreliquidacionDocente)
+						if contratoPreliquidacionDocente[0].Id != 0 {
+							if contratosDocente[i].NumeroContrato != "GENERAL"+strconv.Itoa(mes_aux) {
+								if !strings.HasPrefix(contratosDocente[i].NumeroContrato, "GENERAL") {
+									contratosCambio = append(contratosCambio, contratoPreliquidacionDocente[0].Id)
+								}
+							}
+						} else {
+							fmt.Println("No se encontraron preliquidaciones asociadas al contrato: ", contratosDocente[i].NumeroContrato)
+						}
+					} else {
+						fmt.Println("Error al obtener el contrato preliquidación para el contrato: ", contratosDocente[i].NumeroContrato)
+					}
+				}
+			} else {
+				fmt.Println("El docente no tiene contratos registrados")
+			}
+		} else {
+			fmt.Println("Error al intentar obtener contratos del docente: ", err)
+		}
+		if contrato.TipoNominaId == 409 {
+			query := "Ano:" + strconv.Itoa(anio_aux) + ",Mes:" + strconv.Itoa(mes_aux) + ",Nominaid:415"
+			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
+				LimpiezaRespuestaRefactor(aux, &preliquidacion)
+				LiquidarContratoGeneral(mes_aux, anio_aux, contrato, preliquidacion[0], 1, "409")
+				cambioContrato(true, contrato, mes_aux, contratosCambio)
+			}
+		} else {
+			query := "Ano:" + strconv.Itoa(anio_aux) + ",Mes:" + strconv.Itoa(mes_aux) + ",Nominaid:416"
+			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
+				LimpiezaRespuestaRefactor(aux, &preliquidacion)
+				LiquidarContratoGeneral(mes_aux, anio_aux, contrato, preliquidacion[0], 1, "410")
+			}
+		}
+		mes_aux += 1
+		if mes_aux > 12 {
+			mes_aux = 1
+			anio_aux += 1
+		}
+		if anio_aux == int(contrato.FechaFin.Year()) && mes_aux > int(contrato.FechaFin.Month()) {
+			break
+		}
+	}
+
 }
