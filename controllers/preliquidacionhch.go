@@ -239,7 +239,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 
 								//Hacer regla de 3 en caso de que el cambio sea necesario
 								if cambioNecesario {
-									
+
 									query = "Documento:" + contrato.Documento + ",TipoNominaId:409,NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia)
 									if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 										contratoGeneral = nil
