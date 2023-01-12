@@ -482,6 +482,7 @@ func (c *NovedadVEController) AplicarAnulacion() {
 	var anulacion models.Anulacion
 	var aux map[string]interface{}
 	var contrato []models.Contrato
+	var contratoOriginal models.Contrato
 	var contrato_preliquidacion []models.ContratoPreliquidacion
 	var valorDia float64
 	var detalles []models.DetallePreliquidacion
@@ -501,6 +502,8 @@ func (c *NovedadVEController) AplicarAnulacion() {
 						contrato[i] = auxContrato
 					}
 				}
+
+				contratoOriginal = contrato[0]
 
 				anoIterativo := anulacion.FechaAnulacion.Year()
 				mesIterativo := int(anulacion.FechaAnulacion.Month())
@@ -581,6 +584,7 @@ func (c *NovedadVEController) AplicarAnulacion() {
 						contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
 						if contrato[0].TipoNominaId == 409 {
 							mensaje, err = liquidarHCH(contrato[0], false, 0)
+							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion)
 						} else if contrato[0].TipoNominaId == 410 {
 							mensaje, err = liquidarHCS(contrato[0], false, 0)
 						}
