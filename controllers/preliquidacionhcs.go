@@ -174,13 +174,12 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (me
 				reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
 
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
-
 				if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general {
 					reglasNuevas = reglasNuevas + "mesFinal(1)."
-					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion, true)
+					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato, detallePreliquidacion, true)
 				} else {
 					reglasNuevas = reglasNuevas + "mesFinal(0)."
-					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion, false)
+					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato, detallePreliquidacion, false)
 				}
 
 				for j := 0; j < len(auxDetalle); j++ {

@@ -31,8 +31,10 @@ func LiquidarMesHCH(reglas string, cedula string, ano int, detallePreliquidacion
 	return data
 }
 
-func LiquidarMesHCS(reglas string, cedula string, ano int, detallePreliquidacion models.DetallePreliquidacion, mesFinal bool) (data []models.DetallePreliquidacion) {
+func LiquidarMesHCS(reglas string, contrato models.Contrato, detallePreliquidacion models.DetallePreliquidacion, mesFinal bool) (data []models.DetallePreliquidacion) {
 	var conceptoNomina models.ConceptoNomina
+	cedula := contrato.Documento
+	ano := contrato.Vigencia
 	m := NewMachine().Consult(reglas)
 	total := m.ProveAll("liquidar_hcs(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
 	for _, solution := range total {
@@ -53,12 +55,27 @@ func LiquidarMesHCS(reglas string, cedula string, ano int, detallePreliquidacion
 	if mesFinal {
 		total := m.ProveAll("liquidar_prestacion(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
 		for _, solution := range total {
-			detallePreliquidacion.ValorCalculado, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
+			//detallePreliquidacion.ValorCalculado, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
 			conceptoNomina.NombreConcepto = fmt.Sprintf("%s", solution.ByName_("N"))
-
 			codigo := m.ProveAll(`codigo_concepto(` + conceptoNomina.NombreConcepto + `,C,N).`)
 			for _, cod := range codigo {
 				conceptoNomina.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
+				switch {
+				case conceptoNomina.NombreConcepto == "primaNavidad":
+					detallePreliquidacion.ValorCalculado = contrato.Desagregado.PrimaNavidad
+				case conceptoNomina.NombreConcepto == "cesantias":
+					detallePreliquidacion.ValorCalculado = contrato.Desagregado.Cesantias
+				case conceptoNomina.NombreConcepto == "priServ":
+					detallePreliquidacion.ValorCalculado = contrato.Desagregado.PrimaServicios
+				case conceptoNomina.NombreConcepto == "primaVacaciones":
+					detallePreliquidacion.ValorCalculado = contrato.Desagregado.PrimaVacaciones
+				case conceptoNomina.NombreConcepto == "vacaciones":
+					detallePreliquidacion.ValorCalculado = contrato.Desagregado.Vacaciones
+				case conceptoNomina.NombreConcepto == "interesCesantias":
+					detallePreliquidacion.ValorCalculado = contrato.Desagregado.InteresesCesantias
+				case conceptoNomina.NombreConcepto == "bonServ":
+					detallePreliquidacion.ValorCalculado = contrato.Desagregado.BonificacionServicios
+				}
 				conceptoNomina.NaturalezaConceptoNominaId, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 			}
 

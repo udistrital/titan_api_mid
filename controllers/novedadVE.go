@@ -586,6 +586,7 @@ func (c *NovedadVEController) AplicarAnulacion() {
 							mensaje, err = liquidarHCH(contrato[0], false, 0)
 							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion)
 						} else if contrato[0].TipoNominaId == 410 {
+							contrato[0].Desagregado = anulacion.Desagregado
 							mensaje, err = liquidarHCS(contrato[0], false, 0)
 						}
 

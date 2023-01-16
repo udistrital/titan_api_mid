@@ -23,4 +23,5 @@ type Contrato struct {
 	Activo            bool
 	FechaCreacion     string
 	FechaModificacion string
+	Desagregado       *Desagregado
 }
