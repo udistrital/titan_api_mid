@@ -433,7 +433,7 @@ func (c *NovedadVEController) GenerarAdicion() {
 				contratoNuevo.Completo = true
 				contratoNuevo, err = registrarContrato(contratoNuevo)
 				if err == nil {
-					mensaje, err = liquidarHCS(contratoNuevo, false, 0)
+					mensaje, err = liquidarHCS(contratoNuevo, false, 0, contratoNuevo.Vigencia)
 					if err == nil {
 						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contratoNuevo}
 					} else {
@@ -583,10 +583,10 @@ func (c *NovedadVEController) AplicarAnulacion() {
 
 						contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
 						if contrato[0].TipoNominaId == 409 {
-							mensaje, err = liquidarHCH(contrato[0], false, 0)
-							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion)
+							mensaje, err = liquidarHCH(contrato[0], false, 0, contrato[0].Vigencia)
+							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
 						} else if contrato[0].TipoNominaId == 410 {
-							mensaje, err = liquidarHCS(contrato[0], false, 0)
+							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia)
 						}
 
 						if err == nil {

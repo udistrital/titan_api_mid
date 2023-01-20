@@ -18,7 +18,7 @@ type PreliquidacionhchController struct {
 	beego.Controller
 }
 
-func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (mensaje string, err error) {
+func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vigencia_original int) (mensaje string, err error) {
 	var mesIterativo int              //mes para iterar en el ciclo para liquidar todos los meses de una vez
 	var anoIterativo int              //Ano iterativo a la hora de liquidar
 	var predicados []models.Predicado //variable para inyectar reglas
@@ -141,7 +141,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 					var aux map[string]interface{}
 					var semanas []models.DetallePreliquidacion
 					var mes = int(contrato.FechaInicio.Month())
-					var ano = contrato.FechaFin.Year()
+					var ano = contrato.FechaInicio.Year()
 					semanas_liquidadas = 0
 					for {
 						if mes == int(contrato.FechaFin.Month()) && ano == contrato.FechaFin.Year() {
@@ -149,7 +149,6 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 						}
 						query := "ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(ano) + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mes) + ",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato.NumeroContrato + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",ContratoPreliquidacionId.ContratoId.DependenciaId:" + strconv.Itoa(contrato.DependenciaId) + ",ContratoPreliquidacionId.ContratoId.Documento:" + contrato.Documento + ",ContratoPreliquidacionId.ContratoId.Rp:" + strconv.Itoa(contrato.Rp)
 						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-							fmt.Println()
 							LimpiezaRespuestaRefactor(aux, &semanas)
 							for i := 0; i < len(semanas); i++ {
 								if semanas[i].ConceptoNominaId.Id == 87 {
@@ -184,14 +183,14 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 					porcentaje_ibc = 1
 				}
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
-				auxDetalle = golog.LiquidarMesHCH(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion)
+				auxDetalle = golog.LiquidarMesHCH(reglasNuevas, contrato.Documento, vigencia_original, detallePreliquidacion)
 				for j := 0; j < len(auxDetalle); j++ {
 					registrarDetallePreliquidacion(auxDetalle[j])
 				}
 
 				if !general {
 					fmt.Println("Liquidando Contrato General")
-					LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "409")
+					LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "409", vigencia_original)
 					if !contrato.Unico {
 						//nueva lógica
 						var contratosDocente []models.Contrato = nil

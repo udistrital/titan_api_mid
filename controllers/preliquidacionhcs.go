@@ -18,7 +18,7 @@ type PreliquidacionHcSController struct {
 	beego.Controller
 }
 
-func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (mensaje string, err error) {
+func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vigencia_original int) (mensaje string, err error) {
 	var mesIterativo int              //mes para iterar en el ciclo para liquidar todos los meses de una vez
 	var anoIterativo int              //Ano iterativo a la hora de liquidar
 	var predicados []models.Predicado //variable para inyectar reglas
@@ -189,7 +189,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (me
 
 				if !general {
 					fmt.Println("Liquidando Contrato General")
-					LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "410")
+					LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "410", vigencia_original)
 					if !contrato.Unico {
 						fmt.Println("Realizando Regla de 3 con los conceptos de ibc")
 						ReglaDe3(contrato, mesIterativo, anoIterativo)

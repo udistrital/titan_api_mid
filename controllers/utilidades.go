@@ -242,7 +242,7 @@ func Roundf(x float64) float64 {
 	return t
 }
 
-func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models.Contrato, preliquidacion models.Preliquidacion, porcentaje float64, nomina string) {
+func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models.Contrato, preliquidacion models.Preliquidacion, porcentaje float64, nomina string, vigencia_original int) {
 	var aux map[string]interface{}
 	var contratoGeneral []models.Contrato
 	var contratosDocente []models.ContratoPreliquidacion
@@ -364,16 +364,16 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 		}
 
 		if nomina == "410" && flag {
-			liquidarHCS(contratoGeneral[0], true, porcentaje)
+			liquidarHCS(contratoGeneral[0], true, porcentaje, vigencia_original)
 		} else if nomina == "409" && flag {
-			liquidarHCH(contratoGeneral[0], true, porcentaje)
+			liquidarHCH(contratoGeneral[0], true, porcentaje, vigencia_original)
 		}
 	} else {
 		fmt.Println("Error al buscar contrato general:", err)
 	}
 }
 
-func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time) {
+func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time, vigencia_original int) {
 
 	var aux map[string]interface{}
 	var preliquidacion []models.Preliquidacion
@@ -417,14 +417,14 @@ func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time) {
 			query := "Ano:" + strconv.Itoa(anio_aux) + ",Mes:" + strconv.Itoa(mes_aux) + ",Nominaid:415"
 			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &preliquidacion)
-				LiquidarContratoGeneral(mes_aux, anio_aux, contrato, preliquidacion[0], 1, "409")
+				LiquidarContratoGeneral(mes_aux, anio_aux, contrato, preliquidacion[0], 1, "409", vigencia_original)
 				cambioContrato(true, contrato, mes_aux, contratosCambio)
 			}
 		} else {
 			query := "Ano:" + strconv.Itoa(anio_aux) + ",Mes:" + strconv.Itoa(mes_aux) + ",Nominaid:416"
 			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &preliquidacion)
-				LiquidarContratoGeneral(mes_aux, anio_aux, contrato, preliquidacion[0], 1, "410")
+				LiquidarContratoGeneral(mes_aux, anio_aux, contrato, preliquidacion[0], 1, "410", vigencia_original)
 			}
 		}
 		mes_aux += 1
