@@ -105,11 +105,10 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 				if contrato.FechaInicio.Month() == contrato.FechaFin.Month() && contrato.FechaInicio.Year() == contrato.FechaFin.Year() {
 					//Calcular el numero de días
 					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
-					semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
 					if porcentaje != 0 {
 						porcentaje_ibc = porcentaje
 					} else {
-						porcentaje_ibc = semanas / 30
+						porcentaje_ibc = float64(semanasContrato) / 4
 					}
 					semanas_liquidadas = semanasContrato
 				} else if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
@@ -190,7 +189,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 
 				if !general {
 					fmt.Println("Liquidando Contrato General")
-					LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "409", vigencia_original)
+					LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "409", vigencia_original, true)
 					if !contrato.Unico {
 						//nueva lógica
 						var contratosDocente []models.Contrato = nil

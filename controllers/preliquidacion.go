@@ -81,7 +81,7 @@ func (c *PreliquidacionController) Preliquidar() {
 						c.Abort("404")
 					}
 				} else if contrato.TipoNominaId == 410 {
-					mensaje, err = liquidarHCS(contrato, false, 0, contrato.Vigencia)
+					mensaje, err = liquidarHCS(contrato, false, 0, contrato.Vigencia, 0, 0, false)
 					if err == nil {
 						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
 					} else {

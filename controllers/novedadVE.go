@@ -433,7 +433,7 @@ func (c *NovedadVEController) GenerarAdicion() {
 				contratoNuevo.Completo = true
 				contratoNuevo, err = registrarContrato(contratoNuevo)
 				if err == nil {
-					mensaje, err = liquidarHCS(contratoNuevo, false, 0, contratoNuevo.Vigencia)
+					mensaje, err = liquidarHCS(contratoNuevo, false, 0, contratoNuevo.Vigencia, 0, 0, false)
 					if err == nil {
 						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contratoNuevo}
 					} else {
@@ -485,6 +485,8 @@ func (c *NovedadVEController) AplicarAnulacion() {
 	var contratoOriginal models.Contrato
 	var contrato_preliquidacion []models.ContratoPreliquidacion
 	var valorDia float64
+	var semanasContrato int
+	var semanasTotales int
 	var detalles []models.DetallePreliquidacion
 	var mensaje string //Mensaje de error
 
@@ -569,13 +571,15 @@ func (c *NovedadVEController) AplicarAnulacion() {
 				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contrato[0]); err == nil {
 					fmt.Println("Contrato Actualizado")
 					if contrato[0].FechaInicio.Month() != anulacion.FechaAnulacion.Month() || contrato[0].FechaInicio.Year() != anulacion.FechaAnulacion.Year() {
-						semanasContrato := int(calcularSemanasContratoDVE(time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC), anulacion.FechaAnulacion))
+						semanasTotales = int(calcularSemanasContratoDVE(contrato[0].FechaInicio, anulacion.FechaAnulacion))
+						semanasContrato = int(calcularSemanasContratoDVE(time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC), anulacion.FechaAnulacion))
 						contrato[0].FechaInicio = time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC)
 						contrato[0].ValorContrato = valorDia * float64(semanasContrato)
 					} else {
 						fmt.Println("Anulación el mismo mes de inicio")
 						diaAux := contrato[0].FechaInicio.AddDate(0, 0, 1)
-						semanasContrato := int(calcularSemanasContratoDVE(diaAux, contrato[0].FechaFin))
+						semanasContrato = int(calcularSemanasContratoDVE(diaAux, contrato[0].FechaFin))
+						semanasTotales = semanasContrato
 						contrato[0].ValorContrato = valorDia * float64(semanasContrato)
 					}
 
@@ -586,7 +590,8 @@ func (c *NovedadVEController) AplicarAnulacion() {
 							mensaje, err = liquidarHCH(contrato[0], false, 0, contrato[0].Vigencia)
 							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
 						} else if contrato[0].TipoNominaId == 410 {
-							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia)
+							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
+							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
 						}
 
 						if err == nil {
