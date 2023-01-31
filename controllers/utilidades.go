@@ -438,3 +438,214 @@ func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time) {
 	}
 
 }
+
+func Preliquidacion(contrato models.Contrato) (mensaje string, codigo string, contratoReturn *models.Contrato, err error) {
+	var aux map[string]interface{}
+
+	if contrato.FechaInicio.Before(contrato.FechaFin) {
+		if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
+			LimpiezaRespuestaRefactor(aux, &contrato)
+			if contrato.TipoNominaId == 411 {
+				mensaje, err = liquidarCPS(contrato)
+				if err == nil {
+					return "Successful", "201", &contrato, nil
+				} else {
+					codigo = "404"
+					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
+						fmt.Println("Contrato eliminado")
+					} else {
+						mensaje = "Error al eliminar el contrato que no se liquidó: "
+						codigo = "404"
+						return mensaje, codigo, nil, err
+					}
+					return mensaje, codigo, nil, err
+				}
+			} else if contrato.TipoNominaId == 409 {
+				mensaje, err = liquidarHCH(contrato, false, 0)
+				if err == nil {
+					return "Successful", "201", &contrato, nil
+				} else {
+					codigo = "404"
+					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
+						fmt.Println("Contrato eliminado")
+					} else {
+						mensaje = "Error al eliminar el contrato que no se liquidó: "
+						codigo = "404"
+						return mensaje, codigo, nil, err
+					}
+					return mensaje, codigo, nil, err
+				}
+			} else if contrato.TipoNominaId == 410 {
+				mensaje, err = liquidarHCS(contrato, false, 0)
+				if err == nil {
+					return "Successful", "201", &contrato, nil
+				} else {
+					codigo = "404"
+					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
+						fmt.Println("Contrato eliminado")
+					} else {
+						mensaje = "Error al eliminar el contrato que no se liquidó: "
+						codigo = "404"
+						return mensaje, codigo, nil, err
+					}
+					return mensaje, codigo, nil, err
+				}
+			}
+		} else {
+			fmt.Println("No se pudo guardar el contrato", err)
+			mensaje = "No se pudo guardar el contrato"
+			codigo = "404"
+			return mensaje, codigo, nil, err
+		}
+	} else {
+		fmt.Println("La fecha inicio no puede estar después de la fecha fin")
+		mensaje = "La fecha inicio no puede estar después de la fecha fin"
+		codigo = "404"
+		return mensaje, codigo, nil, err
+	}
+	return
+
+}
+
+func Anulacion(anulacion models.Anulacion) (mensaje string, codigo string, contratoReturn *models.Contrato, err error) {
+
+	var aux map[string]interface{}
+	var contrato []models.Contrato
+	var contratoOriginal models.Contrato
+	var contrato_preliquidacion []models.ContratoPreliquidacion
+	var valorDia float64
+	var detalles []models.DetallePreliquidacion
+
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+anulacion.NumeroContrato+",Vigencia:"+strconv.Itoa(anulacion.Vigencia)+",Documento:"+anulacion.Documento, &aux); err == nil {
+		LimpiezaRespuestaRefactor(aux, &contrato)
+		if contrato[0].Id != 0 {
+
+			//Ordenar los contratos para tomar el más reciente
+			for i := 0; i < len(contrato); i++ {
+				if contrato[0].Id < contrato[i].Id {
+					auxContrato := contrato[0]
+					contrato[0] = contrato[i]
+					contrato[i] = auxContrato
+				}
+			}
+
+			contratoOriginal = contrato[0]
+
+			anoIterativo := anulacion.FechaAnulacion.Year()
+			mesIterativo := int(anulacion.FechaAnulacion.Month())
+
+			//Eliminar los detalles y los contratos_preliquidacion
+			for {
+				//Obtener contrato_preliquidacion para ese mes
+				query := "ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
+				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
+					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
+						LimpiezaRespuestaRefactor(aux, &detalles)
+						for j := 0; j < len(detalles); j++ {
+							if contrato[0].TipoNominaId == 410 {
+								if detalles[j].ConceptoNominaId.Id == 152 {
+									valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
+								}
+							} else {
+								if detalles[j].ConceptoNominaId.Id == 87 {
+									valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
+								}
+							}
+							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
+								fmt.Println("Detalle eliminado con éxito")
+							} else {
+								fmt.Println("Error al Eliminar Detalles:", err)
+								mensaje = "Error al Eliminar Detalles: "
+								codigo = "400"
+								return mensaje, codigo, nil, err
+							}
+						}
+						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "DELETE", &aux, nil); err == nil {
+							fmt.Println("contrato preliquidacion eliminado con éxito")
+						} else {
+							fmt.Println("Error al eliminar contrato preliquidacion: ", err)
+							mensaje = "Error al Eliminar contrato preliquidación: "
+							codigo = "400"
+							return mensaje, codigo, nil, err
+						}
+					} else {
+						fmt.Println("Error al obtener detalles")
+						mensaje = "Error al obtener detalles: "
+						codigo = "400"
+						return mensaje, codigo, nil, err
+					}
+				} else {
+					fmt.Println("Error al obtener contrato_preliquidacion")
+					mensaje = "Error al obtener contrato_preliquidacion"
+					codigo = "400"
+					return mensaje, codigo, nil, err
+				}
+
+				if mesIterativo == int(contrato[0].FechaFin.Month()) && anoIterativo == contrato[0].FechaFin.Year() {
+					break
+				} else {
+					if mesIterativo == 12 {
+						mesIterativo = 1
+						anoIterativo = anoIterativo + 1
+					} else {
+						mesIterativo = mesIterativo + 1
+					}
+				}
+			}
+			fmt.Println("Valor día: ", valorDia)
+			contrato[0].FechaFin = anulacion.FechaAnulacion
+			//Actualizar fecha de finalización del contrato
+			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contrato[0]); err == nil {
+				fmt.Println("Contrato Actualizado")
+				if contrato[0].FechaInicio.Month() != anulacion.FechaAnulacion.Month() || contrato[0].FechaInicio.Year() != anulacion.FechaAnulacion.Year() {
+					semanasContrato := int(calcularSemanasContratoDVE(time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC), anulacion.FechaAnulacion))
+					contrato[0].FechaInicio = time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC)
+					contrato[0].ValorContrato = valorDia * float64(semanasContrato)
+				} else {
+					fmt.Println("Anulación el mismo mes de inicio")
+					diaAux := contrato[0].FechaInicio.AddDate(0, 0, 1)
+					semanasContrato := int(calcularSemanasContratoDVE(diaAux, contrato[0].FechaFin))
+					contrato[0].ValorContrato = valorDia * float64(semanasContrato)
+				}
+				if anulacion.FechaAnulacion.Day() != 30 {
+					contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
+					if contrato[0].TipoNominaId == 409 {
+						mensaje, err = liquidarHCH(contrato[0], false, 0)
+						anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion)
+					} else if contrato[0].TipoNominaId == 410 {
+						contrato[0].Desagregado = anulacion.Desagregado
+						mensaje, err = liquidarHCS(contrato[0], false, 0)
+					}
+
+					if err == nil {
+						mensaje = "Registration successful"
+						codigo = "201"
+						return mensaje, codigo, &contrato[0], nil
+					} else {
+						fmt.Println("Error al cancelar contrato: ", err)
+						mensaje = "Error al cancelar contrato"
+						codigo = "400"
+						return mensaje, codigo, nil, err
+					}
+				}
+			} else {
+				fmt.Println("Error al actualizar el contrato: ", err)
+				mensaje = "Error al actualizar el contrato"
+				codigo = "400"
+				return mensaje, codigo, nil, err
+			}
+		} else {
+			fmt.Println("Error al obtener el contrato: ", err)
+			mensaje = "Error al obtener el contrato"
+			codigo = "400"
+			return mensaje, codigo, nil, err
+		}
+	} else {
+		fmt.Println("Error al obtener el contrato: ", err)
+		mensaje = "Error al obtener el contrato"
+		codigo = "400"
+		return mensaje, codigo, nil, err
+	}
+	return
+}
