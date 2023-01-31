@@ -49,7 +49,6 @@ func (c *PreliquidacionController) Preliquidar() {
 		fmt.Println("Vigencia: ", contrato.Vigencia)
 		fmt.Println("Tipo Nomina: ", contrato.TipoNominaId)
 		fmt.Println("Activo: ", contrato.Activo)
-
 		if contrato.FechaInicio.Before(contrato.FechaFin) {
 			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contrato)
@@ -68,7 +67,7 @@ func (c *PreliquidacionController) Preliquidar() {
 						c.Abort("404")
 					}
 				} else if contrato.TipoNominaId == 409 {
-					mensaje, err = liquidarHCH(contrato, false, 0)
+					mensaje, err = liquidarHCH(contrato, false, 0, contrato.Vigencia)
 					if err == nil {
 						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
 					} else {
@@ -82,7 +81,7 @@ func (c *PreliquidacionController) Preliquidar() {
 						c.Abort("404")
 					}
 				} else if contrato.TipoNominaId == 410 {
-					mensaje, err = liquidarHCS(contrato, false, 0)
+					mensaje, err = liquidarHCS(contrato, false, 0, contrato.Vigencia, 0, 0, false)
 					if err == nil {
 						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
 					} else {
