@@ -38,7 +38,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 	var emergencia int //Varibale para evitar loop infinito
 
 	// Buscar si existen contratos vigentes para el docente
-	query := "Documento:" + contrato.Documento + ",TipoNominaId:410"
+	query := "Documento:" + contrato.Documento + ",TipoNominaId:410" + ",Activo:true"
 	var contratosDocente []models.Contrato = nil
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
@@ -243,7 +243,7 @@ func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
 	var cambioNecesario bool = false
 	fmt.Println("Ingreso a regla de 3")
 	//Obtener los valores del ibc liquidado para saber si es necesario realizar actualizacion
-	query := "Documento:" + contrato.Documento + ",TipoNominaId:410,Vigencia:" + strconv.Itoa(contrato.Vigencia)
+	query := "Documento:" + contrato.Documento + ",TipoNominaId:410,Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
 		if contratosDocente[0].Id != 0 {
@@ -299,7 +299,7 @@ func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
 			//Hacer regla de 3 en caso de que el cambio sea necesario
 			if cambioNecesario {
 				//obtener el contrato general
-				query = "Documento:" + contrato.Documento + ",TipoNominaId:410,NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia)
+				query = "Documento:" + contrato.Documento + ",TipoNominaId:410,NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &contratoGeneral)
 					if contratoGeneral[0].Id != 0 {
