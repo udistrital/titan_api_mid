@@ -37,7 +37,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 	var emergencia int //Varibale para evitar loop infinito
 
 	// Buscar si existen contratos vigentes para el docente
-	query := "Documento:" + contrato.Documento + ",TipoNominaId:409"
+	query := "Documento:" + contrato.Documento + ",TipoNominaId:409" + ",Activo:true"
 	var contratosDocente []models.Contrato = nil
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
@@ -201,7 +201,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 						var cambioNecesario bool = true
 
 						//Obtener los valores del ibc liquidado para saber si es necesario realizar actualizacion
-						query := "Documento:" + contrato.Documento + ",TipoNominaId:409,Vigencia:" + strconv.Itoa(contrato.Vigencia)
+						query := "Documento:" + contrato.Documento + ",TipoNominaId:409,Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
 						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &contratosDocente)
 							if contratosDocente[0].Id != 0 {
@@ -302,7 +302,7 @@ func cambioContrato(cambioNecesario bool, contrato models.Contrato, mesIterativo
 	var auxDetalle []models.DetallePreliquidacion
 	if cambioNecesario {
 		fmt.Println("CAMBIO NECESARIO REGLA DE 3")
-		query := "Documento:" + contrato.Documento + ",TipoNominaId:409,NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia)
+		query := "Documento:" + contrato.Documento + ",TipoNominaId:409,NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 			contratoGeneral = nil
 			LimpiezaRespuestaRefactor(aux, &contratoGeneral)
