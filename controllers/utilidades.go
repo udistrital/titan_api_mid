@@ -249,7 +249,7 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 	var auxDetalle []models.DetallePreliquidacion
 	var flag bool = true
 
-	query := "NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(anoIterativo) + ",Documento:" + contrato.Documento + ",TipoNominaId:" + nomina
+	query := "NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(anoIterativo) + ",Documento:" + contrato.Documento + ",TipoNominaId:" + nomina + ",Activo:true"
 	fmt.Println("QUERY ", query)
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratoGeneral)
@@ -387,7 +387,7 @@ func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time, vige
 		var contratosDocente []models.Contrato = nil
 		var contratoPreliquidacionDocente []models.ContratoPreliquidacion = nil
 		var contratosCambio []int
-		query := "Documento:" + contrato.Documento + ",TipoNominaId:" + strconv.Itoa(contrato.TipoNominaId) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia)
+		query := "Documento:" + contrato.Documento + ",TipoNominaId:" + strconv.Itoa(contrato.TipoNominaId) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contratosDocente)
 			if contratosDocente[0].Id != 0 {
@@ -448,7 +448,7 @@ func borrarContratoGeneral(Documento string, Vigencia int, FechaFin time.Time, f
 	var contratosDocente []models.Contrato = nil
 	var contratos []models.Contrato = nil
 	var borrar bool = false
-	query := "Documento:" + Documento + ",TipoNominaId:" + strconv.Itoa(TipoNominaId) + ",Vigencia:" + strconv.Itoa(Vigencia)
+	query := "Documento:" + Documento + ",TipoNominaId:" + strconv.Itoa(TipoNominaId) + ",Vigencia:" + strconv.Itoa(Vigencia) + ",Activo:true"
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
 		// Busca si tiene mas de un contrato que no sea general
