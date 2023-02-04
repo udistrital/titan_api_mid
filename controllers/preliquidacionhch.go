@@ -18,7 +18,7 @@ type PreliquidacionhchController struct {
 	beego.Controller
 }
 
-func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (mensaje string, err error) {
+func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vigencia_original int) (mensaje string, err error) {
 	var mesIterativo int              //mes para iterar en el ciclo para liquidar todos los meses de una vez
 	var anoIterativo int              //Ano iterativo a la hora de liquidar
 	var predicados []models.Predicado //variable para inyectar reglas
@@ -37,7 +37,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 	var emergencia int //Varibale para evitar loop infinito
 
 	// Buscar si existen contratos vigentes para el docente
-	query := "Documento:" + contrato.Documento + ",TipoNominaId:409"
+	query := "Documento:" + contrato.Documento + ",TipoNominaId:409,Activo:true"
 	var contratosDocente []models.Contrato = nil
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
@@ -184,14 +184,14 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 					porcentaje_ibc = 1
 				}
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
-				auxDetalle = golog.LiquidarMesHCH(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion)
+				auxDetalle = golog.LiquidarMesHCH(reglasNuevas, contrato.Documento, vigencia_original, detallePreliquidacion)
 				for j := 0; j < len(auxDetalle); j++ {
 					registrarDetallePreliquidacion(auxDetalle[j])
 				}
 
 				if !general {
 					fmt.Println("Liquidando Contrato General")
-					LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "409")
+					LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "409", vigencia_original, true)
 					if !contrato.Unico {
 						//nueva lógica
 						var contratosDocente []models.Contrato = nil
@@ -203,7 +203,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64) (me
 						var cambioNecesario bool = true
 
 						//Obtener los valores del ibc liquidado para saber si es necesario realizar actualizacion
-						query := "Documento:" + contrato.Documento + ",TipoNominaId:409,Vigencia:" + strconv.Itoa(contrato.Vigencia)
+						query := "Documento:" + contrato.Documento + ",TipoNominaId:409,Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
 						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &contratosDocente)
 							if contratosDocente[0].Id != 0 {
@@ -304,7 +304,8 @@ func cambioContrato(cambioNecesario bool, contrato models.Contrato, mesIterativo
 	var auxDetalle []models.DetallePreliquidacion
 	if cambioNecesario {
 		fmt.Println("CAMBIO NECESARIO REGLA DE 3")
-		query := "Documento:" + contrato.Documento + ",TipoNominaId:409,NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia)
+		query := "Documento:" + contrato.Documento + ",TipoNominaId:409,NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
+		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=" + query)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 			contratoGeneral = nil
 			LimpiezaRespuestaRefactor(aux, &contratoGeneral)

@@ -434,7 +434,7 @@ func (c *NovedadVEController) GenerarAdicion() {
 				contratoNuevo.Completo = true
 				contratoNuevo, err = registrarContrato(contratoNuevo)
 				if err == nil {
-					mensaje, err = liquidarHCS(contratoNuevo, false, 0)
+					mensaje, err = liquidarHCS(contratoNuevo, false, 0, contratoNuevo.Vigencia, 0, 0, false)
 					if err == nil {
 						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contratoNuevo}
 					} else {
@@ -511,21 +511,66 @@ func (c *NovedadVEController) AplicarAnulacion() {
 func (c *NovedadVEController) AplicarReduccion() {
 	var reduccion models.Reduccion
 	var anulacion models.Anulacion
+	var contratoNuevo models.Contrato
+	var contratoAnuladoAux *models.Contrato
 	var fecha_anulacion time.Time
+	var fecha_fin_aux time.Time
+	var err error
 	fmt.Println("LLEGA")
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &reduccion); err == nil {
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &reduccion); err == nil {
 		fmt.Println(reduccion)
-		anulacion.NumeroContrato = reduccion.NumeroContratoOriginal
-		anulacion.Vigencia = reduccion.Vigencia
-		anulacion.Documento = reduccion.Documento
-		fecha_anulacion = reduccion.FechaReduccion.AddDate(0, 0, -1)
-		anulacion.FechaAnulacion = fecha_anulacion
 
-		if reduccion.DesagregadoOriginal != nil {
-			anulacion.Desagregado = reduccion.DesagregadoOriginal
+		for i := 0; i < len(reduccion.ContratosOriginales); i++ {
+			anulacion.NumeroContrato = reduccion.ContratosOriginales[i].NumeroContratoOriginal
+			anulacion.Vigencia = reduccion.Vigencia
+			anulacion.Documento = reduccion.Documento
+			fecha_anulacion = reduccion.FechaReduccion.AddDate(0, 0, -1)
+			anulacion.FechaAnulacion = fecha_anulacion
+			if reduccion.ContratosOriginales[i].DesagregadoOriginal != nil {
+				anulacion.Desagregado = reduccion.ContratosOriginales[i].DesagregadoOriginal
+				fmt.Println("ANULACION ", anulacion)
+				fmt.Println("ANULACION ", anulacion.Desagregado)
+			} else {
+				anulacion.Desagregado = nil
+			}
+
+			mensaje, codigo, contratoAnulado, err := Anulacion(anulacion)
+
+			if contratoAnulado.FechaFin.After(fecha_fin_aux) {
+				fecha_fin_aux = contratoAnulado.FechaFin
+			}
+			contratoAnuladoAux = contratoAnulado
+
+			if err != nil {
+				c.Data["message"] = mensaje + ", error en contrato " + anulacion.NumeroContrato + " " + err.Error()
+				c.Abort(codigo)
+			}
+		}
+		if err == nil {
+			contratoNuevo.DependenciaId = contratoAnuladoAux.DependenciaId
+			contratoNuevo.Documento = reduccion.Documento
+			contratoNuevo.FechaFin = fecha_fin_aux
+			contratoNuevo.FechaInicio = reduccion.FechaReduccion
+			contratoNuevo.NombreCompleto = contratoAnuladoAux.NombreCompleto
+			contratoNuevo.NumeroContrato = reduccion.NumeroContratoReduccion
+			contratoNuevo.TipoNominaId = contratoAnuladoAux.TipoNominaId
+			contratoNuevo.ValorContrato = reduccion.ValorContratoReduccion
+			contratoNuevo.Vigencia = reduccion.Vigencia
+			contratoNuevo.PersonaId = contratoAnuladoAux.PersonaId
+			contratoNuevo.Rp = contratoAnuladoAux.Rp
+			contratoNuevo.Cdp = contratoAnuladoAux.Cdp
+
+			mensaje, codigo, contratoReturn, err := Preliquidacion(contratoNuevo)
+
+			if err == nil {
+				c.Ctx.Output.SetStatus(201)
+				c.Data["json"] = map[string]interface{}{"Success": true, "Status": codigo, "Message": mensaje, "Data": contratoReturn}
+			} else {
+				c.Data["message"] = mensaje + " " + err.Error()
+				c.Abort(codigo)
+			}
 		}
 
-		fmt.Println("ANULACION ", anulacion)
 	} else {
 		c.Data["message"] = "Error al unmarshal del body: " + err.Error()
 		c.Abort("400")
