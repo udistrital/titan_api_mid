@@ -483,7 +483,7 @@ func (c *NovedadVEController) AplicarAnulacion() {
 	var anulacion models.Anulacion
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &anulacion); err == nil {
-		mensaje, codigo, contratoReturn, err := Anulacion(anulacion)
+		mensaje, codigo, contratoReturn, err, _ := Anulacion(anulacion)
 
 		if err == nil {
 			c.Ctx.Output.SetStatus(201)
@@ -516,7 +516,6 @@ func (c *NovedadVEController) AplicarReduccion() {
 	var fecha_anulacion time.Time
 	var fecha_fin_aux time.Time
 	var err error
-	fmt.Println("LLEGA")
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &reduccion); err == nil {
 		fmt.Println(reduccion)
 
@@ -528,16 +527,13 @@ func (c *NovedadVEController) AplicarReduccion() {
 			anulacion.FechaAnulacion = fecha_anulacion
 			if reduccion.ContratosOriginales[i].DesagregadoOriginal != nil {
 				anulacion.Desagregado = reduccion.ContratosOriginales[i].DesagregadoOriginal
-				fmt.Println("ANULACION ", anulacion)
-				fmt.Println("ANULACION ", anulacion.Desagregado)
 			} else {
 				anulacion.Desagregado = nil
 			}
 
-			mensaje, codigo, contratoAnulado, err := Anulacion(anulacion)
-
-			if contratoAnulado.FechaFin.After(fecha_fin_aux) {
-				fecha_fin_aux = contratoAnulado.FechaFin
+			mensaje, codigo, contratoAnulado, err, fechaOriginal := Anulacion(anulacion)
+			if fechaOriginal.After(fecha_fin_aux) {
+				fecha_fin_aux = fechaOriginal
 			}
 			contratoAnuladoAux = contratoAnulado
 
@@ -559,6 +555,7 @@ func (c *NovedadVEController) AplicarReduccion() {
 			contratoNuevo.PersonaId = contratoAnuladoAux.PersonaId
 			contratoNuevo.Rp = contratoAnuladoAux.Rp
 			contratoNuevo.Cdp = contratoAnuladoAux.Cdp
+			contratoNuevo.Desagregado = reduccion.DesagregadoReduccion
 
 			mensaje, codigo, contratoReturn, err := Preliquidacion(contratoNuevo)
 

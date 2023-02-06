@@ -11,8 +11,6 @@ import (
 func LiquidarMesHCH(reglas string, cedula string, ano int, detallePreliquidacion models.DetallePreliquidacion) (data []models.DetallePreliquidacion) {
 	var conceptoNomina models.ConceptoNomina
 	m := NewMachine().Consult(reglas)
-	fmt.Println(reglas)
-	fmt.Println(m)
 	total := m.ProveAll("liquidar_hch(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
 	for _, solution := range total {
 
@@ -35,21 +33,14 @@ func LiquidarMesHCH(reglas string, cedula string, ano int, detallePreliquidacion
 
 func LiquidarMesHCS(reglas string, contrato models.Contrato, detallePreliquidacion models.DetallePreliquidacion, mesFinal bool) (data []models.DetallePreliquidacion) {
 	var conceptoNomina models.ConceptoNomina
+	//var desagregado models.Desagregado
 	cedula := contrato.Documento
-	fmt.Println("CEDULA ", cedula)
 	ano := contrato.Vigencia
-	fmt.Println("AÑO ", ano)
-	//fmt.Println("REGLAS ", reglas)
 	m := NewMachine().Consult(reglas)
-	fmt.Println(m)
 	total := m.ProveAll("liquidar_hcs(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
-	fmt.Println("TOTAL ", total)
 	for _, solution := range total {
-		fmt.Println("ENTRA")
 		detallePreliquidacion.ValorCalculado, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
-		fmt.Println("ENTRA")
 		conceptoNomina.NombreConcepto = fmt.Sprintf("%s", solution.ByName_("N"))
-		fmt.Println("ENTRA")
 
 		codigo := m.ProveAll(`codigo_concepto(` + conceptoNomina.NombreConcepto + `,C,N).`)
 		for _, cod := range codigo {
@@ -60,7 +51,6 @@ func LiquidarMesHCS(reglas string, contrato models.Contrato, detallePreliquidaci
 		detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: conceptoNomina.Id}
 		data = append(data, detallePreliquidacion)
 	}
-	fmt.Println("XD ", data)
 	if mesFinal {
 		total := m.ProveAll("liquidar_prestacion(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
 		for _, solution := range total {

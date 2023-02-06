@@ -96,8 +96,8 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 		}
 
-		predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
-		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+		// predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
+		// predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 
 		for {
 
@@ -138,9 +138,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 				} else if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
 					//para el mes inicial
 					//Calcular el numero de días
-					fmt.Println("PRIMER MES")
 					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
-					fmt.Println("CALCULO PERIODO LIQUIDACION")
 					semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
 
 					if porcentaje != 0 {
@@ -184,16 +182,11 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 				reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
 				if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general {
-					fmt.Println("LIQUIDA MES FINAL ")
 					reglasNuevas = reglasNuevas + "mesFinal(1)."
 					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato, detallePreliquidacion, true)
 				} else {
-					fmt.Println("liquida mes")
-					fmt.Println(contrato)
-					fmt.Println(detallePreliquidacion)
 					reglasNuevas = reglasNuevas + "mesFinal(0)."
 					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato, detallePreliquidacion, false)
-					fmt.Println(auxDetalle)
 				}
 
 				for j := 0; j < len(auxDetalle); j++ {

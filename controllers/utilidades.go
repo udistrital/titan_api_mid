@@ -553,7 +553,7 @@ func Preliquidacion(contrato models.Contrato) (mensaje string, codigo string, co
 
 }
 
-func Anulacion(anulacion models.Anulacion) (mensaje string, codigo string, contratoReturn *models.Contrato, err error) {
+func Anulacion(anulacion models.Anulacion) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time) {
 
 	var aux map[string]interface{}
 	var contrato []models.Contrato
@@ -582,6 +582,7 @@ func Anulacion(anulacion models.Anulacion) (mensaje string, codigo string, contr
 			}
 
 			contratoOriginal = contrato[0]
+			contrato[0].Desagregado = anulacion.Desagregado
 
 			if anulacion.FechaAnulacion.Before(contrato[0].FechaInicio) {
 				anulacion.FechaAnulacion = contrato[0].FechaInicio
@@ -620,7 +621,7 @@ func Anulacion(anulacion models.Anulacion) (mensaje string, codigo string, contr
 								fmt.Println("Error al Eliminar Detalles:", err)
 								mensaje = "Error al Eliminar Detalles: "
 								codigo = "400"
-								return mensaje, codigo, nil, err
+								return mensaje, codigo, nil, err, fechaOriginal
 							}
 						}
 						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "DELETE", &aux, nil); err == nil {
@@ -629,19 +630,19 @@ func Anulacion(anulacion models.Anulacion) (mensaje string, codigo string, contr
 							fmt.Println("Error al eliminar contrato preliquidacion: ", err)
 							mensaje = "Error al Eliminar contrato preliquidación: "
 							codigo = "400"
-							return mensaje, codigo, nil, err
+							return mensaje, codigo, nil, err, fechaOriginal
 						}
 					} else {
 						fmt.Println("Error al obtener detalles")
 						mensaje = "Error al obtener detalles: "
 						codigo = "400"
-						return mensaje, codigo, nil, err
+						return mensaje, codigo, nil, err, fechaOriginal
 					}
 				} else {
 					fmt.Println("Error al obtener contrato_preliquidacion")
 					mensaje = "Error al obtener contrato_preliquidacion"
 					codigo = "400"
-					return mensaje, codigo, nil, err
+					return mensaje, codigo, nil, err, fechaOriginal
 				}
 
 				if mesIterativo == int(contrato[0].FechaFin.Month()) && anoIterativo == contrato[0].FechaFin.Year() {
@@ -663,9 +664,11 @@ func Anulacion(anulacion models.Anulacion) (mensaje string, codigo string, contr
 
 			// CREA CONTRATO NUEVO CON LA INFORMACIÓN DEL CONTRATO ORIGINAL CON CAMPO ACTIVO FALSE
 			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contratoOriginal); err == nil {
+				fechaOriginal = contratoOriginal.FechaFin
 				if contrato[0].FechaInicio.Month() != anulacion.FechaAnulacion.Month() || contrato[0].FechaInicio.Year() != anulacion.FechaAnulacion.Year() {
 					//semanasTotales = int(calcularSemanasContratoDVE(contrato[0].FechaInicio, anulacion.FechaAnulacion))
 					semanasContrato = int(calcularSemanasContratoDVE(time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC), anulacion.FechaAnulacion))
+					semanasTotales = semanasContrato
 					contrato[0].FechaInicio = time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC)
 					contrato[0].ValorContrato = valorDia * float64(semanasContrato)
 				} else if anulacion_completa {
@@ -712,7 +715,7 @@ func Anulacion(anulacion models.Anulacion) (mensaje string, codigo string, contr
 						if contrato[0].TipoNominaId == 409 {
 							mensaje, err = liquidarHCH(contrato[0], false, 0, contrato[0].Vigencia)
 							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
-						} else if contrato[0].TipoNominaId == 410 {
+						} else if contrato[0].TipoNominaId == 410 && semanasTotales > 0 {
 							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
 							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
 						}
@@ -720,7 +723,7 @@ func Anulacion(anulacion models.Anulacion) (mensaje string, codigo string, contr
 						if err == nil {
 							mensaje = "Registration successful"
 							codigo = "201"
-							return mensaje, codigo, &contrato[0], nil
+							return mensaje, codigo, &contrato[0], nil, fechaOriginal
 						} else {
 							mensaje = "Error al cancelar contrato"
 							codigo = "400"
@@ -737,19 +740,19 @@ func Anulacion(anulacion models.Anulacion) (mensaje string, codigo string, contr
 				fmt.Println("Error al actualizar el contrato: ", err)
 				mensaje = "Error al actualizar el contrato"
 				codigo = "400"
-				return mensaje, codigo, nil, err
+				return mensaje, codigo, nil, err, fechaOriginal
 			}
 		} else {
 			fmt.Println("Error al obtener el contrato: ", err)
 			mensaje = "Error al obtener el contrato"
 			codigo = "400"
-			return mensaje, codigo, nil, err
+			return mensaje, codigo, nil, err, fechaOriginal
 		}
 	} else {
 		fmt.Println("Error al obtener el contrato: ", err)
 		mensaje = "Error al obtener el contrato"
 		codigo = "400"
-		return mensaje, codigo, nil, err
+		return mensaje, codigo, nil, err, fechaOriginal
 	}
 	return
 }
