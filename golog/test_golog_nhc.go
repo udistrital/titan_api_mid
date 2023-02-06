@@ -33,12 +33,12 @@ func LiquidarMesHCH(reglas string, cedula string, ano int, detallePreliquidacion
 
 func LiquidarMesHCS(reglas string, contrato models.Contrato, detallePreliquidacion models.DetallePreliquidacion, mesFinal bool) (data []models.DetallePreliquidacion) {
 	var conceptoNomina models.ConceptoNomina
+	//var desagregado models.Desagregado
 	cedula := contrato.Documento
 	ano := contrato.Vigencia
 	m := NewMachine().Consult(reglas)
 	total := m.ProveAll("liquidar_hcs(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
 	for _, solution := range total {
-
 		detallePreliquidacion.ValorCalculado, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
 		conceptoNomina.NombreConcepto = fmt.Sprintf("%s", solution.ByName_("N"))
 
@@ -51,7 +51,6 @@ func LiquidarMesHCS(reglas string, contrato models.Contrato, detallePreliquidaci
 		detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: conceptoNomina.Id}
 		data = append(data, detallePreliquidacion)
 	}
-
 	if mesFinal {
 		total := m.ProveAll("liquidar_prestacion(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
 		for _, solution := range total {
