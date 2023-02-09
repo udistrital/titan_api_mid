@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -17,7 +18,7 @@ type PreliquidacionHcSController struct {
 	beego.Controller
 }
 
-func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (mensaje string, err error) {
+func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vigencia_original int, semanas_totales int, valorDia float64, anulacion bool) (mensaje string, err error) {
 	var mesIterativo int              //mes para iterar en el ciclo para liquidar todos los meses de una vez
 	var anoIterativo int              //Ano iterativo a la hora de liquidar
 	var predicados []models.Predicado //variable para inyectar reglas
@@ -25,6 +26,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (me
 	var contratoPreliquidacion models.ContratoPreliquidacion
 	var detallePreliquidacion models.DetallePreliquidacion
 	var aux map[string]interface{}
+	var unico bool = true
 	var auxDetalle []models.DetallePreliquidacion
 	var reglasAlivios string
 	var reglasNuevas string //reglas a usar en cada iteracion
@@ -34,6 +36,25 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (me
 
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 	var emergencia int //Varibale para evitar loop infinito
+
+	// Buscar si existen contratos vigentes para el docente
+	query := "Documento:" + contrato.Documento + ",TipoNominaId:410" + ",Activo:true"
+	var contratosDocente []models.Contrato = nil
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+		LimpiezaRespuestaRefactor(aux, &contratosDocente)
+
+		for i := 0; i < len(contratosDocente); i++ {
+			// Si existe algun contrato (que no sea GENERAL) que termine despues de la fecha de inicio del contrato que se va a crear entonces unico es falso
+			if contrato.FechaInicio.Before(contratosDocente[i].FechaFin) && !strings.Contains(contratosDocente[i].NumeroContrato, "GENERAL") &&
+				contratosDocente[i].NumeroContrato != contrato.NumeroContrato {
+				unico = false
+			}
+		}
+		contrato.Unico = unico
+
+	} else {
+		fmt.Println("Error al buscar contratos adicionales para el docente: ", err)
+	}
 
 	if err == nil {
 		reglasAlivios, contratoPreliquidacion, err = CargarDatosRetefuente(int(cedula))
@@ -67,8 +88,13 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (me
 			predicados = append(predicados, models.Predicado{Nombre: "vacaciones(" + fmt.Sprintf("%f", contrato.Vacaciones) + ")."})
 			fmt.Println("El contrato no es completo, requiere de las vacaciones")
 		}
-		predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
-		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+		if anulacion {
+			predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%v", valorDia*float64(semanas_totales)) + "). "})
+			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanas_totales) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+		} else {
+			predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
+			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+		}
 
 		for {
 
@@ -98,11 +124,11 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (me
 					//Contratos de un único mes
 					//Calcular el numero de días
 					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
-					semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
+					// semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
 					if porcentaje != 0 {
 						porcentaje_ibc = porcentaje
 					} else {
-						porcentaje_ibc = semanas / 30
+						porcentaje_ibc = float64(semanasContrato) / 4
 					}
 
 					semanas_liquidadas = semanasContrato
@@ -168,7 +194,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64) (me
 
 				if !general {
 					fmt.Println("Liquidando Contrato General")
-					LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "410")
+					LiquidarContratoGeneral(mesIterativo, anoIterativo, contrato, preliquidacion[0], porcentaje_ibc, "410", vigencia_original, true)
 					if !contrato.Unico {
 						fmt.Println("Realizando Regla de 3 con los conceptos de ibc")
 						ReglaDe3(contrato, mesIterativo, anoIterativo)
@@ -217,7 +243,7 @@ func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
 	var cambioNecesario bool = false
 	fmt.Println("Ingreso a regla de 3")
 	//Obtener los valores del ibc liquidado para saber si es necesario realizar actualizacion
-	query := "Documento:" + contrato.Documento + ",TipoNominaId:410,Vigencia:" + strconv.Itoa(contrato.Vigencia)
+	query := "Documento:" + contrato.Documento + ",TipoNominaId:410,Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
 		if contratosDocente[0].Id != 0 {
@@ -253,10 +279,9 @@ func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
 							} else {
 								fmt.Println("Error al obtener el valor del ibc para el contrato: ", contratosDocente[i].NumeroContrato)
 							}
-							fmt.Println("salarioGeneral: ",salarioGeneral)
-							fmt.Println("ibcGeneral: ",ibcGeneral)
-							fmt.Println("contratosDocente: ",contratosDocente)
-							
+							// fmt.Println("salarioGeneral: ", salarioGeneral)
+							// fmt.Println("ibcGeneral: ", ibcGeneral)
+							// fmt.Println("contratosDocente: ", contratosDocente)
 							if salarioGeneral < ibcGeneral && len(contratosDocente) > 2 {
 								cambioNecesario = true
 								break
@@ -269,12 +294,12 @@ func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
 					fmt.Println("Error al obtener el contrato preliquidación para el contrato: ", contratosDocente[i].NumeroContrato)
 				}
 			}
-	//por defecto que se realice la regla de 3
-cambioNecesario = true
+			//por defecto que se realice la regla de 3
+			cambioNecesario = true
 			//Hacer regla de 3 en caso de que el cambio sea necesario
 			if cambioNecesario {
 				//obtener el contrato general
-				query = "Documento:" + contrato.Documento + ",TipoNominaId:410,NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia)
+				query = "Documento:" + contrato.Documento + ",TipoNominaId:410,NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
 				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &contratoGeneral)
 					if contratoGeneral[0].Id != 0 {

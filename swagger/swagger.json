@@ -483,6 +483,37 @@
                 }
             }
         },
+        "/novedadCPS/reiniciar_contrato": {
+            "post": {
+                "tags": [
+                    "novedadCPS"
+                ],
+                "description": "Maneja la novedad contractual de Reinicio de contrato",
+                "operationId": "NovedadCPSController.Reiniciar Contrato",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Reinicio",
+                        "description": "Reinicio del contrato",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Reinicio"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
+                    },
+                    "400": {
+                        "description": "the request contains incorrect syntax"
+                    }
+                }
+            }
+        },
         "/novedadCPS/suspender_contrato": {
             "post": {
                 "tags": [
@@ -1286,6 +1317,26 @@
                     "format": "int64"
                 },
                 "NominaId": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
+        "models.Reinicio": {
+            "title": "Reinicio",
+            "type": "object",
+            "properties": {
+                "Documento": {
+                    "type": "string"
+                },
+                "FechaReinicio": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "NumeroContrato": {
+                    "type": "string"
+                },
+                "Vigencia": {
                     "type": "integer",
                     "format": "int64"
                 }

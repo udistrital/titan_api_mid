@@ -108,6 +108,15 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadCPSController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadCPSController"],
         beego.ControllerComments{
+            Method: "ReiniciarContrato",
+            Router: "/reiniciar_contrato",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadCPSController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadCPSController"],
+        beego.ControllerComments{
             Method: "SuspenderContrato",
             Router: "/suspender_contrato",
             AllowHTTPMethods: []string{"post"},
@@ -119,6 +128,15 @@ func init() {
         beego.ControllerComments{
             Method: "AgregarNovedad",
             Router: "/agregar_novedad",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadVEController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadVEController"],
+        beego.ControllerComments{
+            Method: "AplicarAnulacion",
+            Router: "/aplicar_anulacion",
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,
