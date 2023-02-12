@@ -483,7 +483,7 @@ func (c *NovedadVEController) AplicarAnulacion() {
 	var anulacion models.Anulacion
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &anulacion); err == nil {
-		mensaje, codigo, contratoReturn, err, _ := Anulacion(anulacion)
+		mensaje, codigo, contratoReturn, err, _, _ := Anulacion(anulacion)
 
 		if err == nil {
 			c.Ctx.Output.SetStatus(201)
@@ -516,6 +516,8 @@ func (c *NovedadVEController) AplicarReduccion() {
 	var fecha_anulacion time.Time
 	var fecha_fin_aux time.Time
 	var err error
+	var comp bool
+
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &reduccion); err == nil {
 		fmt.Println(reduccion)
 
@@ -531,31 +533,36 @@ func (c *NovedadVEController) AplicarReduccion() {
 				anulacion.Desagregado = nil
 			}
 
-			mensaje, codigo, contratoAnulado, err, fechaOriginal := Anulacion(anulacion)
+			mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := Anulacion(anulacion)
+			comp = completo
+			contratoAnulado.FechaFin = fechaOriginal
 			if fechaOriginal.After(fecha_fin_aux) {
 				fecha_fin_aux = fechaOriginal
 			}
 			contratoAnuladoAux = contratoAnulado
-
+			if comp {
+				anularEnGenerales(*contratoAnuladoAux, reduccion.FechaReduccion.AddDate(0, -1, 0), reduccion.Vigencia)
+			}
 			if err != nil {
 				c.Data["message"] = mensaje + ", error en contrato " + anulacion.NumeroContrato + " " + err.Error()
 				c.Abort(codigo)
 			}
 		}
-		if err == nil {
+
+		if err == nil && reduccion.ContratoNuevo != nil {
 			contratoNuevo.DependenciaId = contratoAnuladoAux.DependenciaId
 			contratoNuevo.Documento = reduccion.Documento
 			contratoNuevo.FechaFin = fecha_fin_aux
 			contratoNuevo.FechaInicio = reduccion.FechaReduccion
 			contratoNuevo.NombreCompleto = contratoAnuladoAux.NombreCompleto
-			contratoNuevo.NumeroContrato = reduccion.NumeroContratoReduccion
+			contratoNuevo.NumeroContrato = reduccion.ContratoNuevo.NumeroContratoReduccion
 			contratoNuevo.TipoNominaId = contratoAnuladoAux.TipoNominaId
-			contratoNuevo.ValorContrato = reduccion.ValorContratoReduccion
+			contratoNuevo.ValorContrato = reduccion.ContratoNuevo.ValorContratoReduccion
 			contratoNuevo.Vigencia = reduccion.Vigencia
 			contratoNuevo.PersonaId = contratoAnuladoAux.PersonaId
 			contratoNuevo.Rp = contratoAnuladoAux.Rp
 			contratoNuevo.Cdp = contratoAnuladoAux.Cdp
-			contratoNuevo.Desagregado = reduccion.DesagregadoReduccion
+			contratoNuevo.Desagregado = reduccion.ContratoNuevo.DesagregadoReduccion
 
 			mensaje, codigo, contratoReturn, err := Preliquidacion(contratoNuevo)
 
