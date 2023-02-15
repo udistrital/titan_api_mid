@@ -483,7 +483,7 @@ func (c *NovedadVEController) AplicarAnulacion() {
 	var anulacion models.Anulacion
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &anulacion); err == nil {
-		mensaje, codigo, contratoReturn, err, _, _ := Anulacion(anulacion)
+		mensaje, codigo, contratoReturn, err, _, _ := Anulacion(anulacion, 0)
 
 		if err == nil {
 			c.Ctx.Output.SetStatus(201)
@@ -533,7 +533,7 @@ func (c *NovedadVEController) AplicarReduccion() {
 				anulacion.Desagregado = nil
 			}
 
-			mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := Anulacion(anulacion)
+			mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := Anulacion(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido)
 			comp = completo
 			contratoAnulado.FechaFin = fechaOriginal
 			if fechaOriginal.After(fecha_fin_aux) {
