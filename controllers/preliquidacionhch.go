@@ -253,7 +253,8 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 
 								//Hacer regla de 3 en caso de que el cambio sea necesario
 								fmt.Println("CONTRATOS CAMBIO ", contratosCambio)
-								cambioContrato(cambioNecesario, contrato, mesIterativo, contratosCambio)
+								//modifico para obligar regla de tres por bug encontrado cuando la resolucion (numero_contrato) tiene dos rps diferentes
+								cambioContrato(true, contrato, mesIterativo, contratosCambio)
 							} else {
 								fmt.Println("El docente no tiene contratos registrados")
 								return "El docente no tiene contratos registrados", errors.New("No hay contratos registrados para el docente")
