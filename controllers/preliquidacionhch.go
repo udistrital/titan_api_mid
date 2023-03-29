@@ -44,8 +44,9 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 
 		for i := 0; i < len(contratosDocente); i++ {
 			// Si existe algun contrato (que no sea GENERAL) que termine despues de la fecha de inicio del contrato que se va a crear entonces unico es falso
+			//lo q es unico es el rp no el numero de contrato q es la resolucion
 			if contrato.FechaInicio.Before(contratosDocente[i].FechaFin) && !strings.Contains(contratosDocente[i].NumeroContrato, "GENERAL") &&
-				contratosDocente[i].NumeroContrato != contrato.NumeroContrato {
+				contratosDocente[i].Rp != contrato.Rp {
 				unico = false
 			}
 		}
@@ -198,7 +199,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 						//var ibcGeneral float64
 						//var salarioGeneral float64
 						var contratosCambio []int
-						//var cambioNecesario bool = true
+						var cambioNecesario bool = true
 
 						//Obtener los valores del ibc liquidado para saber si es necesario realizar actualizacion
 						query := "Documento:" + contrato.Documento + ",TipoNominaId:409,Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
@@ -254,7 +255,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 								//Hacer regla de 3 en caso de que el cambio sea necesario
 								fmt.Println("CONTRATOS CAMBIO ", contratosCambio)
 								//modifico para obligar regla de tres por bug encontrado cuando la resolucion (numero_contrato) tiene dos rps diferentes
-								cambioContrato(true, contrato, mesIterativo, contratosCambio)
+								cambioContrato(cambioNecesario, contrato, mesIterativo, contratosCambio)
 							} else {
 								fmt.Println("El docente no tiene contratos registrados")
 								return "El docente no tiene contratos registrados", errors.New("No hay contratos registrados para el docente")
