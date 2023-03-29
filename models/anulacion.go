@@ -7,4 +7,5 @@ type Anulacion struct {
 	Vigencia       int
 	Documento      string
 	FechaAnulacion time.Time
+	Rp             int
 }
