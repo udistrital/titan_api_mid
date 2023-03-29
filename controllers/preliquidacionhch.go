@@ -198,7 +198,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 						//var ibcGeneral float64
 						//var salarioGeneral float64
 						var contratosCambio []int
-						var cambioNecesario bool = true
+						//var cambioNecesario bool = true
 
 						//Obtener los valores del ibc liquidado para saber si es necesario realizar actualizacion
 						query := "Documento:" + contrato.Documento + ",TipoNominaId:409,Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
