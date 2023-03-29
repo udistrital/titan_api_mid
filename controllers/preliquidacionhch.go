@@ -45,7 +45,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 		for i := 0; i < len(contratosDocente); i++ {
 			// Si existe algun contrato (que no sea GENERAL) que termine despues de la fecha de inicio del contrato que se va a crear entonces unico es falso
 			//lo q es unico es el rp no el numero de contrato q es la resolucion
-			if contrato.FechaInicio.Before(contratosDocente[i].FechaFin) && !strings.Contains(contratosDocente[i].Rp, "GENERAL") &&
+			if contrato.FechaInicio.Before(contratosDocente[i].FechaFin) && !strings.Contains(contratosDocente[i].NumeroContrato, "GENERAL") &&
 				contratosDocente[i].Rp != contrato.Rp {
 				unico = false
 			}
