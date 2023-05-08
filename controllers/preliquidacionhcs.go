@@ -38,7 +38,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 	var emergencia int //Varibale para evitar loop infinito
 
 	// Buscar si existen contratos vigentes para el docente
-	query := "Documento:" + contrato.Documento + ",TipoNominaId:410" + ",Activo:true"
+	query := "Documento:" + contrato.Documento + ",TipoNominaId:410,Activo:true"
 	var contratosDocente []models.Contrato = nil
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
@@ -95,6 +95,9 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 			predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 		}
+
+		// predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
+		// predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 
 		for {
 
@@ -177,15 +180,13 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 				}
 
 				reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
-
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
-
 				if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general {
 					reglasNuevas = reglasNuevas + "mesFinal(1)."
-					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion, true)
+					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato, detallePreliquidacion, true)
 				} else {
 					reglasNuevas = reglasNuevas + "mesFinal(0)."
-					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion, false)
+					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato, detallePreliquidacion, false)
 				}
 
 				for j := 0; j < len(auxDetalle); j++ {
