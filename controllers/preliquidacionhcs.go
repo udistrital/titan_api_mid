@@ -280,9 +280,9 @@ func ReglaDe3(contrato models.Contrato, mesIterativo int, anoIterativo int) {
 							} else {
 								fmt.Println("Error al obtener el valor del ibc para el contrato: ", contratosDocente[i].NumeroContrato)
 							}
-							fmt.Println("salarioGeneral: ", salarioGeneral)
-							fmt.Println("ibcGeneral: ", ibcGeneral)
-							fmt.Println("contratosDocente: ", contratosDocente)
+							// fmt.Println("salarioGeneral: ", salarioGeneral)
+							// fmt.Println("ibcGeneral: ", ibcGeneral)
+							// fmt.Println("contratosDocente: ", contratosDocente)
 							if salarioGeneral < ibcGeneral && len(contratosDocente) > 2 {
 								cambioNecesario = true
 								break

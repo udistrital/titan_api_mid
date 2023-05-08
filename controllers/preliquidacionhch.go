@@ -44,8 +44,9 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 
 		for i := 0; i < len(contratosDocente); i++ {
 			// Si existe algun contrato (que no sea GENERAL) que termine despues de la fecha de inicio del contrato que se va a crear entonces unico es falso
+			//lo q es unico es el rp no el numero de contrato q es la resolucion
 			if contrato.FechaInicio.Before(contratosDocente[i].FechaFin) && !strings.Contains(contratosDocente[i].NumeroContrato, "GENERAL") &&
-				contratosDocente[i].NumeroContrato != contrato.NumeroContrato {
+				contratosDocente[i].Rp != contrato.Rp {
 				unico = false
 			}
 		}
@@ -105,11 +106,10 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 				if contrato.FechaInicio.Month() == contrato.FechaFin.Month() && contrato.FechaInicio.Year() == contrato.FechaFin.Year() {
 					//Calcular el numero de días
 					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
-					semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
 					if porcentaje != 0 {
 						porcentaje_ibc = porcentaje
 					} else {
-						porcentaje_ibc = semanas / 30
+						porcentaje_ibc = float64(semanasContrato) / 4
 					}
 					semanas_liquidadas = semanasContrato
 				} else if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
@@ -141,7 +141,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 					var aux map[string]interface{}
 					var semanas []models.DetallePreliquidacion
 					var mes = int(contrato.FechaInicio.Month())
-					var ano = contrato.FechaFin.Year()
+					var ano = contrato.FechaInicio.Year()
 					semanas_liquidadas = 0
 					for {
 						if mes == int(contrato.FechaFin.Month()) && ano == contrato.FechaFin.Year() {
@@ -149,7 +149,6 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 						}
 						query := "ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(ano) + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mes) + ",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato.NumeroContrato + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",ContratoPreliquidacionId.ContratoId.DependenciaId:" + strconv.Itoa(contrato.DependenciaId) + ",ContratoPreliquidacionId.ContratoId.Documento:" + contrato.Documento + ",ContratoPreliquidacionId.ContratoId.Rp:" + strconv.Itoa(contrato.Rp)
 						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-							fmt.Println()
 							LimpiezaRespuestaRefactor(aux, &semanas)
 							for i := 0; i < len(semanas); i++ {
 								if semanas[i].ConceptoNominaId.Id == 87 {
@@ -255,6 +254,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 
 								//Hacer regla de 3 en caso de que el cambio sea necesario
 								fmt.Println("CONTRATOS CAMBIO ", contratosCambio)
+								//modifico para obligar regla de tres por bug encontrado cuando la resolucion (numero_contrato) tiene dos rps diferentes
 								cambioContrato(cambioNecesario, contrato, mesIterativo, contratosCambio)
 							} else {
 								fmt.Println("El docente no tiene contratos registrados")

@@ -98,7 +98,7 @@ func (c *NovedadVEController) VerificarDescuentos() {
 						}
 
 						//Verificar que las cuotas no se pasen del tiempo restante del contrato
-						if contrato[0].FechaFin.Year() == novedad.FechaInicio.Year() {
+						/*if contrato[0].FechaFin.Year() == novedad.FechaInicio.Year() {
 							if int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1 < novedad.Cuotas {
 								fmt.Println("Las cuotas superan los meses", int(contrato[0].FechaFin.Month()), int(fecha_actual.Month()), int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1, novedad.Cuotas, 1)
 								res.Mensaje = "Las cuotas superan los meses"
@@ -112,7 +112,7 @@ func (c *NovedadVEController) VerificarDescuentos() {
 								res.Estado = CUOTAS_SUPERADAS
 								c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "successful", "Data": res}
 							}
-						}
+						}*/
 
 						if res.Estado != 1 {
 							mesIterativo = int(novedad.FechaInicio.Month())

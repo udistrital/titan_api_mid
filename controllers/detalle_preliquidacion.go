@@ -242,40 +242,43 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, ids_detalles [
 		fmt.Println("Mes: ", mesIterativo)
 		fmt.Println("Ano: ", anoIterativo)
 		fmt.Println("Cuotas: ", auxCuotas)
+		contratoPreliquidacion = nil
 		var query = "ContratoId.Id:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo)
 		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
 			LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
 			//Obtener el valor de los honorarios para ese mes
-			query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:" + strconv.Itoa(idHonorarios)
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
-				LimpiezaRespuestaRefactor(aux, &honorarios)
-				detalleNuevo.Id = 0
-				detalleNuevo.TipoPreliquidacionId = 397
-				detalleNuevo.Activo = true
-				detalleNuevo.EstadoDisponibilidadId = 426
-				detalleNuevo.ConceptoNominaId = novedad.ConceptoNominaId
-				detalleNuevo.DiasEspecificos = honorarios[0].DiasEspecificos
-				detalleNuevo.DiasLiquidados = honorarios[0].DiasLiquidados
-				detalleNuevo.ContratoPreliquidacionId = &contratoPreliquidacion[0]
+			if contratoPreliquidacion[0].Id != 0 {
+				query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:" + strconv.Itoa(idHonorarios)
+				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					LimpiezaRespuestaRefactor(aux, &honorarios)
+					detalleNuevo.Id = 0
+					detalleNuevo.TipoPreliquidacionId = 397
+					detalleNuevo.Activo = true
+					detalleNuevo.EstadoDisponibilidadId = 426
+					detalleNuevo.ConceptoNominaId = novedad.ConceptoNominaId
+					detalleNuevo.DiasEspecificos = honorarios[0].DiasEspecificos
+					detalleNuevo.DiasLiquidados = honorarios[0].DiasLiquidados
+					detalleNuevo.ContratoPreliquidacionId = &contratoPreliquidacion[0]
 
-				//Dependiendo de si es fijo o porcentual calcula el valor de la novedad
-				if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 {
-					detalleNuevo.ValorCalculado = novedad.Valor
-				} else if novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
-					detalleNuevo.ValorCalculado = math.Round((honorarios[0].ValorCalculado * (novedad.Valor / 100)))
-				}
+					//Dependiendo de si es fijo o porcentual calcula el valor de la novedad
+					if novedad.ConceptoNominaId.TipoConceptoNominaId == 419 {
+						detalleNuevo.ValorCalculado = novedad.Valor
+					} else if novedad.ConceptoNominaId.TipoConceptoNominaId == 420 {
+						detalleNuevo.ValorCalculado = math.Round((honorarios[0].ValorCalculado * (novedad.Valor / 100)))
+					}
 
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/", "POST", &detalleNuevo, detalleNuevo); err == nil {
-					fmt.Println("Concepto Añadido")
-					ids_detalles = append(ids_detalles, detalleNuevo)
+					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/", "POST", &detalleNuevo, detalleNuevo); err == nil {
+						fmt.Println("Concepto Añadido")
+						ids_detalles = append(ids_detalles, detalleNuevo)
+					} else {
+						fmt.Println("Error al agregar concepto", err)
+						return "Error al agregar concepto", ids_detalles, err
+					}
 				} else {
-					fmt.Println("Error al agregar concepto", err)
-					return "Error al agregar concepto", ids_detalles, err
+					fmt.Println("Error al obtener el valor de los honorarios ", err)
+					return "Error al obtener el valor de los honorarios ", ids_detalles, err
 				}
-			} else {
-				fmt.Println("Error al obtener el valor de los honorarios ", err)
-				return "Error al obtener el valor de los honorarios ", ids_detalles, err
 			}
 		} else {
 			fmt.Println("Error al intentar obtener el id del contrato_preliquidación ", err)
