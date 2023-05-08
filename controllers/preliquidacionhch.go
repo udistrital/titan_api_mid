@@ -37,7 +37,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 	var emergencia int //Varibale para evitar loop infinito
 
 	// Buscar si existen contratos vigentes para el docente
-	query := "Documento:" + contrato.Documento + ",TipoNominaId:409" + ",Activo:true"
+	query := "Documento:" + contrato.Documento + ",TipoNominaId:409,Activo:true"
 	var contratosDocente []models.Contrato = nil
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
@@ -305,6 +305,7 @@ func cambioContrato(cambioNecesario bool, contrato models.Contrato, mesIterativo
 	if cambioNecesario {
 		fmt.Println("CAMBIO NECESARIO REGLA DE 3")
 		query := "Documento:" + contrato.Documento + ",TipoNominaId:409,NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
+		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=" + query)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 			contratoGeneral = nil
 			LimpiezaRespuestaRefactor(aux, &contratoGeneral)
