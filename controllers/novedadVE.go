@@ -562,6 +562,7 @@ func (c *NovedadVEController) AplicarReduccion() {
 			contratoNuevo.PersonaId = contratoAnuladoAux.PersonaId
 			contratoNuevo.Rp = contratoAnuladoAux.Rp
 			contratoNuevo.Cdp = contratoAnuladoAux.Cdp
+			contratoNuevo.Activo = true
 			contratoNuevo.Desagregado = reduccion.ContratoNuevo.DesagregadoReduccion
 
 			mensaje, codigo, contratoReturn, err := Preliquidacion(contratoNuevo)
