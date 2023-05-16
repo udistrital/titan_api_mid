@@ -66,7 +66,12 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 		anoIterativo = contrato.Vigencia
 
 		//Obtener las semanas del contrato
-		semanasContrato := int(calcularSemanasContratoDVE(contrato.FechaInicio, contrato.FechaFin))
+		var semanasContrato int
+		if contrato.NumeroSemanas == 0 {
+			semanasContrato = int(calcularSemanasContratoDVE(contrato.FechaInicio, contrato.FechaFin))
+		} else {
+			semanasContrato = contrato.NumeroSemanas
+		}
 		fmt.Println("SemanasContrato: ", semanasContrato)
 
 		//Por si es general o unico
