@@ -737,7 +737,11 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64) (mensaje strin
 				if mismoMes {
 					valorNuevo = 0
 				}
-				valorDia = (valorContrato - valorNuevo) / float64(semanasTotales)
+				if valorContrato == 0 {
+					valorDia = (contratoAux.ValorContrato - valorNuevo) / float64(semanasTotales)
+				} else {
+					valorDia = (valorContrato - valorNuevo) / float64(semanasTotales)
+				}
 				// Actualiza los datos del contrato: Fecha fin y valor
 				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contratoAux); err == nil {
 					if anulacion.FechaAnulacion.Day() != 30 {
