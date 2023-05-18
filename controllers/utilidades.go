@@ -570,9 +570,11 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64) (mensaje strin
 	var sumaContratosTemp float64
 	var anulacion_completa bool
 	var valorNuevo float64
-
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+anulacion.NumeroContrato+",Vigencia:"+strconv.Itoa(anulacion.Vigencia)+",Documento:"+anulacion.Documento+",Activo:true", &aux); err == nil {
+	fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=NumeroContrato:" + anulacion.NumeroContrato + ",Vigencia:" + strconv.Itoa(anulacion.Vigencia) + ",Documento:" + anulacion.Documento + ",Activo:true")
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=Rp:"+anulacion.NumeroContrato+",Vigencia:"+strconv.Itoa(anulacion.Vigencia)+",Documento:"+anulacion.Documento+",Activo:true", &aux); err == nil {
+		fmt.Println("ENTRa ", aux)
 		LimpiezaRespuestaRefactor(aux, &contrato)
+		fmt.Println("SALE ", contrato)
 		if contrato[0].Id != 0 {
 
 			//Ordenar los contratos para tomar el más reciente
@@ -738,10 +740,21 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64) (mensaje strin
 					valorNuevo = 0
 				}
 				if valorContrato == 0 {
+					fmt.Println("ENTRA 1")
+					fmt.Println(contratoAux.ValorContrato)
+					fmt.Println(valorNuevo)
+					fmt.Println(semanasTotales)
+					fmt.Println("ENTRA 1")
+
 					valorDia = (contratoAux.ValorContrato - valorNuevo) / float64(semanasTotales)
 				} else {
+					fmt.Println("ENTRA 2")
+					fmt.Println(valorContrato)
+					fmt.Println(valorNuevo)
+					fmt.Println(semanasTotales)
 					valorDia = (valorContrato - valorNuevo) / float64(semanasTotales)
 				}
+				fmt.Println("VALOR DIA ", valorDia)
 				// Actualiza los datos del contrato: Fecha fin y valor
 				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contratoAux); err == nil {
 					if anulacion.FechaAnulacion.Day() != 30 {
@@ -777,7 +790,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64) (mensaje strin
 				return mensaje, codigo, nil, err, fechaOriginal, anulacion_completa
 			}
 		} else {
-			fmt.Println("Error al obtener el contrato: ", err)
+			fmt.Println("Error al obtener el contrato porque no tiene id: ", err)
 			mensaje = "Error al obtener el contrato"
 			codigo = "400"
 			return mensaje, codigo, nil, err, fechaOriginal, anulacion_completa
