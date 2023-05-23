@@ -475,15 +475,26 @@ func (c *NovedadVEController) GenerarAdicion() {
 // Post ...
 // @Title Aplicar anulación
 // @Description Maneja la novedad contractual de anulación de contratos de docentes de VE
-// @Param	Adición	 body  models.Anulacion	true	"Datos de la anulacion"
+// @Param	Adición	 body  models.AnulacionRp	true	"Datos de la anulacion"
 // @Success 201 {object} models.Contrato
 // @Failure 400 the request contains incorrect syntax
 // @router /aplicar_anulacion [post]
 func (c *NovedadVEController) AplicarAnulacion() {
+	var anulacionRp models.AnulacionRp
 	var anulacion models.Anulacion
+	var mensaje string
+	var codigo string
+	var contratoReturn *models.Contrato
 
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &anulacion); err == nil {
-		mensaje, codigo, contratoReturn, err, _, _ := Anulacion(anulacion, 0)
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &anulacionRp); err == nil {
+		for i := 0; i < len(anulacionRp.ContratosAnulados); i++ {
+			anulacion.NumeroContrato = anulacionRp.ContratosAnulados[i].NumeroContrato
+			anulacion.Vigencia = anulacionRp.Vigencia
+			anulacion.Documento = anulacionRp.Documento
+			anulacion.FechaAnulacion = anulacionRp.FechaAnulacion
+			anulacion.Desagregado = anulacionRp.ContratosAnulados[i].Desagregado
+			mensaje, codigo, contratoReturn, err, _, _ = Anulacion(anulacion, 0)
+		}
 
 		if err == nil {
 			c.Ctx.Output.SetStatus(201)
