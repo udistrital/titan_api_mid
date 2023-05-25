@@ -1,81 +1,162 @@
-"evaluar_uvt(VU,U,R):- (U @> 95, U@=<150 -> A is U - 95, B is A*0.19, C is B * VU, R is (C rnd 0))."
-"evaluar_uvt(VU,U,R):- (U @> 360 -> A is U - 360, B is A*0.33, C is B * VU, D is (69 * VU), F is C + D, R is (F rnd 0)). "
-"evaluar_uvt(VU,U,R):- (U @> 150, U @=<360 -> A is U - 150, B is A*0.28, C is B * VU, D is 10 * VU, F is C + D, R is (F rnd 0))."
-"aplica_ingreso_retencion(11)."
-"aplica_ingreso_retencion(1174)."
-"aplica_ingreso_retencion(111)."
-"aplica_ingreso_retencion(129)."
-"aplica_ingreso_retencion(1175)."
-"aplica_deduccion_retencion(239)."
-"aplica_deduccion_retencion(290)."
-"aplica_deduccion_retencion(291)."
-"ajustar_deducciones(AD):- ingreso_retencion(IR),deduccion_salud(DS), deduccion_pen_vol(DPV), valor_uvt(2017, VU), Y is ((IR * 0.30) rnd 0), X is DS + DPV, Z is X / VU, (X@>=Y -> (Z@>=316.66 -> AD is ((VU * 316.66 )rnd 0);AD is X); AD is DPV)."
-"calcular_alivio_beneficiario(CAB):-beneficiario(si), ingreso_retencion(IR), valor_uvt(2017, VU), X is (IR * 0.10 rnd 0), Y is X / VU, (Y@>=32 -> CAB is VU * 32;CAB is X)."
-"aplica_deduccion_penvol_retencion(2173)."
-"calcular_alivio_vivienda(CAV):- intereses_vivienda(IV), valor_uvt(2017, VU), Y is IV / VU, (Y@>=100 -> CAV is VU * 100; CAV is IV)."
-"calcular_alivio_salud_prepagada(CSP):- salud_prepagada(SP), valor_uvt(2017, VU), Y is SP / VU, (Y@>=16 -> CSP is VU * 16; CSP is SP)."
-"calcular_alivios(B,V,SP,D):- calcular_alivio_beneficiario(CAB), B is CAB, calcular_alivio_vivienda(CIV), V is CIV, calcular_alivio_salud_prepagada(CSP), SP is CSP."
-"tope_deduccion(TD):- ingreso_retencion(IR), TD is IR * 0.40."
-"aplica_gastos_rep(12)."
-"definitivo_deduccion(DD):- tope_deduccion(TD), DD is TD."
-"valor_uvt(2017,31859)."
-"evaluar_uvt(VU,U,R):- (U @=< 95 -> R is 0)."
-"valor_retencion(VR):- ingresos(B), periodo(P), base_retencion(B,R), valor_uvt(P, VU), X is (R / VU),  evaluar_uvt(VU, X, E), H is ((E + 50) / 1000 rnd 0), VR is (H * 1000)."
-"dias_liquidados(prueba,30)."
-"info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z))."
-"info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentual)->(valor_pago(X,P,V),R is V * (Z/100)))."
-"concepto(prueb, devengo, fijo, s, 1000000, 2017)."
-"valor_pago(X,V,P):-valor_contrato(X,Y), duracion_contrato(X,D,V), R is Y / D, dias_liquidados(X,DL),P is ((DL * R) rnd 0)."
-"reteica(2016, 9.66)."
-"estampilla(2016, 0.01). "
-"procultura(2016,0.005)."
-"adulto_mayor(2016, 0.02)."
-"salud(2016,12.5)."
-"pension(2016,16)."
-"salario_minimo(2016, 689454)."
-"arl(2016,1,0.522)."
-"reteica(2017,9.66)."
-"salario_minimo(2017,737717)."
-"salud(2017,12.5)."
-"pension(2017,16)."
-"estampilla(2017,0.01)."
-"procultura(2017,0.005)."
-"arl(2017,1,0.522)."
-"adulto_mayor(2017,0.02)."
-"base_retencion(B, R) :- X is (B * 0.25 rnd 0),R is B-X."
-"calcular_reteica(B,V,R):- valor_pago(A,V,T),base_retencion(T,X), reteica(V,RI), R is ((RI * X) / 1000 rnd 0). "
-"calcular_estampilla(B,V,R) :- valor_pago(A,V,T),base_retencion(T,X) , estampilla(V, RE) , R is ((RE * X) rnd 0)."
-"calcular_procultura(B,V,R) :- valor_pago(A,V,T),base_retencion(T,X) , procultura(V, RP) , R is ((RP * X) rnd 0)."
-"calcular_adulto_mayor(B,V,R) :- valor_pago(A,V,T),base_retencion(T,X) , adulto_mayor(V, RA) , R is ((RA * X) rnd 0)."
-"calcular_salud(si,B,V,VS) :- salud(V,PS), salario_minimo(V,SM), BA is (B * 0.40 rnd 0), (BA @>= SM -> VS is (BA * (PS/100)) approach 100;  VS is (SM * (PS/100)) approach 100)."
-"calcular_pension(si,B,V,VS) :- pensionado(no), pension(V,PS), salario_minimo(V,SM), BA is (B * 0.40 rnd 0), (BA @>= SM -> VS is (BA * (PS/100)) approach 100;  VS is (SM * (PS/100)) approach 100)."
-"valor_uvt(2018,33156)."
-"concepto(prueb, devengo, fijo, s, 1000000, 2018)."
-"reteica(2018,9.66)."
-"salario_minimo(2018,781242)."
-"salud(2018,12.5)."
-"pension(2018,16)."
-"estampilla(2018,0.011)."
-"procultura(2018,0.005)."
-"arl(2018,1,0.522)."
-"adulto_mayor(2018,0.02)."
-"calcular_ibc(X,V):- concepto_ibc(X,activo), sumar_ibc(X,Y), V is Y."
-"seg_social(prueba,1,1,1,1,1,1)."
-"afectacion_seguridad(comision_norem)."
-"afectacion_seguridad(licencia_norem)."
-"afectacion_seguridad(incapacidad_laboral)."
-"afectacion_seguridad(incapacidad_general)."
-"afectacion_seguridad(prorroga_incapacidad)."
-"afectacion_seguridad(exterior_sin_familia)."
-"afectacion_seguridad(exterior_familia)."
-"afectacion_seguridad(licencia_remunerada)."
-"calcular_fondo_sol(X,T,P,V) :- porcentaje_fondoSol(P, C),  salario_minimo(P,VSM), O is VSM * 4, (T@>=O -> V is (C * T approach 100); V is 0)."
-"porcentaje_fondoSol(2018,0.01)."
-"info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==seguridad_social)->(R is 0))."
-"liquidar_ct(X,P,adultoMayor,T):- calcular_adulto_mayor(X,P,T)."
-"liquidar_ct(X,P,estampillaUD,T):- calcular_estampilla(X,P,T)."
-"liquidar_ct(X,P,honorarios,T):- valor_pago(X,P,T)."
-"liquidar_ct(X,P,pension,T):- calcular_pension(si,X,P,T)."
-"liquidar_ct(X,P,proCultura,T):- calcular_procultura(X,P,T)."
-"liquidar_ct(X,P,reteIca,T):- calcular_reteica(X,P,T)."
-"liquidar_ct(X,P,salud,T):- calcular_salud(si,X,P,T)."
+
+evaluar_uvt(VU,U,R):- (U @> 95, U@=<150 -> A is U - 95, B is A*0.19, C is B * VU, R is (C rnd 0)).
+evaluar_uvt(VU,U,R):- (U @> 360 -> A is U - 360, B is A*0.33, C is B * VU, D is (69 * VU), F is C + D, R is (F rnd 0)).
+evaluar_uvt(VU,U,R):- (U @> 150, U @=<360 -> A is U - 150, B is A*0.28, C is B * VU, D is 10 * VU, F is C + D, R is (F rnd 0)).
+aplica_ingreso_retencion(11).
+aplica_ingreso_retencion(1174).
+aplica_ingreso_retencion(111).
+aplica_ingreso_retencion(129).
+aplica_ingreso_retencion(1175).
+aplica_deduccion_retencion(239).
+aplica_deduccion_retencion(290).
+aplica_deduccion_retencion(291).
+ajustar_deducciones(AD):- ingreso_retencion(IR),deduccion_salud(DS), deduccion_pen_vol(DPV), valor_uvt(2017, VU), Y is ((IR * 0.30) rnd 0), X is DS + DPV, Z is X / 
+VU, (X@>=Y -> (Z@>=316.66 -> AD is ((VU * 316.66 )rnd 0);AD is X); AD is DPV).
+calcular_alivio_beneficiario(CAB):-beneficiario(si), ingreso_retencion(IR), valor_uvt(2017, VU), X is (IR * 0.10 rnd 0), Y is X / VU, (Y@>=32 -> CAB is VU * 32;CAB 
+is X).
+aplica_deduccion_penvol_retencion(2173).
+calcular_alivio_vivienda(CAV):- intereses_vivienda(IV), valor_uvt(2017, VU), Y is IV / VU, (Y@>=100 -> CAV is VU * 100; CAV is IV).
+calcular_alivio_salud_prepagada(CSP):- salud_prepagada(SP), valor_uvt(2017, VU), Y is SP / VU, (Y@>=16 -> CSP is VU * 16; CSP is SP).
+calcular_alivios(B,V,SP,D):- calcular_alivio_beneficiario(CAB), B is CAB, calcular_alivio_vivienda(CIV), V is CIV, calcular_alivio_salud_prepagada(CSP), SP is CSP. 
+tope_deduccion(TD):- ingreso_retencion(IR), TD is IR * 0.40.
+aplica_gastos_rep(12).
+definitivo_deduccion(DD):- tope_deduccion(TD), DD is TD.
+valor_uvt(2017,31859).
+evaluar_uvt(VU,U,R):- (U @=< 95 -> R is 0).
+info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z)).
+concepto(prueb, devengo, fijo, s, 1000000, 2017).
+reteica(2016, 9.66).
+estampilla(2016, 0.01).
+procultura(2016,0.005).
+adulto_mayor(2016, 0.02).
+salud(2016,12.5).
+pension(2016,16).
+salario_minimo(2016, 689454).
+arl(2016,1,0.522).
+reteica(2017,9.66).
+salario_minimo(2017,737717).
+salud(2017,12.5).
+pension(2017,16).
+estampilla(2017,0.01).
+procultura(2017,0.005).
+arl(2017,1,0.522).
+adulto_mayor(2017,0.02).
+info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentual)->(valor_pago(X,P,V),R is V * (Z/100))).
+base_retencion(B, R) :- X is (B * 0.25 rnd 0),R is B.
+aadias_liquidados(prueba,30).
+afectacion_seguridad(prorroga_incapacidad).
+afectacion_seguridad(exterior_sin_familia).
+afectacion_seguridad(exterior_familia).
+afectacion_seguridad(licencia_remunerada).
+porcentaje_fondoSol(2018,0.01).
+valor_uvt(2018,33156).
+concepto(prueb, devengo, fijo, s, 1000000, 2018).
+reteica(2018,9.66).
+salario_minimo(2018,781242).
+salud(2018,12.5).
+pension(2018,16).
+procultura(2018,0.005).
+arl(2018,1,0.522).
+adulto_mayor(2018,0.02).
+estampilla(2018,0.011).
+info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==seguridad_social)->(R is 0)).
+afectacion_seguridad(licencia_norem).
+afectacion_seguridad(incapacidad_laboral).
+afectacion_seguridad(incapacidad_general).
+seg_social(prueba,1,1,1,1,1,1).
+afectacion_seguridad(comision_norem).
+valor_uvt(2019,34270).
+concepto(prueb, devengo, fijo, s, 1000000, 2019).
+reteica(2019,9.66).
+salario_minimo(2019,828116).
+salud(2019,12.5).
+pension(2019,16).
+arl(2019,1,0.522).
+adulto_mayor(2019,0.02).
+porcentaje_fondoSol(2019,0.005).
+estampilla(2019,0.011).
+procultura(2019,0.005).
+calcular_fondo_sub(C,P,V) :- calcular_ibc(C,P,IBC), salario_minimo(P,SM), E is IBC/SM,evaluar_fondo_sub(E,PF), V is IBC*PF approach 100.
+porcentaje_fondoSub(2019,0.005).
+liquidar_hch(X,P,honorarios,T):-valor_pago(X,P,T).
+adulto_mayor(2021,0.02).
+valor_pago(X,V,P):-valor_contrato(X,Y),  duracion_contrato(X,D,V), R is Y / D, semanas_liquidadas(X,SL), P is ((SL * R) rnd 0).
+liquidar_hch(X,P,ibc_liquidado,T):- calcular_ibc(X, P, T).
+liquidar_hch(X,P,arl,T):- calcular_arl(X, P, T).
+liquidar_hch(X,P,pension,T):-calcular_pension(X,P,T).
+estampilla(2021,0.011).
+reteica(2021,9.66).
+calcular_arl(I,P,T) :- calcular_ibc(I,P,IBC), arl(P,PARL), T is IBC*(PARL/100) approach 100.
+calcular_ibc(C,P,V):- general(G), salario_minimo(P,SM),porcentaje(Y),valor_pago(C,P,SB), A is ((SB*0.4) rnd 0),TI is ((SM*Y) rnd 0), TS is (SM*25),(A @=< TI -> (G @>= 1 -> V is TI; V is A); (A @>= TS -> V is TS; V is A)).
+liquidar_hch(X,P,adultoMayor,T):-calcular_adulto_mayor(X,P,T).
+liquidar_hch(X,P,estampillaUD,T):-calcular_estampilla(X,P,T).
+calcular_estampilla(I,P,T) :- activo(estampilla,si), valor_pago(I,P,SB), iva(P,PI), calcular_iva(SB,PI,BI), estampilla(P, RE), T is ((RE * BI) rnd 0).
+liquidar_hch(X,P,reteIca,T):-calcular_reteica(X,P,T).
+calcular_reteica(I,P,T):- activo(reteica,si), valor_pago(I,P,SB), iva(P,PI), calcular_iva(SB,PI,BI), base_reteica(C,P,BI,X), reteica(P,RI), T is ((RI * X) / 1000 rnd 0).
+base_reteica(C,P,BI,R) :- calcular_salud(C,P,VS), calcular_pension(C,P,VP), calcular_arl(C,P,VA), M is (VS+VP+VA), T is BI-M, (T@=<0 -> R is 0; R is T).
+liquidar_hch(X,P,salud,T):-calcular_salud(X,P,T).
+liquidar_hch(X,P,proCultura,T):-calcular_procultura(X,P,T).
+procultura(2021,0.005).
+liquidar_hch(X,P,reteFuente,T):- valor_retencion(X,P,T).
+calcular_fondo(C,P,T):- salario_minimo(P,SM), valor_pago(C,P,VP), iva(P,PI), calcular_iva(VP,PI,BI), X is (BI*0.40/SM), evaluar_fondo(X, PF), T is (BI * PF).       
+activo(adulto,si).
+activo(estampilla,no).
+activo(reteica,si).
+activo(procultura,si).
+calcular_pension(I,P,T):- pensionado(Z), (Z@>=1 -> T is 0; calcular_ibc(I,P,IBC), pension(P,PP), T is ((IBC*(PP/100)) approach 100)).
+calcular_salud(I,P,T) :- calcular_ibc(I,P,IBC), salud(P,PS), T is IBC*(PS/100) approach 100.
+valor_retencion(X,P,VR):- valor_uvt(P,VU), calculo_NC(X,P,NC), valor_pago(I,P,SB), iva(P,PI), calcular_iva(SB,PI,BI), calculo_dependientes(BI,NC,VU,CP), calculo_deducciones(X,P,CP,DS), calculo_rentasE(BI,RE), calcular_renta_exenta(BI,NC,DS,RE,RC),calcular_renta_maxima(BI,NC,RM), base_retefuente(BI,NC,RC,RM,BR), U is (BR / VU), evaluar_uvt(VU,U,E), VR is E.
+calcular_adulto_mayor(I,P,R) :- activo(adulto,si), valor_pago(I,P,SB),adulto_mayor(P,RA), R is ((RA * SB) rnd 0).
+calcular_procultura(I,P,R) :- activo(procultura,si),valor_pago(I,P,SB), procultura(P,RP), R is ((RP*SB) rnd 0).
+liquidar_hch(X,P,fondoSolidaridad,T):- calcular_fondo_sol(C,P,T).
+evaluar_fondo_sub(X,R):- (X @> 20 -> R is 0.015).
+evaluar_fondo_sub(X,R):- (X @> 19, X @=<20 -> R is 0.013).
+evaluar_fondo_sub(X,R):- (X @> 18, X @=<19 -> R is 0.011).
+evaluar_fondo_sub(X,R):- (X @> 17, X @=<18 -> R is 0.009).
+evaluar_fondo_sub(X,R):- (X @> 16, X @=<17 -> R is 0.007).
+evaluar_fondo_sub(X,R):- (X @> 4, X @=<16 -> R is 0.005).
+evaluar_fondo_sub(X,R):- (X @=< 4 -> R is 0).
+salud(2021,12.5).
+salario_minimo(2021,908526).
+calculo_deducciones(X,P,CP,R):- calcular_arl(X,P,VA), medicina_prepagada(MP), R is (VA+MP+CP).
+calculo_rentasE(H,R):- pension_voluntaria(VP), afc(AFC), X is (VP+AFC), (X@>= (H*0.3) -> R is (H*0.3); R is X).
+calcular_renta_exenta(H, NC, DS, RE, R):- R is (((H-NC-DS-RE)*0.25)+DS+RE).
+calcular_renta_maxima(BI, NC, R):- R is ((BI-NC)*0.4).
+calcular_reteiva(C,P,BR):- valor_pago(C,P,VP),iva(P,PI), reteiva(P,PR), reteiva(A), (A@>=1 -> BR is ((PR/100) * (VP - (VP/(1+(PI/100))))) rnd 0; BR is 0).
+reteiva(2021,15).
+base_retefuente(BI,NC,RC,RM,R):-Y is BI-NC, (Y @=< 0 -> R is 0; (RC @>= RM -> R is (BI-RM-NC); R is (BI-RC-NC))).
+liquidar_hch(X,P,fondoSubsistencia,T):- calcular_fondo_sub(X,P,T).
+arl(2022,0.522).
+pension(2022,16).
+estampilla(2022,0.011).
+reteica(2022,9.66).
+salud(2022,12.5).
+salario_minimo(2022,1000000).
+procultura(2022,0.005).
+iva(2021,19).
+iva(2022,19).
+adulto_mayor(2022,0.02).
+reteiva(2022,15).
+valor_uvt(2021,36308).
+valor_uvt(2022,38004).
+calcular_iva(X,Y,BI):- reteiva(A), (A@>=1 -> BI is (X -(X - (X/(1+(Y/100))))) rnd 0; BI is X).
+calculo_dependientes(H,N,U,R):- dependientes(D), (D @>= 1 -> (H*0.1 @>= 32*U -> R is (32*U); R is (H*0.1)); R is 0).
+pension(2021,16).
+calculo_NC(X,P,R):- calcular_pension(X,P,VP), calcular_salud(X,P,VS), calcular_fondo_sol(X,P,VFS), calcular_fondo_sub(X,P,VF), R is (VP+VS+VF+VFS).
+arl(2021,0.522).
+calcular_fondo_sol(C,P,V):- calcular_ibc(C,P,IBC),salario_minimo(P,SM), (IBC @>= (SM*4) -> V is IBC*(0.005) approach 100; V is 0).
+valor_uvt(2023,42414).
+reteiva(2023,15).
+adulto_mayor(2023,0.02).
+iva(2023,19).
+procultura(2023,0.005).
+salario_minimo(2023,1160000).
+salud(2023,12.5).
+reteica(2023,9.66).
+estampilla(2023,0.011).
+pension(2023,16).
+arl(2023,0.522).
+reteiva(0).dependientes(0).medicina_prepagada(0).pensionado(0).intereses_vivienda(0).pension_voluntaria(0).afc(0).general(1).
+valor_contrato(19315280,1049156.000000).
+duracion_contrato(19315280,4,2023).
+porcentaje(0.300000).semanas_liquidadas(19315280,4).
