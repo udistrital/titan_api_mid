@@ -147,7 +147,10 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 						if mes == int(contrato.FechaFin.Month()) && ano == contrato.FechaFin.Year() {
 							break
 						}
-						query := "ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(ano) + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mes) + ",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato.NumeroContrato + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",ContratoPreliquidacionId.ContratoId.DependenciaId:" + strconv.Itoa(contrato.DependenciaId) + ",ContratoPreliquidacionId.ContratoId.Documento:" + contrato.Documento + ",ContratoPreliquidacionId.ContratoId.Rp:" + strconv.Itoa(contrato.Rp)
+						query := "ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(ano) + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mes) +
+							",ContratoPreliquidacionId.ContratoId.NumeroContrato:" + contrato.NumeroContrato + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + strconv.Itoa(contrato.Vigencia) +
+							",ContratoPreliquidacionId.ContratoId.DependenciaId:" + strconv.Itoa(contrato.DependenciaId) + ",ContratoPreliquidacionId.ContratoId.Documento:" + contrato.Documento +
+							",ContratoPreliquidacionId.ContratoId.Rp:" + strconv.Itoa(contrato.Rp) + ",ContratoPreliquidacionId.ContratoId.Activo:true"
 						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &semanas)
 							for i := 0; i < len(semanas); i++ {
@@ -207,7 +210,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 							LimpiezaRespuestaRefactor(aux, &contratosDocente)
 							if contratosDocente[0].Id != 0 {
 								for i := 0; i < len(contratosDocente); i++ {
-									query = "ContratoId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
+									query = "ContratoId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",ContratoId.Activo:true"
 									if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 										contratoPreliquidacionDocente = nil
 										LimpiezaRespuestaRefactor(aux, &contratoPreliquidacionDocente)
