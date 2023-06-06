@@ -614,24 +614,21 @@ func (c *NovedadVEController) AplicarAnulacion() {
 					contratoAux.ValorContrato = sumaContratosTemp
 					// Actualiza los datos del contrato: Fecha fin y valor
 					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contratoAux); err == nil {
-						if anulacion.FechaAnulacion.Day() != 30 {
-							contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
-							if contrato[0].TipoNominaId == 409 {
-								mensaje, err = liquidarHCH(contrato[0], false, 0, contrato[0].Vigencia)
-								anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
-							} else if contrato[0].TipoNominaId == 410 {
-								mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
-								anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
-							}
-
-							if err == nil {
-								c.Ctx.Output.SetStatus(201)
-								c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contrato[0]}
-							} else {
-								fmt.Println("Error al cancelar contrato: ", err)
-								c.Data["mesaage"] = mensaje + err.Error()
-								c.Abort("400")
-							}
+						contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
+						if contrato[0].TipoNominaId == 409 {
+							mensaje, err = liquidarHCH(contrato[0], false, 0, contrato[0].Vigencia)
+							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
+						} else if contrato[0].TipoNominaId == 410 {
+							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
+							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
+						}
+						if err == nil {
+							c.Ctx.Output.SetStatus(201)
+							c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contrato[0]}
+						} else {
+							fmt.Println("Error al cancelar contrato: ", err)
+							c.Data["mesaage"] = mensaje + err.Error()
+							c.Abort("400")
 						}
 					} else {
 						fmt.Println("Error al crear el contrato nuevo ", err)
