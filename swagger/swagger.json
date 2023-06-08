@@ -1034,6 +1034,10 @@
                 "NumeroContrato": {
                     "type": "string"
                 },
+                "NumeroSemanas": {
+                    "type": "integer",
+                    "format": "int64"
+                },
                 "PersonaId": {
                     "type": "integer",
                     "format": "int64"
