@@ -352,8 +352,7 @@ paths:
       parameters:
       - in: body
         name: OtroSí
-        description: Documentos de contratista con Nueva Fecha de finalización del
-          contrato
+        description: Documentos de contratista con Nueva Fecha de finalización del contrato
         required: true
         schema:
           $ref: '#/definitions/models.OtroSi'
@@ -428,8 +427,7 @@ paths:
     post:
       tags:
       - novedadVE
-      description: Maneja la novedad contractual de anulación de contratos de docentes
-        de VE
+      description: Maneja la novedad contractual de anulación de contratos de docentes de VE
       operationId: NovedadVEController.Aplicar anulación
       parameters:
       - in: body
@@ -449,8 +447,7 @@ paths:
     post:
       tags:
       - novedadVE
-      description: Maneja la novedad contractual de Adición de horas para contratos
-        de docentes de VE
+      description: Maneja la novedad contractual de Adición de horas para contratos de docentes de VE
       operationId: NovedadVEController.Aplicar Reducción
       parameters:
       - in: body
@@ -487,8 +484,7 @@ paths:
     post:
       tags:
       - novedadVE
-      description: Maneja la novedad contractual de Adición de horas para contratos
-        de docentes de VE
+      description: Maneja la novedad contractual de Adición de horas para contratos de docentes de VE
       operationId: NovedadVEController.Adicionar horas VE
       parameters:
       - in: body
@@ -698,6 +694,9 @@ definitions:
         type: string
       NumeroContrato:
         type: string
+      NumeroSemanas:
+        type: integer
+        format: int64
       PersonaId:
         type: integer
         format: int64
