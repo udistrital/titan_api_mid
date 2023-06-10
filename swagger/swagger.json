@@ -1046,6 +1046,10 @@
                     "type": "integer",
                     "format": "int64"
                 },
+                "ResolucionId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
                 "Rp": {
                     "type": "integer",
                     "format": "int64"

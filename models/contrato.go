@@ -24,5 +24,6 @@ type Contrato struct {
 	NumeroSemanas     int
 	FechaCreacion     string
 	FechaModificacion string
+	ResolucionId      int
 	Desagregado       *Desagregado
 }
