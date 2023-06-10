@@ -50,6 +50,7 @@ func (c *PreliquidacionController) Preliquidar() {
 		fmt.Println("Vigencia: ", contrato.Vigencia)
 		fmt.Println("Tipo Nomina: ", contrato.TipoNominaId)
 		fmt.Println("Activo: ", contrato.Activo)
+		fmt.Println("Resolucion ", contrato.ResolucionId)
 		fmt.Println("Numero Semanas: ", contrato.NumeroSemanas)
 
 		mensaje, codigo, contratoReturn, err := Preliquidacion(contrato)
