@@ -533,34 +533,61 @@ func (c *NovedadVEController) AplicarReduccion() {
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &reduccion); err == nil {
 		fmt.Println(reduccion)
 
-		for i := 0; i < len(reduccion.ContratosOriginales); i++ {
-			anulacion.NumeroContrato = reduccion.ContratosOriginales[i].NumeroContratoOriginal
-			anulacion.Vigencia = reduccion.Vigencia
-			anulacion.Documento = reduccion.Documento
-			fecha_anulacion = reduccion.FechaReduccion.AddDate(0, 0, -1)
-			anulacion.FechaAnulacion = fecha_anulacion
-			if reduccion.ContratosOriginales[i].DesagregadoOriginal != nil {
-				anulacion.Desagregado = reduccion.ContratosOriginales[i].DesagregadoOriginal
-			} else {
-				anulacion.Desagregado = nil
+		if reduccion.NivelAcademico == "PREGRADO" {
+			for i := 0; i < len(reduccion.ContratosOriginales); i++ {
+				anulacion.NumeroContrato = reduccion.ContratosOriginales[i].NumeroContratoOriginal
+				anulacion.Vigencia = reduccion.Vigencia
+				anulacion.Documento = reduccion.Documento
+				fecha_anulacion = reduccion.FechaReduccion.AddDate(0, 0, -1)
+				anulacion.FechaAnulacion = fecha_anulacion
+				if reduccion.ContratosOriginales[i].DesagregadoOriginal != nil {
+					anulacion.Desagregado = reduccion.ContratosOriginales[i].DesagregadoOriginal
+				} else {
+					anulacion.Desagregado = nil
+				}
+				mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := Anulacion(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido)
+				comp = completo
+				contratoAnulado.FechaFin = fechaOriginal
+				if fechaOriginal.After(fecha_fin_aux) {
+					fecha_fin_aux = fechaOriginal
+				}
+				contratoAnuladoAux = contratoAnulado
+				if comp {
+					anularEnGenerales(*contratoAnuladoAux, reduccion.FechaReduccion.AddDate(0, -1, 0), reduccion.Vigencia)
+				}
+				if err != nil {
+					c.Data["message"] = mensaje + ", error en contrato " + anulacion.NumeroContrato + " " + err.Error()
+					c.Abort(codigo)
+				}
 			}
-
-			mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := Anulacion(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido)
-			comp = completo
-			contratoAnulado.FechaFin = fechaOriginal
-			if fechaOriginal.After(fecha_fin_aux) {
-				fecha_fin_aux = fechaOriginal
-			}
-			contratoAnuladoAux = contratoAnulado
-			if comp {
-				anularEnGenerales(*contratoAnuladoAux, reduccion.FechaReduccion.AddDate(0, -1, 0), reduccion.Vigencia)
-			}
-			if err != nil {
-				c.Data["message"] = mensaje + ", error en contrato " + anulacion.NumeroContrato + " " + err.Error()
-				c.Abort(codigo)
+		} else if reduccion.NivelAcademico == "POSGRADO" {
+			for i := 0; i < len(reduccion.ContratosOriginales); i++ {
+				anulacion.NumeroContrato = reduccion.ContratosOriginales[i].NumeroContratoOriginal
+				anulacion.Vigencia = reduccion.Vigencia
+				anulacion.Documento = reduccion.Documento
+				fecha_anulacion = reduccion.FechaReduccion.AddDate(0, 0, -1)
+				anulacion.FechaAnulacion = fecha_anulacion
+				if reduccion.ContratosOriginales[i].DesagregadoOriginal != nil {
+					anulacion.Desagregado = reduccion.ContratosOriginales[i].DesagregadoOriginal
+				} else {
+					anulacion.Desagregado = nil
+				}
+				mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := AnulacionPosgrado(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido)
+				comp = completo
+				contratoAnulado.FechaFin = fechaOriginal
+				if fechaOriginal.After(fecha_fin_aux) {
+					fecha_fin_aux = fechaOriginal
+				}
+				contratoAnuladoAux = contratoAnulado
+				if comp {
+					anularEnGenerales(*contratoAnuladoAux, reduccion.FechaReduccion.AddDate(0, -1, 0), reduccion.Vigencia)
+				}
+				if err != nil {
+					c.Data["message"] = mensaje + ", error en contrato " + anulacion.NumeroContrato + " " + err.Error()
+					c.Abort(codigo)
+				}
 			}
 		}
-
 		if err == nil && reduccion.ContratoNuevo != nil {
 			contratoNuevo.DependenciaId = contratoAnuladoAux.DependenciaId
 			contratoNuevo.Documento = reduccion.Documento
@@ -576,9 +603,7 @@ func (c *NovedadVEController) AplicarReduccion() {
 			contratoNuevo.Cdp = contratoAnuladoAux.Cdp
 			contratoNuevo.Activo = true
 			contratoNuevo.Desagregado = reduccion.ContratoNuevo.DesagregadoReduccion
-
 			mensaje, codigo, contratoReturn, err := Preliquidacion(contratoNuevo)
-
 			if err == nil {
 				c.Ctx.Output.SetStatus(201)
 				c.Data["json"] = map[string]interface{}{"Success": true, "Status": codigo, "Message": mensaje, "Data": contratoReturn}
