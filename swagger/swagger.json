@@ -1561,6 +1561,9 @@
                     "type": "string",
                     "format": "datetime"
                 },
+                "NivelAcademico": {
+                    "type": "string"
+                },
                 "Vigencia": {
                     "type": "integer",
                     "format": "int64"
