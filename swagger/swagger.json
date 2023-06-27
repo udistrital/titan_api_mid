@@ -920,8 +920,15 @@
                     "type": "string",
                     "format": "datetime"
                 },
+                "NivelAcademico": {
+                    "type": "string"
+                },
                 "NumeroContrato": {
                     "type": "string"
+                },
+                "ValorContrato": {
+                    "type": "number",
+                    "format": "double"
                 },
                 "Vigencia": {
                     "type": "integer",
