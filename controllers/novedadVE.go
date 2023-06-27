@@ -494,7 +494,11 @@ func (c *NovedadVEController) AplicarAnulacion() {
 		//anulacion.FechaAnulacion = anulacionRp.FechaAnulacion
 		//anulacion.Desagregado = anulacionRp.ContratosAnulados[i].Desagregado
 		fmt.Println("anulacion ", anulacion)
-		mensaje, codigo, contratoReturn, err, _, _ = Anulacion(anulacion, 0)
+		if anulacion.NivelAcademico == "PREGRADO" {
+			mensaje, codigo, contratoReturn, err, _, _ = Anulacion(anulacion, 0)
+		} else if anulacion.NivelAcademico == "POSGRADO" {
+			mensaje, codigo, contratoReturn, err, _, _ = AnulacionPosgrado(anulacion, anulacion.ValorContrato)
+		}
 		//}
 
 		if err == nil {
