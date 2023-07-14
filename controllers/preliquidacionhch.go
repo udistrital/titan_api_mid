@@ -18,7 +18,7 @@ type PreliquidacionhchController struct {
 	beego.Controller
 }
 
-func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vigencia_original int) (mensaje string, err error) {
+func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vigencia_original int, semanas_totales int, valorDia float64, anulacion bool) (mensaje string, err error) {
 	var mesIterativo int              //mes para iterar en el ciclo para liquidar todos los meses de una vez
 	var anoIterativo int              //Ano iterativo a la hora de liquidar
 	var predicados []models.Predicado //variable para inyectar reglas
@@ -37,7 +37,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 	var emergencia int //Varibale para evitar loop infinito
 
 	// Buscar si existen contratos vigentes para el docente
-	query := "Documento:" + contrato.Documento + ",TipoNominaId:409" + ",Activo:true"
+	query := "Documento:" + contrato.Documento + ",TipoNominaId:409,Activo:true"
 	var contratosDocente []models.Contrato = nil
 	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
@@ -66,7 +66,12 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 		anoIterativo = contrato.Vigencia
 
 		//Obtener las semanas del contrato
-		semanasContrato := int(calcularSemanasContratoDVE(contrato.FechaInicio, contrato.FechaFin))
+		var semanasContrato int
+		if contrato.NumeroSemanas == 0 {
+			semanasContrato = int(calcularSemanasContratoDVE(contrato.FechaInicio, contrato.FechaFin))
+		} else {
+			semanasContrato = contrato.NumeroSemanas
+		}
 		fmt.Println("SemanasContrato: ", semanasContrato)
 
 		//Por si es general o unico
@@ -75,8 +80,14 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 		} else {
 			predicados = append(predicados, models.Predicado{Nombre: "general(0)."})
 		}
-		predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
-		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+		if anulacion {
+			predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%v", valorDia*float64(semanas_totales)) + "). "})
+			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanas_totales) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+		} else {
+			predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
+			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+		}
+
 		reglasbase := cargarReglasBase("HCH") + reglasAlivios + FormatoReglas(predicados)
 
 		for {
@@ -169,7 +180,6 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 							mes = mes + 1
 						}
 					}
-
 					semanas_liquidadas = semanasContrato - semanas_liquidadas
 					detallePreliquidacion.DiasLiquidados = float64(semanas_liquidadas)
 					if porcentaje != 0 {
@@ -308,6 +318,7 @@ func cambioContrato(cambioNecesario bool, contrato models.Contrato, mesIterativo
 	if cambioNecesario {
 		fmt.Println("CAMBIO NECESARIO REGLA DE 3")
 		query := "Documento:" + contrato.Documento + ",TipoNominaId:409,NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
+		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=" + query)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 			contratoGeneral = nil
 			LimpiezaRespuestaRefactor(aux, &contratoGeneral)

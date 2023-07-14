@@ -27,6 +27,15 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:CumplidoController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:CumplidoController"],
         beego.ControllerComments{
+            Method: "ActualizarCumplidoRp",
+            Router: "/cumplido_rp/:ano/:mes/:contrato/:vigencia/:rp",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:CumplidoController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:CumplidoController"],
+        beego.ControllerComments{
             Method: "ActualizarPreliquidado",
             Router: "/preliquidado/:ano/:mes/:contrato/:vigencia",
             AllowHTTPMethods: []string{"get"},
@@ -137,6 +146,15 @@ func init() {
         beego.ControllerComments{
             Method: "AplicarAnulacion",
             Router: "/aplicar_anulacion",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadVEController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadVEController"],
+        beego.ControllerComments{
+            Method: "AplicarReduccion",
+            Router: "/aplicar_reduccion",
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,

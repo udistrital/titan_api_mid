@@ -65,6 +65,63 @@
                 }
             }
         },
+        "/contrato_preliquidacion/cumplido_rp/{ano}/{mes}/{contrato}/{vigencia}/{rp}": {
+            "get": {
+                "tags": [
+                    "contrato_preliquidacion"
+                ],
+                "description": "Actualizar cumplido del contrato incluyendo el RP",
+                "operationId": "CumplidoController.Actualizar Cumplido con RP",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "ano",
+                        "description": "Año de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "mes",
+                        "description": "Mes de la preliquidación",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "contrato",
+                        "description": "Contrato a buscar",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "vigencia",
+                        "description": "vigencia del contrato",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "rp",
+                        "description": "rp del contrato",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.ContratoPreliquidacion"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
         "/contrato_preliquidacion/preliquidado/{ano}/{mes}/{contrato}/{vigencia}": {
             "get": {
                 "tags": [
@@ -576,6 +633,68 @@
                 }
             }
         },
+        "/novedadVE/aplicar_anulacion": {
+            "post": {
+                "tags": [
+                    "novedadVE"
+                ],
+                "description": "Maneja la novedad contractual de anulación de contratos de docentes de VE",
+                "operationId": "NovedadVEController.Aplicar anulación",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Adición",
+                        "description": "Datos de la anulacion",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Anulacion"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
+                    },
+                    "400": {
+                        "description": "the request contains incorrect syntax"
+                    }
+                }
+            }
+        },
+        "/novedadVE/aplicar_reduccion": {
+            "post": {
+                "tags": [
+                    "novedadVE"
+                ],
+                "description": "Maneja la novedad contractual de Adición de horas para contratos de docentes de VE",
+                "operationId": "NovedadVEController.Aplicar Reducción",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Adición",
+                        "description": "Datos de la adición",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Reduccion"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Contrato"
+                        }
+                    },
+                    "400": {
+                        "description": "the request contains incorrect syntax"
+                    }
+                }
+            }
+        },
         "/novedadVE/eliminar_novedad/{id}": {
             "get": {
                 "tags": [
@@ -787,6 +906,36 @@
                 }
             }
         },
+        "models.Anulacion": {
+            "title": "Anulacion",
+            "type": "object",
+            "properties": {
+                "Desagregado": {
+                    "$ref": "#/definitions/models.Desagregado"
+                },
+                "Documento": {
+                    "type": "string"
+                },
+                "FechaAnulacion": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "NivelAcademico": {
+                    "type": "string"
+                },
+                "NumeroContrato": {
+                    "type": "string"
+                },
+                "ValorContrato": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "Vigencia": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
         "models.Cancelacion": {
             "title": "Cancelacion",
             "type": "object",
@@ -862,6 +1011,9 @@
                     "type": "integer",
                     "format": "int64"
                 },
+                "Desagregado": {
+                    "$ref": "#/definitions/models.Desagregado"
+                },
                 "Documento": {
                     "type": "string"
                 },
@@ -889,11 +1041,19 @@
                 "NumeroContrato": {
                     "type": "string"
                 },
+                "NumeroSemanas": {
+                    "type": "integer",
+                    "format": "int64"
+                },
                 "PersonaId": {
                     "type": "integer",
                     "format": "int64"
                 },
                 "ProyectoId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "ResolucionId": {
                     "type": "integer",
                     "format": "int64"
                 },
@@ -937,6 +1097,22 @@
                 },
                 "Preliquidado": {
                     "type": "boolean"
+                }
+            }
+        },
+        "models.ContratoNuevo": {
+            "title": "ContratoNuevo",
+            "type": "object",
+            "properties": {
+                "DesagregadoReduccion": {
+                    "$ref": "#/definitions/models.Desagregado"
+                },
+                "NumeroContratoReduccion": {
+                    "type": "string"
+                },
+                "ValorContratoReduccion": {
+                    "type": "number",
+                    "format": "double"
                 }
             }
         },
@@ -996,6 +1172,22 @@
                 }
             }
         },
+        "models.ContratoReducir": {
+            "title": "ContratoReducir",
+            "type": "object",
+            "properties": {
+                "DesagregadoOriginal": {
+                    "$ref": "#/definitions/models.Desagregado"
+                },
+                "NumeroContratoOriginal": {
+                    "type": "string"
+                },
+                "ValorContratoReducido": {
+                    "type": "number",
+                    "format": "double"
+                }
+            }
+        },
         "models.DatosVinculacion": {
             "title": "DatosVinculacion",
             "type": "object",
@@ -1026,6 +1218,40 @@
                 "Vigencia": {
                     "type": "integer",
                     "format": "int64"
+                }
+            }
+        },
+        "models.Desagregado": {
+            "title": "Desagregado",
+            "type": "object",
+            "properties": {
+                "BonificacionServicios": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "Cesantias": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "InteresesCesantias": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "PrimaNavidad": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "PrimaServicios": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "PrimaVacaciones": {
+                    "type": "number",
+                    "format": "double"
+                },
+                "Vacaciones": {
+                    "type": "number",
+                    "format": "double"
                 }
             }
         },
@@ -1317,6 +1543,35 @@
                     "format": "int64"
                 },
                 "NominaId": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
+        "models.Reduccion": {
+            "title": "Reduccion",
+            "type": "object",
+            "properties": {
+                "ContratoNuevo": {
+                    "$ref": "#/definitions/models.ContratoNuevo"
+                },
+                "ContratosOriginales": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ContratoReducir"
+                    }
+                },
+                "Documento": {
+                    "type": "string"
+                },
+                "FechaReduccion": {
+                    "type": "string",
+                    "format": "datetime"
+                },
+                "NivelAcademico": {
+                    "type": "string"
+                },
+                "Vigencia": {
                     "type": "integer",
                     "format": "int64"
                 }

@@ -32,7 +32,6 @@ func (c *DesagregadoHCSController) ObtenerDesagregado() {
 	var desagregado models.DesagregadoContratoHCS
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &vinculacion); err == nil {
-
 		desagregado = Desagregar(vinculacion)
 
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": desagregado}

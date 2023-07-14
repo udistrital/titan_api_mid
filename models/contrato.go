@@ -21,6 +21,9 @@ type Contrato struct {
 	Unico             bool
 	Completo          bool
 	Activo            bool
+	NumeroSemanas     int
 	FechaCreacion     string
 	FechaModificacion string
+	ResolucionId      int
+	Desagregado       *Desagregado
 }

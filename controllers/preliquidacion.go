@@ -30,8 +30,9 @@ func (c *PreliquidacionController) URLMapping() {
 // @router / [post]
 func (c *PreliquidacionController) Preliquidar() {
 	var contrato models.Contrato
-	var aux map[string]interface{}
-	var mensaje string
+	//var aux map[string]interface{}
+	//var mensaje string
+	//var codigo string
 	fmt.Println("Hola Mundo producción")
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &contrato); err == nil {
 		fmt.Println("Contrato Recibido: ")
@@ -49,61 +50,17 @@ func (c *PreliquidacionController) Preliquidar() {
 		fmt.Println("Vigencia: ", contrato.Vigencia)
 		fmt.Println("Tipo Nomina: ", contrato.TipoNominaId)
 		fmt.Println("Activo: ", contrato.Activo)
-		if contrato.FechaInicio.Before(contrato.FechaFin) {
-			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
-				LimpiezaRespuestaRefactor(aux, &contrato)
-				if contrato.TipoNominaId == 411 {
-					mensaje, err = liquidarCPS(contrato)
-					if err == nil {
-						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
-					} else {
-						c.Data["mesaage"] = mensaje + err.Error()
-						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
-							fmt.Println("Contrato eliminado")
-						} else {
-							c.Data["mesaage"] = "Error al eliminar el contrato que no se liquidó: " + err.Error()
-							c.Abort("404")
-						}
-						c.Abort("404")
-					}
-				} else if contrato.TipoNominaId == 409 {
-					mensaje, err = liquidarHCH(contrato, false, 0, contrato.Vigencia)
-					if err == nil {
-						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
-					} else {
-						c.Data["mesaage"] = mensaje + err.Error()
-						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
-							fmt.Println("Contrato eliminado")
-						} else {
-							c.Data["mesaage"] = "Error al eliminar el contrato que no se liquidó: " + err.Error()
-							c.Abort("404")
-						}
-						c.Abort("404")
-					}
-				} else if contrato.TipoNominaId == 410 {
-					mensaje, err = liquidarHCS(contrato, false, 0, contrato.Vigencia, 0, 0, false)
-					if err == nil {
-						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato}
-					} else {
-						c.Data["mesaage"] = mensaje + err.Error()
-						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
-							fmt.Println("Contrato eliminado")
-						} else {
-							c.Data["mesaage"] = "Error al eliminar el contrato que no se liquidó: " + err.Error()
-							c.Abort("404")
-						}
-						c.Abort("404")
-					}
-				}
-			} else {
-				fmt.Println("No se pudo guardar el contrato", err)
-				c.Data["mesaage"] = "No se pudo guardar el contrato: " + err.Error()
-				c.Abort("404")
-			}
+		fmt.Println("Resolucion ", contrato.ResolucionId)
+		fmt.Println("Numero Semanas: ", contrato.NumeroSemanas)
+
+		mensaje, codigo, contratoReturn, err := Preliquidacion(contrato)
+
+		if err == nil {
+			c.Ctx.Output.SetStatus(201)
+			c.Data["json"] = map[string]interface{}{"Success": true, "Status": codigo, "Message": mensaje, "Data": contratoReturn}
 		} else {
-			fmt.Println("La fecha inicio no puede estar después de la fecha fin")
-			c.Data["mesaage"] = "La fecha inicio no puede estar después de la fecha fin"
-			c.Abort("404")
+			c.Data["message"] = mensaje + " " + err.Error()
+			c.Abort(codigo)
 		}
 	} else {
 		fmt.Println("Error al unmarshal del contrato: ", err)
