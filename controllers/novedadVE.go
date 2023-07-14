@@ -487,6 +487,7 @@ func (c *NovedadVEController) AplicarAnulacion() {
 	var contratoReturn *models.Contrato
 	fmt.Println(anulacion)
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &anulacion); err == nil {
+
 		//for i := 0; i < len(anulacionRp.ContratosAnulados); i++ {
 		//anulacion.NumeroContrato = anulacionRp.ContratosAnulados[i].NumeroContrato
 		//anulacion.Vigencia = anulacionRp.Vigencia

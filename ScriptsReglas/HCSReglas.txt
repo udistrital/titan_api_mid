@@ -1,107 +1,311 @@
-"concepto(X, descuento, porcentaje, salud,0.04, 2017)."
-"fin_contrato(prueba,no)."
-"tarifa(reteIca,9.66,1000,0,0)."
-"tarifa(estampillaUD,0.01,0,0,0)."
-"tarifa(proCultura,0.005,0,0,0)."
-"dias_liquidados(prueba,30)."
-"base_concepto_ley(X,Y,P,secrHacienda):- base_concepto_ley(X,Y,P,rete383)."
-"info_concepto(X,T,P,N,R):- concepto(X,T,Y,N,Z,P), ((Y==fijo)->(R is Z))."
-"base_concepto_ley(X,Y,P,rete383):- valor_pago(X,P,T),R is (T * 0.25) rnd 0 , S is T - R,Y is (S rnd 0)."
-"base_concepto_ley(X,Y,P,rete384):- valor_pago(X,P,T), Y is (T rnd 0)."
-"info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentual)->(valor_pago(X,P,V),R is V * (Z/100)))."
-"concepto(X, descuento, porcentaje, pension,0.04, 2017)."
-"tarifa(adultoMayor,0.02,0,0,0)."
-"porcentaje_prestaciones(2017,0.200236900127638)."
-"valor_pago(X,P,T):- valor_contrato(X,VC), calcular_prestaciones(P,PC), Y is (VC - PC), duracion_contrato(X,D,V), R is Y / D, PB is (R rnd 0), dias_liquidados(X,DL),T is (((DL * PB) / 30) rnd 0)."
-"porcentaje_salud(2017,0.04)."
-"porcentaje_devengo(2017,vacaciones,0.165680)."
-"porcentaje_pension(2017,0.04)."
-"calcular_prestaciones(P,VP):- valor_contrato(X,VC),porcentaje_prestaciones(P,PP),Y is PP * VC, VP is (Y rnd 0). "
-"porcentaje_devengo(2017,primaVacaciones,0.165680)."
-"porcentaje_devengo(2017,primaNavidad, 0.295858)."
-"concepto_ley(X,Y,P,V,pension):- pensionado(no),valor_pago(X,P,T), porcentaje_pension(P, PP), R is PP * T , Y is (R rnd 0)."
-"porcentaje_devengo(2017,cesantias,0.332840)."
-"concepto_ley(X,Y,P,V,salud):- valor_pago(X,P,T), porcentaje_salud(P, PS), R is PS * T , Y is (R rnd 0)."
-"aplica_ingreso_retencion(11)."
-"concepto_ley(X,Y,P,V,vacaciones):- fin_contrato(X,si),calcular_prestaciones(P,VP),porcentaje_devengo(P,vacaciones,PDV), R is VP *PDV, Y is (R rnd 0)."
-"concepto_ley(X,Y,P,V,primaVacaciones):- fin_contrato(X,si),calcular_prestaciones(P,VP),porcentaje_devengo(P,primaVacaciones,PDV), R is VP *PDV, Y is (R rnd 0)."
-"aplica_ingreso_retencion(1174)."
-"aplica_ingreso_retencion(111)."
-"aplica_ingreso_retencion(129)."
-"aplica_ingreso_retencion(1175)."
-"aplica_deduccion_retencion(239)."
-"aplica_deduccion_retencion(291)."
-"concepto_ley(X,Y,P,V,primaNavidad):-  fin_contrato(X,si),calcular_prestaciones(P,VP),porcentaje_devengo(P,primaNavidad,PDV), R is VP *PDV, Y is (R rnd 0)."
-"concepto_ley(X,Y,P,V,cesantias):-  fin_contrato(X,si),calcular_prestaciones(P,VP),porcentaje_devengo(P,cesantias,PDV), R is VP *PDV, Y is (R rnd 0)."
-"concepto_ley(X,IC,P,V,interesCesantias):- fin_contrato(X,si),calcular_prestaciones(P,VP),concepto_ley(X,PV,P,V, primaVacaciones), concepto_ley(X,PN,P,V,primaNavidad), concepto_ley(X,C,P,V,cesantias), concepto_ley(X,VA,P,V,vacaciones), A is (PV+PN+C+VA), B is (VP-A), IC is (B rnd 0)."
-"ingresos_no_const(INC):- deducciones(D), ingresos(I), INC is I - D. "
-"subtotal(DT,S):- S is (DT * 0.25 rnd 0). "
-"gastos_rep(GR):- total_deducciones(TD), GR is (TD * 0.50 rnd 0)."
-"valor_uvt(2017,31859)."
-"evaluar_uvt(VU,U,R):- (U @=< 95 -> R is 0)."
-"evaluar_uvt(VU,U,R):- (U @> 95, U@=<150 -> A is U - 95, B is (A*0.19 rnd 0), R is B * VU)."
-"valor_retencion(VR):- periodo(P),base_retencion(B), valor_uvt(P,VU), X is (B / VU),  evaluar_uvt(VU, X, E), VR is E."
-"evaluar_uvt(VU,U,R):- (U @> 150, U @=<360 -> A is U - 150, B is ( (A*0.28) + 10 rnd 0), R is B * VU)."
-"evaluar_uvt(VU,U,R):- (U @> 360 -> A is U - 360, B is ((A*0.33) + 69 rnd 0), R is B * VU)."
-"concepto(X, descuento, porcentaje, salud,0.04, 2018)."
-"tarifa(adultoMayor,0.02,0,0,0)."
-"porcentaje_prestaciones(2018,0.200236900127638)."
-"porcentaje_salud(2018,0.04)."
-"porcentaje_devengo(2018,vacaciones,0.165680)."
-"porcentaje_pension(2018,0.04)."
-"porcentaje_devengo(2018,primaVacaciones,0.165680)."
-"porcentaje_devengo(2018,primaNavidad, 0.295858)."
-"porcentaje_devengo(2018,cesantias,0.332840)."
-"valor_uvt(2018,33156)."
-"calcular_ibc(X,V):- concepto_ibc(X,activo), sumar_ibc(X,Y), V is Y."
-"aplica_deduccion_retencion(290)."
-"calc_deducciones(D):-  calculo_intereses_vivienda(DIV), calculo_med_pre(DMP),  calculo_dependientes(DP), D is DIV + DMP + DP."
-"total_deducciones(TD) :- ingresos_no_const(INC), calc_deducciones(D), TD is INC - D."
-"valor_articulo(VA):- ingresos_no_const(INC), periodo(P), valor_uvt(P,VU), X is (INC * 0.40 rnd 0), Y is (VU * 5040 rnd 0), X@=<Y-> VA is X; VA is Y."
-"total_rentas_exce(TRE):- total_deducciones(TD), gastos_rep(GR), TRE is TD - GR."
-"veinticinco(VC) :- periodo(P), valor_uvt(P,VU), total_rentas_exce(TRE), X is (VU * 240 rnd 0), Y is (TRE *0.25 rnd 0), (X@=<Y-> VC is X; VC is Y)."
-"renta_trab_ex(RTE) :- veinticinco(VC), gastos_rep(GR), RTE is VC + GR."
-"valor_a_tomar(VAT) :- valor_articulo(VA), renta_trab_ex(RTE), (VA@=<RTE-> VAT is VA; VAT is RTE)."
-"base_retencion(BR):- ingresos_no_const(INC), valor_a_tomar(VAT), BR is INC - VAT."
-"valor_salario_minimo(2018,781242)."
-"porcentaje_fondoSol(2018,0.01)."
-"calcular_fondo_sol(X,T,P,V) :- porcentaje_fondoSol(P, C),  valor_salario_minimo(P,VSM), O is VSM * 4, (T@>=O -> V is (C * T approach 100); V is 0)."
-"tope_medicina_pre(2018,16)."
-"tope_dependientes(2018, 32)."
-"tope_intereses_vivienda(2018, 100)."
-"calculo_intereses_vivienda(CIV) :- periodo(P), tope_intereses_vivienda(P,T), intereses_vivienda(I),valor_uvt(P,VU), X is  VU * T, (I @>= X -> CIV is (X rnd 0); CIV is I)."
-"calculo_med_pre(CMP) :- medicina_prepagada(A), ((A == si )-> periodo(P), tope_medicina_pre(P,T), valor_uvt(P,VU), X is VU * T, (10000 @>= X -> CMP is (X rnd 0); CMP is 10000) ; CMP is 0)."
-"calculo_dependientes(CD) :- dependiente(A), ((A == si) -> periodo(P), tope_dependientes(P,T), valor_uvt(P,VU), ingresos(I),X is VU * T, (I @>= X -> CD is (X rnd 0); CD is I); CD is 0)."
-"tope_medicina_pre(2017,16)."
-"tope_dependientes(2017, 32)."
-"tope_intereses_vivienda(2017,100)."
-"seg_social(prueba,1,1,1,1,1,1)."
-"afectacion_seguridad(comision_norem)."
-"afectacion_seguridad(licencia_norem)."
-"afectacion_seguridad(incapacidad_laboral)."
-"afectacion_seguridad(incapacidad_general)."
-"afectacion_seguridad(prorroga_incapacidad)."
-"afectacion_seguridad(exterior_sin_familia)."
-"afectacion_seguridad(exterior_familia)."
-"afectacion_seguridad(licencia_remunerada)."
-"info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==seguridad_social)->(R is 0))."
-"valor_pago_total(X,P,Y):- valor_contrato(X,VC), calcular_prestaciones(P,PC), Y is (VC - PC)."
-"conceptos_total_contrato(X,V,MC,T,vacaciones):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,vacaciones,PPV), R is VP *PPV, T is (R rnd 0)."
-"conceptos_total_contrato(X,V,MC,T,primaVacaciones):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,primaVacaciones,PPV), R is VP *PPV, T is (R rnd 0)."
-"conceptos_total_contrato(X,V,MC,T,primaNavidad):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,primaNavidad,PPV), R is VP *PPV, T is (R rnd 0)."
-"conceptos_total_contrato(X,V,MC,T,interesCesantias):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,interesCesantias,PPV), R is VP *PPV, T is (R rnd 0)."
-"conceptos_total_contrato(X,V,MC,T,cesantias):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,cesantias,PPV), R is VP *PPV, T is (R rnd 0)."
-"conceptos_total_contrato_v2(X,V,MC,T,prima_servicios):- (MC @> 6 -> valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,prima_servicios,PPV), R is VP *PPV, T is (R rnd 0); T is 0).	"
-"porcentaje_devengo_v2(2019,prima_servicios,0.0740740929887414)."
-"porcentaje_devengo_v2(2019,primaVacaciones,0.0414814800000000)."
-"porcentaje_devengo_v2(2019,interesCesantias,0.0100000000000000)."
-"porcentaje_devengo_v2(2019,cesantias,0.0833333333333333)."
-"porcentaje_devengo_v2(2019,vacaciones,0.0414814800000000)."
-"porcentaje_devengo_v2(2019,primaNavidad,0.0740740929887414)."
-"porcentaje_devengo_v2(2020,prima_servicios,0.0740740929887414)."
-"porcentaje_devengo_v2(2020,primaVacaciones,0.0414814800000000)."
-"porcentaje_devengo_v2(2020,interesCesantias,0.0100000000000000)."
-"porcentaje_devengo_v2(2020,cesantias,0.0833333333333333)."
-"porcentaje_devengo_v2(2020,vacaciones,0.0414814800000000)."
-"porcentaje_devengo_v2(2020,primaNavidad,0.0740740929887414)."
-
+concepto(X, descuento, porcentaje, pension,0.04, 2017).
+tarifa(adultoMayor,0.02,0,0,0).
+porcentaje_prestaciones(2017,0.200236900127638).
+porcentaje_salud(2017,0.04).
+porcentaje_devengo(2017,vacaciones,0.165680).
+porcentaje_pension(2017,0.04).
+calcular_prestaciones(P,VP):- valor_contrato(X,VC),porcentaje_prestaciones(P,PP),Y is PP * VC, VP is (Y rnd 0).
+porcentaje_devengo(2017,primaVacaciones,0.165680).
+porcentaje_devengo(2017,primaNavidad, 0.295858).
+porcentaje_devengo(2017,cesantias,0.332840).
+aplica_ingreso_retencion(11).
+concepto_ley(X,Y,P,V,vacaciones):- fin_contrato(X,si),calcular_prestaciones(P,VP),porcentaje_devengo(P,vacaciones,PDV), R is VP *PDV, Y is (R rnd 0).
+concepto_ley(X,Y,P,V,primaVacaciones):- fin_contrato(X,si),calcular_prestaciones(P,VP),porcentaje_devengo(P,primaVacaciones,PDV), R is VP *PDV, Y is (R rnd 0).     
+aplica_ingreso_retencion(1174).
+aplica_ingreso_retencion(111).
+aplica_ingreso_retencion(129).
+aplica_ingreso_retencion(1175).
+aplica_deduccion_retencion(239).
+aplica_deduccion_retencion(291).
+concepto_ley(X,Y,P,V,primaNavidad):-  fin_contrato(X,si),calcular_prestaciones(P,VP),porcentaje_devengo(P,primaNavidad,PDV), R is VP *PDV, Y is (R rnd 0).
+concepto_ley(X,Y,P,V,cesantias):-  fin_contrato(X,si),calcular_prestaciones(P,VP),porcentaje_devengo(P,cesantias,PDV), R is VP *PDV, Y is (R rnd 0).
+concepto_ley(X,IC,P,V,interesCesantias):- fin_contrato(X,si),calcular_prestaciones(P,VP),concepto_ley(X,PV,P,V, primaVacaciones), concepto_ley(X,PN,P,V,primaNavidad), concepto_ley(X,C,P,V,cesantias), concepto_ley(X,VA,P,V,vacaciones), A is (PV+PN+C+VA), B is (VP-A), IC is (B rnd 0).
+subtotal(DT,S):- S is (DT * 0.25 rnd 0).
+valor_uvt(2017,31859).
+gastos_rep(GR):- total_deducciones(TD), GR is (TD * 0.50 rnd 0).
+ingresos_no_const(INC):- deducciones(D), ingresos(I), INC is I - D.
+evaluar_uvt(VU,U,R):- (U @> 95, U@=<150 -> A is U - 95, B is A*0.19, C is B * VU, R is (C rnd 0)).
+evaluar_uvt(VU,U,R):- (U @> 360 -> A is U - 360, B is A*0.33, C is B * VU, D is (69 * VU), F is C + D, R is (F rnd 0)).
+afectacion_seguridad(prorroga_incapacidad).
+concepto(X, descuento, porcentaje, salud,0.04, 2018).
+afectacion_seguridad(exterior_familia).
+afectacion_seguridad(licencia_remunerada).
+afectacion_seguridad(exterior_sin_familia).
+tarifa(adultoMayor,0.02,0,0,0).
+porcentaje_prestaciones(2018,0.200236900127638).
+porcentaje_salud(2018,0.04).
+porcentaje_devengo(2018,vacaciones,0.165680).
+porcentaje_pension(2018,0.04).
+porcentaje_devengo(2018,primaVacaciones,0.165680).
+porcentaje_devengo(2018,primaNavidad, 0.295858).
+porcentaje_devengo(2018,cesantias,0.332840).
+valor_uvt(2018,33156).
+info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==seguridad_social)->(R is 0)).
+afectacion_seguridad(incapacidad_laboral).
+concepto_ley(X,Y,P,V,pension):- pensionado(no),valor_pago(X,P,T), porcentaje_pension(P, PP), R is PP * T , Y is (R rnd 0).
+base_concepto_ley(X,Y,P,rete383):- valor_pago(X,P,T),R is (T * 0.25) rnd 0 , S is T - R,Y is (S rnd 0).
+base_concepto_ley(X,Y,P,rete384):- valor_pago(X,P,T), Y is (T rnd 0).
+concepto_ley(X,Y,P,V,salud):- valor_pago(X,P,T), porcentaje_salud(P, PS), R is PS * T , Y is (R rnd 0).
+seg_social(prueba,1,1,1,1,1,1).
+afectacion_seguridad(comision_norem).
+afectacion_seguridad(licencia_norem).
+afectacion_seguridad(incapacidad_general).
+info_concepto(X,T,P,N,R) :- concepto(X,T,Y,N,Z,P),((Y==porcentual)->(valor_pago(X,P,V),R is V * (Z/100))).
+valor_uvt(2019,34270).
+calcular_ibc(X,V):- concepto_ibc(X,activo), sumar_ibc(X,Y), V is Y.
+aplica_deduccion_retencion(290).
+total_deducciones(TD) :- ingresos_no_const(INC), calc_deducciones(D), TD is INC - D.
+total_rentas_exce(TRE):- total_deducciones(TD), gastos_rep(GR), TRE is TD - GR.
+valor_articulo(VA):- ingresos_no_const(INC), periodo(P), valor_uvt(P,VU), X is (INC * 0.40 rnd 0), Y is (VU * 5040 rnd 0), X@=<Y-> VA is X; VA is Y.
+renta_trab_ex(RTE) :- veinticinco(VC), gastos_rep(GR), RTE is VC + GR.
+porcentaje_fondoSol(2018,0.01).
+base_retencion(BR):- ingresos_no_const(INC), valor_a_tomar(VAT), BR is INC - VAT.
+valor_pago(X,V,P):-valor_contrato(X,Y),  duracion_contrato(X,S,V), R is Y / S, semanas_liquidadas(X,SL), P is ((SL * R) rnd 0).
+valor_salario_minimo(2018,781242).
+veinticinco(VC) :- periodo(P), valor_uvt(P,VU), total_rentas_exce(TRE), X is (VU * 240 rnd 0), Y is (TRE *0.25 rnd 0), (X@=<Y-> VC is X; VC is Y).
+valor_a_tomar(VAT) :- valor_articulo(VA), renta_trab_ex(RTE), (VA@=<RTE-> VAT is VA; VAT is RTE).
+calc_deducciones(D):-  calculo_intereses_vivienda(DIV), calculo_med_pre(DMP),  calculo_dependientes(DP), D is DIV + DMP + DP.
+concepto(X, descuento, porcentaje, salud,0.04, 2019).
+porcentaje_prestaciones(2019,0.200236900127638).
+porcentaje_salud(2019,0.04).
+porcentaje_devengo(2019,vacaciones,0.165680).
+porcentaje_pension(2019,0.04).
+porcentaje_devengo(2019,primaVacaciones,0.165680).
+porcentaje_devengo(2019,primaNavidad, 0.295858).
+porcentaje_devengo(2019,cesantias,0.332840).
+valor_salario_minimo(2019,828116).
+tope_medicina_pre(2019,16).
+tope_dependientes(2019, 32).
+tope_intereses_vivienda(2019, 100).
+porcentaje_fondoSol(2019,0.005).
+tope_medicina_pre(2018,16).
+tope_dependientes(2018, 32).
+tope_intereses_vivienda(2018, 100).
+tope_medicina_pre(2017,16).
+calculo_intereses_vivienda(CIV) :- periodo(P), tope_intereses_vivienda(P,T), intereses_vivienda(I),valor_uvt(P,VU), X is  VU * T, (I @>= X -> CIV is (X rnd 0); CIV 
+is I).
+calculo_med_pre(CMP) :- medicina_prepagada(A), ((A == si )-> periodo(P), tope_medicina_pre(P,T), valor_uvt(P,VU), X is VU * T, (10000 @>= X -> CMP is (X rnd 0); CMP is 10000) ; CMP is 0).
+tope_dependientes(2017, 32).
+tope_intereses_vivienda(2017,100).
+calculo_dependientes(CD) :- dependiente(A), ((A == si) -> periodo(P), tope_dependientes(P,T), valor_uvt(P,VU), ingresos(I),X is VU * T, (I @>= X -> CD is (X rnd 0); CD is I); CD is 0).
+valor_pago_total(X,P,Y):- valor_contrato(X,VC), calcular_prestaciones(P,PC), Y is (VC - PC).
+aadias_liquidados(prueba,30).
+porcentaje_fondoSub(2019,0.005).
+calcular_fondo_sub(C,P,T):- pensionado(W), (W@>= 1 -> T is 0; salario_minimo(P,SM), calcular_ibc(C,P,BI), X is (BI/SM),evaluar_fondo_sub(X,PF), T is ((BI * PF) approach 100)).
+aplica_deduccion_retencion(2351).
+conceptos_total_contrato(X,V,MC,T,vacaciones):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,vacaciones,PPV), R is VP *PPV, T is (R rnd 0).
+conceptos_total_contrato(X,V,MC,T,primaVacaciones):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,primaVacaciones,PPV), R is VP *PPV, T is (R rnd 0).
+conceptos_total_contrato(X,V,MC,T,primaNavidad):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,primaNavidad,PPV), R is VP *PPV, T is (R rnd 0).
+conceptos_total_contrato(X,V,MC,T,interesCesantias):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,interesCesantias,PPV), R is VP *PPV, T is (R rnd 0).        
+conceptos_total_contrato(X,V,MC,T,cesantias):- valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,cesantias,PPV), R is VP *PPV, T is (R rnd 0).
+evaluar_uvt(VU,U,R):- (U @=< 95 -> R is 0).
+conceptos_total_contrato(X,V,MC,T,prima_servicios):- (MC @> 6 -> valor_pago_total(X,V,VP), porcentaje_devengo_v2(V,prima_servicios,PPV), R is VP *PPV, T is (R rnd 0); T is 0).
+porcentaje_devengo_v2(2019,interesCesantias,0.0100000000000000).
+porcentaje_devengo_v2(2019,vacaciones,0.0414814800000000).
+porcentaje_devengo_v2(2019,primaNavidad,0.0740740929887414).
+porcentaje_devengo_v2(2020,primaVacaciones,0.0414814800000000).
+porcentaje_devengo_v2(2020,cesantias,0.0833333333333333).
+porcentaje_devengo_v2(2020,primaNavidad,0.0740740929887414).
+valor_salario_minimo(2020,877803).
+tope_medicina_pre(2020,16).
+porcentaje_fondoSol(2020,0.005).
+tope_dependientes(2020, 32).
+tope_intereses_vivienda(2020, 100).
+valor_uvt(2020,35607).
+porcentaje_fondoSub(2020,0.005).
+concepto(X, descuento, porcentaje, salud,0.04, 2020).
+porcentaje_prestaciones(2020,0.200236900127638).
+porcentaje_salud(2020,0.04).
+porcentaje_devengo(2020,vacaciones,0.165680).
+porcentaje_pension(2020,0.04).
+porcentaje_devengo(2020,primaVacaciones,0.165680).
+porcentaje_devengo(2020,primaNavidad, 0.295858).
+porcentaje_devengo(2020,cesantias,0.332840).
+arl(2021,0.52).
+porcentaje_fondoSub(2020,0.005).
+porcentaje_fondoSub(2021,0.005).
+procultura(2020,0.005).
+procultura(2021,0.005).
+estampilla(2020,0.011).
+estampilla(2021,0.011).
+porcentaje_fondoSol(2021,0.005).
+adulto_mayor(2020,0.02).
+adulto_mayor(2021,0.02).
+arl(2020,1,0.522).
+pension(2020,16).
+salud(2020,12.5).
+salario_minimo(2020,877803).
+salario_minimo(2021,908526).
+reteica(2020,9.66).
+reteica(2021,9.66).
+valor_uvt(2020,35607).
+valor_uvt(2021,36308).
+salud(2021,4).
+pension(2021,4).
+valor_retencion(X,P,VR):- valor_uvt(P,VU), calculo_NC(X,P,NC), valor_pago(I,P,SB), iva(P,PI), calcular_iva(SB,PI,BI), calculo_dependientes(BI,NC,VU,CP), calculo_deducciones(X,P,CP,DS), calculo_rentasE(BI,RE), calcular_renta_exenta(BI,NC,DS,RE,RC),calcular_renta_maxima(BI,NC,RM), base_retefuente(BI,NC,RC,RM,BR), U is (BR / VU), evaluar_uvt(VU,U,E), VR is E.
+porcentaje_devengo_v2(2019,prima_servicios,0.0740740929887414).
+porcentaje_devengo_v2(2019,primaVacaciones,0.0414814800000000).
+porcentaje_devengo_v2(2019,cesantias,0.0833333333333333).
+porcentaje_devengo_v2(2020,prima_servicios,0.0740740929887414).
+porcentaje_devengo_v2(2020,interesCesantias,0.0100000000000000).
+porcentaje_devengo_v2(2020,vacaciones,0.0414814800000000).
+adulto_mayor(2022,0.02).
+pension(2022,4).
+estampilla(2022,0.011).
+reteica(2022,9.66).
+salario_minimo(2022,1000000).
+valor_uvt(2022,38004).
+porcentaje_caja(2022,4).
+iva(2021,19).
+saludUdistrital(2021,8.5,12.5).
+calcular_caja(C,P,V):- valor_ibc_caja(C,P,IC), porcentaje_caja(P,PC), V is (IC * (PC/100) rnd 0).
+calcular_salud(C,P,R):- calcular_ibc(C,P,IBC), salud(P,PS), R is (IBC*(PS/100) rnd 0).
+pensionUdistrital(2021,12,16).
+iva(2022,19).
+porcentaje_caja(2021,4).
+liquidar_hcs(X,P,reteFuente,T):- valor_retencion(X,P,T).
+liquidar_hcs(X,P,salud,T):-calcular_salud(X,P,T).
+liquidar_hcs(X,P,pension,T):-calcular_pension(X,P,T).
+liquidar_hcs(X,P,arl,T):- calcular_arl(X, P, T).
+base_reteica(C,P,BI,R) :- calcular_salud(C,P,VS), calcular_pension(C,P,VP), calcular_salud_universidad(C,P,VSU),calcular_pension_universidad(C,P,VPU),calcular_arl(C,P,VA), M is (VS+VP+VA+VSU+VPU), T is BI-M, (T@=<0 -> R is 0; R is T).
+calculo_dependientes(H,N,U,R):- dependientes(D), (D @>= 1 -> (H*0.1 @>= 32*U -> R is (32*U); R is (H*0.1)); R is 0).
+calculo_deducciones(X,P,CP,R):- calcular_arl(X,P,VA), medicina_prepagada(MP), R is (VA+MP+CP).
+calculo_rentasE(H,R):- pension_voluntaria(VP), afc(AFC), X is (VP+AFC), (X@>= (H*0.3) -> R is (H*0.3); R is X).
+calcular_renta_exenta(H, NC, DS, RE, R):- R is (((H-NC-DS-RE)*0.25)+DS+RE).
+calcular_renta_maxima(BI, NC, R):- R is ((BI-NC)*0.4).
+base_retefuente(BI,NC,RC,RM,R):-Y is BI-NC, (Y @=< 0 -> R is 0; (RC @>= RM -> R is (BI-RM-NC); R is (BI-RC-NC))).
+evaluar_uvt(VU,U,R):- (U @> 150, U @=<360 -> A is U - 150, B is A*0.28, C is B * VU, D is (10 * VU), F is C + D, R is (F rnd 0)).
+calcular_pension_universidad(C,P,V):- pensionado(W), (W@>= 1 -> V is 0; pensionUdistrital(P,X,Z),calcular_ibc(C,P,IBC), T is ((IBC*(Z/100)) approach 100), calcular_pension(C,P,AP), V is (T-AP)).
+calcular_ibc(C,P,V):- general(G),porcentaje(Y), salario_minimo(P,SM),valor_pago(C,P,SB), TI is ((SM*Y) rnd 0),TS is (SM*25),(SB @=< TI -> (G @>= 1 -> V is TI; V is 
+SB); (SB @>= TS -> V is TS; V is SB)).
+liquidar_hcs(X,P,salarioBase,T):-valor_pago(X,P,T).
+calcular_salud_universidad(C,P,V):- saludUdistrital(P,X,Z),calcular_ibc(C,P,IBC), T is ((IBC*(Z/100)) approach 100), calcular_salud(C,P,AS), V is (T-AS).
+liquidar_prestacion(X,P,primaNavidad,T):- valor_contrato(X,VC),valor_prima_navidad(X,VC,T).
+calcular_pension(I,P,T):- pensionado(Z), (Z@>=1 -> T is 0; calcular_ibc(I,P,IBC), pension(P,PP), T is ((IBC*(PP/100)) rnd 0)).
+salud(2022,4).
+liquidar_prestacion(X,P,cesantias,T):- valor_contrato(X,VC),valor_cesantias(X,VC,T).
+arl(2022,0.52).
+valor_cesantias(X,SB,V):- porcentaje_cesantias(PC), V is ((SB*(PC)) rnd 0).
+liquidar_hcs(X,P,ibc_liquidado,T):- calcular_ibc(X,P,T).
+calculo_NC(X,P,R):- calcular_pension(X,P,VP), calcular_salud(X,P,VS), calcular_salud_universidad(X,P,VSU),calcular_pension_universidad(X,P,VPU), calcular_fondo_sol(X,P,VF),calcular_fondo_sub(X,P,VFS), R is (VP+VS+VF+VFS+VPU+VSU).
+liquidar_prestacion(X,P,priServ,T):- valor_contrato(X,VC),valor_prima_servicios(X,P,VC,T).
+valor_prima_servicios(X,P,SB,V):- duracion_contrato(X,S,P), M is S/4, (M @> 6 -> porcentaje_prima_servicios(PS), V is ((SB*PS) rnd 0); V is 0).
+valor_prima_navidad(X,SB,V):- porcentaje_prima_navidad(PN), V is ((SB*PN) rnd 0).
+liquidar_prestacion(X,P,primaVacaciones,T):- valor_contrato(X,VC),valor_prima_vacaciones(X,VC,T).
+valor_prima_vacaciones(X,SB,V):- porcentaje_prima_vacaciones(PV), V is ((SB*PV) rnd 0).
+liquidar_prestacion(X,P,vacaciones,T):- valor_contrato(X,VC),valor_vacaciones(X,VC,T).
+calcular_fondo(C,P,T):- salario_minimo(P,SM), valor_pago(C,P,VP), iva(P,PI), calcular_iva(VP,PI,BI), X is (BI*0.40/SM), evaluar_fondo(X, PF), T is (BI * PF).       
+saludUdistrital(2022,8.5,12.5).
+pensionUdistrital(2022,12,16).
+calcular_iva(X,Y,BI):- reteiva(A), (A@>=1 -> BI is (X -(X - (X/(1+(Y/100))))) rnd 0; BI is X).
+liquidar_hcs(X,P,fondoSubsistencia,T):- calcular_fondo_sub(X,P,T).
+liquidar_hcs(X,P,icbf,T):- calcular_icbf(X,P,T).
+liquidar_hcs(X,P,saludUdistrital,T):- calcular_salud_universidad(X,P,T).
+liquidar_hcs(X,P,pensionUdistrital,T):- calcular_pension_universidad(X,P,T).
+liquidar_hcs(X,P,caja_compensacion,T):- calcular_caja(X,P,T).
+porcentaje_fondoSol(2022,0.005).
+evaluar_fondo_sub(X,R):- (X @> 20 -> R is 0.015).
+evaluar_fondo_sub(X,R):- (X @> 19, X @=<20 -> R is 0.013).
+evaluar_fondo_sub(X,R):- (X @> 18, X @=<19 -> R is 0.011).
+evaluar_fondo_sub(X,R):- (X @> 17, X @=<18 -> R is 0.009).
+evaluar_fondo_sub(X,R):- (X @> 16, X @=<17 -> R is 0.007).
+evaluar_fondo_sub(X,R):- (X @> 4, X @=<16 -> R is 0.005).
+evaluar_fondo_sub(X,R):- (X @=< 4 -> R is 0).
+calcular_fondo_sol(C,P,V):- pensionado(W), (W@>=1 -> V is 0; calcular_ibc(C,P,IBC),salario_minimo(P,SM),T is (SM*4), (IBC @>= T -> V is ((IBC*(0.005)) approach 100); V is 0)).
+calcular_arl(C,P,T) :- calcular_ibc(C,P,I), arl(P,PA), T is (I*(PA/100) rnd 0).
+duplicado(1).
+porcentaje_prima_servicios(0.0740740929887414).
+porcentaje_prima_navidad(0.0740740929887414).
+porcentaje_vacaciones(0.04148148).
+porcentaje_interes_cesantias(0.01).
+porcentaje_cesantias(0.0833333333333333).
+calcular_icbf(C,P,T):- valor_ibc_caja(C,P,IC), icbf(P,PI), T is (IC*(PI/100) rnd 0).
+icbf(2021,3).
+icbf(2022,3).
+sueldo_base(F,C,I,P,SB):- factor(F,C,P,VF), valor_punto(P,VP), salario_minimo(P,SM),(F==hcpos -> V is (SM*VF); V is (VP*VF)), valor_sueldo(F,I,P,V,SB).
+liquidar_hcs(X,P,fondoSolidaridad,T):- calcular_fondo_sol(X,P,T).
+factor(hcpos,asistente,2022,0.13).
+factor(hcpos,asociado,2022,0.17).
+factor(hcpos,titular,2022,0.20).
+factor(hcpos,asistenteud,2022,0.16).
+factor(hcpos,asociadoud,2022,0.19).
+factor(hcpos,titularud,2022,0.22).
+factor(hcpre,auxiliar,2022,1.8).
+factor(hcpre,asistente,2022,2.3).
+factor(hcpre,asociado,2022,2.7).
+factor(hcpre,titular,2022,3).
+factor(tco,auxiliar,2022,212).
+factor(tco,asistente,2022,338).
+factor(tco,asociado,2022,380).
+factor(tco,titular,2022,422).
+factor(mto,auxiliar,2022,106).
+factor(mto,asistente,2022,169).
+factor(mto,asociado,2022,190).
+factor(mto,titular,2022,211).
+valor_vacaciones(X,SB,V):- porcentaje_vacaciones(PV), V is ((SB*PV) rnd 0).
+liquidar_prestacion(X,P,interesCesantias,T):- valor_contrato(X,VC),valor_interes_cesantias(X,VC,T).
+liquidar_prestacion(X,P,bonServ,T):- valor_contrato(X,VC),valor_bonificacion_servicios(X,P,VC,T).
+valor_bonificacion_servicios(C,P,SB,V):- duracion_contrato(C,ST,P), MT is (ST/4), (MT @> 12 -> porcentaje_bonificacion_servicios(PBS), V is ((SB*PBS/MT) rnd 0); V is 0).
+porcentaje_prima_vacaciones(0.04148148).
+porcentaje_bonificacion_servicios(0.35).
+desagregado(C,I,D,P,salarioBase,V):- sueldo_base(D,C,I,P,V).
+desagregado(C,I,D,P,cesantias,V):- sueldo_base(D,C,I,P,SB), valor_cesantias(I,SB,V).
+desagregado(C,I,D,P,primaNavidad,V):- sueldo_base(D,C,I,P,SB),valor_prima_navidad(I,SB,V).
+desagregado(C,I,D,P,primaVacaciones,V):- sueldo_base(D,C,I,P,SB),valor_prima_vacaciones(I,SB,V).
+desagregado(C,I,D,P,vacaciones,V):- sueldo_base(D,C,I,P,SB),valor_vacaciones(I,SB,V).
+desagregado(C,I,D,P,interesCesantias,V):- sueldo_base(D,C,I,P,SB),valor_interes_cesantias(I,SB,V).
+desagregado(C,I,D,P,bonServ,V):- sueldo_base(D,C,I,P,SB),valor_bonificacion_servicios(I,P,SB,V).
+valor_interes_cesantias(X,SB,V):- porcentaje_interes_cesantias(PIC),V is ((SB*PIC) rnd 0).
+factor(mto,titular,2023,211).
+factor(mto,asociado,2023,190).
+factor(mto,asistente,2023,169).
+factor(mto,auxiliar,2023,106).
+valor_sueldo(hcpre,C,P,V,R):- horas_semanales(HS), duracion_contrato(C,ST,P), R is ((V*HS*ST) rnd 0).
+valor_sueldo(hcpos,C,P,V,R):- horas_semanales(HS), duracion_contrato(C,ST,P), R is ((V*HS*ST) rnd 0).
+valor_sueldo(mto,C,P,V,R):- duracion_contrato(C,ST,P), MT is (ST/4), R is ((V*MT) rnd 0).
+valor_punto(2022,16441).
+desagregado(C,I,D,P,priServ,V):- aplica_prima(X),(X@>=1 -> sueldo_base(D,C,I,P,SB),valor_prima_servicios(I,P,SB,V); V is 0).
+valor_sueldo(tco,C,P,V,R):- duracion_contrato(C,ST,P), MT is (ST/4), R is ((V*MT) rnd 0).
+liquidar_hcs(X,P,ibccajacompensacioneicbf,T):- valor_ibc_caja(X,P,T).
+valor_ibc_caja(X,P,T):- mesFinal(MF),completo(C), (C@>=1 -> (MF@>= 1 -> valor_contrato(X,VC),valor_vacaciones(X,VC,V); V is 0); vacaciones(V)), VT is (V*2), valor_pago(X,P,SB), T is (SB+VT).
+porcentaje_devengo_v2(2023,primaNavidad,0.0740740929887414).
+porcentaje_devengo_v2(2023,vacaciones,0.0414814800000000).
+porcentaje_devengo_v2(2023,cesantias,0.0833333333333333).
+porcentaje_devengo_v2(2023,interesCesantias,0.0100000000000000).
+porcentaje_devengo_v2(2023,primaVacaciones,0.0414814800000000).
+porcentaje_devengo_v2(2023,prima_servicios,0.0740740929887414).
+factor(tco,titular,2023,422).
+factor(tco,asociado,2023,380).
+factor(tco,asistente,2023,338).
+factor(tco,auxiliar,2023,212).
+factor(hcpre,titular,2023,3).
+factor(hcpre,asociado,2023,2.7).
+factor(hcpre,asistente,2023,2.3).
+factor(hcpre,auxiliar,2023,1.8).
+factor(hcpos,titularud,2023,0.22).
+factor(hcpos,asociadoud,2023,0.19).
+factor(hcpos,asistenteud,2023,0.16).
+factor(hcpos,titular,2023,0.20).
+factor(hcpos,asociado,2023,0.17).
+factor(hcpos,asistente,2023,0.13).
+valor_punto(2023,16441).
+icbf(2023,3).
+pensionUdistrital(2023,12,16).
+saludUdistrital(2023,8.5,12.5).
+porcentaje_fondoSol(2023,0.005).
+arl(2023,0.52).
+iva(2023,19).
+salud(2023,4).
+porcentaje_caja(2023,4).
+valor_uvt(2023,42412).
+salario_minimo(2023,1160000).
+reteica(2023,9.66).
+estampilla(2023,0.011).
+pension(2023,4).
+adulto_mayor(2023,0.02).
+reteiva(0).dependientes(0).medicina_prepagada(0).pensionado(0).intereses_vivienda(0).pension_voluntaria(0).afc(0).general(0).
+completo(0).
+vacaciones(0.000000).
+valor_contrato(888888,-700000).
+duracion_contrato(888888,2,2023).
+porcentaje(0.500000).semanas_liquidadas(888888,2).mesFinal(1).
