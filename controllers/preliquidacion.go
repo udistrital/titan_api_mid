@@ -35,6 +35,7 @@ func (c *PreliquidacionController) Preliquidar() {
 	//var codigo string
 	fmt.Println("Hola Mundo producción")
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &contrato); err == nil {
+		fmt.Println(contrato)
 		fmt.Println("Contrato Recibido: ")
 		fmt.Println("Numero de contrato: ", contrato.NumeroContrato)
 		fmt.Println("Documento: ", contrato.Documento)
