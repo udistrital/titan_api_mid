@@ -165,6 +165,100 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 	return reglas, alivios, nil
 }
 
+func CargarDatosRetefuenteOld(cedula int) (reglas string, datosRetefuente models.ContratoPreliquidacionOld, err error) {
+
+	var aux map[string]interface{}
+	var tempPersonaNatural models.PersonaNatural
+	var alivios models.ContratoPreliquidacionOld
+	reglas = ""
+
+	query := strconv.Itoa(cedula)
+	fmt.Println(beego.AppConfig.String("UrlArgoWso2") + "/informacion_persona_natural/" + query)
+	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
+
+		jsonPersonaNatural, errorJSON := json.Marshal(aux["informacion_persona_natural"])
+		if errorJSON == nil {
+			json.Unmarshal(jsonPersonaNatural, &tempPersonaNatural)
+			if tempPersonaNatural.ResponsableIva == "true" {
+				reglas = reglas + "reteiva(1)."
+				alivios.ResponsableIva = true
+			} else {
+				reglas = reglas + "reteiva(0)."
+				alivios.ResponsableIva = false
+			}
+
+			if tempPersonaNatural.PersonasACargo == "true" {
+				reglas = reglas + "dependientes(1)."
+				alivios.Dependientes = true
+			} else {
+				reglas = reglas + "dependientes(0)."
+				alivios.Dependientes = false
+			}
+			alivios.MedicinaPrepagadaUvt, _ = strconv.ParseFloat(tempPersonaNatural.ValorUvtPrepagada, 64)
+			if alivios.MedicinaPrepagadaUvt >= 0 && tempPersonaNatural.ValorUvtPrepagada != "" {
+				reglas = reglas + "medicina_prepagada(" + tempPersonaNatural.ValorUvtPrepagada + ")."
+			} else {
+				reglas = reglas + "medicina_prepagada(0)."
+				alivios.MedicinaPrepagadaUvt = 0
+			}
+
+			if tempPersonaNatural.Pensionado == "true" {
+				reglas = reglas + "pensionado(1)."
+				alivios.Pensionado = true
+			} else {
+				reglas = reglas + "pensionado(0)."
+				alivios.Pensionado = false
+			}
+
+			alivios.InteresesVivienda, _ = strconv.ParseFloat(tempPersonaNatural.InteresViviendaAfc, 64)
+			if alivios.InteresesVivienda > 0 && tempPersonaNatural.InteresViviendaAfc != "" {
+				reglas = reglas + "intereses_vivienda(" + tempPersonaNatural.InteresViviendaAfc + ")."
+			} else {
+				reglas = reglas + "intereses_vivienda(0)."
+				alivios.InteresesVivienda = 0
+			}
+
+			alivios.PensionVoluntaria, _ = strconv.ParseFloat(tempPersonaNatural.ValorPensionVoluntaria, 64)
+			if alivios.PensionVoluntaria > 0 && tempPersonaNatural.ValorPensionVoluntaria != "" {
+				reglas = reglas + "pension_voluntaria(" + tempPersonaNatural.ValorPensionVoluntaria + " )."
+			} else {
+				alivios.PensionVoluntaria = 0
+				reglas = reglas + "pension_voluntaria(0)."
+			}
+			alivios.Afc, _ = strconv.ParseFloat(tempPersonaNatural.ValorAfc, 64)
+			if alivios.Afc > 0 && tempPersonaNatural.ValorAfc != "" {
+				reglas = reglas + "afc(" + tempPersonaNatural.ValorAfc + ")."
+			} else {
+				alivios.Afc = 0
+				reglas = reglas + "afc(0)."
+			}
+		} else {
+			fmt.Println("Error al unmarshal del JSON: ", err)
+			return "Error al unmarshal del JSON de Ágora: ", alivios, err
+		}
+	} else {
+		fmt.Println("error al consultar en Ágora", err)
+		return "error al consultar en Ágora: ", alivios, err
+	}
+	/*
+		reglas = reglas + "dependientes(0)."
+		reglas = reglas + "medicina_prepagada(0)."
+		reglas = reglas + "pensionado(0)."
+		reglas = reglas + "intereses_vivienda(0)."
+		reglas = reglas + "reteiva(0)."
+		reglas = reglas + "pension_voluntaria(0)."
+		reglas = reglas + "afc(0)."
+		alivios.PensionVoluntaria = 0
+		alivios.Afc = 0
+		alivios.ResponsableIva = false
+		alivios.Dependientes = false
+		alivios.MedicinaPrepagadaUvt = 0
+		alivios.Pensionado = false
+		alivios.InteresesVivienda = 0
+	*/
+	return reglas, alivios, nil
+}
+
 // Resumen de la preliquidacion ...
 // @Title Resumen Preliquidacion
 // @Description Retorna el total de la preliquidacion

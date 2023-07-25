@@ -17,3 +17,21 @@ type ContratoPreliquidacion struct {
 	FechaCreacion        string
 	FechaModificacion    string
 }
+
+type ContratoPreliquidacionOld struct {
+	Id                   int
+	ContratoId           *ContratoOld
+	PreliquidacionId     *Preliquidacion
+	Cumplido             bool
+	Preliquidado         bool
+	ResponsableIva       bool
+	Dependientes         bool
+	Pensionado           bool
+	InteresesVivienda    float64
+	MedicinaPrepagadaUvt float64
+	PensionVoluntaria    float64
+	Afc                  float64
+	Activo               bool
+	FechaCreacion        string
+	FechaModificacion    string
+}
