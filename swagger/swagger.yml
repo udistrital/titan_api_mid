@@ -443,6 +443,26 @@ paths:
             $ref: '#/definitions/models.Contrato'
         "400":
           description: the request contains incorrect syntax
+  /novedadVE/aplicar_anulacion_old:
+    post:
+      tags:
+      - novedadVE
+      description: Maneja la novedad contractual de anulación de contratos de docentes de VE old
+      operationId: NovedadVEController.Aplicar anulación Old
+      parameters:
+      - in: body
+        name: Adición
+        description: Datos de la anulacion old
+        required: true
+        schema:
+          $ref: '#/definitions/models.AnulacionOld'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.ContratoOld'
+        "400":
+          description: the request contains incorrect syntax
   /novedadVE/aplicar_reduccion:
     post:
       tags:
@@ -624,6 +644,23 @@ definitions:
       Vigencia:
         type: integer
         format: int64
+  models.AnulacionOld:
+    title: AnulacionOld
+    type: object
+    properties:
+      Documento:
+        type: string
+      FechaAnulacion:
+        type: string
+        format: datetime
+      NumeroContrato:
+        type: string
+      Rp:
+        type: integer
+        format: int64
+      Vigencia:
+        type: integer
+        format: int64
   models.Cancelacion:
     title: Cancelacion
     type: object
@@ -751,6 +788,62 @@ definitions:
       ValorContratoReduccion:
         type: number
         format: double
+  models.ContratoOld:
+    title: ContratoOld
+    type: object
+    properties:
+      Activo:
+        type: boolean
+      Cdp:
+        type: integer
+        format: int64
+      Completo:
+        type: boolean
+      DependenciaId:
+        type: integer
+        format: int64
+      Documento:
+        type: string
+      FechaCreacion:
+        type: string
+      FechaFin:
+        type: string
+        format: datetime
+      FechaInicio:
+        type: string
+        format: datetime
+      FechaModificacion:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      NombreCompleto:
+        type: string
+      NumeroContrato:
+        type: string
+      PersonaId:
+        type: integer
+        format: int64
+      ProyectoId:
+        type: integer
+        format: int64
+      Rp:
+        type: integer
+        format: int64
+      TipoNominaId:
+        type: integer
+        format: int64
+      Unico:
+        type: boolean
+      Vacaciones:
+        type: number
+        format: double
+      ValorContrato:
+        type: number
+        format: double
+      Vigencia:
+        type: integer
+        format: int64
   models.ContratoPreliquidacion:
     title: ContratoPreliquidacion
     type: object

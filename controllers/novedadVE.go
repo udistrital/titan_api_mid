@@ -519,6 +519,200 @@ func (c *NovedadVEController) AplicarAnulacion() {
 }
 
 // Post ...
+// @Title Aplicar anulación Old
+// @Description Maneja la novedad contractual de anulación de contratos de docentes de VE old
+// @Param	Adición	 body  models.AnulacionOld	true	"Datos de la anulacion old"
+// @Success 201 {object} models.ContratoOld
+// @Failure 400 the request contains incorrect syntax
+// @router /aplicar_anulacion_old [post]
+func (c *NovedadVEController) AplicarAnulacionOld() {
+	var anulacion models.AnulacionOld
+	var aux map[string]interface{}
+	var contrato []models.ContratoOld
+	var contratoOriginal models.ContratoOld
+	var contrato_preliquidacion []models.ContratoPreliquidacionOld
+	var valorDia float64
+	var semanasContrato int
+	var semanasTotales int
+	var detalles []models.DetallePreliquidacionOld
+	var codAux int
+	var DetallesAux []models.DetallePreliquidacionOld
+	var sumaContratosTemp float64
+	var mensaje string //Mensaje de error
+
+	//Traer el contrato a cancelar
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &anulacion); err == nil {
+		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=Rp:"+strconv.Itoa(anulacion.Rp)+",Vigencia:"+strconv.Itoa(anulacion.Vigencia)+",Documento:"+anulacion.Documento+",Activo:true", &aux); err == nil {
+			LimpiezaRespuestaRefactor(aux, &contrato)
+			if contrato[0].Id != 0 {
+
+				//Ordenar los contratos para tomar el más reciente
+				for i := 0; i < len(contrato); i++ {
+					if contrato[0].Id < contrato[i].Id {
+						auxContrato := contrato[0]
+						contrato[0] = contrato[i]
+						contrato[i] = auxContrato
+					}
+				}
+
+				contratoOriginal = contrato[0]
+
+				anoIterativo := anulacion.FechaAnulacion.Year()
+				mesIterativo := int(anulacion.FechaAnulacion.Month())
+
+				//Eliminar los detalles y los contratos_preliquidacion
+				for {
+					//Obtener contrato_preliquidacion para ese mes
+					query := "ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
+					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+						LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
+						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
+							LimpiezaRespuestaRefactor(aux, &detalles)
+							for j := 0; j < len(detalles); j++ {
+								if contrato[0].TipoNominaId == 410 {
+									if detalles[j].ConceptoNominaId.Id == 152 {
+										valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
+									}
+								} else {
+									if detalles[j].ConceptoNominaId.Id == 87 {
+										valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
+									}
+								}
+								if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
+									fmt.Println("Detalle eliminado con éxito")
+								} else {
+									fmt.Println("Error al Eliminar Detalles:", err)
+									c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
+									c.Abort("400")
+								}
+							}
+							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "DELETE", &aux, nil); err == nil {
+								fmt.Println("contrato preliquidacion eliminado con éxito")
+							} else {
+								fmt.Println("Error al eliminar contrato preliquidacion: ", err)
+								c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
+								c.Abort("400")
+							}
+						} else {
+							fmt.Println("Error al obtener detalles")
+							c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
+							c.Abort("400")
+						}
+					} else {
+						fmt.Println("Error al obtener contrato_preliquidacion")
+						c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
+						c.Abort("400")
+					}
+
+					if mesIterativo == int(contrato[0].FechaFin.Month()) && anoIterativo == contrato[0].FechaFin.Year() {
+						break
+					} else {
+						if mesIterativo == 12 {
+							mesIterativo = 1
+							anoIterativo = anoIterativo + 1
+						} else {
+							mesIterativo = mesIterativo + 1
+						}
+					}
+				}
+				fmt.Println("Valor día: ", valorDia)
+				contrato[0].FechaFin = anulacion.FechaAnulacion
+				//Actualizar fecha de finalización del contrato
+				contratoOriginal.Activo = false
+				contratoOriginal.Id = 0
+				// CREA CONTRATO NUEVO CON LA INFORMACIÓN DEL CONTRATO ORIGINAL CON CAMPO ACTIVO FALSE
+				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contratoOriginal); err == nil {
+					if contrato[0].FechaInicio.Month() != anulacion.FechaAnulacion.Month() || contrato[0].FechaInicio.Year() != anulacion.FechaAnulacion.Year() {
+						semanasTotales = int(calcularSemanasContratoDVE(contrato[0].FechaInicio, anulacion.FechaAnulacion))
+						semanasContrato = int(calcularSemanasContratoDVE(time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC), anulacion.FechaAnulacion))
+						contrato[0].FechaInicio = time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC)
+						contrato[0].ValorContrato = valorDia * float64(semanasContrato)
+					} else {
+						fmt.Println("Anulación el mismo mes de inicio")
+						diaAux := contrato[0].FechaInicio.AddDate(0, 0, 1)
+						semanasContrato = int(calcularSemanasContratoDVE(diaAux, contrato[0].FechaFin))
+						semanasTotales = semanasContrato
+						contrato[0].ValorContrato = valorDia * float64(semanasContrato)
+					}
+
+					if contrato[0].TipoNominaId == 409 {
+						codAux = 87
+					} else if contrato[0].TipoNominaId == 410 {
+						codAux = 152
+					}
+
+					// Trae todos los detalles preliquidación no eliminados para calcular el nuevo valor del contrato
+					query := "ContratoPreliquidacionId__ContratoId__Id:" + strconv.Itoa(contrato[0].Id) + ",ConceptoNominaId:" + strconv.Itoa(codAux)
+					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+						LimpiezaRespuestaRefactor(aux, &DetallesAux)
+						for i := 0; i < len(DetallesAux); i++ {
+							fmt.Println(DetallesAux[i].ValorCalculado)
+							sumaContratosTemp += DetallesAux[i].ValorCalculado
+						}
+					} else {
+						fmt.Println("Error al obtener detalles preliquidacion ", err)
+						c.Data["mesaage"] = "Error al obtener detalles preliquidacion " + err.Error()
+						c.Abort("400")
+					}
+
+					contratoAux := contrato[0]
+					contratoAux.FechaInicio = contratoOriginal.FechaInicio
+					sumaContratosTemp += contrato[0].ValorContrato
+					contratoAux.ValorContrato = sumaContratosTemp
+					// Actualiza los datos del contrato: Fecha fin y valor
+					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contratoAux); err == nil {
+						if anulacion.FechaAnulacion.Day() != 30 {
+							contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
+							if contrato[0].TipoNominaId == 409 {
+								mensaje, err = liquidarHCHOld(contrato[0], false, 0, contrato[0].Vigencia)
+								anularEnGeneralesOld(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
+							} else if contrato[0].TipoNominaId == 410 {
+								fmt.Println("SEMANAS TOTALES ", semanasTotales)
+								fmt.Println("SEMANAS CONTRATO ", semanasContrato)
+								mensaje, err = liquidarHCSOld(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
+								anularEnGeneralesOld(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
+							}
+
+							if err == nil {
+								c.Ctx.Output.SetStatus(201)
+								c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contrato[0]}
+							} else {
+								fmt.Println("Error al cancelar contrato: ", err)
+								c.Data["mesaage"] = mensaje + err.Error()
+								c.Abort("400")
+							}
+						}
+					} else {
+						fmt.Println("Error al crear el contrato nuevo ", err)
+						c.Data["mesaage"] = "Error al crear el contrato nuevo: " + err.Error()
+						c.Abort("400")
+					}
+
+				} else {
+					fmt.Println("Error al ctualizar el contrato: ", err)
+					c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
+					c.Abort("400")
+				}
+			} else {
+				fmt.Println("Error al obtener el contrato: ", err)
+				c.Data["mesaage"] = "Error al obtener el contrato:" + err.Error()
+				c.Abort("400")
+			}
+		} else {
+			fmt.Println("Error al obtener el contrato: ", err)
+			c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
+			c.Abort("400")
+		}
+	} else {
+		fmt.Println("Error al unmarshal del body: ", err)
+		c.Data["mesaage"] = "Error al unmarshal del body:" + err.Error()
+		c.Abort("400")
+
+	}
+	c.ServeJSON()
+}
+
+// Post ...
 // @Title Aplicar Reducción
 // @Description Maneja la novedad contractual de Adición de horas para contratos de docentes de VE
 // @Param	Adición	 body  models.Reduccion	true	"Datos de la adición"

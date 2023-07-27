@@ -580,7 +580,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 						fmt.Println("Fecha nuevo:", contratoNuevo.FechaFin)
 					} else {
 						fmt.Println("Fecha anterior:", contratoNuevo.FechaFin)
-						contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour * time.Duration(diasSuspension+1))
+						contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour * time.Duration(diasSuspension))
 						fmt.Println("Fecha nuevo:", contratoNuevo.FechaFin)
 					}
 
