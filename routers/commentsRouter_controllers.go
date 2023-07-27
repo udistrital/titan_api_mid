@@ -153,6 +153,15 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadVEController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadVEController"],
         beego.ControllerComments{
+            Method: "AplicarAnulacionOld",
+            Router: "/aplicar_anulacion_old",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadVEController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NovedadVEController"],
+        beego.ControllerComments{
             Method: "AplicarReduccion",
             Router: "/aplicar_reduccion",
             AllowHTTPMethods: []string{"post"},
