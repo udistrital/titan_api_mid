@@ -409,6 +409,7 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 		}
 
 		if nomina == "410" && flag {
+			fmt.Println("ENTRA A ESTE")
 			liquidarHCS(contratoGeneral[0], true, porcentaje, vigencia_original, 0, 0, false)
 		} else if nomina == "409" && flag {
 			liquidarHCH(contratoGeneral[0], true, porcentaje, vigencia_original, 0, 0, false)
@@ -556,6 +557,7 @@ func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time, vige
 	var aux map[string]interface{}
 	var preliquidacion []models.Preliquidacion
 
+	fmt.Println("FECHA ANULACIÖN ", fecha_anulacion)
 	anio_aux := int(fecha_anulacion.Year())
 	mes_aux := int(fecha_anulacion.Month()) + 1
 
@@ -603,6 +605,8 @@ func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time, vige
 			query := "Ano:" + strconv.Itoa(anio_aux) + ",Mes:" + strconv.Itoa(mes_aux) + ",Nominaid:416"
 			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &preliquidacion)
+				fmt.Println("ANULAR EN GENERAL ", mes_aux)
+				fmt.Println("ANULAR EN GENERAL ", anio_aux)
 				LiquidarContratoGeneral(mes_aux, anio_aux, contrato, preliquidacion[0], 1, "410", vigencia_original, false)
 				borrarContratoGeneral(contrato.Documento, contrato.Vigencia, fecha_anulacion, contrato.FechaFin, contrato.TipoNominaId)
 			}
@@ -612,9 +616,16 @@ func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time, vige
 			mes_aux = 1
 			anio_aux += 1
 		}
-		if anio_aux == int(contrato.FechaFin.Year()) && mes_aux > int(contrato.FechaFin.Month()) {
+		if anio_aux > int(contrato.FechaFin.Year()) {
 			break
+		} else if anio_aux == int(contrato.FechaFin.Year()) {
+			if mes_aux > int(contrato.FechaFin.Month()) {
+				break
+			}
 		}
+		fmt.Println("anio aux ", anio_aux)
+		fmt.Println("mes aux ", mes_aux)
+
 	}
 
 }
@@ -874,8 +885,10 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64) (mensaje strin
 
 			contratoOriginal = contrato[0]
 			contrato[0].Desagregado = anulacion.Desagregado
-
-			if anulacion.FechaAnulacion.Before(contrato[0].FechaInicio) {
+			fmt.Println("!!!!! ", anulacion.FechaAnulacion)
+			fmt.Println("!!!!! ", contrato[0].FechaInicio)
+			if anulacion.FechaAnulacion.Equal(contrato[0].FechaInicio) {
+				fmt.Println("ANULACIÓN COMPLETA")
 				anulacion.FechaAnulacion = contrato[0].FechaInicio
 				contrato[0].ValorContrato = 0
 				anulacion_completa = true
@@ -935,7 +948,10 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64) (mensaje strin
 					codigo = "400"
 					return mensaje, codigo, nil, err, fechaOriginal, anulacion_completa
 				}
-
+				fmt.Println(mesIterativo)
+				fmt.Println("CONTRATO =ASDAs ", int(contrato[0].FechaFin.Month()))
+				fmt.Println(anoIterativo)
+				fmt.Println("CONTRATO =ASDAs ", int(contrato[0].FechaFin.Year()))
 				if mesIterativo == int(contrato[0].FechaFin.Month()) && anoIterativo == contrato[0].FechaFin.Year() {
 					break
 				} else {
@@ -990,6 +1006,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64) (mensaje strin
 					mismoMes = true
 					diaAux := contrato[0].FechaInicio.AddDate(0, 0, 1)
 					semanasContrato = int(calcularSemanasContratoDVE(diaAux, contrato[0].FechaFin))
+					semanasContrato -= 1
 					semanasTotales = semanasContrato
 					if valorContrato == 0 {
 						contrato[0].ValorContrato = valorDia * float64(semanasContrato)
@@ -1043,7 +1060,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64) (mensaje strin
 				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contratoAux); err == nil {
 					if anulacion.FechaAnulacion.Day() != 30 {
 						contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
-						if contrato[0].TipoNominaId == 409 {
+						if contrato[0].TipoNominaId == 409 && semanasTotales > 0 {
 							// REVISAR VALOR DEL DIA Y SI ES O NO ANULACIÓN
 							mensaje, err = liquidarHCH(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
 							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)

@@ -107,6 +107,8 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 
 			fmt.Println("Mes: ", mesIterativo)
 			fmt.Println("Año: ", anoIterativo)
+			fmt.Println("+++ ", contrato.FechaFin.Month())
+			fmt.Println("+++ ", contrato.FechaFin.Year())
 			reglasNuevas = ""
 			query := "Ano:" + strconv.Itoa(anoIterativo) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:416"
 			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
@@ -128,11 +130,18 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 
 				//Calcular semanas a liquidar
 				if contrato.FechaInicio.Month() == contrato.FechaFin.Month() && contrato.FechaInicio.Year() == contrato.FechaFin.Year() {
+					fmt.Println("CONTRATOS UNICO MES ")
+					fmt.Println(contrato.FechaInicio)
+					fmt.Println(contrato.FechaFin)
+					fmt.Println(semanas_totales)
 					//Contratos de un único mes
 					//Calcular el numero de días
 					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
 					semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
 					semanas = semanas / 7
+					if semanas_totales > 0 {
+						semanas = float64(semanas_totales)
+					}
 					if porcentaje != 0 {
 						porcentaje_ibc = porcentaje
 					} else {
@@ -147,8 +156,9 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 						detallePreliquidacion.DiasLiquidados = float64(semanas)
 					}
 
-					semanas_liquidadas = semanasContrato
+					//semanas_liquidadas = semanasContrato
 				} else if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
+					fmt.Println("CONTRATOS MES INICIAL ")
 					//para el mes inicial
 					//Calcular el numero de días
 					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
@@ -171,6 +181,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 
 					semanasContrato = semanasContrato - semanas_liquidadas
 				} else {
+					fmt.Println("CONTRATOS VARIOS MESES ")
 					semanas_liquidadas = 4
 					if semanasContrato-semanas_liquidadas <= 0 {
 						diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
@@ -217,7 +228,10 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 						fmt.Println("El contrato es único, no requiere de actualización")
 					}
 				}
-
+				fmt.Println("Mes: ", mesIterativo)
+				fmt.Println("Año: ", anoIterativo)
+				fmt.Println("--- ", contrato.FechaFin.Month())
+				fmt.Println("--- ", contrato.FechaFin.Year())
 				if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() {
 					break
 				} else {
