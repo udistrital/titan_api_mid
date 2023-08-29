@@ -850,7 +850,7 @@ func Preliquidacion(contrato models.Contrato) (mensaje string, codigo string, co
 
 }
 
-func Anulacion(anulacion models.Anulacion, valorContrato float64) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
+func Anulacion(anulacion models.Anulacion, valorContrato float64, anulacionReduccion bool) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
 
 	var aux map[string]interface{}
 	var contrato []models.Contrato
@@ -1006,7 +1006,10 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64) (mensaje strin
 					mismoMes = true
 					diaAux := contrato[0].FechaInicio.AddDate(0, 0, 1)
 					semanasContrato = int(calcularSemanasContratoDVE(diaAux, contrato[0].FechaFin))
-					semanasContrato -= 1
+					fmt.Println("semanas contrato ", semanasContrato)
+					if !anulacionReduccion {
+						semanasContrato -= 1
+					}
 					semanasTotales = semanasContrato
 					if valorContrato == 0 {
 						contrato[0].ValorContrato = valorDia * float64(semanasContrato)
@@ -1106,7 +1109,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64) (mensaje strin
 	return
 }
 
-func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
+func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, anulacionReduccion bool) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
 	var aux map[string]interface{}
 	var contrato []models.Contrato
 	var contratoOriginal models.Contrato
@@ -1141,7 +1144,7 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64) (mensa
 			contratoOriginal = contrato[0]
 			contrato[0].Desagregado = anulacion.Desagregado
 
-			if anulacion.FechaAnulacion.Before(contrato[0].FechaInicio) {
+			if anulacion.FechaAnulacion.Equal(contrato[0].FechaInicio) {
 				anulacion.FechaAnulacion = contrato[0].FechaInicio
 				contrato[0].ValorContrato = 0
 				anulacion_completa = true
@@ -1255,6 +1258,9 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64) (mensa
 					mismoMes = true
 					diaAux := contrato[0].FechaInicio.AddDate(0, 0, 1)
 					semanasContrato = int(calcularSemanasContratoDVE(diaAux, contrato[0].FechaFin))
+					if !anulacionReduccion {
+						semanasContrato -= 1
+					}
 					semanasTotales = semanasContrato
 					if valorContrato == 0 {
 						contrato[0].ValorContrato = valorDia * float64(semanasContrato)
@@ -1294,13 +1300,13 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64) (mensa
 				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contratoAux); err == nil {
 					if anulacion.FechaAnulacion.Day() != 30 {
 						contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
-						if contrato[0].TipoNominaId == 409 {
+						if contrato[0].TipoNominaId == 409 && semanasTotales > 0 {
 							// REVISAR VALOR DEL DIA Y SI ES O NO ANULACIÓN
 							anularEnGenerales(contratoOriginal, contratoOriginal.FechaInicio, anulacion.Vigencia)
 							mensaje, err = liquidarHCH(contrato[0], false, 0, contrato[0].Vigencia, 0, 0, true)
 						} else if contrato[0].TipoNominaId == 410 && semanasTotales > 0 {
 							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
-							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia, 0, 0, false)
+							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia, 0, 0, true)
 						}
 
 						if err == nil {
