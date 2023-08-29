@@ -7,6 +7,7 @@ type Reduccion struct {
 	Documento           string
 	FechaReduccion      time.Time
 	NivelAcademico      string
+	Semanas             int
 	ContratosOriginales []*ContratoReducir
 	ContratoNuevo       *ContratoNuevo
 }
