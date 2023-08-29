@@ -496,9 +496,9 @@ func (c *NovedadVEController) AplicarAnulacion() {
 		//anulacion.Desagregado = anulacionRp.ContratosAnulados[i].Desagregado
 		fmt.Println("anulacion ", anulacion)
 		if anulacion.NivelAcademico == "PREGRADO" {
-			mensaje, codigo, contratoReturn, err, _, _ = Anulacion(anulacion, 0, false)
+			mensaje, codigo, contratoReturn, err, _, _ = Anulacion(anulacion, 0, 0, false)
 		} else if anulacion.NivelAcademico == "POSGRADO" {
-			mensaje, codigo, contratoReturn, err, _, _ = AnulacionPosgrado(anulacion, anulacion.ValorContrato, false)
+			mensaje, codigo, contratoReturn, err, _, _ = AnulacionPosgrado(anulacion, anulacion.ValorContrato, 0, false)
 		}
 		//}
 
@@ -739,12 +739,13 @@ func (c *NovedadVEController) AplicarReduccion() {
 				anulacion.Documento = reduccion.Documento
 				fecha_anulacion = reduccion.FechaReduccion.AddDate(0, 0, -1)
 				anulacion.FechaAnulacion = fecha_anulacion
+				fmt.Println("fecha anulac ", anulacion.FechaAnulacion)
 				if reduccion.ContratosOriginales[i].DesagregadoOriginal != nil {
 					anulacion.Desagregado = reduccion.ContratosOriginales[i].DesagregadoOriginal
 				} else {
 					anulacion.Desagregado = nil
 				}
-				mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := Anulacion(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido, true)
+				mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := Anulacion(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido, reduccion.Semanas, true)
 				comp = completo
 				contratoAnulado.FechaFin = fechaOriginal
 				if fechaOriginal.After(fecha_fin_aux) {
@@ -752,7 +753,8 @@ func (c *NovedadVEController) AplicarReduccion() {
 				}
 				contratoAnuladoAux = contratoAnulado
 				if comp {
-					anularEnGenerales(*contratoAnuladoAux, reduccion.FechaReduccion.AddDate(0, -1, 0), reduccion.Vigencia)
+					fmt.Println("ANULA GENERAL AFUERA")
+					anularEnGenerales(*contratoAnuladoAux, reduccion.FechaReduccion.AddDate(0, -1, 0), reduccion.Vigencia, true)
 				}
 				if err != nil {
 					c.Data["message"] = mensaje + ", error en contrato " + anulacion.NumeroContrato + " " + err.Error()
@@ -771,7 +773,7 @@ func (c *NovedadVEController) AplicarReduccion() {
 				} else {
 					anulacion.Desagregado = nil
 				}
-				mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := AnulacionPosgrado(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido, true)
+				mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := AnulacionPosgrado(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido, reduccion.Semanas, true)
 				comp = completo
 				contratoAnulado.FechaFin = fechaOriginal
 				if fechaOriginal.After(fecha_fin_aux) {
@@ -779,7 +781,7 @@ func (c *NovedadVEController) AplicarReduccion() {
 				}
 				contratoAnuladoAux = contratoAnulado
 				if comp {
-					anularEnGenerales(*contratoAnuladoAux, reduccion.FechaReduccion.AddDate(0, -1, 0), reduccion.Vigencia)
+					anularEnGenerales(*contratoAnuladoAux, reduccion.FechaReduccion.AddDate(0, -1, 0), reduccion.Vigencia, true)
 				}
 				if err != nil {
 					c.Data["message"] = mensaje + ", error en contrato " + anulacion.NumeroContrato + " " + err.Error()

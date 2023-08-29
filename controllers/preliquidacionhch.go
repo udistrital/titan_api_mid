@@ -81,9 +81,11 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 			predicados = append(predicados, models.Predicado{Nombre: "general(0)."})
 		}
 		if anulacion {
+			fmt.Println("ENTRA ")
 			predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%v", valorDia*float64(semanas_totales)) + "). "})
 			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanas_totales) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 		} else {
+			fmt.Println("ENTRA 2")
 			predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 		}
@@ -196,6 +198,7 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 					porcentaje_ibc = 1
 				}
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
+				//fmt.Println(reglasNuevas)
 				auxDetalle = golog.LiquidarMesHCH(reglasNuevas, contrato.Documento, vigencia_original, detallePreliquidacion)
 				for j := 0; j < len(auxDetalle); j++ {
 					registrarDetallePreliquidacion(auxDetalle[j])
