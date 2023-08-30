@@ -875,7 +875,7 @@ func Preliquidacion(contrato models.Contrato) (mensaje string, codigo string, co
 
 }
 
-func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, anulacionReduccion bool) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
+func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, semanasAnteriores int, anulacionReduccion bool) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
 
 	var aux map[string]interface{}
 	var contrato []models.Contrato
@@ -1015,7 +1015,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, a
 				fechaOriginal = contratoOriginal.FechaFin
 				semanasContratoOriginal := int(calcularSemanasContratoDVE(contratoOriginal.FechaInicio, contratoOriginal.FechaFin))
 				fmt.Println("SEMANAS ORIGINAL ", semanasContratoOriginal)
-				if semanasContratoOriginal == semanasAnulacion {
+				if anulacionReduccion && semanasAnteriores == semanasAnulacion {
 					anulacion_completa = true
 				}
 				if contrato[0].FechaInicio.Month() != anulacion.FechaAnulacion.Month() || contrato[0].FechaInicio.Year() != anulacion.FechaAnulacion.Year() {
@@ -1142,7 +1142,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, a
 	return
 }
 
-func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semanas int, anulacionReduccion bool) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
+func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semanas int, semanasAnteriores int, anulacionReduccion bool) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
 	var aux map[string]interface{}
 	var contrato []models.Contrato
 	var contratoOriginal models.Contrato
@@ -1274,7 +1274,7 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 				fechaOriginal = contratoOriginal.FechaFin
 				semanasContratoOriginal := int(calcularSemanasContratoDVE(contratoOriginal.FechaInicio, contratoOriginal.FechaFin))
 				fmt.Println("SEMANAS ORIGINAL ", semanasContratoOriginal)
-				if semanasContratoOriginal == semanasAnulacion {
+				if anulacionReduccion && semanasAnteriores == semanasAnulacion {
 					anulacion_completa = true
 				}
 				if contrato[0].FechaInicio.Month() != anulacion.FechaAnulacion.Month() || contrato[0].FechaInicio.Year() != anulacion.FechaAnulacion.Year() {
