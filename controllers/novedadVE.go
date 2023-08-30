@@ -496,9 +496,9 @@ func (c *NovedadVEController) AplicarAnulacion() {
 		//anulacion.Desagregado = anulacionRp.ContratosAnulados[i].Desagregado
 		fmt.Println("anulacion ", anulacion)
 		if anulacion.NivelAcademico == "PREGRADO" {
-			mensaje, codigo, contratoReturn, err, _, _ = Anulacion(anulacion, 0, 0, false)
+			mensaje, codigo, contratoReturn, err, _, _ = Anulacion(anulacion, 0, 0, 1, false)
 		} else if anulacion.NivelAcademico == "POSGRADO" {
-			mensaje, codigo, contratoReturn, err, _, _ = AnulacionPosgrado(anulacion, anulacion.ValorContrato, 0, false)
+			mensaje, codigo, contratoReturn, err, _, _ = AnulacionPosgrado(anulacion, anulacion.ValorContrato, 0, 1, false)
 		}
 		//}
 
@@ -745,7 +745,7 @@ func (c *NovedadVEController) AplicarReduccion() {
 				} else {
 					anulacion.Desagregado = nil
 				}
-				mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := Anulacion(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido, reduccion.Semanas, true)
+				mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := Anulacion(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido, reduccion.Semanas, reduccion.SemanasAnteriores, true)
 				comp = completo
 				contratoAnulado.FechaFin = fechaOriginal
 				if fechaOriginal.After(fecha_fin_aux) {
@@ -773,7 +773,7 @@ func (c *NovedadVEController) AplicarReduccion() {
 				} else {
 					anulacion.Desagregado = nil
 				}
-				mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := AnulacionPosgrado(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido, reduccion.Semanas, true)
+				mensaje, codigo, contratoAnulado, err, fechaOriginal, completo := AnulacionPosgrado(anulacion, reduccion.ContratosOriginales[i].ValorContratoReducido, reduccion.Semanas, reduccion.SemanasAnteriores, true)
 				comp = completo
 				contratoAnulado.FechaFin = fechaOriginal
 				if fechaOriginal.After(fecha_fin_aux) {
