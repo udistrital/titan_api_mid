@@ -1044,6 +1044,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 						semanasContrato -= 1
 					}
 					semanasTotales = semanasContrato
+					contrato[0].NumeroSemanas = semanasTotales
 					if valorContrato == 0 {
 						contrato[0].ValorContrato = valorDia * float64(semanasContrato)
 					} else {
@@ -1302,6 +1303,7 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 						semanasContrato -= 1
 					}
 					semanasTotales = semanasContrato
+					contrato[0].NumeroSemanas = semanasTotales
 					if valorContrato == 0 {
 						contrato[0].ValorContrato = valorDia * float64(semanasContrato)
 					} else {
