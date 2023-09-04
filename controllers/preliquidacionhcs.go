@@ -65,6 +65,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 		anoIterativo = contrato.Vigencia
 
 		//Obtener las semanas del contrato
+		fmt.Println("CONTRato ", contrato.NumeroSemanas)
 		var semanasContrato int
 		if contrato.NumeroSemanas == 0 {
 			semanasContrato = int(calcularSemanasContratoDVE(contrato.FechaInicio, contrato.FechaFin))
@@ -169,14 +170,14 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 					} else {
 						porcentaje_ibc = semanas / 30
 					}
-					semanas = semanas / 7
+					semanas = semanas / 7.5
 
 					if semanas <= 1 {
 						semanas_liquidadas = 1
 						detallePreliquidacion.DiasLiquidados = 1
 					} else {
-						semanas_liquidadas = int(Roundf(semanas))
-						detallePreliquidacion.DiasLiquidados = float64(semanas)
+						semanas_liquidadas = int(math.Ceil(semanas))
+						detallePreliquidacion.DiasLiquidados = float64(math.Ceil(semanas))
 					}
 
 					semanasContrato = semanasContrato - semanas_liquidadas
