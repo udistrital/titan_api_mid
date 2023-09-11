@@ -94,8 +94,17 @@ func calcularSemanasContratoDVE(FechaInicio time.Time, FechaFin time.Time) (sema
 
 	} else {
 		a, m, d = diff(FechaInicio, FechaFin)
+		fmt.Println("a ", a)
+		fmt.Println("m ", m)
+		// dia inclusivo
+		d += 1
+		fmt.Println("d ", d)
+		if d == 22 {
+			d += 1
+		}
 		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
 	}
+	fmt.Println(float64(int(mesesContrato)))
 	if mesesContrato/float64(int(mesesContrato)) != 1 {
 		return (mesesContrato * 4) + 1
 	} else {
@@ -1020,7 +1029,25 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 				}
 				if contrato[0].FechaInicio.Month() != anulacion.FechaAnulacion.Month() || contrato[0].FechaInicio.Year() != anulacion.FechaAnulacion.Year() {
 					//semanasTotales = int(calcularSemanasContratoDVE(contrato[0].FechaInicio, anulacion.FechaAnulacion))
-					semanasContrato = int(calcularSemanasContratoDVE(time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC), anulacion.FechaAnulacion))
+					var semanasTranscurridas = 0
+					for i := int(contratoOriginal.FechaInicio.Month()); i < int(anulacion.FechaAnulacion.Month()); i++ {
+						var contrato_preliquidacion_aux []models.ContratoPreliquidacion
+						var detalle_preliquidacion_aux []models.DetallePreliquidacion
+						// fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?query=ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId__Mes:" + strconv.Itoa(int(contratoOriginal.FechaInicio.Month())) + ",PreliquidacionId__Ano:" + strconv.Itoa(contratoOriginal.FechaInicio.Year()))
+						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?query=ContratoId:"+strconv.Itoa(contrato[0].Id)+",PreliquidacionId__Mes:"+strconv.Itoa(int(contratoOriginal.FechaInicio.Month()))+",PreliquidacionId__Ano:"+strconv.Itoa(contratoOriginal.FechaInicio.Year()), &aux); err == nil {
+							LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion_aux)
+							if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion_aux[0].Id), &aux); err == nil {
+								LimpiezaRespuestaRefactor(aux, &detalle_preliquidacion_aux)
+								// fmt.Println("DETALLE ", detalle_preliquidacion_aux)
+								semanasTranscurridas += int(detalle_preliquidacion_aux[0].DiasLiquidados)
+							}
+						}
+					}
+					if semanasAnulacion == 0 {
+						semanasContrato = int(calcularSemanasContratoDVE(time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC), anulacion.FechaAnulacion))
+					} else {
+						semanasContrato = semanasAnulacion - semanasTranscurridas
+					}
 					semanasTotales = semanasContrato
 					contrato[0].FechaInicio = time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC)
 					if valorContrato == 0 {
@@ -1040,9 +1067,9 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 					diaAux := contrato[0].FechaInicio.AddDate(0, 0, 1)
 					semanasContrato = int(calcularSemanasContratoDVE(diaAux, contrato[0].FechaFin))
 					fmt.Println("semanas contrato ", semanasContrato)
-					if !anulacionReduccion {
+					/*if !anulacionReduccion {
 						semanasContrato -= 1
-					}
+					}*/
 					semanasTotales = semanasContrato
 					contrato[0].NumeroSemanas = semanasTotales
 					if valorContrato == 0 {

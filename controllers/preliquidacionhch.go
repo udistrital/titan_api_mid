@@ -117,17 +117,30 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 				//Para cuando son contratos de 1 mes
 
 				if contrato.FechaInicio.Month() == contrato.FechaFin.Month() && contrato.FechaInicio.Year() == contrato.FechaFin.Year() {
+					fmt.Println("CONTRATO HCH 1 MES")
 					//Calcular el numero de días
 					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
+					semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
+					semanas = semanas / 7
+					if semanas_totales > 0 {
+						semanas = float64(semanas_totales)
+					}
 					if porcentaje != 0 {
 						porcentaje_ibc = porcentaje
 					} else {
 						porcentaje_ibc = float64(semanasContrato) / 4
 					}
-					semanas_liquidadas = semanasContrato
+					if semanas <= 1 {
+						semanas_liquidadas = 1
+						detallePreliquidacion.DiasLiquidados = 1
+					} else {
+						semanas_liquidadas = int(Roundf(semanas))
+						detallePreliquidacion.DiasLiquidados = float64(semanas)
+					}
+					//semanas_liquidadas = semanasContrato
 				} else if mesIterativo == int(contrato.FechaInicio.Month()) && contrato.Vigencia == anoIterativo {
 					//para el mes inicial
-
+					fmt.Println("CONTRATO HCH MES INICIAL")
 					//Calcular el numero de días
 					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
 					semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
@@ -136,14 +149,14 @@ func liquidarHCH(contrato models.Contrato, general bool, porcentaje float64, vig
 					} else {
 						porcentaje_ibc = semanas / 30
 					}
-					semanas = semanas / 7
+					semanas = semanas / 7.5
 
 					if semanas <= 1 {
 						semanas_liquidadas = 1
 						detallePreliquidacion.DiasLiquidados = 1
 						fmt.Println("Semanas: ", semanas)
 					} else {
-						semanas_liquidadas = int(Roundf(semanas))
+						semanas_liquidadas = int(math.Ceil(semanas))
 						detallePreliquidacion.DiasLiquidados = float64(semanas)
 						fmt.Println("Semanas: ", semanas)
 					}

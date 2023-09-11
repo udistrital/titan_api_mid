@@ -496,7 +496,7 @@ func (c *NovedadVEController) AplicarAnulacion() {
 		//anulacion.Desagregado = anulacionRp.ContratosAnulados[i].Desagregado
 		fmt.Println("anulacion ", anulacion)
 		if anulacion.NivelAcademico == "PREGRADO" {
-			mensaje, codigo, contratoReturn, err, _, _ = Anulacion(anulacion, 0, 0, 1, false)
+			mensaje, codigo, contratoReturn, err, _, _ = Anulacion(anulacion, 0, anulacion.Semanas, 1, false)
 		} else if anulacion.NivelAcademico == "POSGRADO" {
 			mensaje, codigo, contratoReturn, err, _, _ = AnulacionPosgrado(anulacion, anulacion.ValorContrato, 0, 1, false)
 		}
@@ -804,6 +804,7 @@ func (c *NovedadVEController) AplicarReduccion() {
 			contratoNuevo.Cdp = contratoAnuladoAux.Cdp
 			contratoNuevo.Activo = true
 			contratoNuevo.Desagregado = reduccion.ContratoNuevo.DesagregadoReduccion
+			contratoNuevo.NumeroSemanas = reduccion.Semanas
 			mensaje, codigo, contratoReturn, err := Preliquidacion(contratoNuevo)
 			if err == nil {
 				c.Ctx.Output.SetStatus(201)

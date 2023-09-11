@@ -638,6 +638,9 @@ definitions:
         type: string
       NumeroContrato:
         type: string
+      Semanas:
+        type: integer
+        format: int64
       ValorContrato:
         type: number
         format: double
@@ -1167,6 +1170,12 @@ definitions:
         format: datetime
       NivelAcademico:
         type: string
+      Semanas:
+        type: integer
+        format: int64
+      SemanasAnteriores:
+        type: integer
+        format: int64
       Vigencia:
         type: integer
         format: int64
