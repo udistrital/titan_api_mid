@@ -957,6 +957,10 @@
                 "NumeroContrato": {
                     "type": "string"
                 },
+                "Semanas": {
+                    "type": "integer",
+                    "format": "int64"
+                },
                 "ValorContrato": {
                     "type": "number",
                     "format": "double"
@@ -1703,6 +1707,14 @@
                 },
                 "NivelAcademico": {
                     "type": "string"
+                },
+                "Semanas": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "SemanasAnteriores": {
+                    "type": "integer",
+                    "format": "int64"
                 },
                 "Vigencia": {
                     "type": "integer",
