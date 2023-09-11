@@ -94,8 +94,17 @@ func calcularSemanasContratoDVE(FechaInicio time.Time, FechaFin time.Time) (sema
 
 	} else {
 		a, m, d = diff(FechaInicio, FechaFin)
+		fmt.Println("a ", a)
+		fmt.Println("m ", m)
+		// dia inclusivo
+		d += 1
+		fmt.Println("d ", d)
+		if d == 22 {
+			d += 1
+		}
 		mesesContrato = (float64(a * 12)) + float64(m) + (float64(d) / 30)
 	}
+	fmt.Println(float64(int(mesesContrato)))
 	if mesesContrato/float64(int(mesesContrato)) != 1 {
 		return (mesesContrato * 4) + 1
 	} else {
