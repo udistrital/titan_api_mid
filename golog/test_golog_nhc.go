@@ -60,6 +60,7 @@ func LiquidarMesHCS(reglas string, contrato models.Contrato, detallePreliquidaci
 	cedula := contrato.Documento
 	ano := contrato.Vigencia
 	m := NewMachine().Consult(reglas)
+	//fmt.Println(reglas)
 	total := m.ProveAll("liquidar_hcs(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
 	for _, solution := range total {
 		detallePreliquidacion.ValorCalculado, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
@@ -71,7 +72,11 @@ func LiquidarMesHCS(reglas string, contrato models.Contrato, detallePreliquidaci
 			conceptoNomina.NaturalezaConceptoNominaId, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
 		detallePreliquidacion.Id = 0
-		detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: conceptoNomina.Id}
+		detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{
+			Id:                         conceptoNomina.Id,
+			NombreConcepto:             conceptoNomina.NombreConcepto,
+			NaturalezaConceptoNominaId: conceptoNomina.NaturalezaConceptoNominaId,
+		}
 		data = append(data, detallePreliquidacion)
 	}
 	if mesFinal {
@@ -102,7 +107,11 @@ func LiquidarMesHCS(reglas string, contrato models.Contrato, detallePreliquidaci
 			}
 
 			detallePreliquidacion.Id = 0
-			detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{Id: conceptoNomina.Id}
+			detallePreliquidacion.ConceptoNominaId = &models.ConceptoNomina{
+				Id:                         conceptoNomina.Id,
+				NombreConcepto:             conceptoNomina.NombreConcepto,
+				NaturalezaConceptoNominaId: conceptoNomina.NaturalezaConceptoNominaId,
+			}
 			data = append(data, detallePreliquidacion)
 		}
 	}
