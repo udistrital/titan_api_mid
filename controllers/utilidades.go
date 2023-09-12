@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego"
+	"github.com/udistrital/titan_api_mid/golog"
 	"github.com/udistrital/titan_api_mid/models"
 	"github.com/udistrital/utils_oas/request"
 )
@@ -1131,6 +1132,9 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 						} else if contrato[0].TipoNominaId == 410 && semanasTotales > 0 {
 							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
 							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia, false)
+						} else if contrato[0].TipoNominaId == 410 && semanasTotales == 0 && !anulacion_completa {
+							contrato[0].NumeroSemanas = semanasAnulacion
+							registrarPrestaciones(contrato[0])
 						}
 
 						if err == nil {
@@ -1413,6 +1417,59 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 		return mensaje, codigo, nil, err, fechaOriginal, anulacion_completa
 	}
 	return
+}
+
+func registrarPrestaciones(contrato models.Contrato) {
+	fmt.Println("REGISTRAR PRESTACIONES")
+	var predicados []models.Predicado
+	var reglasNuevas string = ""
+	var reglasAlivios string
+	var auxDetalle []models.DetallePreliquidacion
+	var aux map[string]interface{}
+	//var detalles []models.DetallePreliquidacion
+	var detallePreliquidacion []models.DetallePreliquidacion
+
+	//Regla para único o general (para apoximar el ibc al tope mínimo)
+	predicados = append(predicados, models.Predicado{Nombre: "general(1)."})
+	//Si el contrato es completo se tomarán las vacaciones que calcule
+	predicados = append(predicados, models.Predicado{Nombre: "completo(1)."})
+	predicados = append(predicados, models.Predicado{Nombre: "vacaciones(0)."})
+	valorDia := contrato.ValorContrato / float64(contrato.NumeroSemanas)
+	semanas_totales := contrato.NumeroSemanas
+	predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%v", valorDia*float64(semanas_totales)) + "). "})
+	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanas_totales) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+
+	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
+
+	if err == nil {
+		reglasAlivios, _, err = CargarDatosRetefuente(int(cedula))
+	}
+
+	query := "ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contrato.Id) + ",ConceptoNominaId.Id:152"
+	fmt.Println("QUERY PRESTACIÓN ", beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query)
+	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+		LimpiezaRespuestaRefactor(aux, &detallePreliquidacion)
+	}
+
+	reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
+	reglasNuevas = reglasNuevas + reglasbase + "porcentaje(1).semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(contrato.NumeroSemanas) + ")."
+	reglasNuevas = reglasNuevas + "mesFinal(1)."
+	auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato, detallePreliquidacion[len(detallePreliquidacion)-1], true)
+	conceptos := []string{"primaNavidad", "cesantias", "priServ", "primaVacaciones", "vacaciones", "interesCesantias", "bonServ"}
+	for j := 0; j < len(auxDetalle); j++ {
+		if contains(conceptos, auxDetalle[j].ConceptoNominaId.NombreConcepto) {
+			registrarDetallePreliquidacion(auxDetalle[j])
+		}
+	}
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
 }
 
 func CambioCumplido(ano string, mes string, numeroContrato string, contrato []models.Contrato) (contrato_general_preliquidacion models.ContratoPreliquidacion, mensaje string, codigo string) {
