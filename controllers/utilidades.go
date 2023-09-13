@@ -1283,6 +1283,11 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 					}
 				}
 			}
+
+			if valorContrato > 0 {
+				valorDia = valorContrato / float64(semanasAnulacion)
+			}
+
 			contrato[0].FechaFin = anulacion.FechaAnulacion
 			//Actualizar fecha de finalización del contrato
 			contratoOriginal.Activo = false
@@ -1311,7 +1316,11 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 				}
 				if contrato[0].FechaInicio.Month() != anulacion.FechaAnulacion.Month() || contrato[0].FechaInicio.Year() != anulacion.FechaAnulacion.Year() {
 					//semanasTotales = int(calcularSemanasContratoDVE(contrato[0].FechaInicio, anulacion.FechaAnulacion))
-					semanasContrato = int(calcularSemanasContratoDVE(time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC), anulacion.FechaAnulacion))
+					if semanasAnulacion == 0 {
+						semanasContrato = int(calcularSemanasContratoDVE(time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC), anulacion.FechaAnulacion))
+					} else {
+						semanasContrato = semanasAnulacion
+					}
 					semanasTotales = semanasContrato
 					contrato[0].FechaInicio = contratoOriginal.FechaInicio
 					if valorContrato == 0 {
@@ -1376,10 +1385,11 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 						if contrato[0].TipoNominaId == 409 && semanasTotales > 0 {
 							// REVISAR VALOR DEL DIA Y SI ES O NO ANULACIÓN
 							anularEnGenerales(contratoOriginal, contratoOriginal.FechaInicio, anulacion.Vigencia, false)
-							mensaje, err = liquidarHCH(contrato[0], false, 0, contrato[0].Vigencia, 0, 0, true)
+							mensaje, err = liquidarHCH(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
 						} else if contrato[0].TipoNominaId == 410 && semanasTotales > 0 {
 							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia, false)
-							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia, 0, 0, true)
+							contrato[0].NumeroSemanas = semanasAnulacion
+							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
 						}
 
 						if err == nil {

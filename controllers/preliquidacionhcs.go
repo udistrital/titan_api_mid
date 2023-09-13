@@ -206,9 +206,8 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 
 				reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
-				if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general {
+				if (mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general) || semanasContrato <= 0 {
 					reglasNuevas = reglasNuevas + "mesFinal(1)."
-
 					auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato, detallePreliquidacion, true)
 				} else {
 					reglasNuevas = reglasNuevas + "mesFinal(0)."
@@ -233,7 +232,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 				fmt.Println("Año: ", anoIterativo)
 				fmt.Println("--- ", contrato.FechaFin.Month())
 				fmt.Println("--- ", contrato.FechaFin.Year())
-				if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() {
+				if (mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year()) || semanasContrato <= 0 {
 					break
 				} else {
 					if mesIterativo == 12 {

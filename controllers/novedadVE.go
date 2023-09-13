@@ -498,7 +498,7 @@ func (c *NovedadVEController) AplicarAnulacion() {
 		if anulacion.NivelAcademico == "PREGRADO" {
 			mensaje, codigo, contratoReturn, err, _, _ = Anulacion(anulacion, 0, anulacion.Semanas, 1, false)
 		} else if anulacion.NivelAcademico == "POSGRADO" {
-			mensaje, codigo, contratoReturn, err, _, _ = AnulacionPosgrado(anulacion, anulacion.ValorContrato, 0, 1, false)
+			mensaje, codigo, contratoReturn, err, _, _ = AnulacionPosgrado(anulacion, anulacion.ValorContrato, anulacion.Semanas, 1, false)
 		}
 		//}
 
