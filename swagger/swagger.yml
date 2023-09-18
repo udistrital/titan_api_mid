@@ -748,6 +748,8 @@ definitions:
       ProyectoId:
         type: integer
         format: int64
+      Resolucion:
+        type: string
       ResolucionId:
         type: integer
         format: int64
