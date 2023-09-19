@@ -1112,6 +1112,9 @@
                     "type": "integer",
                     "format": "int64"
                 },
+                "Resolucion": {
+                    "type": "string"
+                },
                 "ResolucionId": {
                     "type": "integer",
                     "format": "int64"
@@ -1166,7 +1169,14 @@
                 "DesagregadoReduccion": {
                     "$ref": "#/definitions/models.Desagregado"
                 },
+                "IdResolucion": {
+                    "type": "integer",
+                    "format": "int64"
+                },
                 "NumeroContratoReduccion": {
+                    "type": "string"
+                },
+                "NumeroResolucion": {
                     "type": "string"
                 },
                 "ValorContratoReduccion": {

@@ -805,6 +805,8 @@ func (c *NovedadVEController) AplicarReduccion() {
 			contratoNuevo.Activo = true
 			contratoNuevo.Desagregado = reduccion.ContratoNuevo.DesagregadoReduccion
 			contratoNuevo.NumeroSemanas = reduccion.Semanas
+			contratoNuevo.Resolucion = reduccion.ContratoNuevo.NumeroResolucion
+			contratoNuevo.ResolucionId = reduccion.ContratoNuevo.IdResolucion
 			mensaje, codigo, contratoReturn, err := Preliquidacion(contratoNuevo)
 			if err == nil {
 				c.Ctx.Output.SetStatus(201)
