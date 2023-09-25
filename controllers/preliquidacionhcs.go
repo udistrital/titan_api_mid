@@ -170,6 +170,9 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 					} else {
 						porcentaje_ibc = semanas / 30
 					}
+					if semanas == 23 {
+						semanas -= 1
+					}
 					semanas = semanas / 7.5
 
 					if semanas <= 1 {
