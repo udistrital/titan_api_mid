@@ -617,7 +617,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 							contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day())
 						}
 
-						if suspension.FechaFin.Day() != 30 || suspension.FechaFin.Day() != 31 {
+						if (suspension.FechaFin.Day() != 30 || suspension.FechaFin.Day() != 31) && suspension.FechaInicio.Day() != 1 {
 							mensaje, err = liquidarCPS(contrato[0])
 							if err == nil {
 								fmt.Println("Contrato previo a sucesión liquidado")
