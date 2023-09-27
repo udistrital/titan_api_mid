@@ -464,6 +464,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 	var valorViejo float64
 	var mesIterativo int
 	var anoIterativo int
+	var finOriginal time.Time
 	var diasSuspension float64
 
 	var mensaje string
@@ -488,7 +489,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 				contratoNuevo = contrato[0]
 				//Valor total del contrato
 				valorViejo = contrato[0].ValorContrato
-
+				finOriginal = contrato[0].FechaFin
 				mesIterativo = int(suspension.FechaInicio.Month())
 				anoIterativo = suspension.FechaInicio.Year()
 
@@ -586,6 +587,17 @@ func (c *NovedadCPSController) SuspenderContrato() {
 
 					//Ajustar Fecha fin del contrato original
 					contrato[0].FechaFin = suspension.FechaInicio.Add(24 * time.Hour * -1)
+					if contrato[0].FechaFin.Day() == 31 {
+						contrato[0].FechaFin = contrato[0].FechaFin.Add(24 * time.Hour * -1)
+					}
+					if finOriginal.Month() != contratoNuevo.FechaFin.Month() {
+						for i := int(finOriginal.Month()); i < int(contratoNuevo.FechaFin.Month()); i++ {
+							var dias = daysInMonth(i, contrato[0].FechaFin.Year())
+							if dias == 31 {
+								contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour * 1)
+							}
+						}
+					}
 
 					if suspension.FechaInicio.Day() == 31 || suspension.FechaInicio.Day() == 1 {
 						fmt.Println("Entro a 1")
@@ -598,7 +610,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 						if suspension.FechaInicio.Month() == contrato[0].FechaInicio.Month() && suspension.FechaInicio.Year() == contrato[0].FechaInicio.Year() {
 							contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day()-contrato[0].FechaInicio.Day()+1)
 						} else {
-							contrato[0].ValorContrato = valorNuevo + valorDia*float64(contrato[0].FechaFin.Day())
+							contrato[0].ValorContrato = valorNuevo + (valorDia * float64(contrato[0].FechaFin.Day()))
 						}
 						contratoNuevo.ValorContrato = valorViejo - contrato[0].ValorContrato
 						contratoNuevo.ValorContrato = Roundf(contratoNuevo.ValorContrato)
