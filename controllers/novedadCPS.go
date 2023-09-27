@@ -295,16 +295,16 @@ func (c *NovedadCPSController) CederContrato() {
 
 							if contrato[0].FechaInicio.Day() == 31 {
 								contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour)
-								contrato[0].FechaInicio = contrato[0].FechaInicio.Add(24 * time.Hour)
+								//contrato[0].FechaInicio = contrato[0].FechaInicio.Add(24 * time.Hour)
 							}
 
-							if contrato[0].FechaInicio.Month() != sucesor.FechaInicio.Month() && contrato[0].FechaInicio.Year() != sucesor.FechaInicio.Year() {
+							/*if contrato[0].FechaInicio.Month() != sucesor.FechaInicio.Month() && contrato[0].FechaInicio.Year() != sucesor.FechaInicio.Year() {
 								contrato[0].FechaInicio = time.Date(sucesor.FechaInicio.Year(), sucesor.FechaInicio.Month(), 1, 12, 0, 0, 0, time.UTC)
 							} else {
 
 								contrato[0].FechaInicio = time.Date(sucesor.FechaInicio.Year(), sucesor.FechaInicio.Month(), 1, 12, 0, 0, 0, time.UTC)
 
-							}
+							}*/
 
 							//El valor del contrato nuevo es lo que queda del contrato pasado (no se almacena, es únicamente para cálculos)
 							fmt.Println("valorNuevo:", valorNuevo)
@@ -315,7 +315,7 @@ func (c *NovedadCPSController) CederContrato() {
 								fmt.Println("Liquidando nuevo:", contratoNuevo.NumeroContrato, " de ", contratoNuevo.NombreCompleto)
 								liquidarCPS(contratoNuevo)
 							} else {
-								contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day()-contrato[0].FechaInicio.Day()+1)
+								//contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day()-contrato[0].FechaInicio.Day()+1)
 								contratoNuevo.ValorContrato = valorViejo - valorNuevo - contrato[0].ValorContrato
 								fmt.Println("Liquidando actual:", contrato[0])
 								liquidarCPS(contrato[0])
