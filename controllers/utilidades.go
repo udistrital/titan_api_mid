@@ -1209,7 +1209,11 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 
 			contratoOriginal = contrato[0]
 			contrato[0].Desagregado = anulacion.Desagregado
-			semanasAnulacion = semanas
+			if anulacionReduccion {
+				semanasAnulacion = semanasAnteriores - semanas
+			} else {
+				semanasAnulacion = semanas
+			}
 			fmt.Println("SEMANAS ANULACION ", semanasAnulacion)
 			if anulacion.FechaAnulacion.Equal(contrato[0].FechaInicio) {
 				anulacion.FechaAnulacion = contrato[0].FechaInicio
@@ -1311,12 +1315,12 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 				fechaOriginal = contratoOriginal.FechaFin
 				semanasContratoOriginal := int(calcularSemanasContratoDVE(contratoOriginal.FechaInicio, contratoOriginal.FechaFin))
 				fmt.Println("SEMANAS ORIGINAL ", semanasContratoOriginal)
-				if anulacionReduccion && semanasAnteriores == semanasAnulacion {
+				if anulacionReduccion && semanasAnulacion == 0 {
 					anulacion_completa = true
 				}
 				if contrato[0].FechaInicio.Month() != anulacion.FechaAnulacion.Month() || contrato[0].FechaInicio.Year() != anulacion.FechaAnulacion.Year() {
 					//semanasTotales = int(calcularSemanasContratoDVE(contrato[0].FechaInicio, anulacion.FechaAnulacion))
-					if semanasAnulacion == 0 {
+					if semanas == 0 {
 						semanasContrato = int(calcularSemanasContratoDVE(time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC), anulacion.FechaAnulacion))
 					} else {
 						semanasContrato = semanasAnulacion
