@@ -281,6 +281,8 @@ func (c *NovedadCPSController) CederContrato() {
 							contrato[0].FechaFin = sucesor.FechaInicio.Add(24 * time.Hour * -1)
 							if contrato[0].FechaInicio.Month() != sucesor.FechaInicio.Month() && contrato[0].FechaInicio.Year() != sucesor.FechaInicio.Year() {
 								contrato[0].ValorContrato = valorNuevo + valorDia*float64(contrato[0].FechaFin.Day())
+							} else if contrato[0].FechaInicio.Month() != sucesor.FechaInicio.Month() && contrato[0].FechaInicio.Year() == sucesor.FechaInicio.Year() {
+								contrato[0].ValorContrato = valorNuevo + valorDia*float64(contrato[0].FechaFin.Day())
 							} else {
 								contrato[0].ValorContrato = valorNuevo + valorDia*float64(contrato[0].FechaFin.Day()-contrato[0].FechaInicio.Day()+1)
 							}
