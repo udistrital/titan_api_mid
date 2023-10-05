@@ -177,6 +177,7 @@ func (c *NovedadCPSController) CederContrato() {
 	var valorViejo float64
 	var mesIterativo int
 	var anoIterativo int
+	var mensaje string
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &sucesor); err == nil {
 
@@ -257,6 +258,7 @@ func (c *NovedadCPSController) CederContrato() {
 							for j := 0; j < len(detalles); j++ {
 								if detalles[j].ConceptoNominaId.Id == 87 {
 									valorNuevo = valorNuevo + detalles[j].ValorCalculado
+									fmt.Println("valor n ", valorNuevo)
 								}
 							}
 						}
@@ -289,7 +291,11 @@ func (c *NovedadCPSController) CederContrato() {
 							contratoNuevo.ValorContrato = valorViejo - contrato[0].ValorContrato
 						}
 
-						contratoNuevo, _ = registrarContrato(contratoNuevo)
+						contratoNuevo, err = registrarContrato(contratoNuevo)
+						if err != nil {
+							mensaje = "Error al registrar el contrato nuevo"
+							c.Data["Message"] = mensaje + err.Error()
+						}
 
 						//Actualizar fecha de finalización del contrato
 						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contrato[0]); err == nil {
@@ -315,14 +321,29 @@ func (c *NovedadCPSController) CederContrato() {
 							if sucesor.FechaInicio.Day() == 1 {
 								contratoNuevo.ValorContrato = valorViejo - valorNuevo
 								fmt.Println("Liquidando nuevo:", contratoNuevo.NumeroContrato, " de ", contratoNuevo.NombreCompleto)
-								liquidarCPS(contratoNuevo)
+								if _, err = liquidarCPS(contratoNuevo); err != nil {
+									mensaje = "Error liquidando contrato nuevo"
+									c.Data["Message"] = mensaje + err.Error()
+									c.Abort("400")
+								}
 							} else {
 								//contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day()-contrato[0].FechaInicio.Day()+1)
 								contratoNuevo.ValorContrato = valorViejo - contrato[0].ValorContrato
 								fmt.Println("Liquidando actual:", contrato[0])
-								liquidarCPS(contrato[0])
+								if _, err = liquidarCPS(contrato[0]); err != nil {
+									mensaje = "Error liquidando contrato original"
+									c.Data["Message"] = mensaje + err.Error()
+									c.Abort("400")
+								}
 								fmt.Println("Liquidando nuevo:", contratoNuevo)
-								liquidarCPS(contratoNuevo)
+								if _, err = liquidarCPS(contratoNuevo); err != nil {
+									mensaje = "Error liquidando contrato nuevo"
+									c.Data["Message"] = mensaje + err.Error()
+									c.Abort("400")
+								} else {
+									c.Ctx.Output.SetStatus(201)
+									c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contratoNuevo}
+								}
 							}
 						} else {
 							fmt.Println("Error al actualizar el contrato: ", err)
@@ -355,6 +376,7 @@ func (c *NovedadCPSController) CederContrato() {
 		c.Data["mesaage"] = "Error service POST: The request contains an incorrect data type or an invalid parameter: " + err.Error()
 		c.Abort("400")
 	}
+	c.ServeJSON()
 }
 
 // Post ...
@@ -639,7 +661,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 								fmt.Println("Contrato previo a sucesión liquidado")
 							} else {
 								fmt.Println("Error al liquidar el contrato anterior", err)
-								c.Data["mesaage"] = mensaje + err.Error()
+								c.Data["Message"] = mensaje + err.Error()
 								c.Abort("400")
 							}
 						}
