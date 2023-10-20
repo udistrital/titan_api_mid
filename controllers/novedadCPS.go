@@ -419,31 +419,37 @@ func (c *NovedadCPSController) AplicarOtrosi() {
 					} else {
 						contratoNuevo.FechaInicio = contrato[0].FechaFin.Add(24 * time.Hour)
 					}
-					contratoNuevo.FechaFin = otro_si.FechaFin
-					contratoNuevo.Rp = otro_si.Rp
-					contratoNuevo.Cdp = otro_si.Cdp
-					contratoNuevo.ValorContrato = otro_si.Valor
-					//Guardamos el nuevo contrato
-					contratoNuevo, err = registrarContrato(contratoNuevo)
-					if err == nil {
-						mensaje, err = liquidarCPS(contratoNuevo)
+					if contratoNuevo.FechaInicio.Before(contratoNuevo.FechaFin) {
+						contratoNuevo.FechaFin = otro_si.FechaFin
+						contratoNuevo.Rp = otro_si.Rp
+						contratoNuevo.Cdp = otro_si.Cdp
+						contratoNuevo.ValorContrato = otro_si.Valor
+						//Guardamos el nuevo contrato
+						contratoNuevo, err = registrarContrato(contratoNuevo)
 						if err == nil {
-							fmt.Println("Novedad Aplicada")
-							c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contrato[0]}
-						} else {
-							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contratoNuevo.Id), "DELETE", &aux, nil); err == nil {
-								fmt.Println("Error al liquidar el nuevo contrato, contrato eliminado", err)
-								c.Data["mesaage"] = mensaje + err.Error()
-								c.Abort("403")
+							mensaje, err = liquidarCPS(contratoNuevo)
+							if err == nil {
+								fmt.Println("Novedad Aplicada")
+								c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contrato[0]}
 							} else {
-								fmt.Println("Error al eliminar el contrato sin liquidar", err)
-								c.Data["mesaage"] = "Error al eliminar el contrato sin liquidar: " + err.Error()
-								c.Abort("403")
+								if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contratoNuevo.Id), "DELETE", &aux, nil); err == nil {
+									fmt.Println("Error al liquidar el nuevo contrato, contrato eliminado", err)
+									c.Data["mesaage"] = mensaje + err.Error()
+									c.Abort("403")
+								} else {
+									fmt.Println("Error al eliminar el contrato sin liquidar", err)
+									c.Data["mesaage"] = "Error al eliminar el contrato sin liquidar: " + err.Error()
+									c.Abort("403")
+								}
 							}
+						} else {
+							fmt.Println("Error al registrar el nuevo contrato", err)
+							c.Data["mesaage"] = "Error al registrar el nuevo contrato: " + err.Error()
+							c.Abort("403")
 						}
 					} else {
-						fmt.Println("Error al registrar el nuevo contrato", err)
-						c.Data["mesaage"] = "Error al registrar el nuevo contrato: " + err.Error()
+						fmt.Println("FECHA INICIO MAYOR A FECHA FIN", err)
+						c.Data["mesaage"] = "FECHA INICIO MAYOR A FECHA FIN " + err.Error()
 						c.Abort("403")
 					}
 				} else {
