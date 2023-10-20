@@ -419,7 +419,7 @@ func (c *NovedadCPSController) AplicarOtrosi() {
 					} else {
 						contratoNuevo.FechaInicio = contrato[0].FechaFin.Add(24 * time.Hour)
 					}
-					if contratoNuevo.FechaInicio.Before(contratoNuevo.FechaFin) {
+					if contratoNuevo.FechaInicio.Before(otro_si.FechaFin) {
 						contratoNuevo.FechaFin = otro_si.FechaFin
 						contratoNuevo.Rp = otro_si.Rp
 						contratoNuevo.Cdp = otro_si.Cdp
