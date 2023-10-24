@@ -140,8 +140,12 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
 					semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
 					semanas = semanas / 7
-					if semanas_totales > 0 {
-						semanas = float64(semanas_totales)
+					if contrato.NumeroSemanas == 0 {
+						semanasContrato = int(calcularSemanasContratoDVE(contrato.FechaInicio, contrato.FechaFin))
+						semanas = float64(semanasContrato)
+					} else {
+						semanasContrato = contrato.NumeroSemanas
+						semanas = float64(semanasContrato)
 					}
 					if porcentaje != 0 {
 						porcentaje_ibc = porcentaje
