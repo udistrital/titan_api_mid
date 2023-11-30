@@ -118,20 +118,16 @@ func (c *NovedadCPSController) CancelarContrato() {
 					} else {
 						contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day()-contrato[0].FechaInicio.Day()+1)
 					}
+					contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
+					mensaje, err = liquidarCPS(contrato[0])
 
-					if cancelacion.FechaCancelacion.Day() != 30 {
-
-						contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
-						mensaje, err = liquidarCPS(contrato[0])
-
-						if err == nil {
-							c.Ctx.Output.SetStatus(201)
-							c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contrato[0]}
-						} else {
-							fmt.Println("Error al cancelar contrato: ", err)
-							c.Data["mesaage"] = mensaje + err.Error()
-							c.Abort("400")
-						}
+					if err == nil {
+						c.Ctx.Output.SetStatus(201)
+						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contrato[0]}
+					} else {
+						fmt.Println("Error al cancelar contrato: ", err)
+						c.Data["mesaage"] = mensaje + err.Error()
+						c.Abort("400")
 					}
 
 				} else {
