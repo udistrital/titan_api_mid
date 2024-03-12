@@ -618,11 +618,26 @@ func (c *NovedadCPSController) SuspenderContrato() {
 					if contrato[0].FechaFin.Day() == 31 {
 						contrato[0].FechaFin = contrato[0].FechaFin.Add(24 * time.Hour * -1)
 					}
-					if finOriginal.Month() != contratoNuevo.FechaFin.Month() {
-						for i := int(finOriginal.Month()); i < int(contratoNuevo.FechaFin.Month()); i++ {
-							var dias = daysInMonth(i, contrato[0].FechaFin.Year())
-							if dias == 31 {
-								contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour * 1)
+					if (finOriginal.Month() != contratoNuevo.FechaFin.Month()) || finOriginal.Year() < contratoNuevo.FechaFin.Year() {
+						if finOriginal.Year() < contratoNuevo.FechaFin.Year() {
+							for i := int(finOriginal.Month()); i <= 12; i++ {
+								var dias = daysInMonth(i, finOriginal.Year())
+								if dias == 31 {
+									contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour * 1)
+								}
+							}
+							for i := 1; i < int(contratoNuevo.FechaFin.Month()); i++ {
+								var dias = daysInMonth(i, contratoNuevo.FechaFin.Year())
+								if dias == 31 {
+									contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour * 1)
+								}
+							}
+						} else {
+							for i := int(finOriginal.Month()); i < int(contratoNuevo.FechaFin.Month()); i++ {
+								var dias = daysInMonth(i, contrato[0].FechaFin.Year())
+								if dias == 31 {
+									contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour * 1)
+								}
 							}
 						}
 					}
