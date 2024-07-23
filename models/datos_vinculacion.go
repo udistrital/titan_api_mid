@@ -9,4 +9,5 @@ type DatosVinculacion struct {
 	NumeroSemanas  int
 	HorasSemanales int
 	NivelAcademico string
+	Cancelacion    bool
 }

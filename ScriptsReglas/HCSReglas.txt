@@ -189,7 +189,7 @@ valor_cesantias(X,SB,V):- porcentaje_cesantias(PC), V is ((SB*(PC)) rnd 0).
 liquidar_hcs(X,P,ibc_liquidado,T):- calcular_ibc(X,P,T).
 calculo_NC(X,P,R):- calcular_pension(X,P,VP), calcular_salud(X,P,VS), calcular_salud_universidad(X,P,VSU),calcular_pension_universidad(X,P,VPU), calcular_fondo_sol(X,P,VF),calcular_fondo_sub(X,P,VFS), R is (VP+VS+VF+VFS+VPU+VSU).
 liquidar_prestacion(X,P,priServ,T):- valor_contrato(X,VC),valor_prima_servicios(X,P,VC,T).
-valor_prima_servicios(X,P,SB,V):- duracion_contrato(X,S,P), M is S/4, (M @> 6 -> porcentaje_prima_servicios(PS), V is ((SB*PS) rnd 0); V is 0).
+valor_prima_servicios(X,P,SB,V):- duracion_contrato(X,S,P), M is S/4, cancelacion(C), ((M @>= 6.0);(C==1) -> porcentaje_prima_servicios(PS), V is ((SB*PS) rnd 0); V is 0).
 valor_prima_navidad(X,SB,V):- porcentaje_prima_navidad(PN), V is ((SB*PN) rnd 0).
 liquidar_prestacion(X,P,primaVacaciones,T):- valor_contrato(X,VC),valor_prima_vacaciones(X,VC,T).
 valor_prima_vacaciones(X,SB,V):- porcentaje_prima_vacaciones(PV), V is ((SB*PV) rnd 0).
