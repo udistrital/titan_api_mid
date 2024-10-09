@@ -59,11 +59,17 @@ func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.Desagre
 	} else {
 		lowDedicacion = strings.ToLower(vinculacion.Dedicacion)
 		predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(1)."})
+		if vinculacion.Cancelacion {
+			predicados = append(predicados, models.Predicado{Nombre: "cancelacion(1)."})
+		} else {
+			predicados = append(predicados, models.Predicado{Nombre: "cancelacion(0)."})
+		}
 	}
 
 	lowCategoria = strings.ToLower(vinculacion.Categoria)
 	predicados = append(predicados, models.Predicado{Nombre: "horas_semanales(" + strconv.Itoa(vinculacion.HorasSemanales) + ")."})
 	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + vinculacion.Documento + "," + strconv.Itoa(vinculacion.NumeroSemanas) + "," + strconv.Itoa(vinculacion.Vigencia) + ")."})
+	predicados = append(predicados, models.Predicado{Nombre: "valor_punto(" + strconv.Itoa(vinculacion.Vigencia) + "," + strconv.Itoa(int(vinculacion.PuntoSalarial)) + ")."})
 	reglasbase := cargarReglasBase("HCS") + FormatoReglas(predicados)
 	desagregado = golog.DesagregarContrato(reglasbase, lowCategoria, vinculacion.Documento, lowDedicacion, strconv.Itoa(vinculacion.Vigencia))
 	desagregado.NumeroContrato = vinculacion.NumeroContrato
