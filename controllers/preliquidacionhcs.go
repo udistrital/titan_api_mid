@@ -137,20 +137,21 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 					fmt.Println(semanas_totales)
 					//Contratos de un único mes
 					//Calcular el numero de días
-					diasALiquidar, detallePreliquidacion.DiasEspecificos = CalcularPeriodoLiquidacion(preliquidacion[0].Ano, preliquidacion[0].Mes, contrato.FechaInicio, contrato.FechaFin)
-					semanas, _ := strconv.ParseFloat(diasALiquidar, 64)
-					semanas = semanas / 7
+					var semanas float64
 					if contrato.NumeroSemanas == 0 {
 						semanasContrato = int(calcularSemanasContratoDVE(contrato.FechaInicio, contrato.FechaFin))
-						semanas = float64(semanasContrato)
 					} else {
 						semanasContrato = contrato.NumeroSemanas
+					}
+					if anulacion {
+						semanas = float64(semanas_totales)
+					} else {
 						semanas = float64(semanasContrato)
 					}
 					if porcentaje != 0 {
 						porcentaje_ibc = porcentaje
 					} else {
-						porcentaje_ibc = float64(semanasContrato) / 4
+						porcentaje_ibc = float64(semanas) / 4
 					}
 
 					if semanas <= 1 {
@@ -210,7 +211,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 						porcentaje_ibc = 1
 					}
 				}
-
+				predicados = append(predicados, models.Predicado{Nombre: "cancelacion(0)."})
 				reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
 				if (mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general) || semanasContrato <= 0 {

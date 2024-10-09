@@ -118,20 +118,16 @@ func (c *NovedadCPSController) CancelarContrato() {
 					} else {
 						contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day()-contrato[0].FechaInicio.Day()+1)
 					}
+					contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
+					mensaje, err = liquidarCPS(contrato[0])
 
-					if cancelacion.FechaCancelacion.Day() != 30 {
-
-						contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
-						mensaje, err = liquidarCPS(contrato[0])
-
-						if err == nil {
-							c.Ctx.Output.SetStatus(201)
-							c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contrato[0]}
-						} else {
-							fmt.Println("Error al cancelar contrato: ", err)
-							c.Data["mesaage"] = mensaje + err.Error()
-							c.Abort("400")
-						}
+					if err == nil {
+						c.Ctx.Output.SetStatus(201)
+						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contrato[0]}
+					} else {
+						fmt.Println("Error al cancelar contrato: ", err)
+						c.Data["mesaage"] = mensaje + err.Error()
+						c.Abort("400")
 					}
 
 				} else {
@@ -325,6 +321,9 @@ func (c *NovedadCPSController) CederContrato() {
 									mensaje = "Error liquidando contrato nuevo"
 									c.Data["Message"] = mensaje + err.Error()
 									c.Abort("400")
+								} else {
+									c.Ctx.Output.SetStatus(201)
+									c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contratoNuevo}
 								}
 							} else {
 								//contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day()-contrato[0].FechaInicio.Day()+1)
@@ -606,29 +605,27 @@ func (c *NovedadCPSController) SuspenderContrato() {
 					fmt.Println("Fecha Inicio de nuevo contrato: ", contratoNuevo.FechaInicio)
 
 					//Fecha Finalización nueva
-					//Desface de dos días para febrero
-					if int(suspension.FechaFin.Month()) == 2 {
-						fmt.Println("Fecha anterior:", contratoNuevo.FechaFin)
-						contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour * time.Duration(diasSuspension+2))
-						fmt.Println("Fecha nuevo:", contratoNuevo.FechaFin)
+					fechaFinEfectiva := finOriginal
+					var dd = fechaFinEfectiva.Day()
+					var dr = int(diasSuspension) % 30
+					var meses = int(diasSuspension / 30)
+
+					var dia = 0
+					var mes = int(fechaFinEfectiva.Month() + time.Month(meses))
+					var ano = fechaFinEfectiva.Year()
+
+					if dd+dr > 30 {
+						mes += 1
+						dia = (dd + dr) % 30
 					} else {
-						fmt.Println("Fecha anterior:", contratoNuevo.FechaFin)
-						contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour * time.Duration(diasSuspension))
-						fmt.Println("Fecha nuevo:", contratoNuevo.FechaFin)
+						dia = dd + dr
 					}
+					contratoNuevo.FechaFin = time.Date(ano, time.Month(mes), dia, 12, 0, 0, 0, time.UTC)
 
 					//Ajustar Fecha fin del contrato original
 					contrato[0].FechaFin = suspension.FechaInicio.Add(24 * time.Hour * -1)
 					if contrato[0].FechaFin.Day() == 31 {
 						contrato[0].FechaFin = contrato[0].FechaFin.Add(24 * time.Hour * -1)
-					}
-					if finOriginal.Month() != contratoNuevo.FechaFin.Month() {
-						for i := int(finOriginal.Month()); i < int(contratoNuevo.FechaFin.Month()); i++ {
-							var dias = daysInMonth(i, contrato[0].FechaFin.Year())
-							if dias == 31 {
-								contratoNuevo.FechaFin = contratoNuevo.FechaFin.Add(24 * time.Hour * 1)
-							}
-						}
 					}
 
 					if suspension.FechaInicio.Day() == 31 || suspension.FechaInicio.Day() == 1 {
