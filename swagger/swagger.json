@@ -1339,6 +1339,9 @@
             "title": "DatosVinculacion",
             "type": "object",
             "properties": {
+                "Cancelacion": {
+                    "type": "boolean"
+                },
                 "Categoria": {
                     "type": "string"
                 },

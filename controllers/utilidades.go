@@ -855,8 +855,14 @@ func Preliquidacion(contrato models.Contrato) (mensaje string, codigo string, co
 				}
 			} else if contrato.TipoNominaId == 410 {
 				mensaje, err = liquidarHCS(contrato, false, 0, contrato.Vigencia, 0, 0, false)
+				var contratoActualizado models.Contrato
+				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), &aux); err == nil {
+					LimpiezaRespuestaRefactor(aux, &contratoActualizado)
+					contratoReturn = &contratoActualizado
+					contratoReturn.Desagregado = contrato.Desagregado
+				}
 				if err == nil {
-					return "Successful", "201", &contrato, nil
+					return "Successful", "201", contratoReturn, nil
 				} else {
 					codigo = "404"
 					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
@@ -1562,7 +1568,7 @@ func CambioCumplido(ano string, mes string, numeroContrato string, contrato []mo
 	}
 }
 
-//Funcionalidad para saber la cantidad de dias de un mes
+// Funcionalidad para saber la cantidad de dias de un mes
 func daysInMonth(month, year int) int {
 	switch time.Month(month) {
 	case time.April, time.June, time.September, time.November:

@@ -54,6 +54,29 @@ func LiquidarMesHCHOld(reglas string, cedula string, ano int, detallePreliquidac
 	return data
 }
 
+func ObtenerPorcentajesDesagregado(reglas string, contrato models.Contrato) (data models.PorcentajeDesagregado) {
+	m := NewMachine().Consult(reglas)
+	porcentajeSol := m.ProveAll("porcentaje_concepto(" + strconv.Itoa(contrato.Vigencia) + ", CO," + strconv.Itoa(contrato.NumeroSemanas) + ",semanas,R).")
+
+	for _, p := range porcentajeSol {
+		concepto := fmt.Sprintf("%s", p.ByName_("CO"))
+		valorPorcentaje, _ := strconv.ParseFloat(fmt.Sprintf("%s", p.ByName_("R")), 64)
+		switch concepto {
+		case "prima_navidad":
+			data.PorcentajePrimaNavidad = valorPorcentaje
+		case "prima_vacaciones":
+			data.PorcentajePrimaVacaciones = valorPorcentaje
+		case "cesantias":
+			data.PorcentajeCesantias = valorPorcentaje
+		case "vacaciones":
+			data.PorcentajeVacaciones = valorPorcentaje
+		case "prima_servicios":
+			data.PorcentajePrimaServicios = valorPorcentaje
+		}
+	}
+	return data
+}
+
 func LiquidarMesHCS(reglas string, contrato models.Contrato, detallePreliquidacion models.DetallePreliquidacion, mesFinal bool) (data []models.DetallePreliquidacion) {
 	var conceptoNomina models.ConceptoNomina
 	//var desagregado models.Desagregado
