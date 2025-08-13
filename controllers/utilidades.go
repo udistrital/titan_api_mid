@@ -860,6 +860,9 @@ func Preliquidacion(contrato models.Contrato) (mensaje string, codigo string, co
 					LimpiezaRespuestaRefactor(aux, &contratoActualizado)
 					contratoReturn = &contratoActualizado
 					contratoReturn.Desagregado = contrato.Desagregado
+					contratoReturn.NumeroSemanas = contrato.NumeroSemanas
+					contratoReturn.Completo = contrato.Completo
+					contratoReturn.Unico = contrato.Unico
 				}
 				if err == nil {
 					return "Successful", "201", contratoReturn, nil

@@ -30,7 +30,6 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 	var auxDetalle []models.DetallePreliquidacion
 	var reglasAlivios string
 	var reglasNuevas string //reglas a usar en cada iteracion
-	var reglasbase string
 	var semanas_liquidadas int
 	var diasALiquidar string
 	var porcentaje_ibc float64
@@ -39,9 +38,6 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 	var emergencia int //Varibale para evitar loop infinito
-
-	reglasbase = cargarReglasBase("HCS")
-
 	// Validamos que solo se guarden los porcentajes en los DVE, no en los generales
 	if general == false {
 		// 1.) Se guardan los porcentajes de con los que se calcula el desagregado de la preliquidacion
@@ -52,7 +48,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 			fmt.Println("Error al obtener el contrato desde Titan CRUD:", err)
 		}
 
-		porcentajesDesagregado = golog.ObtenerPorcentajesDesagregado(reglasbase, contrato)
+		porcentajesDesagregado = golog.ObtenerPorcentajesDesagregado(cargarReglasBase("HCS"), contrato)
 		contratoDVE.PorcentajeCesantias = porcentajesDesagregado.PorcentajeCesantias
 		contratoDVE.PorcentajePrimaNavidad = porcentajesDesagregado.PorcentajePrimaNavidad
 		contratoDVE.PorcentajePrimaVacaciones = porcentajesDesagregado.PorcentajePrimaVacaciones
@@ -240,7 +236,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 					}
 				}
 				predicados = append(predicados, models.Predicado{Nombre: "cancelacion(0)."})
-				reglasbase = reglasbase + reglasAlivios + FormatoReglas(predicados)
+				reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
 				if (mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general) || semanasContrato <= 0 {
 					reglasNuevas = reglasNuevas + "mesFinal(1)."
