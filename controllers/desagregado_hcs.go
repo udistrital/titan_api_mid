@@ -49,6 +49,12 @@ func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.Desagre
 	var lowCategoria string  //Categoría en minúscula
 	var lowDedicacion string //Dedicacion en minúscula
 
+	if vinculacion.Cancelacion {
+		predicados = append(predicados, models.Predicado{Nombre: "cancelacion(1)."})
+	} else {
+		predicados = append(predicados, models.Predicado{Nombre: "cancelacion(0)."})
+	}
+
 	if vinculacion.Dedicacion == "HCP" {
 		if vinculacion.NivelAcademico == "POSGRADO" {
 			lowDedicacion = "hcpos"
@@ -59,11 +65,6 @@ func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.Desagre
 	} else {
 		lowDedicacion = strings.ToLower(vinculacion.Dedicacion)
 		predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(1)."})
-		if vinculacion.Cancelacion {
-			predicados = append(predicados, models.Predicado{Nombre: "cancelacion(1)."})
-		} else {
-			predicados = append(predicados, models.Predicado{Nombre: "cancelacion(0)."})
-		}
 	}
 
 	lowCategoria = strings.ToLower(vinculacion.Categoria)
