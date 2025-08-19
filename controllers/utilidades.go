@@ -1585,3 +1585,127 @@ func daysInMonth(month, year int) int {
 		return 31
 	}
 }
+
+func ConstruirReglasDesagregado(vinculacion models.DatosVinculacion, numSemanas int, contratoOriginal ...models.Contrato) (reglas string, lowCategoria string, lowDedicacion string) {
+	var predicados []models.Predicado
+	var predicadosPrestaciones []models.Predicado
+	if vinculacion.Dedicacion == "HCP" {
+		if vinculacion.NivelAcademico == "POSGRADO" {
+			lowDedicacion = "hcpos"
+		} else {
+			lowDedicacion = "hcpre"
+		}
+		predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(0)."})
+	} else {
+		lowDedicacion = strings.ToLower(vinculacion.Dedicacion)
+		predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(1)."})
+	}
+	lowCategoria = strings.ToLower(vinculacion.Categoria)
+	predicados = append(predicados, models.Predicado{Nombre: "horas_semanales(" + strconv.Itoa(vinculacion.HorasSemanales) + ")."})
+	predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + vinculacion.Documento + "," + strconv.Itoa(numSemanas) + "," + strconv.Itoa(vinculacion.Vigencia) + ")."})
+	predicados = append(predicados, models.Predicado{Nombre: "valor_punto(" + strconv.Itoa(vinculacion.Vigencia) + "," + strconv.Itoa(int(vinculacion.PuntoSalarial)) + ")."})
+	if len(contratoOriginal) > 0 {
+		switch vinculacion.ObjetoNovedad.TipoResolucion {
+		case "RCAN":
+			predicadosPrestaciones, _ = ObtenerReglasPrestaciones(false, contratoOriginal[0])
+		case "RADD", "RRED":
+			contratoOriginal[0].NumeroSemanas = vinculacion.NumeroSemanas + vinculacion.ObjetoNovedad.SemanasNuevas
+			predicadosPrestaciones, _ = ObtenerReglasPrestaciones(true, contratoOriginal[0])
+		default:
+			predicadosPrestaciones, _ = ObtenerReglasPrestaciones(false)
+		}
+	} else {
+		predicadosPrestaciones, _ = ObtenerReglasPrestaciones(false)
+	}
+	predicados = append(predicados, predicadosPrestaciones...)
+	reglas = cargarReglasBase("HCS") + FormatoReglas(predicados)
+	return reglas, lowCategoria, lowDedicacion
+}
+
+func ObtenerReglasPrestaciones(novedad bool, contratoOriginal ...models.Contrato) (predicados []models.Predicado, porcentajesDesagregadoIdNew int) {
+	var aux map[string]interface{}
+	anoActual := time.Now().Year()
+	if len(contratoOriginal) > 0 {
+		// en este caso se deben cargar las reglas con el id de parametroPeriodo obtenido (que es para alguna novedad)
+		var parametroPeriodo []models.ParametroPeriodo
+		query := "id:" + strconv.Itoa(contratoOriginal[0].PorcentajesDesagregadoId)
+		if err := request.GetJson(beego.AppConfig.String("UrlParametrosCrud")+"/parametro_periodo?limit=-1&query="+query, &aux); err == nil {
+			LimpiezaRespuestaRefactor(aux, &parametroPeriodo)
+			// Construir reglas dinámicas de porcentaje según los parámetros obtenidos
+			porcentajesDesagregadoIdNew = parametroPeriodo[0].Id
+			for _, pp := range parametroPeriodo {
+				var valores map[string]map[string]float64
+				json.Unmarshal([]byte(pp.Valor), &valores)
+				// ano := periodo[0].Year
+				for concepto, porcentajes := range valores {
+					if novedad {
+						semanasOriginales := contratoOriginal[0].NumeroSemanas
+						if semanasOriginales >= 24 {
+							if mayor, ok := porcentajes["porcentaje_mayor"]; ok {
+								predicados = append(predicados, models.Predicado{Nombre: "porcentaje_mayor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", mayor) + ")."})
+								predicados = append(predicados, models.Predicado{Nombre: "porcentaje_menor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", mayor) + ")."})
+							}
+						} else {
+							if menor, ok := porcentajes["porcentaje_menor"]; ok {
+								predicados = append(predicados, models.Predicado{Nombre: "porcentaje_mayor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", menor) + ")."})
+								predicados = append(predicados, models.Predicado{Nombre: "porcentaje_menor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", menor) + ")."})
+							}
+						}
+					} else {
+						if mayor, ok := porcentajes["porcentaje_mayor"]; ok {
+							predicados = append(predicados, models.Predicado{Nombre: "porcentaje_mayor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", mayor) + ")."})
+						}
+						if menor, ok := porcentajes["porcentaje_menor"]; ok {
+							predicados = append(predicados, models.Predicado{Nombre: "porcentaje_menor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", menor) + ")."})
+						}
+					}
+				}
+			}
+		} else {
+			fmt.Println("Error al obtener parametro", err)
+		}
+
+	} else {
+		// se debe obtener desde parametros los valores de porcentaje de prestaciones y cargar los predicados dinamicos
+		// obtener el periodo vigente para app de resoluciones
+		// contemplar agregar el aplicacion_id para crear periodos exclusivos para resoluciones
+		var periodo []models.Periodo
+		query := "year:" + strconv.Itoa(anoActual) + ",activo:true"
+		if err := request.GetJson(beego.AppConfig.String("UrlParametrosCrud")+"/periodo?limit=-1&query="+query, &aux); err == nil {
+			LimpiezaRespuestaRefactor(aux, &periodo)
+			// obtener el id de parametro de porcentajes de prestaciones
+			var parametro []models.Parametro
+			query2 := "codigo_abreviacion:PDVE,activo:true"
+			if err := request.GetJson(beego.AppConfig.String("UrlParametrosCrud")+"/parametro?limit=-1&query="+query2, &aux); err == nil {
+				LimpiezaRespuestaRefactor(aux, &parametro)
+				// finalmente obtener los valores de parametro_periodo
+				var parametroPeriodo []models.ParametroPeriodo
+				query3 := "parametro_id:" + strconv.Itoa(parametro[0].Id) + ",periodo_id:" + strconv.Itoa(periodo[0].Id) + ",activo:true"
+				if err := request.GetJson(beego.AppConfig.String("UrlParametrosCrud")+"/parametro_periodo?limit=-1&query="+query3, &aux); err == nil {
+					LimpiezaRespuestaRefactor(aux, &parametroPeriodo)
+					// Construir reglas dinámicas de porcentaje según los parámetros obtenidos
+					porcentajesDesagregadoIdNew = parametroPeriodo[0].Id
+					for _, pp := range parametroPeriodo {
+						var valores map[string]map[string]float64
+						json.Unmarshal([]byte(pp.Valor), &valores)
+						for concepto, porcentajes := range valores {
+							if mayor, ok := porcentajes["porcentaje_mayor"]; ok {
+								predicados = append(predicados, models.Predicado{Nombre: "porcentaje_mayor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", mayor) + ")."})
+							}
+							if menor, ok := porcentajes["porcentaje_menor"]; ok {
+								predicados = append(predicados, models.Predicado{Nombre: "porcentaje_menor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", menor) + ")."})
+							}
+						}
+					}
+				} else {
+					fmt.Println("Error al obtener parametro_periodo", err)
+				}
+			} else {
+				fmt.Println("Error al obtener parametro", err)
+			}
+		} else {
+			fmt.Println("Error al obtener periodo", err)
+		}
+	}
+	return predicados, porcentajesDesagregadoIdNew
+}
