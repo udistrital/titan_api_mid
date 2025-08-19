@@ -48,6 +48,7 @@ func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.Desagre
 	if vinculacion.ObjetoNovedad != nil {
 		var aux map[string]interface{}
 		var contratoOriginal []models.Contrato
+		// Primero se obtienen los porcentajes que se usaron en la vinculacion original
 		query := "numero_contrato:" + vinculacion.ObjetoNovedad.VinculacionOriginal + ",vigencia:" + strconv.Itoa(vinculacion.ObjetoNovedad.VigenciaVinculacionOriginal)
 		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contratoOriginal)
