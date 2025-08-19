@@ -34,32 +34,9 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 	var diasALiquidar string
 	var porcentaje_ibc float64
 	var contratoDVE models.Contrato
-	var porcentajesDesagregado models.PorcentajeDesagregado
 
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 	var emergencia int //Varibale para evitar loop infinito
-	// Validamos que solo se guarden los porcentajes en los DVE, no en los generales
-	if general == false {
-		// 1.) Se guardan los porcentajes de con los que se calcula el desagregado de la preliquidacion
-		// 1.1) Obtenemos el contrato DVE desde titan
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"contrato/"+strconv.Itoa(contrato.Id), &aux); err == nil {
-			LimpiezaRespuestaRefactor(aux, &contratoDVE)
-		} else {
-			fmt.Println("Error al obtener el contrato desde Titan CRUD:", err)
-		}
-
-		porcentajesDesagregado = golog.ObtenerPorcentajesDesagregado(cargarReglasBase("HCS"), contrato)
-		contratoDVE.PorcentajeCesantias = porcentajesDesagregado.PorcentajeCesantias
-		contratoDVE.PorcentajePrimaNavidad = porcentajesDesagregado.PorcentajePrimaNavidad
-		contratoDVE.PorcentajePrimaVacaciones = porcentajesDesagregado.PorcentajePrimaVacaciones
-		contratoDVE.PorcentajeVacaciones = porcentajesDesagregado.PorcentajeVacaciones
-		contratoDVE.PorcentajePrimaServicios = porcentajesDesagregado.PorcentajePrimaServicios
-
-		// 1.2) Se guardan los porcentajes
-		if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"contrato/"+strconv.Itoa(contrato.Id), "PUT", &aux, contratoDVE); err != nil {
-			fmt.Println("Error al actualizar porcentajes en el contrato:", err)
-		}
-	}
 
 	// Buscar si existen contratos vigentes para el docente
 	query := "Documento:" + contrato.Documento + ",TipoNominaId:410,Activo:true"
@@ -255,7 +232,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 						porcentaje_ibc = 1
 					}
 				}
-				predicados = append(predicados, models.Predicado{Nombre: "cancelacion(0)."})
+			
 				reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
 				if (mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general) || semanasContrato <= 0 {
