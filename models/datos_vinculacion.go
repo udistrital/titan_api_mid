@@ -10,7 +10,7 @@ type DatosVinculacion struct {
 	HorasSemanales int
 	NivelAcademico string
 	PuntoSalarial  float64
-	ObjetoNovedad *ObjetoNovedad
+	ObjetoNovedad  *ObjetoNovedad
 }
 
 type ObjetoNovedad struct {

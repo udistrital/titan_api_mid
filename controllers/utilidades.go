@@ -1636,28 +1636,20 @@ func ObtenerReglasPrestaciones(novedad bool, contratoOriginal ...models.Contrato
 			for _, pp := range parametroPeriodo {
 				var valores map[string]map[string]float64
 				json.Unmarshal([]byte(pp.Valor), &valores)
-				// ano := periodo[0].Year
 				for concepto, porcentajes := range valores {
 					if novedad {
+						// Cuando son adiciones o reducciones
 						semanasOriginales := contratoOriginal[0].NumeroSemanas
-						if semanasOriginales >= 24 {
-							if mayor, ok := porcentajes["porcentaje_mayor"]; ok {
-								predicados = append(predicados, models.Predicado{Nombre: "porcentaje_mayor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", mayor) + ")."})
-								predicados = append(predicados, models.Predicado{Nombre: "porcentaje_menor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", mayor) + ")."})
-							}
+						predicados = append(predicados, models.Predicado{Nombre: "semanas_contrato_original(" + strconv.Itoa(semanasOriginales) + ")."})
 						} else {
-							if menor, ok := porcentajes["porcentaje_menor"]; ok {
-								predicados = append(predicados, models.Predicado{Nombre: "porcentaje_mayor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", menor) + ")."})
-								predicados = append(predicados, models.Predicado{Nombre: "porcentaje_menor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", menor) + ")."})
+						// Cuando son cancelaciones
+						predicados = append(predicados, models.Predicado{Nombre: "semanas_contrato_original(0)."})
 							}
-						}
-					} else {
 						if mayor, ok := porcentajes["porcentaje_mayor"]; ok {
 							predicados = append(predicados, models.Predicado{Nombre: "porcentaje_mayor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", mayor) + ")."})
 						}
 						if menor, ok := porcentajes["porcentaje_menor"]; ok {
 							predicados = append(predicados, models.Predicado{Nombre: "porcentaje_menor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", menor) + ")."})
-						}
 					}
 				}
 			}
@@ -1670,7 +1662,8 @@ func ObtenerReglasPrestaciones(novedad bool, contratoOriginal ...models.Contrato
 		// obtener el periodo vigente para app de resoluciones
 		// contemplar agregar el aplicacion_id para crear periodos exclusivos para resoluciones
 		var periodo []models.Periodo
-		query := "year:" + strconv.Itoa(anoActual) + ",activo:true"
+		predicados = append(predicados, models.Predicado{Nombre: "semanas_contrato_original(0)."})
+		query := "year:" + strconv.Itoa(anoActual) + ",codigo_abreviacion:PAR,aplicacion_id:30,activo:true"
 		if err := request.GetJson(beego.AppConfig.String("UrlParametrosCrud")+"/periodo?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &periodo)
 			// obtener el id de parametro de porcentajes de prestaciones
