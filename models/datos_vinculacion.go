@@ -10,5 +10,12 @@ type DatosVinculacion struct {
 	HorasSemanales int
 	NivelAcademico string
 	PuntoSalarial  float64
-	Cancelacion    bool
+	ObjetoNovedad  *ObjetoNovedad
+}
+
+type ObjetoNovedad struct {
+	SemanasNuevas               int
+	TipoResolucion              string
+	VinculacionOriginal         string
+	VigenciaVinculacionOriginal int
 }

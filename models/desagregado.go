@@ -9,3 +9,11 @@ type Desagregado struct {
 	InteresesCesantias    float64
 	BonificacionServicios float64
 }
+
+type PorcentajeDesagregado struct {
+	PorcentajePrimaNavidad    float64
+	PorcentajeCesantias       float64
+	PorcentajePrimaServicios  float64
+	PorcentajePrimaVacaciones float64
+	PorcentajeVacaciones      float64
+}
