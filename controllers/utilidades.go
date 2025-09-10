@@ -1641,15 +1641,15 @@ func ObtenerReglasPrestaciones(novedad bool, contratoOriginal ...models.Contrato
 						// Cuando son adiciones o reducciones
 						semanasOriginales := contratoOriginal[0].NumeroSemanas
 						predicados = append(predicados, models.Predicado{Nombre: "semanas_contrato_original(" + strconv.Itoa(semanasOriginales) + ")."})
-						} else {
+					} else {
 						// Cuando son cancelaciones
 						predicados = append(predicados, models.Predicado{Nombre: "semanas_contrato_original(0)."})
-							}
-						if mayor, ok := porcentajes["porcentaje_mayor"]; ok {
-							predicados = append(predicados, models.Predicado{Nombre: "porcentaje_mayor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", mayor) + ")."})
-						}
-						if menor, ok := porcentajes["porcentaje_menor"]; ok {
-							predicados = append(predicados, models.Predicado{Nombre: "porcentaje_menor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", menor) + ")."})
+					}
+					if mayor, ok := porcentajes["porcentaje_mayor"]; ok {
+						predicados = append(predicados, models.Predicado{Nombre: "porcentaje_mayor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", mayor) + ")."})
+					}
+					if menor, ok := porcentajes["porcentaje_menor"]; ok {
+						predicados = append(predicados, models.Predicado{Nombre: "porcentaje_menor(" + strconv.Itoa(anoActual) + "," + strings.ToLower(concepto) + "," + fmt.Sprintf("%.5f", menor) + ")."})
 					}
 				}
 			}

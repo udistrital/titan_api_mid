@@ -232,7 +232,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 						porcentaje_ibc = 1
 					}
 				}
-			
+
 				reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
 				if (mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general) || semanasContrato <= 0 {
