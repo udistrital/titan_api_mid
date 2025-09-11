@@ -58,7 +58,11 @@ func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.Desagre
 		predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(0)."})
 	} else {
 		lowDedicacion = strings.ToLower(vinculacion.Dedicacion)
-		predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(1)."})
+		if vinculacion.Dedicacion == "MTO" {
+			predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(0)."})
+		} else {
+			predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(1)."})
+		}
 		if vinculacion.Cancelacion {
 			predicados = append(predicados, models.Predicado{Nombre: "cancelacion(1)."})
 		} else {
