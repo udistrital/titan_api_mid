@@ -119,6 +119,8 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 			// 1.2) Se guardan los porcentajes
 			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"contrato/"+strconv.Itoa(contrato.Id), "PUT", &aux, contratoDVE); err != nil {
 				fmt.Println("Error al actualizar porcentajes en el contrato:", err)
+			} else {
+				fmt.Printf("PUT realizado a contrato %s vigencia %d con datos: %+v\n", contrato.NumeroContrato, contrato.Vigencia, contratoDVE)
 			}
 		}
 
