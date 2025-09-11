@@ -1597,8 +1597,12 @@ func ConstruirReglasDesagregado(vinculacion models.DatosVinculacion, numSemanas 
 		}
 		predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(0)."})
 	} else {
+		if vinculacion.Dedicacion == "MTO" {
+			predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(0)."})
+		} else {
+			predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(1)."})
+		}
 		lowDedicacion = strings.ToLower(vinculacion.Dedicacion)
-		predicados = append(predicados, models.Predicado{Nombre: "aplica_prima(1)."})
 	}
 	lowCategoria = strings.ToLower(vinculacion.Categoria)
 	predicados = append(predicados, models.Predicado{Nombre: "horas_semanales(" + strconv.Itoa(vinculacion.HorasSemanales) + ")."})
