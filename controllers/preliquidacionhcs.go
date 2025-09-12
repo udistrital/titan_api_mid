@@ -110,7 +110,11 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 			// 1.1) Obtenemos el contrato DVE desde titan
 			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"contrato/"+strconv.Itoa(contrato.Id), &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contratoDVE)
-				
+
+				fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "contrato/" + strconv.Itoa(contrato.Id))
+
+				fmt.Println("Contrato DVE obtenido: ", contratoDVE)
+
 				// Se debe modificar para guardar el id de parametros cuando se liquida una vinculacion
 				contratoDVE.PorcentajesDesagregadoId = porcentajesDesagregadoId
 
