@@ -1116,18 +1116,23 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 				if mismoMes {
 					valorNuevo = 0
 				}
+				var valorContratoCalculo float64
 				if valorContrato == 0 {
 					fmt.Println("ENTRA 1")
-					fmt.Println(contratoAux.ValorContrato)
-					fmt.Println(valorNuevo)
-					fmt.Println(semanasTotales)
-					valorDia = (contratoAux.ValorContrato - valorNuevo) / float64(semanasTotales)
+					valorContratoCalculo = contratoAux.ValorContrato
 				} else {
 					fmt.Println("ENTRA 2")
-					fmt.Println(valorContrato)
-					fmt.Println(valorNuevo)
-					fmt.Println(semanasTotales)
-					valorDia = (valorContrato - valorNuevo) / float64(semanasTotales)
+					valorContratoCalculo = valorContrato
+				}
+
+				fmt.Println(valorContratoCalculo)
+				fmt.Println(valorNuevo)
+				fmt.Println(semanasTotales)
+
+				if semanasTotales > 0 {
+					valorDia = (valorContratoCalculo - valorNuevo) / float64(semanasTotales)
+				} else {
+					valorDia = 0
 				}
 				fmt.Println("VALOR DIA ", valorDia)
 				// Actualiza los datos del contrato: Fecha fin y valor
