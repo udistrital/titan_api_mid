@@ -6,7 +6,6 @@ import (
 	_ "github.com/udistrital/titan_api_mid/routers"
 	apistatus "github.com/udistrital/utils_oas/apiStatusLib"
 	"github.com/udistrital/utils_oas/customerrorv2"
-	"github.com/udistrital/utils_oas/xray"
 )
 
 func main() {
@@ -26,7 +25,7 @@ func main() {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	}
-	xray.InitXRay()
+	// xray.InitXRay()
 	beego.ErrorController(&customerrorv2.CustomErrorController{})
 	apistatus.Init()
 	beego.Run()
