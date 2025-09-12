@@ -1085,7 +1085,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 					if valorContrato == 0 {
 						contrato[0].ValorContrato = valorDia * float64(semanasContrato)
 					} else {
-						contrato[0].ValorContrato = valorContrato
+						contrato[0].ValorContrato = math.Floor(valorContrato)
 					}
 				}
 
