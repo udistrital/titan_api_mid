@@ -108,14 +108,14 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 		if !general && !anulacion {
 			// 1.) Se guardan los porcentajes de con los que se calcula el desagregado de la preliquidacion
 			// 1.1) Obtenemos el contrato DVE desde titan
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"contrato/"+strconv.Itoa(contrato.Id), &aux); err == nil {
+			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contratoDVE)
-				
+
 				// Se debe modificar para guardar el id de parametros cuando se liquida una vinculacion
 				contratoDVE.PorcentajesDesagregadoId = porcentajesDesagregadoId
 
 				// 1.2) Se guardan los porcentajes
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"contrato/"+strconv.Itoa(contrato.Id), "PUT", &aux, contratoDVE); err != nil {
+				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "PUT", &aux, contratoDVE); err != nil {
 					fmt.Println("Error al actualizar porcentajes en el contrato:", err)
 				} else {
 					fmt.Printf("PUT realizado a contrato %s vigencia %d con datos: %+v\n", contrato.NumeroContrato, contrato.Vigencia, contratoDVE)
