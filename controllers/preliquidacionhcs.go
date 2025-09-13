@@ -33,6 +33,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 	var semanas_liquidadas int
 	var diasALiquidar string
 	var porcentaje_ibc float64
+	var contratoDVE models.Contrato
 
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 	var emergencia int //Varibale para evitar loop infinito
@@ -99,6 +100,29 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 		} else {
 			predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 			predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + strconv.Itoa(semanasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
+		}
+		// se deben agregar los predicados de los porcentajes de prestaciones que se van a usar
+		predicadosPrestaciones, porcentajesDesagregadoId := ObtenerReglasPrestaciones(false)
+		predicados = append(predicados, predicadosPrestaciones...)
+
+		if !general && !anulacion {
+			// 1.) Se guardan los porcentajes de con los que se calcula el desagregado de la preliquidacion
+			// 1.1) Obtenemos el contrato DVE desde titan
+			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), &aux); err == nil {
+				LimpiezaRespuestaRefactor(aux, &contratoDVE)
+
+				// Se debe modificar para guardar el id de parametros cuando se liquida una vinculacion
+				contratoDVE.PorcentajesDesagregadoId = porcentajesDesagregadoId
+
+				// 1.2) Se guardan los porcentajes
+				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "PUT", &aux, contratoDVE); err != nil {
+					fmt.Println("Error al actualizar porcentajes en el contrato:", err)
+				} else {
+					fmt.Printf("PUT realizado a contrato %s vigencia %d con datos: %+v\n", contrato.NumeroContrato, contrato.Vigencia, contratoDVE)
+				}
+			} else {
+				fmt.Println("Error al obtener el contrato desde Titan CRUD:", err)
+			}
 		}
 
 		// predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
@@ -211,7 +235,7 @@ func liquidarHCS(contrato models.Contrato, general bool, porcentaje float64, vig
 						porcentaje_ibc = 1
 					}
 				}
-				predicados = append(predicados, models.Predicado{Nombre: "cancelacion(0)."})
+
 				reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
 				reglasNuevas = reglasNuevas + reglasbase + "porcentaje(" + fmt.Sprintf("%f", porcentaje_ibc) + ").semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(semanas_liquidadas) + ")."
 				if (mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() && !general) || semanasContrato <= 0 {

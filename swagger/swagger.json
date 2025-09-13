@@ -1108,6 +1108,10 @@
                     "type": "integer",
                     "format": "int64"
                 },
+                "PorcentajesDesagregadoId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
                 "ProyectoId": {
                     "type": "integer",
                     "format": "int64"
@@ -1361,6 +1365,13 @@
                 "NumeroSemanas": {
                     "type": "integer",
                     "format": "int64"
+                },
+                "ObjetoNovedad": {
+                    "$ref": "#/definitions/models.ObjetoNovedad"
+                },
+                "PuntoSalarial": {
+                    "type": "number",
+                    "format": "double"
                 },
                 "Vigencia": {
                     "type": "integer",
@@ -1622,6 +1633,26 @@
                 "Valor": {
                     "type": "number",
                     "format": "double"
+                }
+            }
+        },
+        "models.ObjetoNovedad": {
+            "title": "ObjetoNovedad",
+            "type": "object",
+            "properties": {
+                "SemanasNuevas": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "TipoResolucion": {
+                    "type": "string"
+                },
+                "VigenciaVinculacionOriginal": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "VinculacionOriginal": {
+                    "type": "string"
                 }
             }
         },

@@ -62,7 +62,7 @@ func CalcularDiasNovedades(MesPreliq, AnoPreliq int, AnoDesde float64, MesDesde 
 
 }
 
-//Función que calcula IBC, basado en hechos de golog
+// Función que calcula IBC, basado en hechos de golog
 func CalcularIBC(persona, reglas string) {
 	e := NewMachine().Consult(reglas)
 
@@ -529,6 +529,16 @@ func validarNovedades_segSocial(Mes, Ano int, FechaDesde, FechaHasta time.Time) 
 func EncontrarConcepto(data []models.DetallePreliquidacion, id int) (res bool) {
 	for i := 0; i < len(data); i++ {
 		if id == data[i].ConceptoNominaId.Id {
+			return true
+		}
+	}
+	return false
+}
+
+// EncontrarConceptoDetalle verifica si ya existe un concepto en el slice de DetallePreliquidacion
+func EncontrarConceptoDetalle(data []models.DetallePreliquidacion, conceptoId int) bool {
+	for _, d := range data {
+		if d.ConceptoNominaId != nil && d.ConceptoNominaId.Id == conceptoId {
 			return true
 		}
 	}
