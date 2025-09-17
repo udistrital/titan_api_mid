@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/astaxie/beego v1.12.3
 	github.com/udistrital/golog v0.0.0-20171023162822-91dc4aca08d2
-	github.com/udistrital/utils_oas v0.0.0-20250909064503-7a4adc67f2ab
+	github.com/udistrital/utils_oas v0.0.0-20250917065514-c74562ac40b4
 )
 
 require (
