@@ -373,8 +373,8 @@ github.com/syndtr/goleveldb v0.0.0-20181127023241-353a9fca669c/go.mod h1:Z4AUp2K
 github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/udistrital/golog v0.0.0-20171023162822-91dc4aca08d2 h1:IsxcFrpUKvkDVaOy8oXf5ZgrKzflj2PecOY1AwdTyI0=
 github.com/udistrital/golog v0.0.0-20171023162822-91dc4aca08d2/go.mod h1:Rs+FPloU9+szKb4cWeDGxlzMyS6E0N+6qFhSC6MkfIw=
-github.com/udistrital/utils_oas v0.0.0-20250909064503-7a4adc67f2ab h1:lrqrnwnBCK5+1o2iPiyNv2xUQXZ5IzWDf8GzjPTrwXM=
-github.com/udistrital/utils_oas v0.0.0-20250909064503-7a4adc67f2ab/go.mod h1:efcg6gS+xBc9kGcXOmfCM98Rd6b7sJ9tEv/zCbeUjlY=
+github.com/udistrital/utils_oas v0.0.0-20250917065514-c74562ac40b4 h1:cFoW6FJTyfTDho6kMONIKuRyEI72pcAM3LlyoDoomtQ=
+github.com/udistrital/utils_oas v0.0.0-20250917065514-c74562ac40b4/go.mod h1:efcg6gS+xBc9kGcXOmfCM98Rd6b7sJ9tEv/zCbeUjlY=
 github.com/ugorji/go v0.0.0-20171122102828-84cb69a8af83/go.mod h1:hnLbHMwcvSihnDhEfx2/BzKp2xb0Y+ErdfYcrs9tkJQ=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
