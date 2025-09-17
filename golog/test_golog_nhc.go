@@ -112,7 +112,9 @@ func LiquidarMesHCS(reglas string, contrato models.Contrato, detallePreliquidaci
 				NombreConcepto:             conceptoNomina.NombreConcepto,
 				NaturalezaConceptoNominaId: conceptoNomina.NaturalezaConceptoNominaId,
 			}
-			data = append(data, detallePreliquidacion)
+			if !EncontrarConceptoDetalle(data, conceptoNomina.Id) {
+				data = append(data, detallePreliquidacion)
+			}
 		}
 	}
 	return data
