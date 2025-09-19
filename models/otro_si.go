@@ -9,5 +9,6 @@ type OtroSi struct {
 	Valor          float64
 	Rp             int
 	Cdp            int
+	VigenciaCdp    int
 	FechaFin       time.Time
 }
