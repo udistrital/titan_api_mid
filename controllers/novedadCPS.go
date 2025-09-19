@@ -422,6 +422,7 @@ func (c *NovedadCPSController) AplicarOtrosi() {
 						contratoNuevo.FechaFin = otro_si.FechaFin
 						contratoNuevo.Rp = otro_si.Rp
 						contratoNuevo.Cdp = otro_si.Cdp
+						contratoNuevo.VigenciaCdp = otro_si.VigenciaCdp
 						contratoNuevo.ValorContrato = otro_si.Valor
 						//Guardamos el nuevo contrato
 						contratoNuevo, err = registrarContrato(contratoNuevo)
