@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/astaxie/beego"
@@ -50,10 +51,22 @@ func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.Desagre
 		var contratoOriginal []models.Contrato
 		// Primero se obtienen los porcentajes que se usaron en la vinculacion original
 		query := "numero_contrato:" + vinculacion.ObjetoNovedad.VinculacionOriginal + ",vigencia:" + strconv.Itoa(vinculacion.ObjetoNovedad.VigenciaVinculacionOriginal)
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?query="+query, &aux); err == nil {
+		urlContrato := beego.AppConfig.String("UrlTitanCrud") + "/contrato?query=" + query
+		log.Printf("Desagregar -> consultando contrato original en Titan: %s", urlContrato)
+		if err := request.GetJson(urlContrato, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contratoOriginal)
 		} else {
-			fmt.Println("Error al obtener parametro", err)
+			log.Printf("Desagregar -> error (%s): %v", query, err)
+		}
+
+		// Si no se obtiene contrato original se aplican los valores de la vigencia actual para el calculo del desagregado
+		if contratoOriginal[0].Id == 0 {
+			if _, porcentajesID := ObtenerReglasPrestaciones(false); porcentajesID != 0 {
+				contratoOriginal = []models.Contrato{{PorcentajesDesagregadoId: porcentajesID}}
+				log.Printf("Desagregar -> no se obtuvo contrato original, usando contrato generico con PorcentajesDesagregadoId=%d", porcentajesID)
+			} else {
+				log.Printf("Desagregar -> no fue posible determinar un PorcentajesDesagregadoId vigente para la vinculacion original (%s)", query)
+			}
 		}
 
 		switch vinculacion.ObjetoNovedad.TipoResolucion {
