@@ -9,7 +9,7 @@ import (
 func InterceptMidRequest(ctx *context.Context) {
 	end_point := ctx.Request.URL.String()
 	if end_point != "/" {
-		defer func () {
+		defer func() {
 			//Catch
 			if r := recover(); r != nil {
 			}

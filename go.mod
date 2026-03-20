@@ -1,11 +1,13 @@
 module github.com/udistrital/titan_api_mid
 
-go 1.22.0
+go 1.22
+
+toolchain go1.24.3
 
 require (
 	github.com/astaxie/beego v1.12.3
 	github.com/udistrital/golog v0.0.0-20171023162822-91dc4aca08d2
-	github.com/udistrital/utils_oas v0.0.0-20250917065514-c74562ac40b4
+	github.com/udistrital/utils_oas v0.1.0
 )
 
 require (
