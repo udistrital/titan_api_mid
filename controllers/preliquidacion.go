@@ -47,6 +47,7 @@ func (c *PreliquidacionController) Preliquidar() {
 		fmt.Println("Vacaciones: ", contrato.Vacaciones)
 		fmt.Println("Unico: ", contrato.Unico)
 		fmt.Println("Cdp: ", contrato.Cdp)
+		fmt.Println("VigenciaCdp: ", contrato.VigenciaCdp)
 		fmt.Println("Rp: ", contrato.Rp)
 		fmt.Println("Vigencia: ", contrato.Vigencia)
 		fmt.Println("Tipo Nomina: ", contrato.TipoNominaId)

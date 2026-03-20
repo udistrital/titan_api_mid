@@ -17,6 +17,7 @@ type Contrato struct {
 	DependenciaId            int
 	ProyectoId               int
 	Cdp                      int
+	VigenciaCdp              int
 	Rp                       int
 	Unico                    bool
 	Completo                 bool
