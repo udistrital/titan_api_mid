@@ -3,9 +3,10 @@ package models
 import "time"
 
 type Suspension struct {
-	NumeroContrato string
-	Vigencia       int
-	Documento      string
-	FechaInicio    time.Time
-	FechaFin       time.Time
+	Id             int       `json:"Id"`
+	NumeroContrato string    `json:"NumeroContrato"`
+	Vigencia       int       `json:"Vigencia"`
+	Documento      string    `json:"Documento"`
+	FechaInicio    time.Time `json:"FechaInicio,omitempty"`
+	FechaFin       time.Time `json:"FechaFin,omitempty"`
 }
