@@ -1,14 +1,16 @@
 package models
 
-/*type InformacionPersonaNatural struct {
-	Id string
-	PersonasACargo bool
-	DeclaranteRenta bool
-	InteresViviendaAfc float64
-	MedicinaPrepagada bool
-	Pensionado bool
+/*
+	type InformacionPersonaNatural struct {
+		Id string
+		PersonasACargo bool
+		DeclaranteRenta bool
+		InteresViviendaAfc float64
+		MedicinaPrepagada bool
+		Pensionado bool
 
-}*/
+}
+*/
 type InformacionPersonaNatural struct {
 	InformacionPersonaNatural struct {
 		Id                 string  `json:"Id"`

@@ -1,6 +1,5 @@
 package models
 
-
 type EstadoPreliquidacion struct {
 	Id                int     `orm:"column(id);pk"`
 	Nombre            string  `orm:"column(nombre)"`
