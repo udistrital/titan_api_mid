@@ -20,6 +20,7 @@ func (c *NovedadCPSController) URLMapping() {
 	c.Mapping("CederContrato", c.CederContrato)
 	c.Mapping("AplicarOtrosi", c.AplicarOtrosi)
 	c.Mapping("SuspenderContrato", c.SuspenderContrato)
+	c.Mapping("ReiniciarContrato", c.ReiniciarContrato)
 }
 
 // Get ...

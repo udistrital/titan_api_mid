@@ -387,7 +387,7 @@ paths:
     post:
       tags:
       - novedadCPS
-      description: Maneja la novedad contractual de Suspensión de Contrato
+      description: Maneja la novedad contractual de Suspensión de Contrato para uno o varios contratos
       operationId: NovedadCPSController.Suspender Contrato
       parameters:
       - in: body
@@ -395,12 +395,16 @@ paths:
         description: Duración de la suspensión
         required: true
         schema:
-          $ref: '#/definitions/models.Suspension'
+          type: array
+          items:
+            $ref: '#/definitions/models.Suspension'
       responses:
         "201":
           description: ""
           schema:
-            $ref: '#/definitions/models.Contrato'
+            type: array
+            items:
+              $ref: '#/definitions/models.Contrato'
         "400":
           description: the request contains incorrect syntax
   /novedadVE/agregar_novedad:
@@ -1252,6 +1256,9 @@ definitions:
       FechaInicio:
         type: string
         format: datetime
+      Id:
+        type: integer
+        format: int64
       NumeroContrato:
         type: string
       Vigencia:

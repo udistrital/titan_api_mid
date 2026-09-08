@@ -37,6 +37,11 @@ func init() {
 			beego.NSInclude(
 				&controllers.NovedadCPSController{},
 			),
+			beego.NSRouter("/cancelar_contrato", &controllers.NovedadCPSController{}, "post:CancelarContrato"),
+			beego.NSRouter("/ceder_contrato", &controllers.NovedadCPSController{}, "post:CederContrato"),
+			beego.NSRouter("/otrosi_contrato", &controllers.NovedadCPSController{}, "post:AplicarOtrosi"),
+			beego.NSRouter("/suspender_contrato", &controllers.NovedadCPSController{}, "post:SuspenderContrato"),
+			beego.NSRouter("/reiniciar_contrato", &controllers.NovedadCPSController{}, "post:ReiniciarContrato"),
 		),
 		beego.NSNamespace("/novedadVE",
 			beego.NSInclude(
