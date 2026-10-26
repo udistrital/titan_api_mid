@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -50,6 +51,7 @@ func LimpiezaRespuestaRefactor(respuesta map[string]interface{}, v interface{}) 
 		panic(err)
 	}
 	json.Unmarshal(b, &v)
+	fmt.Println("Respuesta Limpia: ", v)
 }
 
 func FormatoReglas(v []models.Predicado) (reglas string) {
@@ -113,7 +115,7 @@ func calcularSemanasContratoDVE(FechaInicio time.Time, FechaFin time.Time) (sema
 	}
 }
 
-func registrarPreliquidacion(año, mes, estadoPreliquidacion, nomina int) (preliquidacion models.Preliquidacion) {
+func registrarPreliquidacion(ctx context.Context, año, mes, estadoPreliquidacion, nomina int) (preliquidacion models.Preliquidacion) {
 	var aux map[string]interface{}
 	var nombre string
 
@@ -134,7 +136,7 @@ func registrarPreliquidacion(año, mes, estadoPreliquidacion, nomina int) (preli
 	preliquidacion.NominaId = nomina
 	preliquidacion.EstadoPreliquidacionId = estadoPreliquidacion
 	preliquidacion.Activo = true
-	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion", "POST", &aux, preliquidacion); err == nil {
+	if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion", preliquidacion, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &preliquidacion)
 		fmt.Println("Preliquidación creada con éxito")
 	} else {
@@ -144,7 +146,7 @@ func registrarPreliquidacion(año, mes, estadoPreliquidacion, nomina int) (preli
 	return preliquidacion
 }
 
-func registrarContratoPreliquidacion(preliquidacionId int, contratoId int, contratoPreliq models.ContratoPreliquidacion) (contratoPreliquidacion models.ContratoPreliquidacion) {
+func registrarContratoPreliquidacion(ctx context.Context, preliquidacionId int, contratoId int, contratoPreliq models.ContratoPreliquidacion) (contratoPreliquidacion models.ContratoPreliquidacion) {
 	var aux map[string]interface{}
 	var respuesta models.ContratoPreliquidacion
 	contratoPreliq.Id = 0
@@ -155,7 +157,7 @@ func registrarContratoPreliquidacion(preliquidacionId int, contratoId int, contr
 	contratoPreliquidacion.Preliquidado = false
 	contratoPreliquidacion.Activo = true
 
-	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion", "POST", &aux, contratoPreliquidacion); err == nil {
+	if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion", contratoPreliquidacion, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &respuesta)
 		fmt.Println("Contrato_preliquidacion guardado con exito")
 	} else {
@@ -164,7 +166,7 @@ func registrarContratoPreliquidacion(preliquidacionId int, contratoId int, contr
 	return respuesta
 }
 
-func registrarContratoPreliquidacionOld(preliquidacionId int, contratoId int, contratoPreliq models.ContratoPreliquidacionOld) (contratoPreliquidacion models.ContratoPreliquidacionOld) {
+func registrarContratoPreliquidacionOld(ctx context.Context, preliquidacionId int, contratoId int, contratoPreliq models.ContratoPreliquidacionOld) (contratoPreliquidacion models.ContratoPreliquidacionOld) {
 	var aux map[string]interface{}
 	var respuesta models.ContratoPreliquidacionOld
 	contratoPreliq.Id = 0
@@ -175,7 +177,7 @@ func registrarContratoPreliquidacionOld(preliquidacionId int, contratoId int, co
 	contratoPreliquidacion.Preliquidado = false
 	contratoPreliquidacion.Activo = true
 
-	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion", "POST", &aux, contratoPreliquidacion); err == nil {
+	if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion", contratoPreliquidacion, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &respuesta)
 		fmt.Println("Contrato_preliquidacion guardado con exito")
 	} else {
@@ -184,27 +186,27 @@ func registrarContratoPreliquidacionOld(preliquidacionId int, contratoId int, co
 	return respuesta
 }
 
-func registrarDetallePreliquidacion(detallePreliquidacion models.DetallePreliquidacion) {
+func registrarDetallePreliquidacion(ctx context.Context, detallePreliquidacion models.DetallePreliquidacion) {
 	var response models.DetallePreliquidacion
-	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion", "POST", &response, detallePreliquidacion); err == nil {
+	if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion", detallePreliquidacion, &response); err == nil {
 		// fmt.Println("Detalle guardado con éxito")
 	} else {
 		fmt.Println("Error al guardar detalle", err)
 	}
 }
 
-func registrarDetallePreliquidacionOld(detallePreliquidacion models.DetallePreliquidacionOld) {
+func registrarDetallePreliquidacionOld(ctx context.Context, detallePreliquidacion models.DetallePreliquidacionOld) {
 	var response models.DetallePreliquidacion
-	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion", "POST", &response, detallePreliquidacion); err == nil {
+	if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion", detallePreliquidacion, &response); err == nil {
 		fmt.Println("Detalle guardado con éxito")
 	} else {
 		fmt.Println("Error al guardar detalle", err)
 	}
 }
 
-func registrarContrato(contrato models.Contrato) (respuesta models.Contrato, err error) {
+func registrarContrato(ctx context.Context, contrato models.Contrato) (respuesta models.Contrato, err error) {
 	var response map[string]interface{}
-	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &response, contrato); err == nil {
+	if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato", contrato, &response); err == nil {
 		fmt.Println("Contrato guardado con éxito ", response)
 		LimpiezaRespuestaRefactor(response, &respuesta)
 	} else {
@@ -214,9 +216,9 @@ func registrarContrato(contrato models.Contrato) (respuesta models.Contrato, err
 	return respuesta, nil
 }
 
-func registrarContratoOld(contrato models.ContratoOld) (respuesta models.ContratoOld, err error) {
+func registrarContratoOld(ctx context.Context, contrato models.ContratoOld) (respuesta models.ContratoOld, err error) {
 	var response map[string]interface{}
-	if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &response, contrato); err == nil {
+	if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato", contrato, &response); err == nil {
 		fmt.Println("Contrato guardado con éxito ", response)
 		LimpiezaRespuestaRefactor(response, &respuesta)
 	} else {
@@ -293,7 +295,7 @@ func Roundf(x float64) float64 {
 	return t
 }
 
-func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models.Contrato, preliquidacion models.Preliquidacion, porcentaje float64, nomina string, vigencia_original int, crear bool) {
+func LiquidarContratoGeneral(ctx context.Context, mesIterativo int, anoIterativo int, contrato models.Contrato, preliquidacion models.Preliquidacion, porcentaje float64, nomina string, vigencia_original int, crear bool) {
 	var aux map[string]interface{}
 	var contratoGeneral []models.Contrato
 	var contratosDocente []models.ContratoPreliquidacion
@@ -301,7 +303,7 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 	var flag bool = true
 
 	query := "NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(anoIterativo) + ",Documento:" + contrato.Documento + ",TipoNominaId:" + nomina + ",Activo:true"
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratoGeneral)
 		if contratoGeneral[0].Id == 0 {
 			//Crear contrato General
@@ -324,7 +326,7 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 
 			query = "PreliquidacionId.Id:" + strconv.Itoa(preliquidacion.Id) + ",ContratoId.Documento:" + contrato.Documento + ",ContratoId.TipoNominaId:" + nomina + ",ContratoId.Activo:true"
 			fmt.Println("honorarios para general: ", query)
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contratosDocente)
 				if len(contratosDocente) >= 1 { //Tiene más de dos contratos
 					//Sumar valores de los honorarios para obtener el valor total de ese mes
@@ -338,7 +340,7 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 						} else {
 							query = "ContratoPreliquidacionId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",ConceptoNominaId.Id:87,ContratoPreliquidacionId.ContratoId.Activo:true"
 						}
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+						if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &auxDetalle)
 							valorContratoGeneralAux += int(auxDetalle[0].ValorCalculado)
 						} else {
@@ -353,32 +355,32 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 
 			//Registrar el contrato nuevo
 			if crear {
-				contratoGeneral[0], _ = registrarContrato(contratoGeneral[0])
+				contratoGeneral[0], _ = registrarContrato(ctx, contratoGeneral[0])
 			}
 		} else {
 			//Eliminar los detalles del contrato General
 			query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contratoGeneral[0].Id) + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + strconv.Itoa(anoIterativo)
 			fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=" + query)
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &auxDetalle)
 				fmt.Println("SI PASA ", auxDetalle)
 				fmt.Println(auxDetalle[0])
 				if auxDetalle[0].Id != 0 {
 					idContratoPeliquidacion := auxDetalle[0].ContratoPreliquidacionId.Id
 					for j := 0; j < len(auxDetalle); j++ {
-						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(auxDetalle[j].Id), "DELETE", &aux, nil); err == nil {
+						if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(auxDetalle[j].Id), &aux); err == nil {
 						} else {
 							fmt.Println("Error al eliminar detalle: ", err)
 						}
 					}
 					//Eliminar el contrato_preliquidación
-					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(idContratoPeliquidacion), "DELETE", &aux, nil); err == nil {
+					if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(idContratoPeliquidacion), &aux); err == nil {
 						fmt.Println("contrato Preliquidacion Eliminado")
 						//Actualizar el valor del contrato general
 						//Buscar el valor de los honorarios de los contratos que tiene el docente en ese mes
 						contratoGeneral[0].ValorContrato = 0
 						query = "PreliquidacionId.Id:" + strconv.Itoa(preliquidacion.Id) + ",ContratoId.Documento:" + contrato.Documento + ",ContratoId.Activo:true"
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+						if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &contratosDocente)
 							if len(contratosDocente) >= 1 && contratosDocente[0].Id != 0 { //Tiene más de un contrato
 								//Sumar valores de los honorarios para obtener el valor total de ese mes
@@ -392,7 +394,7 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 										} else {
 											query = "ContratoPreliquidacionId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",ConceptoNominaId.Id:87,ContratoPreliquidacionId.ContratoId.Activo:true"
 										}
-										if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+										if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 											LimpiezaRespuestaRefactor(aux, &auxDetalle)
 											valorContratoGeneralAux += int(auxDetalle[0].ValorCalculado)
 										} else {
@@ -403,7 +405,7 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 								contratoGeneral[0].ValorContrato = float64(valorContratoGeneralAux)
 								//Actualizar
 
-								if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contratoGeneral[0].Id), "PUT", &aux, contratoGeneral[0]); err == nil {
+								if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contratoGeneral[0].Id), contratoGeneral[0], &aux); err == nil {
 									fmt.Println("Valor Actualizado ", contratoGeneral[0].ValorContrato)
 								} else {
 									fmt.Println("Error al actualizar valor del contrato")
@@ -425,16 +427,16 @@ func LiquidarContratoGeneral(mesIterativo int, anoIterativo int, contrato models
 
 		if nomina == "410" && flag {
 			fmt.Println("ENTRA A ESTE")
-			liquidarHCS(contratoGeneral[0], true, porcentaje, vigencia_original, 0, 0, false)
+			liquidarHCS(ctx, contratoGeneral[0], true, porcentaje, vigencia_original, 0, 0, false)
 		} else if nomina == "409" && flag {
-			liquidarHCH(contratoGeneral[0], true, porcentaje, vigencia_original, 0, 0, false)
+			liquidarHCH(ctx, contratoGeneral[0], true, porcentaje, vigencia_original, 0, 0, false)
 		}
 	} else {
 		fmt.Println("Error al buscar contrato general:", err)
 	}
 }
 
-func LiquidarContratoGeneralOld(mesIterativo int, anoIterativo int, contrato models.ContratoOld, preliquidacion models.Preliquidacion, porcentaje float64, nomina string, vigencia_original int, crear bool) {
+func LiquidarContratoGeneralOld(ctx context.Context, mesIterativo int, anoIterativo int, contrato models.ContratoOld, preliquidacion models.Preliquidacion, porcentaje float64, nomina string, vigencia_original int, crear bool) {
 	var aux map[string]interface{}
 	var contratoGeneral []models.ContratoOld
 	var contratosDocente []models.ContratoPreliquidacionOld
@@ -443,7 +445,7 @@ func LiquidarContratoGeneralOld(mesIterativo int, anoIterativo int, contrato mod
 
 	query := "NumeroContrato:GENERAL" + strconv.Itoa(mesIterativo) + ",Vigencia:" + strconv.Itoa(anoIterativo) + ",Documento:" + contrato.Documento + ",TipoNominaId:" + nomina + ",Activo:true"
 	fmt.Println("QUERY ", query)
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratoGeneral)
 		if contratoGeneral[0].Id == 0 {
 			//Crear contrato General
@@ -466,7 +468,7 @@ func LiquidarContratoGeneralOld(mesIterativo int, anoIterativo int, contrato mod
 
 			query = "PreliquidacionId.Id:" + strconv.Itoa(preliquidacion.Id) + ",ContratoId.Documento:" + contrato.Documento + ",ContratoId.TipoNominaId:" + nomina
 			fmt.Println("honorarios para general: ", query)
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contratosDocente)
 				if len(contratosDocente) >= 1 { //Tiene más de dos contratos
 					//Sumar valores de los honorarios para obtener el valor total de ese mes
@@ -479,7 +481,7 @@ func LiquidarContratoGeneralOld(mesIterativo int, anoIterativo int, contrato mod
 						} else {
 							query = "ContratoPreliquidacionId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",ConceptoNominaId.Id:87"
 						}
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+						if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &auxDetalle)
 							contratoGeneral[0].ValorContrato = contratoGeneral[0].ValorContrato + auxDetalle[0].ValorCalculado
 						} else {
@@ -493,29 +495,29 @@ func LiquidarContratoGeneralOld(mesIterativo int, anoIterativo int, contrato mod
 
 			//Registrar el contrato nuevo
 			if crear {
-				contratoGeneral[0], _ = registrarContratoOld(contratoGeneral[0])
+				contratoGeneral[0], _ = registrarContratoOld(ctx, contratoGeneral[0])
 			}
 		} else {
 			//Eliminar los detalles del contrato General
 			query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contratoGeneral[0].Id) + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + strconv.Itoa(anoIterativo)
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &auxDetalle)
 				idContratoPeliquidacion := auxDetalle[0].ContratoPreliquidacionId.Id
 				for j := 0; j < len(auxDetalle); j++ {
-					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(auxDetalle[j].Id), "DELETE", &aux, nil); err == nil {
+					if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(auxDetalle[j].Id), &aux); err == nil {
 						fmt.Println("Detalle Eliminado")
 					} else {
 						fmt.Println("Error al eliminar detalle: ", err)
 					}
 				}
 				//Eliminar el contrato_preliquidación
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(idContratoPeliquidacion), "DELETE", &aux, nil); err == nil {
+				if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(idContratoPeliquidacion), &aux); err == nil {
 					fmt.Println("contrato Preliquidacion Eliminado")
 					//Actualizar el valor del contrato general
 					//Buscar el valor de los honorarios de los contratos que tiene el docente en ese mes
 					contratoGeneral[0].ValorContrato = 0
 					query = "PreliquidacionId.Id:" + strconv.Itoa(preliquidacion.Id) + ",ContratoId.Documento:" + contrato.Documento
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &contratosDocente)
 						if len(contratosDocente) >= 1 && contratosDocente[0].Id != 0 { //Tiene más de un contrato
 							//Sumar valores de los honorarios para obtener el valor total de ese mes
@@ -528,7 +530,7 @@ func LiquidarContratoGeneralOld(mesIterativo int, anoIterativo int, contrato mod
 									} else {
 										query = "ContratoPreliquidacionId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",ConceptoNominaId.Id:87"
 									}
-									if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+									if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 										LimpiezaRespuestaRefactor(aux, &auxDetalle)
 										contratoGeneral[0].ValorContrato = contratoGeneral[0].ValorContrato + auxDetalle[0].ValorCalculado
 									} else {
@@ -538,7 +540,7 @@ func LiquidarContratoGeneralOld(mesIterativo int, anoIterativo int, contrato mod
 							}
 							//Actualizar
 
-							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contratoGeneral[0].Id), "PUT", &aux, contratoGeneral[0]); err == nil {
+							if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contratoGeneral[0].Id), contratoGeneral[0], &aux); err == nil {
 								fmt.Println("Valor Actualizado")
 							} else {
 								fmt.Println("Error al actualizar valor del contrato")
@@ -558,16 +560,16 @@ func LiquidarContratoGeneralOld(mesIterativo int, anoIterativo int, contrato mod
 		}
 
 		if nomina == "410" && flag {
-			liquidarHCSOld(contratoGeneral[0], true, porcentaje, vigencia_original, 0, 0, false)
+			liquidarHCSOld(ctx, contratoGeneral[0], true, porcentaje, vigencia_original, 0, 0, false)
 		} else if nomina == "409" && flag {
-			liquidarHCHOld(contratoGeneral[0], true, porcentaje, vigencia_original)
+			liquidarHCHOld(ctx, contratoGeneral[0], true, porcentaje, vigencia_original)
 		}
 	} else {
 		fmt.Println("Error al buscar contrato general:", err)
 	}
 }
 
-func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time, vigencia_original int, reduccionTotal bool) {
+func anularEnGenerales(ctx context.Context, contrato models.Contrato, fecha_anulacion time.Time, vigencia_original int, reduccionTotal bool) {
 
 	var aux map[string]interface{}
 	var preliquidacion []models.Preliquidacion
@@ -582,12 +584,12 @@ func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time, vige
 		var contratoPreliquidacionDocente []models.ContratoPreliquidacion = nil
 		var contratosCambio []int
 		query := "Documento:" + contrato.Documento + ",TipoNominaId:" + strconv.Itoa(contrato.TipoNominaId) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contratosDocente)
 			if contratosDocente[0].Id != 0 {
 				for i := 0; i < len(contratosDocente); i++ {
 					query = "ContratoId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mes_aux) + ",PreliquidacionId.Ano:" + strconv.Itoa(anio_aux)
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						contratoPreliquidacionDocente = nil
 						LimpiezaRespuestaRefactor(aux, &contratoPreliquidacionDocente)
 						if contratoPreliquidacionDocente[0].Id != 0 {
@@ -611,29 +613,29 @@ func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time, vige
 		}
 		if contrato.TipoNominaId == 409 {
 			query := "Ano:" + strconv.Itoa(anio_aux) + ",Mes:" + strconv.Itoa(mes_aux) + ",Nominaid:415"
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &preliquidacion)
 				fmt.Println("******************")
-				LiquidarContratoGeneral(mes_aux, anio_aux, contrato, preliquidacion[0], 1, "409", vigencia_original, false)
+				LiquidarContratoGeneral(ctx, mes_aux, anio_aux, contrato, preliquidacion[0], 1, "409", vigencia_original, false)
 				fmt.Println("?''''''''''''''''''''''''''")
 				if reduccionTotal {
-					borrarContratoGeneral(contrato.Documento, contrato.Vigencia, fecha_anulacion.AddDate(0, count, 0), contrato.FechaFin, contrato.TipoNominaId)
+					borrarContratoGeneral(ctx, contrato.Documento, contrato.Vigencia, fecha_anulacion.AddDate(0, count, 0), contrato.FechaFin, contrato.TipoNominaId)
 				} else {
-					borrarContratoGeneral(contrato.Documento, contrato.Vigencia, fecha_anulacion, contrato.FechaFin, contrato.TipoNominaId)
+					borrarContratoGeneral(ctx, contrato.Documento, contrato.Vigencia, fecha_anulacion, contrato.FechaFin, contrato.TipoNominaId)
 				}
-				cambioContrato(true, contrato, mes_aux, contratosCambio)
+				cambioContrato(ctx, true, contrato, mes_aux, contratosCambio)
 			}
 		} else {
 			query := "Ano:" + strconv.Itoa(anio_aux) + ",Mes:" + strconv.Itoa(mes_aux) + ",Nominaid:416"
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &preliquidacion)
 				fmt.Println("ANULAR EN GENERAL ", mes_aux)
 				fmt.Println("ANULAR EN GENERAL ", anio_aux)
-				LiquidarContratoGeneral(mes_aux, anio_aux, contrato, preliquidacion[0], 1, "410", vigencia_original, false)
+				LiquidarContratoGeneral(ctx, mes_aux, anio_aux, contrato, preliquidacion[0], 1, "410", vigencia_original, false)
 				if reduccionTotal {
-					borrarContratoGeneral(contrato.Documento, contrato.Vigencia, fecha_anulacion.AddDate(0, count, 0), contrato.FechaFin, contrato.TipoNominaId)
+					borrarContratoGeneral(ctx, contrato.Documento, contrato.Vigencia, fecha_anulacion.AddDate(0, count, 0), contrato.FechaFin, contrato.TipoNominaId)
 				} else {
-					borrarContratoGeneral(contrato.Documento, contrato.Vigencia, fecha_anulacion, contrato.FechaFin, contrato.TipoNominaId)
+					borrarContratoGeneral(ctx, contrato.Documento, contrato.Vigencia, fecha_anulacion, contrato.FechaFin, contrato.TipoNominaId)
 				}
 			}
 		}
@@ -657,7 +659,7 @@ func anularEnGenerales(contrato models.Contrato, fecha_anulacion time.Time, vige
 
 }
 
-func anularEnGeneralesOld(contrato models.ContratoOld, fecha_anulacion time.Time, vigencia_original int) {
+func anularEnGeneralesOld(ctx context.Context, contrato models.ContratoOld, fecha_anulacion time.Time, vigencia_original int) {
 
 	var aux map[string]interface{}
 	var preliquidacion []models.Preliquidacion
@@ -670,12 +672,12 @@ func anularEnGeneralesOld(contrato models.ContratoOld, fecha_anulacion time.Time
 		var contratoPreliquidacionDocente []models.ContratoPreliquidacionOld = nil
 		var contratosCambio []int
 		query := "Documento:" + contrato.Documento + ",TipoNominaId:" + strconv.Itoa(contrato.TipoNominaId) + ",Vigencia:" + strconv.Itoa(contrato.Vigencia) + ",Activo:true"
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contratosDocente)
 			if contratosDocente[0].Id != 0 {
 				for i := 0; i < len(contratosDocente); i++ {
 					query = "ContratoId.Id:" + strconv.Itoa(contratosDocente[i].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mes_aux) + ",PreliquidacionId.Ano:" + strconv.Itoa(anio_aux)
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						contratoPreliquidacionDocente = nil
 						LimpiezaRespuestaRefactor(aux, &contratoPreliquidacionDocente)
 						if contratoPreliquidacionDocente[0].Id != 0 {
@@ -699,18 +701,18 @@ func anularEnGeneralesOld(contrato models.ContratoOld, fecha_anulacion time.Time
 		}
 		if contrato.TipoNominaId == 409 {
 			query := "Ano:" + strconv.Itoa(anio_aux) + ",Mes:" + strconv.Itoa(mes_aux) + ",Nominaid:415"
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &preliquidacion)
-				LiquidarContratoGeneralOld(mes_aux, anio_aux, contrato, preliquidacion[0], 1, "409", vigencia_original, false)
-				borrarContratoGeneralOld(contrato.Documento, contrato.Vigencia, fecha_anulacion, contrato.FechaFin, contrato.TipoNominaId)
-				cambioContratoOld(true, contrato, mes_aux, contratosCambio)
+				LiquidarContratoGeneralOld(ctx, mes_aux, anio_aux, contrato, preliquidacion[0], 1, "409", vigencia_original, false)
+				borrarContratoGeneralOld(ctx, contrato.Documento, contrato.Vigencia, fecha_anulacion, contrato.FechaFin, contrato.TipoNominaId)
+				cambioContratoOld(ctx, true, contrato, mes_aux, contratosCambio)
 			}
 		} else {
 			query := "Ano:" + strconv.Itoa(anio_aux) + ",Mes:" + strconv.Itoa(mes_aux) + ",Nominaid:416"
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &preliquidacion)
-				LiquidarContratoGeneralOld(mes_aux, anio_aux, contrato, preliquidacion[0], 1, "410", vigencia_original, false)
-				borrarContratoGeneralOld(contrato.Documento, contrato.Vigencia, fecha_anulacion, contrato.FechaFin, contrato.TipoNominaId)
+				LiquidarContratoGeneralOld(ctx, mes_aux, anio_aux, contrato, preliquidacion[0], 1, "410", vigencia_original, false)
+				borrarContratoGeneralOld(ctx, contrato.Documento, contrato.Vigencia, fecha_anulacion, contrato.FechaFin, contrato.TipoNominaId)
 			}
 		}
 		mes_aux += 1
@@ -725,14 +727,14 @@ func anularEnGeneralesOld(contrato models.ContratoOld, fecha_anulacion time.Time
 
 }
 
-func borrarContratoGeneral(Documento string, Vigencia int, FechaFin time.Time, fechaFinOriginal time.Time, TipoNominaId int) {
+func borrarContratoGeneral(ctx context.Context, Documento string, Vigencia int, FechaFin time.Time, fechaFinOriginal time.Time, TipoNominaId int) {
 	var aux map[string]interface{}
 	var contratosDocente []models.Contrato = nil
 	var contratos []models.Contrato = nil
 	var borrar bool = true
 	query := "Documento:" + Documento + ",TipoNominaId:" + strconv.Itoa(TipoNominaId) + ",Vigencia:" + strconv.Itoa(Vigencia) + ",Activo:true"
 	fmt.Println("ENTRA BORRAR GENERAL ", beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query)
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
 		// Busca si tiene mas de un contrato que no sea general
 		for i := 0; i < len(contratosDocente); i++ {
@@ -764,7 +766,7 @@ func borrarContratoGeneral(Documento string, Vigencia int, FechaFin time.Time, f
 					}
 				}
 				fmt.Println("BORRA TOTAL")
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(id), "DELETE", &aux, nil); err == nil {
+				if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(id), &aux); err == nil {
 					fmt.Println("Contrato general eliminado con éxito ", int(j))
 				} else {
 					fmt.Println("Error al Eliminar Contrato General:", err)
@@ -775,13 +777,13 @@ func borrarContratoGeneral(Documento string, Vigencia int, FechaFin time.Time, f
 	}
 }
 
-func borrarContratoGeneralOld(Documento string, Vigencia int, FechaFin time.Time, fechaFinOriginal time.Time, TipoNominaId int) {
+func borrarContratoGeneralOld(ctx context.Context, Documento string, Vigencia int, FechaFin time.Time, fechaFinOriginal time.Time, TipoNominaId int) {
 	var aux map[string]interface{}
 	var contratosDocente []models.ContratoOld = nil
 	var contratos []models.ContratoOld = nil
 	var borrar bool = false
 	query := "Documento:" + Documento + ",TipoNominaId:" + strconv.Itoa(TipoNominaId) + ",Vigencia:" + strconv.Itoa(Vigencia) + ",Activo:true"
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratosDocente)
 		// Busca si tiene mas de un contrato que no sea general
 		for i := 0; i < len(contratosDocente); i++ {
@@ -806,7 +808,7 @@ func borrarContratoGeneralOld(Documento string, Vigencia int, FechaFin time.Time
 						break
 					}
 				}
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(id), "DELETE", &aux, nil); err == nil {
+				if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(id), &aux); err == nil {
 					fmt.Println("Contrato general eliminado con éxito ", int(j))
 				} else {
 					fmt.Println("Error al Eliminar Contrato General:", err)
@@ -817,19 +819,20 @@ func borrarContratoGeneralOld(Documento string, Vigencia int, FechaFin time.Time
 	}
 }
 
-func Preliquidacion(contrato models.Contrato) (mensaje string, codigo string, contratoReturn *models.Contrato, err error) {
+func Preliquidacion(ctx context.Context, contrato models.Contrato) (mensaje string, codigo string, contratoReturn *models.Contrato, err error) {
 	var aux map[string]interface{}
 
 	if contrato.FechaInicio.Before(contrato.FechaFin) {
-		if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contrato); err == nil {
+		if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato", contrato, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			if contrato.TipoNominaId == 411 {
-				mensaje, err = liquidarCPS(contrato)
+				mensaje, err = liquidarCPS(ctx, contrato)
 				if err == nil {
 					return "Successful", "201", &contrato, nil
 				} else {
 					codigo = "404"
-					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
+					// Titan CRUD deletes by path ID and returns a JSON success envelope; the rollback body is unused.
+					if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), &aux); err == nil {
 						fmt.Println("Contrato eliminado")
 					} else {
 						mensaje = "Error al eliminar el contrato que no se liquidó: "
@@ -839,12 +842,12 @@ func Preliquidacion(contrato models.Contrato) (mensaje string, codigo string, co
 					return mensaje, codigo, nil, err
 				}
 			} else if contrato.TipoNominaId == 409 {
-				mensaje, err = liquidarHCH(contrato, false, 0, contrato.Vigencia, 0, 0, false)
+				mensaje, err = liquidarHCH(ctx, contrato, false, 0, contrato.Vigencia, 0, 0, false)
 				if err == nil {
 					return "Successful", "201", &contrato, nil
 				} else {
 					codigo = "404"
-					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
+					if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), &aux); err == nil {
 						fmt.Println("Contrato eliminado")
 					} else {
 						mensaje = "Error al eliminar el contrato que no se liquidó: "
@@ -854,9 +857,9 @@ func Preliquidacion(contrato models.Contrato) (mensaje string, codigo string, co
 					return mensaje, codigo, nil, err
 				}
 			} else if contrato.TipoNominaId == 410 {
-				mensaje, err = liquidarHCS(contrato, false, 0, contrato.Vigencia, 0, 0, false)
+				mensaje, err = liquidarHCS(ctx, contrato, false, 0, contrato.Vigencia, 0, 0, false)
 				var contratoActualizado models.Contrato
-				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), &aux); err == nil {
+				if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &contratoActualizado)
 					contratoReturn = &contratoActualizado
 					contratoReturn.Desagregado = contrato.Desagregado
@@ -868,7 +871,7 @@ func Preliquidacion(contrato models.Contrato) (mensaje string, codigo string, co
 					return "Successful", "201", contratoReturn, nil
 				} else {
 					codigo = "404"
-					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), "DELETE", &aux, contrato); err == nil {
+					if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato.Id), &aux); err == nil {
 						fmt.Println("Contrato eliminado")
 					} else {
 						mensaje = "Error al eliminar el contrato que no se liquidó: "
@@ -894,7 +897,7 @@ func Preliquidacion(contrato models.Contrato) (mensaje string, codigo string, co
 
 }
 
-func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, semanasAnteriores int, anulacionReduccion bool) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
+func Anulacion(ctx context.Context, anulacion models.Anulacion, valorContrato float64, semanas int, semanasAnteriores int, anulacionReduccion bool) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
 
 	var aux map[string]interface{}
 	var contrato []models.Contrato
@@ -913,7 +916,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 	var valorNuevo float64
 	var semanasAnulacion int
 	fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=NumeroContrato:" + anulacion.NumeroContrato + ",Vigencia:" + strconv.Itoa(anulacion.Vigencia) + ",Documento:" + anulacion.Documento + ",Activo:true")
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+anulacion.NumeroContrato+",Vigencia:"+strconv.Itoa(anulacion.Vigencia)+",Documento:"+anulacion.Documento+",Activo:true", &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+anulacion.NumeroContrato+",Vigencia:"+strconv.Itoa(anulacion.Vigencia)+",Documento:"+anulacion.Documento+",Activo:true", &aux); err == nil {
 		fmt.Println("ENTRa ", aux)
 		LimpiezaRespuestaRefactor(aux, &contrato)
 		fmt.Println("SALE ", contrato)
@@ -951,10 +954,10 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 				//Obtener contrato_preliquidacion para ese mes
 				query := "ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
 				fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
-				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+				if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 					fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:" + strconv.Itoa(contrato_preliquidacion[0].Id))
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
+					if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &detalles)
 						for j := 0; j < len(detalles); j++ {
 							if contrato[0].TipoNominaId == 410 {
@@ -966,7 +969,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 									valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
 								}
 							}
-							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
+							if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), &aux); err == nil {
 								fmt.Println("Detalle eliminado con éxito")
 							} else {
 								fmt.Println("Error al Eliminar Detalles:", err)
@@ -975,7 +978,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 								return mensaje, codigo, nil, err, fechaOriginal, anulacion_completa
 							}
 						}
-						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "DELETE", &aux, nil); err == nil {
+						if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 							fmt.Println("contrato preliquidacion eliminado con éxito")
 						} else {
 							fmt.Println("Error al eliminar contrato preliquidacion: ", err)
@@ -1023,14 +1026,14 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 			}
 
 			query := "ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contrato[0].Id) + ",ConceptoNominaId.Id:" + strconv.Itoa(conceptoNominaId)
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &detalles)
 				for j := 0; j < len(detalles); j++ {
 					valorNuevo = valorNuevo + detalles[j].ValorCalculado
 				}
 			}
 			// CREA CONTRATO NUEVO CON LA INFORMACIÓN DEL CONTRATO ORIGINAL CON CAMPO ACTIVO FALSE
-			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contratoOriginal); err == nil {
+			if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato", contratoOriginal, &aux); err == nil {
 				fechaOriginal = contratoOriginal.FechaFin
 				semanasContratoOriginal := int(calcularSemanasContratoDVE(contratoOriginal.FechaInicio, contratoOriginal.FechaFin))
 				fmt.Println("SEMANAS ORIGINAL ", semanasContratoOriginal)
@@ -1044,9 +1047,9 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 						var contrato_preliquidacion_aux []models.ContratoPreliquidacion
 						var detalle_preliquidacion_aux []models.DetallePreliquidacion
 						// fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?query=ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId__Mes:" + strconv.Itoa(i) + ",PreliquidacionId__Ano:" + strconv.Itoa(contratoOriginal.FechaInicio.Year()))
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?query=ContratoId:"+strconv.Itoa(contrato[0].Id)+",PreliquidacionId__Mes:"+strconv.Itoa(i)+",PreliquidacionId__Ano:"+strconv.Itoa(contratoOriginal.FechaInicio.Year()), &aux); err == nil {
+						if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?query=ContratoId:"+strconv.Itoa(contrato[0].Id)+",PreliquidacionId__Mes:"+strconv.Itoa(i)+",PreliquidacionId__Ano:"+strconv.Itoa(contratoOriginal.FechaInicio.Year()), &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion_aux)
-							if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion_aux[0].Id), &aux); err == nil {
+							if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion_aux[0].Id), &aux); err == nil {
 								LimpiezaRespuestaRefactor(aux, &detalle_preliquidacion_aux)
 								// fmt.Println("DETALLE ", detalle_preliquidacion_aux)
 								semanasTranscurridas += int(detalle_preliquidacion_aux[0].DiasLiquidados)
@@ -1097,7 +1100,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 
 				// Trae todos los detalles preliquidación no eliminados para calcular el nuevo valor del contrato
 				query := "ContratoPreliquidacionId__ContratoId__Id:" + strconv.Itoa(contrato[0].Id) + ",ConceptoNominaId:" + strconv.Itoa(codAux)
-				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil && valorContrato == 0 {
+				if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil && valorContrato == 0 {
 					LimpiezaRespuestaRefactor(aux, &DetallesAux)
 					for i := 0; i < len(DetallesAux); i++ {
 						fmt.Println(DetallesAux[i].ValorCalculado)
@@ -1136,19 +1139,19 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 				}
 				fmt.Println("VALOR DIA ", valorDia)
 				// Actualiza los datos del contrato: Fecha fin y valor
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contratoAux); err == nil {
+				if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), contratoAux, &aux); err == nil {
 					if anulacion.FechaAnulacion.Day() != 30 {
 						contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
 						if contrato[0].TipoNominaId == 409 && semanasTotales > 0 {
 							// REVISAR VALOR DEL DIA Y SI ES O NO ANULACIÓN
-							mensaje, err = liquidarHCH(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
-							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia, false)
+							mensaje, err = liquidarHCH(ctx, contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
+							anularEnGenerales(ctx, contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia, false)
 						} else if contrato[0].TipoNominaId == 410 && semanasTotales > 0 {
-							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
-							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia, false)
+							mensaje, err = liquidarHCS(ctx, contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
+							anularEnGenerales(ctx, contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia, false)
 						} else if contrato[0].TipoNominaId == 410 && semanasTotales == 0 && !anulacion_completa {
 							contrato[0].NumeroSemanas = semanasAnulacion
-							registrarPrestaciones(contrato[0])
+							registrarPrestaciones(ctx, contrato[0])
 						}
 
 						if err == nil {
@@ -1188,7 +1191,7 @@ func Anulacion(anulacion models.Anulacion, valorContrato float64, semanas int, s
 	return
 }
 
-func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semanas int, semanasAnteriores int, anulacionReduccion bool) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
+func AnulacionPosgrado(ctx context.Context, anulacion models.Anulacion, valorContrato float64, semanas int, semanasAnteriores int, anulacionReduccion bool) (mensaje string, codigo string, contratoReturn *models.Contrato, err error, fechaOriginal time.Time, completo bool) {
 	var aux map[string]interface{}
 	var contrato []models.Contrato
 	var contratoOriginal models.Contrato
@@ -1207,7 +1210,7 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 	var semanasAnulacion int
 	fmt.Println("ENTRA POSGRADO")
 	fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=NumeroContrato:" + anulacion.NumeroContrato + ",Vigencia:" + strconv.Itoa(anulacion.Vigencia) + ",Documento:" + anulacion.Documento + ",Activo:true")
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+anulacion.NumeroContrato+",Vigencia:"+strconv.Itoa(anulacion.Vigencia)+",Documento:"+anulacion.Documento+",Activo:true", &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+anulacion.NumeroContrato+",Vigencia:"+strconv.Itoa(anulacion.Vigencia)+",Documento:"+anulacion.Documento+",Activo:true", &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contrato)
 		fmt.Println("SALE ", contrato)
 		if contrato[0].Id != 0 {
@@ -1245,10 +1248,10 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 				//Obtener contrato_preliquidacion para ese mes
 				query := "ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
 				fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
-				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+				if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 					fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:" + strconv.Itoa(contrato_preliquidacion[0].Id))
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
+					if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &detalles)
 						for j := 0; j < len(detalles); j++ {
 							if contrato[0].TipoNominaId == 410 {
@@ -1260,7 +1263,7 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 									valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
 								}
 							}
-							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
+							if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), &aux); err == nil {
 								fmt.Println("Detalle eliminado con éxito")
 							} else {
 								fmt.Println("Error al Eliminar Detalles:", err)
@@ -1269,7 +1272,7 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 								return mensaje, codigo, nil, err, fechaOriginal, anulacion_completa
 							}
 						}
-						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "DELETE", &aux, nil); err == nil {
+						if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 							fmt.Println("contrato preliquidacion eliminado con éxito")
 						} else {
 							fmt.Println("Error al eliminar contrato preliquidacion: ", err)
@@ -1318,14 +1321,14 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 			}
 
 			query := "ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contrato[0].Id) + ",ConceptoNominaId.Id:" + strconv.Itoa(conceptoNominaId)
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &detalles)
 				for j := 0; j < len(detalles); j++ {
 					valorNuevo = valorNuevo + detalles[j].ValorCalculado
 				}
 			}
 			// CREA CONTRATO NUEVO CON LA INFORMACIÓN DEL CONTRATO ORIGINAL CON CAMPO ACTIVO FALSE
-			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato", "POST", &aux, contratoOriginal); err == nil {
+			if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato", contratoOriginal, &aux); err == nil {
 				fechaOriginal = contratoOriginal.FechaFin
 				semanasContratoOriginal := int(calcularSemanasContratoDVE(contratoOriginal.FechaInicio, contratoOriginal.FechaFin))
 				fmt.Println("SEMANAS ORIGINAL ", semanasContratoOriginal)
@@ -1377,7 +1380,7 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 
 				// Trae todos los detalles preliquidación no eliminados para calcular el nuevo valor del contrato
 				query := "ContratoPreliquidacionId__ContratoId__Id:" + strconv.Itoa(contrato[0].Id) + ",ConceptoNominaId:" + strconv.Itoa(codAux)
-				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil && valorContrato == 0 {
+				if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil && valorContrato == 0 {
 					LimpiezaRespuestaRefactor(aux, &DetallesAux)
 					for i := 0; i < len(DetallesAux); i++ {
 						fmt.Println(DetallesAux[i].ValorCalculado)
@@ -1397,17 +1400,17 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 					valorNuevo = 0
 				}
 				// Actualiza los datos del contrato: Fecha fin y valor
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contratoAux); err == nil {
+				if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), contratoAux, &aux); err == nil {
 					if anulacion.FechaAnulacion.Day() != 30 {
 						contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
 						if contrato[0].TipoNominaId == 409 && semanasTotales > 0 {
 							// REVISAR VALOR DEL DIA Y SI ES O NO ANULACIÓN
-							anularEnGenerales(contratoOriginal, contratoOriginal.FechaInicio, anulacion.Vigencia, false)
-							mensaje, err = liquidarHCH(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
+							anularEnGenerales(ctx, contratoOriginal, contratoOriginal.FechaInicio, anulacion.Vigencia, false)
+							mensaje, err = liquidarHCH(ctx, contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
 						} else if contrato[0].TipoNominaId == 410 && semanasTotales > 0 {
-							anularEnGenerales(contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia, false)
+							anularEnGenerales(ctx, contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia, false)
 							contrato[0].NumeroSemanas = semanasAnulacion
-							mensaje, err = liquidarHCS(contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
+							mensaje, err = liquidarHCS(ctx, contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
 						}
 
 						if err == nil {
@@ -1447,7 +1450,7 @@ func AnulacionPosgrado(anulacion models.Anulacion, valorContrato float64, semana
 	return
 }
 
-func registrarPrestaciones(contrato models.Contrato) {
+func registrarPrestaciones(ctx context.Context, contrato models.Contrato) {
 	fmt.Println("REGISTRAR PRESTACIONES")
 	var predicados []models.Predicado
 	var reglasNuevas string = ""
@@ -1470,23 +1473,23 @@ func registrarPrestaciones(contrato models.Contrato) {
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 
 	if err == nil {
-		reglasAlivios, _, err = CargarDatosRetefuente(int(cedula))
+		reglasAlivios, _, err = CargarDatosRetefuente(ctx, int(cedula))
 	}
 
 	query := "ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contrato.Id) + ",ConceptoNominaId.Id:152"
 	fmt.Println("QUERY PRESTACIÓN ", beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query)
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &detallePreliquidacion)
 	}
 
-	reglasbase := cargarReglasBase("HCS") + reglasAlivios + FormatoReglas(predicados)
+	reglasbase := cargarReglasBase(ctx, "HCS") + reglasAlivios + FormatoReglas(predicados)
 	reglasNuevas = reglasNuevas + reglasbase + "porcentaje(1).semanas_liquidadas(" + contrato.Documento + "," + strconv.Itoa(contrato.NumeroSemanas) + ")."
 	reglasNuevas = reglasNuevas + "mesFinal(1)."
 	auxDetalle = golog.LiquidarMesHCS(reglasNuevas, contrato, detallePreliquidacion[len(detallePreliquidacion)-1], true)
 	conceptos := []string{"primaNavidad", "cesantias", "priServ", "primaVacaciones", "vacaciones", "interesCesantias", "bonServ"}
 	for j := 0; j < len(auxDetalle); j++ {
 		if contains(conceptos, auxDetalle[j].ConceptoNominaId.NombreConcepto) {
-			registrarDetallePreliquidacion(auxDetalle[j])
+			registrarDetallePreliquidacion(ctx, auxDetalle[j])
 		}
 	}
 }
@@ -1500,7 +1503,7 @@ func contains(s []string, str string) bool {
 	return false
 }
 
-func CambioCumplido(ano string, mes string, numeroContrato string, contrato []models.Contrato) (contrato_general_preliquidacion models.ContratoPreliquidacion, mensaje string, codigo string) {
+func CambioCumplido(ctx context.Context, ano string, mes string, numeroContrato string, contrato []models.Contrato) (contrato_general_preliquidacion models.ContratoPreliquidacion, mensaje string, codigo string) {
 	var aux map[string]interface{}
 	var contrato_preliquidacion []models.ContratoPreliquidacion
 	var id int
@@ -1508,14 +1511,14 @@ func CambioCumplido(ano string, mes string, numeroContrato string, contrato []mo
 
 	query := "PreliquidacionId.Ano:" + ano + ",PreliquidacionId.Mes:" + mes + ",ContratoId.NumeroContrato:" + numeroContrato
 	fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 		//actualiar cumplido
 		contrato_preliquidacion[0].Cumplido = true
-		if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "PUT", &aux, contrato_preliquidacion[0]); err == nil {
+		if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), contrato_preliquidacion[0], &aux); err == nil {
 			fmt.Println("Cumplido actualizado")
 			query := "ContratoId.Documento:" + contrato[0].Documento + ",PreliquidacionId.Mes:" + mes + ",PreliquidacionId.Ano:" + ano
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 				if contrato_preliquidacion[0].Id != 0 {
 					for i := 0; i < len(contrato_preliquidacion); i++ {
@@ -1531,7 +1534,7 @@ func CambioCumplido(ano string, mes string, numeroContrato string, contrato []mo
 						//Actualizar el cumplido del contrato General
 						fmt.Println("Actualizando cumplido general")
 						contrato_preliquidacion[id].Cumplido = true
-						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[id].Id), "PUT", &aux, contrato_preliquidacion[id]); err == nil {
+						if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[id].Id), contrato_preliquidacion[id], &aux); err == nil {
 							contrato_general_preliquidacion = contrato_preliquidacion[0]
 							mensaje = "Cumplido actualizado"
 							codigo = "200"
@@ -1591,7 +1594,7 @@ func daysInMonth(month, year int) int {
 	}
 }
 
-func ConstruirReglasDesagregado(vinculacion models.DatosVinculacion, numSemanas int, contratoOriginal ...models.Contrato) (reglas string, lowCategoria string, lowDedicacion string) {
+func ConstruirReglasDesagregado(ctx context.Context, vinculacion models.DatosVinculacion, numSemanas int, contratoOriginal ...models.Contrato) (reglas string, lowCategoria string, lowDedicacion string) {
 	var predicados []models.Predicado
 	var predicadosPrestaciones []models.Predicado
 	if vinculacion.Dedicacion == "HCP" {
@@ -1616,29 +1619,29 @@ func ConstruirReglasDesagregado(vinculacion models.DatosVinculacion, numSemanas 
 	if len(contratoOriginal) > 0 {
 		switch vinculacion.ObjetoNovedad.TipoResolucion {
 		case "RCAN":
-			predicadosPrestaciones, _ = ObtenerReglasPrestaciones(false, contratoOriginal[0])
+			predicadosPrestaciones, _ = ObtenerReglasPrestaciones(ctx, false, contratoOriginal[0])
 		case "RADD", "RRED":
 			contratoOriginal[0].NumeroSemanas = vinculacion.NumeroSemanas + vinculacion.ObjetoNovedad.SemanasNuevas
-			predicadosPrestaciones, _ = ObtenerReglasPrestaciones(true, contratoOriginal[0])
+			predicadosPrestaciones, _ = ObtenerReglasPrestaciones(ctx, true, contratoOriginal[0])
 		default:
-			predicadosPrestaciones, _ = ObtenerReglasPrestaciones(false)
+			predicadosPrestaciones, _ = ObtenerReglasPrestaciones(ctx, false)
 		}
 	} else {
-		predicadosPrestaciones, _ = ObtenerReglasPrestaciones(false)
+		predicadosPrestaciones, _ = ObtenerReglasPrestaciones(ctx, false)
 	}
 	predicados = append(predicados, predicadosPrestaciones...)
-	reglas = cargarReglasBase("HCS") + FormatoReglas(predicados)
+	reglas = cargarReglasBase(ctx, "HCS") + FormatoReglas(predicados)
 	return reglas, lowCategoria, lowDedicacion
 }
 
-func ObtenerReglasPrestaciones(novedad bool, contratoOriginal ...models.Contrato) (predicados []models.Predicado, porcentajesDesagregadoIdNew int) {
+func ObtenerReglasPrestaciones(ctx context.Context, novedad bool, contratoOriginal ...models.Contrato) (predicados []models.Predicado, porcentajesDesagregadoIdNew int) {
 	var aux map[string]interface{}
 	anoActual := time.Now().Year()
 	if len(contratoOriginal) > 0 {
 		// en este caso se deben cargar las reglas con el id de parametroPeriodo obtenido (que es para alguna novedad)
 		var parametroPeriodo []models.ParametroPeriodo
 		query := "id:" + strconv.Itoa(contratoOriginal[0].PorcentajesDesagregadoId)
-		if err := request.GetJson(beego.AppConfig.String("UrlParametrosCrud")+"/parametro_periodo?limit=-1&query="+query, &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlParametrosCrud")+"/parametro_periodo?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &parametroPeriodo)
 			// Construir reglas dinámicas de porcentaje según los parámetros obtenidos
 			porcentajesDesagregadoIdNew = parametroPeriodo[0].Id
@@ -1673,17 +1676,17 @@ func ObtenerReglasPrestaciones(novedad bool, contratoOriginal ...models.Contrato
 		var periodo []models.Periodo
 		predicados = append(predicados, models.Predicado{Nombre: "semanas_contrato_original(0)."})
 		query := "year:" + strconv.Itoa(anoActual) + ",codigo_abreviacion:PAR,aplicacion_id:30,activo:true"
-		if err := request.GetJson(beego.AppConfig.String("UrlParametrosCrud")+"/periodo?limit=-1&query="+query, &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlParametrosCrud")+"/periodo?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &periodo)
 			// obtener el id de parametro de porcentajes de prestaciones
 			var parametro []models.Parametro
 			query2 := "codigo_abreviacion:PDVE,activo:true"
-			if err := request.GetJson(beego.AppConfig.String("UrlParametrosCrud")+"/parametro?limit=-1&query="+query2, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlParametrosCrud")+"/parametro?limit=-1&query="+query2, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &parametro)
 				// finalmente obtener los valores de parametro_periodo
 				var parametroPeriodo []models.ParametroPeriodo
 				query3 := "parametro_id:" + strconv.Itoa(parametro[0].Id) + ",periodo_id:" + strconv.Itoa(periodo[0].Id) + ",activo:true"
-				if err := request.GetJson(beego.AppConfig.String("UrlParametrosCrud")+"/parametro_periodo?limit=-1&query="+query3, &aux); err == nil {
+				if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlParametrosCrud")+"/parametro_periodo?limit=-1&query="+query3, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &parametroPeriodo)
 					// Construir reglas dinámicas de porcentaje según los parámetros obtenidos
 					porcentajesDesagregadoIdNew = parametroPeriodo[0].Id

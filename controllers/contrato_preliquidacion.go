@@ -29,16 +29,16 @@ func (c *CumplidoController) URLMapping() {
 // @Failure 403 body is empty
 // @router /cumplido/:ano/:mes/:contrato/:vigencia [get]
 func (c *CumplidoController) ActualizarCumplido() {
+	ctx := c.Ctx.Request.Context()
 	var aux map[string]interface{}
 	var contrato []models.Contrato
 	ano := c.Ctx.Input.Param(":ano")
 	mes := c.Ctx.Input.Param(":mes")
 	numeroContrato := c.Ctx.Input.Param(":contrato")
 	vigencia := c.Ctx.Input.Param((":vigencia"))
-
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+numeroContrato+",Vigencia:"+vigencia, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+numeroContrato+",Vigencia:"+vigencia, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contrato)
-		contratoPreliquidacion, mensaje, codigo := CambioCumplido(ano, mes, numeroContrato, contrato)
+		contratoPreliquidacion, mensaje, codigo := CambioCumplido(ctx, ano, mes, numeroContrato, contrato)
 
 		if codigo != "200" {
 			c.Data["mesaage"] = mensaje + err.Error()
@@ -66,6 +66,7 @@ func (c *CumplidoController) ActualizarCumplido() {
 // @Failure 403 body is empty
 // @router /cumplido_rp/:ano/:mes/:contrato/:vigencia/:rp [get]
 func (c *CumplidoController) ActualizarCumplidoRp() {
+	ctx := c.Ctx.Request.Context()
 	var aux map[string]interface{}
 	var contrato []models.Contrato
 	ano := c.Ctx.Input.Param(":ano")
@@ -74,9 +75,9 @@ func (c *CumplidoController) ActualizarCumplidoRp() {
 	vigencia := c.Ctx.Input.Param((":vigencia"))
 	rp := c.Ctx.Input.Param(":rp")
 
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+numeroContrato+",Vigencia:"+vigencia+",Rp:"+rp, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+numeroContrato+",Vigencia:"+vigencia+",Rp:"+rp, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contrato)
-		contratoPreliquidacion, mensaje, codigo := CambioCumplido(ano, mes, numeroContrato, contrato)
+		contratoPreliquidacion, mensaje, codigo := CambioCumplido(ctx, ano, mes, numeroContrato, contrato)
 		fmt.Println(contratoPreliquidacion)
 		fmt.Println(mensaje)
 		fmt.Println(codigo)
@@ -105,6 +106,7 @@ func (c *CumplidoController) ActualizarCumplidoRp() {
 // @Failure 403 body is empty
 // @router /preliquidado/:ano/:mes/:contrato/:vigencia [get]
 func (c *CumplidoController) ActualizarPreliquidado() {
+	ctx := c.Ctx.Request.Context()
 	var aux map[string]interface{}
 	var contrato []models.Contrato
 	var contrato_preliquidacion []models.ContratoPreliquidacion
@@ -113,16 +115,16 @@ func (c *CumplidoController) ActualizarPreliquidado() {
 	numeroContrato := c.Ctx.Input.Param(":contrato")
 	vigencia := c.Ctx.Input.Param((":vigencia"))
 
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+numeroContrato+",Vigencia:"+vigencia, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+numeroContrato+",Vigencia:"+vigencia, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contrato)
 		//Obtener contrato Preliquidacion para ese mes
 		query := "PreliquidacionId.Ano:" + ano + ",PreliquidacionId.Mes:" + mes + ",ContratoId.NumeroContrato:" + numeroContrato
 		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 			//actualiar preliquidado
 			contrato_preliquidacion[0].Preliquidado = true
-			if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "PUT", &aux, contrato_preliquidacion[0]); err == nil {
+			if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), contrato_preliquidacion[0], &aux); err == nil {
 				fmt.Println("Cumplido actualizado")
 				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato_preliquidacion}
 				c.ServeJSON()

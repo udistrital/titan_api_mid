@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -33,7 +34,7 @@ func (c *DesagregadoHCSController) ObtenerDesagregado() {
 	var desagregado models.DesagregadoContratoHCS
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &vinculacion); err == nil {
-		desagregado = Desagregar(vinculacion)
+		desagregado = Desagregar(c.Ctx.Request.Context(), vinculacion)
 
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": desagregado}
 	} else {
@@ -44,7 +45,7 @@ func (c *DesagregadoHCSController) ObtenerDesagregado() {
 	c.ServeJSON()
 }
 
-func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.DesagregadoContratoHCS) {
+func Desagregar(ctx context.Context, vinculacion models.DatosVinculacion) (desagregado models.DesagregadoContratoHCS) {
 
 	if vinculacion.ObjetoNovedad != nil {
 		var aux map[string]interface{}
@@ -53,7 +54,7 @@ func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.Desagre
 		query := "numero_contrato:" + vinculacion.ObjetoNovedad.VinculacionOriginal + ",vigencia:" + strconv.Itoa(vinculacion.ObjetoNovedad.VigenciaVinculacionOriginal)
 		urlContrato := beego.AppConfig.String("UrlTitanCrud") + "/contrato?query=" + query
 		log.Printf("Desagregar -> consultando contrato original en Titan: %s", urlContrato)
-		if err := request.GetJson(urlContrato, &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, urlContrato, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contratoOriginal)
 		} else {
 			log.Printf("Desagregar -> error (%s): %v", query, err)
@@ -61,7 +62,7 @@ func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.Desagre
 
 		// Si no se obtiene contrato original se aplican los valores de la vigencia actual para el calculo del desagregado
 		if contratoOriginal[0].Id == 0 {
-			if _, porcentajesID := ObtenerReglasPrestaciones(false); porcentajesID != 0 {
+			if _, porcentajesID := ObtenerReglasPrestaciones(ctx, false); porcentajesID != 0 {
 				contratoOriginal = []models.Contrato{{PorcentajesDesagregadoId: porcentajesID}}
 				log.Printf("Desagregar -> no se obtuvo contrato original, usando contrato generico con PorcentajesDesagregadoId=%d", porcentajesID)
 			} else {
@@ -76,8 +77,8 @@ func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.Desagre
 			semanasOriginales := vinculacion.NumeroSemanas + vinculacion.ObjetoNovedad.SemanasNuevas
 			semanasRestantes := vinculacion.ObjetoNovedad.SemanasNuevas
 
-			reglasOriginal, lowCategoria, lowDedicacion := ConstruirReglasDesagregado(vinculacion, semanasOriginales, contratoOriginal...)
-			reglasRestante, _, _ := ConstruirReglasDesagregado(vinculacion, semanasRestantes, contratoOriginal...)
+			reglasOriginal, lowCategoria, lowDedicacion := ConstruirReglasDesagregado(ctx, vinculacion, semanasOriginales, contratoOriginal...)
+			reglasRestante, _, _ := ConstruirReglasDesagregado(ctx, vinculacion, semanasRestantes, contratoOriginal...)
 
 			desagregadoOriginal := golog.DesagregarContrato(reglasOriginal, lowCategoria, vinculacion.Documento, lowDedicacion, strconv.Itoa(vinculacion.Vigencia))
 			desagregadoRestante := golog.DesagregarContrato(reglasRestante, lowCategoria, vinculacion.Documento, lowDedicacion, strconv.Itoa(vinculacion.Vigencia))
@@ -100,7 +101,7 @@ func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.Desagre
 			// Si se aplicaron los porcentajes mayores en la original se deben mantener
 			// Si se aplicaron los porcentajes menores en la original se deben mantener
 
-			reglasBase, lowCategoria, lowDedicacion := ConstruirReglasDesagregado(vinculacion, vinculacion.NumeroSemanas, contratoOriginal...)
+			reglasBase, lowCategoria, lowDedicacion := ConstruirReglasDesagregado(ctx, vinculacion, vinculacion.NumeroSemanas, contratoOriginal...)
 			desagregado = golog.DesagregarContrato(reglasBase, lowCategoria, vinculacion.Documento, lowDedicacion, strconv.Itoa(vinculacion.Vigencia))
 			desagregado.NumeroContrato = vinculacion.NumeroContrato
 			desagregado.Vigencia = vinculacion.Vigencia
@@ -108,7 +109,7 @@ func Desagregar(vinculacion models.DatosVinculacion) (desagregado models.Desagre
 		}
 
 	} else {
-		reglasBase, lowCategoria, lowDedicacion := ConstruirReglasDesagregado(vinculacion, vinculacion.NumeroSemanas)
+		reglasBase, lowCategoria, lowDedicacion := ConstruirReglasDesagregado(ctx, vinculacion, vinculacion.NumeroSemanas)
 		desagregado = golog.DesagregarContrato(reglasBase, lowCategoria, vinculacion.Documento, lowDedicacion, strconv.Itoa(vinculacion.Vigencia))
 		desagregado.NumeroContrato = vinculacion.NumeroContrato
 		desagregado.Vigencia = vinculacion.Vigencia

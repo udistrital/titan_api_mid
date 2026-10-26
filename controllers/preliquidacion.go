@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -56,7 +57,7 @@ func (c *PreliquidacionController) Preliquidar() {
 		fmt.Println("Resolucion ", contrato.Resolucion)
 		fmt.Println("Numero Semanas: ", contrato.NumeroSemanas)
 
-		mensaje, codigo, contratoReturn, err := Preliquidacion(contrato)
+		mensaje, codigo, contratoReturn, err := Preliquidacion(c.Ctx.Request.Context(), contrato)
 
 		if err == nil {
 			c.Ctx.Output.SetStatus(201)
@@ -73,7 +74,7 @@ func (c *PreliquidacionController) Preliquidar() {
 	c.ServeJSON()
 }
 
-func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.ContratoPreliquidacion, err error) {
+func CargarDatosRetefuente(ctx context.Context, cedula int) (reglas string, datosRetefuente models.ContratoPreliquidacion, err error) {
 
 	var aux map[string]interface{}
 	var tempPersonaNatural models.PersonaNatural
@@ -82,7 +83,7 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 
 	query := strconv.Itoa(cedula)
 	fmt.Println(beego.AppConfig.String("UrlArgoWso2") + "/informacion_persona_natural/" + query)
-	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
+	if _, err := request.GetWithContext(context.WithValue(ctx, "Authorization", ""), beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
 
 		jsonPersonaNatural, errorJSON := json.Marshal(aux["informacion_persona_natural"])
 		if errorJSON == nil {
@@ -167,7 +168,7 @@ func CargarDatosRetefuente(cedula int) (reglas string, datosRetefuente models.Co
 	return reglas, alivios, nil
 }
 
-func CargarDatosRetefuenteOld(cedula int) (reglas string, datosRetefuente models.ContratoPreliquidacionOld, err error) {
+func CargarDatosRetefuenteOld(ctx context.Context, cedula int) (reglas string, datosRetefuente models.ContratoPreliquidacionOld, err error) {
 
 	var aux map[string]interface{}
 	var tempPersonaNatural models.PersonaNatural
@@ -176,7 +177,7 @@ func CargarDatosRetefuenteOld(cedula int) (reglas string, datosRetefuente models
 
 	query := strconv.Itoa(cedula)
 	fmt.Println(beego.AppConfig.String("UrlArgoWso2") + "/informacion_persona_natural/" + query)
-	if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
+	if _, err := request.GetWithContext(context.WithValue(ctx, "Authorization", ""), beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
 
 		jsonPersonaNatural, errorJSON := json.Marshal(aux["informacion_persona_natural"])
 		if errorJSON == nil {
@@ -271,6 +272,7 @@ func CargarDatosRetefuenteOld(cedula int) (reglas string, datosRetefuente models
 // @Failure 404 No existe el registro
 // @router /obtener_resumen_preliquidacion/:mes/:ano/:nomina [get]
 func (c *PreliquidacionController) ObtenerResumenPreliquidacion() {
+	ctx := c.Ctx.Request.Context()
 	var aux map[string]interface{}
 	var detalles []models.DetallePreliquidacion
 	var detalleMesual models.DetalleMensual
@@ -282,7 +284,7 @@ func (c *PreliquidacionController) ObtenerResumenPreliquidacion() {
 	//traer todos los detalles de la preliquidacion correspondientes a ese mes
 	query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.NominaId:" + nomina
 	fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=" + query)
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &detalles)
 		fmt.Println(len(detalles))
 		for i := 0; i < len(detalles); i++ {

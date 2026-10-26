@@ -30,6 +30,7 @@ func (c *NovedadCPSController) URLMapping() {
 // @Failure 400
 // @router /cancelar_contrato [post]
 func (c *NovedadCPSController) CancelarContrato() {
+	ctx := c.Ctx.Request.Context()
 
 	var cancelacion models.Cancelacion
 	var aux map[string]interface{}
@@ -41,7 +42,7 @@ func (c *NovedadCPSController) CancelarContrato() {
 
 	//Traer el contrato a cancelar
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &cancelacion); err == nil {
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+cancelacion.NumeroContrato+",Vigencia:"+strconv.Itoa(cancelacion.Vigencia)+",Documento:"+cancelacion.Documento, &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+cancelacion.NumeroContrato+",Vigencia:"+strconv.Itoa(cancelacion.Vigencia)+",Documento:"+cancelacion.Documento, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			if contrato[0].Id != 0 {
 
@@ -61,15 +62,15 @@ func (c *NovedadCPSController) CancelarContrato() {
 				for {
 					//Obtener contrato_preliquidacion para ese mes
 					query := "ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
+						if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &detalles)
 							for j := 0; j < len(detalles); j++ {
 								if detalles[j].ConceptoNominaId.Id == 87 {
 									valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
 								}
-								if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
+								if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), &aux); err == nil {
 									fmt.Println("Detalle eliminado con éxito")
 								} else {
 									fmt.Println("Error al Eliminar Detalles:", err)
@@ -77,7 +78,7 @@ func (c *NovedadCPSController) CancelarContrato() {
 									c.Abort("400")
 								}
 							}
-							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "DELETE", &aux, nil); err == nil {
+							if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 								fmt.Println("contrato preliquidacion eliminado con éxito")
 							} else {
 								fmt.Println("Error al eliminar contrato preliquidacion: ", err)
@@ -109,7 +110,7 @@ func (c *NovedadCPSController) CancelarContrato() {
 				fmt.Println("Valor día: ", valorDia)
 				contrato[0].FechaFin = cancelacion.FechaCancelacion
 				//Actualizar fecha de finalización del contrato
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contrato[0]); err == nil {
+				if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), contrato[0], &aux); err == nil {
 					fmt.Println("Contrato Actualizado")
 
 					if contrato[0].FechaInicio.Month() != cancelacion.FechaCancelacion.Month() || contrato[0].FechaInicio.Year() != cancelacion.FechaCancelacion.Year() {
@@ -119,7 +120,7 @@ func (c *NovedadCPSController) CancelarContrato() {
 						contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day()-contrato[0].FechaInicio.Day()+1)
 					}
 					contrato[0].ValorContrato = Roundf(contrato[0].ValorContrato)
-					mensaje, err = liquidarCPS(contrato[0])
+					mensaje, err = liquidarCPS(c.Ctx.Request.Context(), contrato[0])
 
 					if err == nil {
 						c.Ctx.Output.SetStatus(201)
@@ -162,6 +163,7 @@ func (c *NovedadCPSController) CancelarContrato() {
 // @Failure 403 body is empty
 // @router /ceder_contrato [post]
 func (c *NovedadCPSController) CederContrato() {
+	ctx := c.Ctx.Request.Context()
 	var sucesor models.Sucesor
 	var aux map[string]interface{}
 	var contrato []models.Contrato
@@ -179,7 +181,7 @@ func (c *NovedadCPSController) CederContrato() {
 
 		//Traer el contrato a cancelar
 		//No se requiere el numero de documento para CPS
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+sucesor.NumeroContrato+",Vigencia:"+strconv.Itoa(sucesor.Vigencia)+",TipoNominaId:411", &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+sucesor.NumeroContrato+",Vigencia:"+strconv.Itoa(sucesor.Vigencia)+",TipoNominaId:411", &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			if contrato[0].Id != 0 {
 				//Ordenar los contratos para tomar el más reciente
@@ -202,21 +204,21 @@ func (c *NovedadCPSController) CederContrato() {
 						fmt.Println("Ano:", anoIterativo)
 						//Obtener contrato_preliquidacion para ese mes
 						query := "ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+						if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
-							if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
+							if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 								LimpiezaRespuestaRefactor(aux, &detalles)
 								for j := 0; j < len(detalles); j++ {
 									if detalles[j].ConceptoNominaId.Id == 87 && detalles[j].DiasLiquidados == 30 {
 										valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
 									}
-									if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
+									if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), &aux); err == nil {
 										fmt.Println("Detalle eliminado con éxito")
 									} else {
 										fmt.Println("Error al eliminar detalle: ", err)
 									}
 								}
-								if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "DELETE", &aux, nil); err == nil {
+								if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 									fmt.Println("contrato preliquidacion eliminado con éxito")
 								} else {
 									fmt.Println("Error al eliminar contrato preliquidacion: ", err)
@@ -245,7 +247,7 @@ func (c *NovedadCPSController) CederContrato() {
 					fmt.Println("Fecha Inicio:", sucesor.FechaInicio.Month(), " ", sucesor.FechaInicio.Year())
 					valorNuevo = 0
 					query := "ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contrato[0].Id) + ",ContratoPreliquidacionId.ContratoId.Vigencia:" + strconv.Itoa(contrato[0].Vigencia)
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &detalles)
 						if sucesor.FechaInicio.Month() == contrato[0].FechaInicio.Month() && sucesor.FechaInicio.Year() == contrato[0].FechaInicio.Year() {
 							valorNuevo = 0
@@ -287,14 +289,14 @@ func (c *NovedadCPSController) CederContrato() {
 							contratoNuevo.ValorContrato = valorViejo - contrato[0].ValorContrato
 						}
 
-						contratoNuevo, err = registrarContrato(contratoNuevo)
+						contratoNuevo, err = registrarContrato(c.Ctx.Request.Context(), contratoNuevo)
 						if err != nil {
 							mensaje = "Error al registrar el contrato nuevo"
 							c.Data["Message"] = mensaje + err.Error()
 						}
 
 						//Actualizar fecha de finalización del contrato
-						if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contrato[0]); err == nil {
+						if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), contrato[0], &aux); err == nil {
 							fmt.Println("Contrato Actualizado")
 
 							if contrato[0].FechaInicio.Day() == 31 {
@@ -317,7 +319,7 @@ func (c *NovedadCPSController) CederContrato() {
 							if sucesor.FechaInicio.Day() == 1 {
 								contratoNuevo.ValorContrato = valorViejo - valorNuevo
 								fmt.Println("Liquidando nuevo:", contratoNuevo.NumeroContrato, " de ", contratoNuevo.NombreCompleto)
-								if _, err = liquidarCPS(contratoNuevo); err != nil {
+								if _, err = liquidarCPS(c.Ctx.Request.Context(), contratoNuevo); err != nil {
 									mensaje = "Error liquidando contrato nuevo"
 									c.Data["Message"] = mensaje + err.Error()
 									c.Abort("400")
@@ -329,13 +331,13 @@ func (c *NovedadCPSController) CederContrato() {
 								//contrato[0].ValorContrato = valorDia * float64(contrato[0].FechaFin.Day()-contrato[0].FechaInicio.Day()+1)
 								contratoNuevo.ValorContrato = valorViejo - contrato[0].ValorContrato
 								fmt.Println("Liquidando actual:", contrato[0])
-								if _, err = liquidarCPS(contrato[0]); err != nil {
+								if _, err = liquidarCPS(c.Ctx.Request.Context(), contrato[0]); err != nil {
 									mensaje = "Error liquidando contrato original"
 									c.Data["Message"] = mensaje + err.Error()
 									c.Abort("400")
 								}
 								fmt.Println("Liquidando nuevo:", contratoNuevo)
-								if _, err = liquidarCPS(contratoNuevo); err != nil {
+								if _, err = liquidarCPS(c.Ctx.Request.Context(), contratoNuevo); err != nil {
 									mensaje = "Error liquidando contrato nuevo"
 									c.Data["Message"] = mensaje + err.Error()
 									c.Abort("400")
@@ -386,6 +388,7 @@ func (c *NovedadCPSController) CederContrato() {
 // @Failure 403 Fallo al obtener algún dato
 // @router /otrosi_contrato [post]
 func (c *NovedadCPSController) AplicarOtrosi() {
+	ctx := c.Ctx.Request.Context()
 	var aux map[string]interface{}
 	var otro_si models.OtroSi
 	var contrato []models.Contrato
@@ -397,7 +400,7 @@ func (c *NovedadCPSController) AplicarOtrosi() {
 		//para CPS solo se requiere el numero de contrato y la vigencia
 		query := "NumeroContrato:" + otro_si.NumeroContrato + ",Vigencia:" + strconv.Itoa(otro_si.Vigencia) + ",TipoNominaId:411"
 		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=" + query)
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			if contrato[0].Id != 0 {
 				//Organizar para tomar el más reciente
@@ -425,14 +428,14 @@ func (c *NovedadCPSController) AplicarOtrosi() {
 						contratoNuevo.VigenciaCdp = otro_si.VigenciaCdp
 						contratoNuevo.ValorContrato = otro_si.Valor
 						//Guardamos el nuevo contrato
-						contratoNuevo, err = registrarContrato(contratoNuevo)
+						contratoNuevo, err = registrarContrato(c.Ctx.Request.Context(), contratoNuevo)
 						if err == nil {
-							mensaje, err = liquidarCPS(contratoNuevo)
+							mensaje, err = liquidarCPS(c.Ctx.Request.Context(), contratoNuevo)
 							if err == nil {
 								fmt.Println("Novedad Aplicada")
 								c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contrato[0]}
 							} else {
-								if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contratoNuevo.Id), "DELETE", &aux, nil); err == nil {
+								if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contratoNuevo.Id), &aux); err == nil {
 									fmt.Println("Error al liquidar el nuevo contrato, contrato eliminado", err)
 									c.Data["mesaage"] = mensaje + err.Error()
 									c.Abort("403")
@@ -483,6 +486,7 @@ func (c *NovedadCPSController) AplicarOtrosi() {
 // @Failure 400 the request contains incorrect syntax
 // @router /suspender_contrato [post]
 func (c *NovedadCPSController) SuspenderContrato() {
+	ctx := c.Ctx.Request.Context()
 	var suspension models.Suspension
 	var aux map[string]interface{}
 	var contrato []models.Contrato
@@ -501,7 +505,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &suspension); err == nil {
 		//Traer el contrato a cancelar
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+suspension.NumeroContrato+",Vigencia:"+strconv.Itoa(suspension.Vigencia)+",Documento:"+suspension.Documento, &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+suspension.NumeroContrato+",Vigencia:"+strconv.Itoa(suspension.Vigencia)+",Documento:"+suspension.Documento, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			if contrato[0].Id != 0 {
 
@@ -528,16 +532,16 @@ func (c *NovedadCPSController) SuspenderContrato() {
 					//Obtener contrato_preliquidacion para ese mes
 					query := "ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
 					// fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+					if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 						// fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:" + strconv.Itoa(contrato_preliquidacion[0].Id))
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
+						if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &detalles)
 							for j := 0; j < len(detalles); j++ {
 								if detalles[j].ConceptoNominaId.Id == 87 {
 									valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
 								}
-								if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
+								if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), &aux); err == nil {
 									fmt.Println("Detalle eliminado con éxito")
 								} else {
 									fmt.Println("Error al eliminar detalle: ", err)
@@ -546,7 +550,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 								}
 							}
 							fmt.Println("Valor día: ", valorDia)
-							if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "DELETE", &aux, nil); err == nil {
+							if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 								fmt.Println("contrato preliquidacion eliminado con éxito")
 								if mesIterativo == int(contrato[0].FechaFin.Month()) && anoIterativo == contrato[0].FechaFin.Year() {
 									break
@@ -576,7 +580,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 				}
 				//Traer lo que se ha pagado hasta el momento
 				query := "ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contrato[0].Id) + ",ConceptoNominaId.Id:87"
-				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+				if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &detalles)
 					if suspension.FechaInicio.Month() == contrato[0].FechaInicio.Month() && suspension.FechaInicio.Year() == contrato[0].FechaInicio.Year() {
 						valorNuevo = 0
@@ -648,7 +652,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 					}
 
 					//Actualizar fecha de finalización y valor del contrato previo a la suspension
-					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contrato[0]); err == nil {
+					if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), contrato[0], &aux); err == nil {
 						fmt.Println("Contrato Actualizado")
 
 						//Actualizar Fecha de inicio para liquidar el mes en el que se aplicó la suspensión
@@ -660,7 +664,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 						}
 
 						if (suspension.FechaFin.Day() != 30 || suspension.FechaFin.Day() != 31) && suspension.FechaInicio.Day() != 1 {
-							mensaje, err = liquidarCPS(contrato[0])
+							mensaje, err = liquidarCPS(c.Ctx.Request.Context(), contrato[0])
 							if err == nil {
 								fmt.Println("Contrato previo a sucesión liquidado")
 							} else {
@@ -671,9 +675,9 @@ func (c *NovedadCPSController) SuspenderContrato() {
 						}
 
 						contratoNuevo.Id = 0
-						contratoNuevo, err = registrarContrato(contratoNuevo)
+						contratoNuevo, err = registrarContrato(c.Ctx.Request.Context(), contratoNuevo)
 						if err == nil {
-							mensaje, err = liquidarCPS(contratoNuevo)
+							mensaje, err = liquidarCPS(c.Ctx.Request.Context(), contratoNuevo)
 							if err == nil {
 								fmt.Println("Contrato nuevo liquidado")
 								c.Ctx.Output.SetStatus(201)
@@ -724,6 +728,7 @@ func (c *NovedadCPSController) SuspenderContrato() {
 // @Failure 400 the request contains incorrect syntax
 // @router /reiniciar_contrato [post]
 func (c *NovedadCPSController) ReiniciarContrato() {
+	ctx := c.Ctx.Request.Context()
 	var reinicio models.Reinicio
 	var aux map[string]interface{}
 	var contrato []models.Contrato
@@ -738,7 +743,7 @@ func (c *NovedadCPSController) ReiniciarContrato() {
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &reinicio); err == nil {
 		//Traer el contrato a reiniciar
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+reinicio.NumeroContrato+",Vigencia:"+strconv.Itoa(reinicio.Vigencia)+",Documento:"+reinicio.Documento, &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+reinicio.NumeroContrato+",Vigencia:"+strconv.Itoa(reinicio.Vigencia)+",Documento:"+reinicio.Documento, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato)
 			if contrato[0].Id != 0 {
 
@@ -766,15 +771,15 @@ func (c *NovedadCPSController) ReiniciarContrato() {
 					for {
 						//Obtener contrato_preliquidacion para ese mes
 						query := "ContratoId:" + strconv.Itoa(contrato[0].Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+						if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 							LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
-							if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
+							if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 								LimpiezaRespuestaRefactor(aux, &detalles)
 								for j := 0; j < len(detalles); j++ {
 									if detalles[j].ConceptoNominaId.Id == 87 {
 										valorDia = detalles[j].ValorCalculado / detalles[j].DiasLiquidados
 									}
-									if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), "DELETE", &aux, nil); err == nil {
+									if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), &aux); err == nil {
 										fmt.Println("Detalle eliminado con éxito")
 									} else {
 										fmt.Println("Error al eliminar detalle: ", err)
@@ -783,7 +788,7 @@ func (c *NovedadCPSController) ReiniciarContrato() {
 									}
 								}
 								fmt.Println("Valor día: ", valorDia)
-								if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), "DELETE", &aux, nil); err == nil {
+								if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 									fmt.Println("contrato preliquidacion eliminado con éxito")
 									if mesIterativo == int(contrato[0].FechaFin.Month()) && anoIterativo == contrato[0].FechaFin.Year() {
 										break
@@ -821,7 +826,7 @@ func (c *NovedadCPSController) ReiniciarContrato() {
 						contratoNuevo.FechaFin = time.Date(contratoNuevo.FechaFin.Year(), aux.Month(), 1, 12, 0, 0, 0, time.UTC)
 					}
 
-					mensaje, err = liquidarCPS(contratoNuevo)
+					mensaje, err = liquidarCPS(c.Ctx.Request.Context(), contratoNuevo)
 					if err == nil {
 						fmt.Println("Contrato despues de reinicio liquidado")
 						c.Ctx.Output.SetStatus(201)
@@ -833,7 +838,7 @@ func (c *NovedadCPSController) ReiniciarContrato() {
 					}
 
 					//Actualización de fechas despues del reinicio
-					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), "PUT", &aux, contratoNuevo); err == nil {
+					if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contrato[0].Id), contratoNuevo, &aux); err == nil {
 						fmt.Println("Contrato Actualizado")
 
 					} else {

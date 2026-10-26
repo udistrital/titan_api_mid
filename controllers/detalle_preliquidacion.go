@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"strconv"
@@ -39,7 +40,7 @@ func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
 	vigencia := c.Ctx.Input.Param(":vigencia")
 	documento := c.Ctx.Input.Param(":documento")
 
-	detalle, err := TraerDetalleMensual(ano, mes, contrato, vigencia, documento, true, false)
+	detalle, err := TraerDetalleMensual(c.Ctx.Request.Context(), ano, mes, contrato, vigencia, documento, true, false)
 
 	if err == nil {
 		c.Ctx.Output.SetStatus(201)
@@ -52,24 +53,24 @@ func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
 	c.ServeJSON()
 }
 
-func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS bool, HCS bool) (detalle []models.Detalle, err error) {
+func TraerDetalleMensual(ctx context.Context, ano, mes, contrato, vigencia, documento string, CPS bool, HCS bool) (detalle []models.Detalle, err error) {
 	var aux map[string]interface{}
 	var auxContratos []models.Contrato
 
 	var query = "NumeroContrato:" + contrato + ",Vigencia:" + vigencia + ",Documento:" + documento
 	//fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=" + query)
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &auxContratos)
 		if auxContratos[0].Id != 0 {
 			fmt.Println("Contratos obtenidos: ", len(auxContratos))
 			for j := 0; j < len(auxContratos); j++ {
 				query = "PreliquidacionId.Ano:" + ano + ",PreliquidacionId.Mes:" + mes + ",ContratoId.Id:" + strconv.Itoa(auxContratos[j].Id)
 				fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
-				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+				if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 					var contrato_preliquidacion []models.ContratoPreliquidacion
 					LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 					if contrato_preliquidacion[0].Id != 0 {
-						if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId.Id:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
+						if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query=ContratoPreliquidacionId.Id:"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
 							var tempDetalle []models.DetallePreliquidacion
 							var auxDetalle models.Detalle
 							LimpiezaRespuestaRefactor(aux, &tempDetalle)
@@ -131,6 +132,7 @@ func TraerDetalleMensual(ano, mes, contrato, vigencia, documento string, CPS boo
 // @Failure 400 the request contains incorrect syntax
 // @router /obtener_detalle_DVE/:ano/:mes/:documento/:nomina [get]
 func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
+	ctx := c.Ctx.Request.Context()
 	ano := c.Ctx.Input.Param(":ano")
 	mes := c.Ctx.Input.Param(":mes")
 	documento := c.Ctx.Input.Param(":documento")
@@ -146,30 +148,30 @@ func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 
 	//obtener los contratos asociados a la persona
 	var query = "ContratoId.Documento:" + documento + ",ContratoId.Vigencia:" + ano + ",PreliquidacionId.Ano:" + ano + ",PreliquidacionId.Mes:" + mes + ",PreliquidacionId.NominaId:" + nomina
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
 		//Recorrer los contratos para obtener las resoluciones
 		/*
 			for i := 0; i < len(tempContrato); i++ {
 				//Encontrar el id de la resolucion
 				query := "NumeroContrato:" + tempContrato[i].ContratoId.NumeroContrato + ",Vigencia:" + strconv.Itoa(tempContrato[i].ContratoId.Vigencia)
-				if err := request.GetJson(beego.AppConfig.String("UrlAdministrativaCrud")+"/vinculacion_docente?limit=-1&query="+query, &aux); err == nil {
+				if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlAdministrativaCrud")+"/vinculacion_docente?limit=-1&query="+query, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &vinculacion)
 					//Encontrar el número de resolución
-					if err := request.GetJson(beego.AppConfig.String("UrlAdministrativaCrud")+"/resolucion?limit=-1&query=Id:"+strconv.Itoa(vinculacion[0].ResolucionVinculacionDocenteId.Id), &aux); err == nil {
+					if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlAdministrativaCrud")+"/resolucion?limit=-1&query=Id:"+strconv.Itoa(vinculacion[0].ResolucionVinculacionDocenteId.Id), &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &resolucionCompleta)
 						if len(detallesDVE) == 0 {
 							tempDetalle.Resolucion = vinculacion[0].ResolucionVinculacionDocenteId
 							tempDetalle.ResolucionCompleta = &resolucionCompleta[0]
-							tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
+							tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ctx, ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
 							detallesDVE = append(detallesDVE, tempDetalle)
 						} else {
 							res, pos := encontrarResolucion(resolucionCompleta[0].Id, detallesDVE)
 							if res {
-								detallesDVE[pos].Detalle = append(detallesDVE[pos].Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
+								detallesDVE[pos].Detalle = append(detallesDVE[pos].Detalle, TraerDetalleMensual(ctx, ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
 							} else {
 								tempDetalle.Resolucion = vinculacion[0].ResolucionVinculacionDocenteId
-								tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
+								tempDetalle.Detalle = append(tempDetalle.Detalle, TraerDetalleMensual(ctx, ano, mes, tempContrato[i].ContratoId.NumeroContrato, strconv.Itoa(tempContrato[i].ContratoId.Vigencia), documento))
 								detallesDVE = append(detallesDVE, tempDetalle)
 							}
 						}
@@ -184,9 +186,9 @@ func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 		//Agregar los detalles de todos los contratos
 		for i := 0; i < len(contratoPreliquidacion); i++ {
 			if nomina == "416" {
-				auxDetalle, _ = TraerDetalleMensual(ano, mes, contratoPreliquidacion[i].ContratoId.NumeroContrato, strconv.Itoa(contratoPreliquidacion[i].ContratoId.Vigencia), documento, false, true)
+				auxDetalle, _ = TraerDetalleMensual(ctx, ano, mes, contratoPreliquidacion[i].ContratoId.NumeroContrato, strconv.Itoa(contratoPreliquidacion[i].ContratoId.Vigencia), documento, false, true)
 			} else {
-				auxDetalle, _ = TraerDetalleMensual(ano, mes, contratoPreliquidacion[i].ContratoId.NumeroContrato, strconv.Itoa(contratoPreliquidacion[i].ContratoId.Vigencia), documento, false, false)
+				auxDetalle, _ = TraerDetalleMensual(ctx, ano, mes, contratoPreliquidacion[i].ContratoId.NumeroContrato, strconv.Itoa(contratoPreliquidacion[i].ContratoId.Vigencia), documento, false, false)
 			}
 
 			if err == nil {
@@ -218,7 +220,7 @@ func encontrarResolucion(idResolucion int, resoluciones []models.DetalleDVE) (re
 }
 */
 
-func AgregarValorNovedad(novedad models.Novedad) (mensaje string, ids_detalles []models.DetallePreliquidacion, err error) {
+func AgregarValorNovedad(ctx context.Context, novedad models.Novedad) (mensaje string, ids_detalles []models.DetallePreliquidacion, err error) {
 
 	var aux map[string]interface{}
 	var mesIterativo = int(novedad.FechaInicio.Month())
@@ -245,12 +247,12 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, ids_detalles [
 		contratoPreliquidacion = nil
 		var query = "ContratoId.Id:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo)
 		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
 			LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
 			//Obtener el valor de los honorarios para ese mes
 			if contratoPreliquidacion[0].Id != 0 {
 				query = "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId:" + strconv.Itoa(idHonorarios)
-				if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+				if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 					LimpiezaRespuestaRefactor(aux, &honorarios)
 					detalleNuevo.Id = 0
 					detalleNuevo.TipoPreliquidacionId = 397
@@ -268,7 +270,7 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, ids_detalles [
 						detalleNuevo.ValorCalculado = math.Round((honorarios[0].ValorCalculado * (novedad.Valor / 100)))
 					}
 
-					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/", "POST", &detalleNuevo, detalleNuevo); err == nil {
+					if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/", detalleNuevo, &detalleNuevo); err == nil {
 						fmt.Println("Concepto Añadido")
 						ids_detalles = append(ids_detalles, detalleNuevo)
 					} else {
@@ -300,7 +302,7 @@ func AgregarValorNovedad(novedad models.Novedad) (mensaje string, ids_detalles [
 	return "No se generó ningún error", ids_detalles, nil
 }
 
-func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) (mensaje string, err error) {
+func EliminarValorNovedad(ctx context.Context, novedad models.Novedad, fecha_actual time.Time) (mensaje string, err error) {
 
 	var aux map[string]interface{}
 	var contratoPreliquidacion []models.ContratoPreliquidacion
@@ -311,18 +313,18 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) (mensa
 	for i := int(fecha_actual.Month()); i <= mesFin; i++ {
 		var query = "ContratoId.Id:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Ano:" + strconv.Itoa(fecha_actual.Year()) + ",PreliquidacionId.Mes:" + strconv.Itoa(i)
 		fmt.Println("consulta contrato preliquidacion ", query)
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
 			LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
 			//Eliminar el Concepto de la liquidacion de ese mes
 			query := "ContratoPreliquidacionId:" + strconv.Itoa(contratoPreliquidacion[0].Id) + ",ConceptoNominaId.Id:" + strconv.Itoa(novedad.ConceptoNominaId.Id)
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &detalle)
-				if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalle[0].Id), "DELETE", &aux, nil); err == nil {
+				if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalle[0].Id), &aux); err == nil {
 					fmt.Println("Detalle de novedad eliminado con éxtio")
 					//Actualizar fecha de finalización de la novedad
 					novedad.FechaFin = fecha_actual
 					novedad.Activo = false
-					if err := request.SendJson(beego.AppConfig.String("UrlTitanCrud")+"/novedad/"+strconv.Itoa(novedad.Id), "PUT", &aux, novedad); err == nil {
+					if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/novedad/"+strconv.Itoa(novedad.Id), novedad, &aux); err == nil {
 						fmt.Println("Novedad Actualizada")
 					} else {
 						fmt.Println("Error al actualizar novedad: ", err)
@@ -346,7 +348,7 @@ func EliminarValorNovedad(novedad models.Novedad, fecha_actual time.Time) (mensa
 
 //Agregar novedades al contrato general del docente
 
-func AgregarNovedadGeneral(documento string, mes int, ano int) (mensaje string, err error) {
+func AgregarNovedadGeneral(ctx context.Context, documento string, mes int, ano int) (mensaje string, err error) {
 	var aux map[string]interface{}
 	var contratoGeneral []models.Contrato
 	var detalleGeneral []models.DetallePreliquidacion
@@ -354,17 +356,17 @@ func AgregarNovedadGeneral(documento string, mes int, ano int) (mensaje string, 
 
 	//Traer el contrato general del mes a iterar
 	query := "NumeroContrato:GENERAL" + strconv.Itoa(mes) + ",Vigencia:" + strconv.Itoa(ano) + ",Documento:" + documento
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1"+query, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1"+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contratoGeneral)
 		if contratoGeneral[0].Id != 0 {
 			//Traer los detalles de ese contrato:
 			query := "ContratoPreliquidacionId.ContratoId.Id:" + strconv.Itoa(contratoGeneral[0].Id) + "," + documento
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1"+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1"+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &detalleGeneral)
 				if detalleGeneral[0].Id != 0 {
 					//Traer los detalles de todos los contratos de ese docente para ese mes en específico
 					query := "ContratoPreliquidacionId.ContratoId.Documento:" + documento + ",ContratoPreliquidacionId.PreliquidacionId.Mes:" + strconv.Itoa(mes) + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + strconv.Itoa(ano)
-					if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1"+query, &aux); err == nil {
+					if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1"+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &detallesTotales)
 						if detallesTotales[0].Id != 0 {
 							//Verificar cuáles conceptos son novedades y agregar su valor al contrato

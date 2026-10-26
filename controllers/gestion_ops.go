@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -30,6 +31,7 @@ func (c *GestionOpsController) URLMapping() {
 // @Failure 403 body is empty
 // @router /generar_op/:id [get]
 func (c *GestionOpsController) GenerarOrdenPago() {
+	ctx := c.Ctx.Request.Context()
 
 	id := c.Ctx.Input.Param(":id")
 	var aux map[string]interface{}
@@ -37,11 +39,11 @@ func (c *GestionOpsController) GenerarOrdenPago() {
 	var contratos []models.ContratoPreliquidacion
 	//Obtener la preliquidación de ese mes
 
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquicion?limit=-1&query=Id:"+id, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/preliquicion?limit=-1&query=Id:"+id, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &preliquicion)
 		//Verificar si quedan personas pendientes por cumplido
 
-		if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query=PreliquidacionId.Id:"+strconv.Itoa(preliquicion[0].Id), &aux); err == nil {
+		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query=PreliquidacionId.Id:"+strconv.Itoa(preliquicion[0].Id), &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contratos)
 			//Se cierra directamente la preliquidación
 			preliquicion[0].EstadoPreliquidacionId = 402
@@ -55,11 +57,11 @@ func (c *GestionOpsController) GenerarOrdenPago() {
 			}
 
 			//Actualizar el estado de la preliquidación
-			if err := request.SendJson((beego.AppConfig.String("UrlTitanCrud") + "/preliquidacion/" + strconv.Itoa(preliquicion[0].Id)), "PUT", &aux, preliquicion[0]); err == nil {
+			if _, err := request.PutWithContext(ctx, (beego.AppConfig.String("UrlTitanCrud") + "/preliquidacion/" + strconv.Itoa(preliquicion[0].Id)), preliquicion[0], &aux); err == nil {
 				fmt.Println("Preliquidación actualizada con éxito")
 				//Solicitar orden de pago
 
-				if err := request.GetJsonWSO2(beego.AppConfig.String("UrlArgoColas")+"/liquidacion/"+strconv.Itoa(preliquicion[0].Ano)+"/"+strconv.Itoa(preliquicion[0].Mes), &aux); err == nil {
+				if _, err := request.GetWithContext(context.WithValue(ctx, "Authorization", ""), beego.AppConfig.String("UrlArgoColas")+"/liquidacion/"+strconv.Itoa(preliquicion[0].Ano)+"/"+strconv.Itoa(preliquicion[0].Mes), &aux); err == nil {
 					fmt.Println("Orden de pago generada")
 					c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": preliquicion}
 

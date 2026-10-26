@@ -15,6 +15,7 @@ type PreliquidacionFpController struct {
 // @Title Preliquidar
 // @Description Preliquidacion para administrativos
 func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidacion, reglasbase string) (res []models.Respuesta) {
+	ctx := c.Ctx.Request.Context()
 
 
 	//declaracion de variables
@@ -34,11 +35,11 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 		filtrodatos := models.FuncionarioCargo{Id: datos.PersonasPreLiquidacion[i].IdPersona, Asignacion_basica: 0}
 		tipoNom = 2
 
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_primatec", "POST", &porcentajePT, datos.PersonasPreLiquidacion[i].IdPersona); err != nil {
+		if _, err := request.PostWithContext(ctx, "http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_primatec", datos.PersonasPreLiquidacion[i].IdPersona, &porcentajePT); err != nil {
 			porcentajePT = 0
 		}
 
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo/get_asignacion_basica", "POST", &informacionCargo, &filtrodatos); err == nil {
+		if _, err := request.PostWithContext(ctx, "http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/funcionario_cargo/get_asignacion_basica", &filtrodatos, &informacionCargo); err == nil {
 
 			diasLaborados := CalcularDias(informacionCargo[0].FechaInicio, informacionCargo[0].FechaFin)
 			//reglasNominasEspeciales := crearHechosNominasEspeciales(datos.Preliquidacion,datos.PersonasPreLiquidacion[i].IdPersona)
@@ -68,7 +69,7 @@ func (c *PreliquidacionFpController) Preliquidar(datos *models.DatosPreliquidaci
 
 				//detallepreliqu := models.DetallePreliquidacion{Concepto: &models.ConceptoNomina{Id: descuentos.Id}, Preliquidacion: &models.Preliquidacion{Id: preliquidacion.Id}, ValorCalculado: valor, NumeroContrato: informacionContrato.NumeroContrato,VigenciaContrato: vigenciaContrato, Persona: Persona, DiasLiquidados: diasLiquidados, TipoPreliquidacion: &models.TipoPreliquidacion {Id: tipoPreliquidacion}, EstadoDisponibilidad: &models.EstadoDisponibilidad {Id: dispo}}
 
-		    if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion","POST",&idDetaPre ,&detallepreliqu); err == nil {
+		    if _, err := request.PostWithContext(ctx, "http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/detalle_preliquidacion", &detallepreliqu, &idDetaPre); err == nil {
 					fmt.Println(idDetaPre)
 		    }else{
 		      fmt.Println("error1: ", err)
