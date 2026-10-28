@@ -1,9 +1,8 @@
 package controllers
 
 import (
-	"fmt"
-
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"github.com/udistrital/titan_api_mid/models"
 	"github.com/udistrital/utils_oas/request"
 )
@@ -26,6 +25,7 @@ func (c *ContratosController) URLMapping() {
 // @Failure 403 body is empty
 // @router /docentesDVE/:nomina/:mes:/:ano [get]
 func (c *ContratosController) ObtenerContratosDVE() {
+	ctx := c.Ctx.Request.Context()
 
 	ano := c.Ctx.Input.Param(":ano")
 	mes := c.Ctx.Input.Param(":mes")
@@ -36,7 +36,7 @@ func (c *ContratosController) ObtenerContratosDVE() {
 	var contratoDVE []models.ContratoDVE
 	var auxContratoDVE models.ContratoDVE
 	//Obtener todos los contratos pertenecientes a esa preliquidación
-	if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query=PreliquidacionId.Mes:"+mes+",PreliquidacionId.Ano:"+ano+",PreliquidacionId.NominaId:"+nomina, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query=PreliquidacionId.Mes:"+mes+",PreliquidacionId.Ano:"+ano+",PreliquidacionId.NominaId:"+nomina, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 
 		//Añadir cada persona al arreglo
@@ -61,7 +61,7 @@ func (c *ContratosController) ObtenerContratosDVE() {
 		//Verficar los cumplidos
 
 		for i := 0; i < len(contratoDVE); i++ {
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query=PreliquidacionId.Mes:"+mes+",PreliquidacionId.Ano:"+ano+",ContratoId.Documento:"+contratoDVE[i].Documento, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query=PreliquidacionId.Mes:"+mes+",PreliquidacionId.Ano:"+ano+",ContratoId.Documento:"+contratoDVE[i].Documento, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
 
 				for j := 0; j < len(contrato_preliquidacion); j++ {
@@ -72,7 +72,7 @@ func (c *ContratosController) ObtenerContratosDVE() {
 				}
 
 			} else {
-				fmt.Println("Error al obtener los contratos del docente ", err)
+				logs.Error("Error al obtener los contratos del docente ", err)
 				c.Data["mesaage"] = "Error al generar orden de pago " + err.Error()
 				c.Abort("404")
 			}
@@ -81,7 +81,7 @@ func (c *ContratosController) ObtenerContratosDVE() {
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contratoDVE}
 
 	} else {
-		fmt.Println("Error al obtener contrato preliquidacion: ", err)
+		logs.Error("Error al obtener contrato preliquidacion: ", err)
 		c.Data["mesaage"] = "Error al obtener contratos" + err.Error()
 		c.Abort("404")
 	}
