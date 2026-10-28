@@ -60,7 +60,6 @@ func LiquidarMesHCS(reglas string, contrato models.Contrato, detallePreliquidaci
 	cedula := contrato.Documento
 	ano := contrato.Vigencia
 	m := NewMachine().Consult(reglas)
-	//fmt.Println(reglas)
 	total := m.ProveAll("liquidar_hcs(" + cedula + "," + strconv.Itoa(ano) + ",N,T).")
 	for _, solution := range total {
 		detallePreliquidacion.ValorCalculado, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("T")), 64)
