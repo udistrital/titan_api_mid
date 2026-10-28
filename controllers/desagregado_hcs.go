@@ -3,8 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"log"
+	"github.com/astaxie/beego/logs"
 	"strconv"
 
 	"github.com/astaxie/beego"
@@ -38,7 +37,7 @@ func (c *DesagregadoHCSController) ObtenerDesagregado() {
 
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": desagregado}
 	} else {
-		fmt.Println("Error al obtener detalles del contrato")
+		logs.Error("Error al obtener detalles del contrato")
 		c.Data["mesaage"] = "Error al obtener datos del contrato seleccionado: " + err.Error()
 		c.Abort("400")
 	}
@@ -53,20 +52,20 @@ func Desagregar(ctx context.Context, vinculacion models.DatosVinculacion) (desag
 		// Primero se obtienen los porcentajes que se usaron en la vinculacion original
 		query := "numero_contrato:" + vinculacion.ObjetoNovedad.VinculacionOriginal + ",vigencia:" + strconv.Itoa(vinculacion.ObjetoNovedad.VigenciaVinculacionOriginal)
 		urlContrato := beego.AppConfig.String("UrlTitanCrud") + "/contrato?query=" + query
-		log.Printf("Desagregar -> consultando contrato original en Titan: %s", urlContrato)
+		logs.Info("Desagregar -> consultando contrato original en Titan: %s", urlContrato)
 		if _, err := request.GetWithContext(ctx, urlContrato, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contratoOriginal)
 		} else {
-			log.Printf("Desagregar -> error (%s): %v", query, err)
+			logs.Error("Desagregar -> error (%s): %v", query, err)
 		}
 
 		// Si no se obtiene contrato original se aplican los valores de la vigencia actual para el calculo del desagregado
 		if contratoOriginal[0].Id == 0 {
 			if _, porcentajesID := ObtenerReglasPrestaciones(ctx, false); porcentajesID != 0 {
 				contratoOriginal = []models.Contrato{{PorcentajesDesagregadoId: porcentajesID}}
-				log.Printf("Desagregar -> no se obtuvo contrato original, usando contrato generico con PorcentajesDesagregadoId=%d", porcentajesID)
+				logs.Warn("Desagregar -> no se obtuvo contrato original, usando contrato generico con PorcentajesDesagregadoId=%d", porcentajesID)
 			} else {
-				log.Printf("Desagregar -> no fue posible determinar un PorcentajesDesagregadoId vigente para la vinculacion original (%s)", query)
+				logs.Warn("Desagregar -> no fue posible determinar un PorcentajesDesagregadoId vigente para la vinculacion original (%s)", query)
 			}
 		}
 
@@ -96,7 +95,6 @@ func Desagregar(ctx context.Context, vinculacion models.DatosVinculacion) (desag
 			desagregado.BonificacionServicios = desagregadoOriginal.BonificacionServicios - desagregadoRestante.BonificacionServicios
 
 		case "RADD", "RRED":
-			fmt.Println("Desagregado por RADD y RRED")
 			// Para la adicion y reduccion solo se le pasa los datos del nuevo contrato
 			// Si se aplicaron los porcentajes mayores en la original se deben mantener
 			// Si se aplicaron los porcentajes menores en la original se deben mantener

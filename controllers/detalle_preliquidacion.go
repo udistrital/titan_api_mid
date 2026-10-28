@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"context"
-	"fmt"
+	"github.com/astaxie/beego/logs"
 	"math"
 	"strconv"
 	"time"
@@ -58,14 +58,11 @@ func TraerDetalleMensual(ctx context.Context, ano, mes, contrato, vigencia, docu
 	var auxContratos []models.Contrato
 
 	var query = "NumeroContrato:" + contrato + ",Vigencia:" + vigencia + ",Documento:" + documento
-	//fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=" + query)
 	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &auxContratos)
 		if auxContratos[0].Id != 0 {
-			fmt.Println("Contratos obtenidos: ", len(auxContratos))
 			for j := 0; j < len(auxContratos); j++ {
 				query = "PreliquidacionId.Ano:" + ano + ",PreliquidacionId.Mes:" + mes + ",ContratoId.Id:" + strconv.Itoa(auxContratos[j].Id)
-				fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
 				if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 					var contrato_preliquidacion []models.ContratoPreliquidacion
 					LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
@@ -78,7 +75,6 @@ func TraerDetalleMensual(ctx context.Context, ano, mes, contrato, vigencia, docu
 							auxDetalle.Vigencia = tempDetalle[0].ContratoPreliquidacionId.ContratoId.Vigencia
 							for i := 0; i < len(tempDetalle); i++ {
 								if tempDetalle[i].ConceptoNominaId.Id == 574 || tempDetalle[i].ConceptoNominaId.Id == 573 {
-									fmt.Println("Salto")
 								} else if tempDetalle[i].ConceptoNominaId.NaturalezaConceptoNominaId == 424 {
 									if HCS && tempDetalle[i].ConceptoNominaId.Id == 570 {
 										auxDetalle.Detalle = append(auxDetalle.Detalle, tempDetalle[i])
@@ -97,25 +93,23 @@ func TraerDetalleMensual(ctx context.Context, ano, mes, contrato, vigencia, docu
 							}
 							auxDetalle.TotalPago = auxDetalle.TotalDevengado - auxDetalle.TotalDescuentos
 							detalle = append(detalle, auxDetalle)
-							fmt.Println("Agrego el contrato con id: ", auxDetalle.Detalle[0].ContratoPreliquidacionId.ContratoId.Id)
 						} else {
-							fmt.Println("Error al obtener detalle ", err)
+							logs.Error("Error al obtener detalle ", err)
 							return detalle, err
 						}
 					} else {
-						fmt.Println("Contrato no válido para ese mes")
 					}
 				} else {
-					fmt.Println("Error al obtener detalle preliquidación ", err)
+					logs.Error("Error al obtener detalle preliquidación ", err)
 					return detalle, err
 				}
 			}
 		} else {
-			fmt.Println("Error al obtener contrato o contratos ", err)
+			logs.Error("Error al obtener contrato o contratos ", err)
 			return detalle, err
 		}
 	} else {
-		fmt.Println("Error al obtener contrato o contratos ", err)
+		logs.Error("Error al obtener contrato o contratos ", err)
 		return detalle, err
 	}
 	return detalle, nil
@@ -176,10 +170,10 @@ func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 							}
 						}
 					} else {
-						fmt.Println("Error al obtener el número de la resolución: ", err)
+						logs.Error("Error al obtener el número de la resolución: ", err)
 					}
 				} else {
-					fmt.Println("Error al obtener resolución: ", err)
+					logs.Error("Error al obtener resolución: ", err)
 				}
 			}
 		*/
@@ -202,7 +196,7 @@ func (c *DetallePreliquidacionController) ObtenerDetalleDVE() {
 		}
 
 	} else {
-		fmt.Println("Error al obtener detalle ", err)
+		logs.Error("Error al obtener detalle ", err)
 		c.Data["mesaage"] = "No existe un contrato asociado al documento que sea vigente para la preliquidación " + err.Error()
 		c.Abort("404")
 	}
@@ -232,7 +226,6 @@ func AgregarValorNovedad(ctx context.Context, novedad models.Novedad) (mensaje s
 	var idHonorarios int
 	ids_detalles = []models.DetallePreliquidacion{}
 	auxCuotas = novedad.Cuotas
-	fmt.Println(novedad)
 	if novedad.ContratoId.TipoNominaId == 410 {
 		idHonorarios = 152 //Salario Base
 	} else {
@@ -241,12 +234,8 @@ func AgregarValorNovedad(ctx context.Context, novedad models.Novedad) (mensaje s
 
 	for { //itera desde el mes en el que se aplicó la novedad hasta el fin del numero de cuotas
 
-		fmt.Println("Mes: ", mesIterativo)
-		fmt.Println("Ano: ", anoIterativo)
-		fmt.Println("Cuotas: ", auxCuotas)
 		contratoPreliquidacion = nil
 		var query = "ContratoId.Id:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo)
-		fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/contrato_preliquidacion?limit=-1&query=" + query)
 		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
 			LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
 			//Obtener el valor de los honorarios para ese mes
@@ -271,19 +260,18 @@ func AgregarValorNovedad(ctx context.Context, novedad models.Novedad) (mensaje s
 					}
 
 					if _, err := request.PostWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/", detalleNuevo, &detalleNuevo); err == nil {
-						fmt.Println("Concepto Añadido")
 						ids_detalles = append(ids_detalles, detalleNuevo)
 					} else {
-						fmt.Println("Error al agregar concepto", err)
+						logs.Error("Error al agregar concepto", err)
 						return "Error al agregar concepto", ids_detalles, err
 					}
 				} else {
-					fmt.Println("Error al obtener el valor de los honorarios ", err)
+					logs.Error("Error al obtener el valor de los honorarios ", err)
 					return "Error al obtener el valor de los honorarios ", ids_detalles, err
 				}
 			}
 		} else {
-			fmt.Println("Error al intentar obtener el id del contrato_preliquidación ", err)
+			logs.Error("Error al intentar obtener el id del contrato_preliquidación ", err)
 			return "Error al intentar obtener el id del contrato_preliquidación ", ids_detalles, err
 		}
 		auxCuotas = auxCuotas - 1
@@ -312,7 +300,6 @@ func EliminarValorNovedad(ctx context.Context, novedad models.Novedad, fecha_act
 
 	for i := int(fecha_actual.Month()); i <= mesFin; i++ {
 		var query = "ContratoId.Id:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Ano:" + strconv.Itoa(fecha_actual.Year()) + ",PreliquidacionId.Mes:" + strconv.Itoa(i)
-		fmt.Println("consulta contrato preliquidacion ", query)
 		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil { //obtiene el contrato_preliquidacion de ese mes y año
 			LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
 			//Eliminar el Concepto de la liquidacion de ese mes
@@ -320,26 +307,24 @@ func EliminarValorNovedad(ctx context.Context, novedad models.Novedad, fecha_act
 			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &detalle)
 				if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalle[0].Id), &aux); err == nil {
-					fmt.Println("Detalle de novedad eliminado con éxtio")
 					//Actualizar fecha de finalización de la novedad
 					novedad.FechaFin = fecha_actual
 					novedad.Activo = false
 					if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/novedad/"+strconv.Itoa(novedad.Id), novedad, &aux); err == nil {
-						fmt.Println("Novedad Actualizada")
 					} else {
-						fmt.Println("Error al actualizar novedad: ", err)
+						logs.Error("Error al actualizar novedad: ", err)
 						return "Error al actualizar novedad: ", err
 					}
 				} else {
-					fmt.Println("Error al eliminar Detalle de novedad: ", err)
+					logs.Error("Error al eliminar Detalle de novedad: ", err)
 					return "Error al eliminar Detalle de novedad: ", err
 				}
 			} else {
-				fmt.Println("Error al obtener el detalle de la novedad ", err)
+				logs.Error("Error al obtener el detalle de la novedad ", err)
 				return "Error al obtener el detalle de la novedad ", err
 			}
 		} else {
-			fmt.Println("Error al intentar obtener el id del contrato_preliquidación ", err)
+			logs.Error("Error al intentar obtener el id del contrato_preliquidación ", err)
 			return "Error al intentar obtener el id del contrato_preliquidación ", err
 		}
 	}
@@ -372,29 +357,27 @@ func AgregarNovedadGeneral(ctx context.Context, documento string, mes int, ano i
 							//Verificar cuáles conceptos son novedades y agregar su valor al contrato
 
 						} else {
-							fmt.Println("No hay detalles para ese contrato")
 							return "No hay detalles para ese contrato", nil
 						}
 					} else {
-						fmt.Println("Error al obtener detalles del contrato general", err)
+						logs.Error("Error al obtener detalles del contrato general", err)
 						return "Error al obtener detalles del contrato general", err
 					}
 
 				} else {
-					fmt.Println("No hay detalles para ese contrato")
 					return "No hay detalles para ese contrato", nil
 				}
 			} else {
-				fmt.Println("Error al obtener detalles del contrato general", err)
+				logs.Error("Error al obtener detalles del contrato general", err)
 				return "Error al obtener detalles del contrato general", err
 			}
 
 		} else {
-			fmt.Println("Error al agregar el concepto al contrato general, no hay conrato general para este docente")
+			logs.Error("Error al agregar el concepto al contrato general, no hay conrato general para este docente")
 			return "Error al agregar el concepto al contrato general, no hay conrato general para este docente", nil
 		}
 	} else {
-		fmt.Println("Error al obtener el contrato generla", err)
+		logs.Error("Error al obtener el contrato generla", err)
 		return "Error al obtener el contrato general", err
 	}
 

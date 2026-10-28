@@ -39,11 +39,9 @@ func CargarReglasDP(ctx context.Context, MesPreliquidacion int, AnoPreliquidacio
 	}
 
 	if regimen == "N" {
-		fmt.Println("Nuevo")
 		regimen_numero = "1"
 		reglas = reglas + "regimen(1)."
 	} else {
-		fmt.Println("antiguo")
 		regimen_numero = "2"
 		reglas = reglas + "regimen(2)."
 	}
@@ -76,13 +74,10 @@ func CargarReglasDP(ctx context.Context, MesPreliquidacion int, AnoPreliquidacio
 		DiaHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
 
 		afectacion_seg_social := m.ProveAll("afectacion_seguridad(" + novedad + ").")
-		for _, solution := range afectacion_seg_social {
+		for range afectacion_seg_social {
 
-			fmt.Println(solution)
 			dias_novedad := CalcularDiasNovedades(MesPreliquidacion, AnoPreliquidacion, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
 			diasALiquidar = strconv.Itoa(int(30 - dias_novedad))
-			fmt.Println("dias a liquidar")
-			fmt.Println(diasALiquidar)
 			diasNovedadString = strconv.Itoa(int(dias_novedad))
 			_, total_devengado_novedad = CalcularConceptosDP(m, reglas, diasNovedadString, asignacion_basica_string, tipoPreliquidacionString, regimen_numero, puntos, cargo, fechaInicio, fechaActual)
 			ibc = 0
@@ -91,7 +86,6 @@ func CargarReglasDP(ctx context.Context, MesPreliquidacion int, AnoPreliquidacio
 	}
 
 	//-------------------
-	fmt.Println(regimen_numero + " " + " " + puntos + " " + asignacion_basica_string + " " + cargo)
 
 	if MesPreliquidacion == 6 {
 		dias_liq_ps := m.ProveAll("dias_liq_ps(" + dias_laborados_string + "," + regimen_numero + ",V).")
@@ -101,7 +95,6 @@ func CargarReglasDP(ctx context.Context, MesPreliquidacion int, AnoPreliquidacio
 
 		doceava_BSPS := CalcularDoceavaBonServPSDP(ctx, reglas, "3", numero_contrato, vigencia_contrato, periodo, MesPreliquidacion, AnoPreliquidacion)
 		listaDescuentos_semestral, total_devengado_no_novedad_semestral = CalcularConceptosDP(m, reglas, dias_liquidar_prima_semestral, asignacion_basica_string, "3", regimen_numero, puntos, cargo, fechaInicio, fechaActual)
-		fmt.Println(listaDescuentos_semestral)
 		total_calculos = append(total_calculos, listaDescuentos_semestral...)
 		total_calculos = append(total_calculos, doceava_BSPS...)
 		ibc = 0

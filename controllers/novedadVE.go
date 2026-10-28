@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/astaxie/beego/logs"
 	"strconv"
 	"time"
 
@@ -59,10 +59,8 @@ func (c *NovedadVEController) VerificarDescuentos() {
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &novedad); err == nil {
 
 		if novedad.FechaInicio == time.Date(0001, 01, 01, 00, 00, 00, 0000, time.UTC) {
-			fmt.Println("Fecha vacía")
 			fecha_actual = time.Now()
 		} else {
-			fmt.Println("Fecha provista")
 			fecha_actual = novedad.FechaInicio
 		}
 
@@ -82,7 +80,6 @@ func (c *NovedadVEController) VerificarDescuentos() {
 					novedad.ContratoId = &contrato[0]
 
 					if auxConcepto[0].NaturalezaConceptoNominaId == 424 {
-						fmt.Println("Descuento: ")
 
 						if int(fecha_actual.Month())+novedad.Cuotas-1 > 12 {
 							mesFin = int(fecha_actual.Month()) + novedad.Cuotas - 13
@@ -101,14 +98,12 @@ func (c *NovedadVEController) VerificarDescuentos() {
 						//Verificar que las cuotas no se pasen del tiempo restante del contrato
 						/*if contrato[0].FechaFin.Year() == novedad.FechaInicio.Year() {
 							if int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1 < novedad.Cuotas {
-								fmt.Println("Las cuotas superan los meses", int(contrato[0].FechaFin.Month()), int(fecha_actual.Month()), int(contrato[0].FechaFin.Month())-int(fecha_actual.Month())+1, novedad.Cuotas, 1)
 								res.Mensaje = "Las cuotas superan los meses"
 								res.Estado = CUOTAS_SUPERADAS
 								c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "successful", "Data": res}
 							}
 						} else {
 							if int(contrato[0].FechaFin.Month())+13-int(fecha_actual.Month()) < novedad.Cuotas {
-								fmt.Println("Las cuotas superan los meses, ", int(contrato[0].FechaFin.Month())+13-int(fecha_actual.Month()), novedad.Cuotas, 2)
 								res.Mensaje = "Las cuotas superan los meses"
 								res.Estado = CUOTAS_SUPERADAS
 								c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "successful", "Data": res}
@@ -121,8 +116,6 @@ func (c *NovedadVEController) VerificarDescuentos() {
 							auxCuotas := novedad.Cuotas
 							for {
 								//Obtener el valor de los honorarios de ese mes
-								fmt.Println("Mes: ", mesIterativo)
-								fmt.Println("Año: ", anoIterativo)
 								var query = "ContratoId:" + strconv.Itoa(novedad.ContratoId.Id) + ",PreliquidacionId.Mes:" + strconv.Itoa(mesIterativo) + ",PreliquidacionId.Ano:" + strconv.Itoa(anoIterativo)
 								if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 									LimpiezaRespuestaRefactor(aux, &contratoPreliquidacion)
@@ -163,17 +156,17 @@ func (c *NovedadVEController) VerificarDescuentos() {
 												}
 											}
 										} else {
-											fmt.Println("Error al obtener el valor de los honorarios: ", err)
+											logs.Error("Error al obtener el valor de los honorarios: ", err)
 											c.Data["mesaage"] = "No se encontraron detalles para el contrato seleccionado"
 											c.Abort("400")
 										}
 									} else {
-										fmt.Println("Error al obtener el valor de los honorarios: ", err)
+										logs.Error("Error al obtener el valor de los honorarios: ", err)
 										c.Data["mesaage"] = "Error al obtener el valor de los honorarios: " + err.Error()
 										c.Abort("400")
 									}
 								} else {
-									fmt.Println("Error al obtener el contrato peliquidacion: ", err)
+									logs.Error("Error al obtener el contrato peliquidacion: ", err)
 									c.Data["mesaage"] = "El contrato no está vigente para mes solicitado " + err.Error()
 									c.Abort("400")
 								}
@@ -193,27 +186,26 @@ func (c *NovedadVEController) VerificarDescuentos() {
 						}
 
 					} else {
-						fmt.Println("Error al obtener el concepto: ", err)
+						logs.Error("Error al obtener el concepto: ", err)
 						c.Data["mesaage"] = "Error, el concepto no existe: " + err.Error()
 						c.Abort("400")
 					}
 				} else {
-					fmt.Println("Error al obtener contrato: ", err)
+					logs.Error("Error al obtener contrato: ", err)
 					c.Data["mesaage"] = "Error, el contrato no existe: " + err.Error()
 					c.Abort("400")
 				}
 			} else {
-				fmt.Println("Error al obtener el concepto de nómina: ", err)
+				logs.Error("Error al obtener el concepto de nómina: ", err)
 				c.Data["mesaage"] = "Error, no se encontró el concepto de nómina " + err.Error()
 				c.Abort("400")
 			}
 		} else {
-			fmt.Println("Número de cuotas inválido porque es menor que 0 ")
 			c.Data["mesaage"] = "Error, Por favor revise el número de cuotas, no puede ser menor o igual que 0"
 			c.Abort("400")
 		}
 	} else {
-		fmt.Println("Error al Unmarshal de novedad: ", err)
+		logs.Error("Error al Unmarshal de novedad: ", err)
 		c.Data["mesaage"] = "Error, el JSON enviado contiene un parámetro incorrecto: " + err.Error()
 		c.Abort("400")
 	}
@@ -246,10 +238,8 @@ func (c *NovedadVEController) AgregarNovedad() {
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &novedad); err == nil {
 		if novedad.FechaInicio == time.Date(0001, 01, 01, 00, 00, 00, 0000, time.UTC) {
-			fmt.Println("Fecha vacía")
 			fecha_actual = time.Now()
 		} else {
-			fmt.Println("Fecha provista")
 			fecha_actual = novedad.FechaInicio
 		}
 
@@ -285,7 +275,6 @@ func (c *NovedadVEController) AgregarNovedad() {
 									LimpiezaRespuestaRefactor(aux, &auxNovedad)
 									novedad = auxNovedad[0]
 									//Agregar el Valor al detalle
-									fmt.Println("Novedad a enviar: ", novedad)
 									mensaje, ids_detalles, err := AgregarValorNovedad(ctx, novedad)
 									if err == nil {
 										c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": novedad}
@@ -294,7 +283,6 @@ func (c *NovedadVEController) AgregarNovedad() {
 										if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/novedad/"+strconv.Itoa(novedad.Id), &aux); err == nil {
 											for i := 0; i < len(ids_detalles); i++ {
 												if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(ids_detalles[i].Id), &aux); err == nil {
-													fmt.Println("Concepto Eliminado")
 												} else {
 													c.Data["mesaage"] = "Error al eliminar detalle preliquidacion de la novedad" + err.Error()
 													c.Abort("404")
@@ -310,42 +298,40 @@ func (c *NovedadVEController) AgregarNovedad() {
 										c.Abort("404")
 									}
 								} else {
-									fmt.Println("No se pudo obtener la novedad", err)
+									logs.Error("No se pudo obtener la novedad", err)
 									c.Data["mesaage"] = "No se pudo obtener la novedad " + err.Error()
 									c.Abort("400")
 								}
 							} else {
-								fmt.Println("No se pudo guardar la novedad", err)
+								logs.Error("No se pudo guardar la novedad", err)
 								c.Data["mesaage"] = "Error, no se pudo guardar la novedad: " + err.Error()
 								c.Abort("400")
 							}
 						} else {
-							fmt.Println("No se pudo guardar la novedad", err)
+							logs.Error("No se pudo guardar la novedad", err)
 							c.Data["mesaage"] = "Error, no se pudo guardar la novedad: " + err.Error()
 							c.Abort("400")
 						}
 					} else {
-						fmt.Println("Se intentó cargar una novedade de Seguridad Social")
 						c.Data["mesaage"] = "Novedades de Seguridad Social no implementadas "
 						c.Abort("400")
 					}
 				} else {
-					fmt.Println("Error al obtener contrato: ", err)
+					logs.Error("Error al obtener contrato: ", err)
 					c.Data["mesaage"] = "Error, el contrato no existe: " + err.Error()
 					c.Abort("400")
 				}
 			} else {
-				fmt.Println("Error al obtener el concepto de nómina: ", err)
+				logs.Error("Error al obtener el concepto de nómina: ", err)
 				c.Data["mesaage"] = "Error al obtener el concepto de nómina: " + err.Error()
 				c.Abort("400")
 			}
 		} else {
-			fmt.Println("Número de cuotas inválido porque es menor que 0 ")
 			c.Data["mesaage"] = "Error, Por favor revise el número de cuotas, no puede ser menor o igual que 0"
 			c.Abort("400")
 		}
 	} else {
-		fmt.Println("Error al Unmarshal de novedad: ", err)
+		logs.Error("Error al Unmarshal de novedad: ", err)
 		c.Data["mesaage"] = "Error, el JSON enviado contiene un parámetro incorrecto: " + err.Error()
 		c.Abort("400")
 	}
@@ -366,9 +352,7 @@ func (c *NovedadVEController) EliminarNovedad() {
 	var aux map[string]interface{}
 	var novedad []models.Novedad
 	//Verificar cómo se van a enviar los datos del contrato al trabajar el front
-	fmt.Println("novedad_Id: ", id)
 	//Buscar la novedad
-	fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/novedad?limit=-1&query=Id:" + id)
 	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/novedad?limit=-1&query=Id:"+id, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &novedad)
 		if novedad[0].Id != 0 {
@@ -380,12 +364,11 @@ func (c *NovedadVEController) EliminarNovedad() {
 				c.Abort("404")
 			}
 		} else {
-			fmt.Println("no se pudo eliminar la novedad: ", novedad[0])
 			c.Data["mesaage"] = "Error, No se encontró la novedad: " + err.Error()
 			c.Abort("404")
 		}
 	} else {
-		fmt.Println("Error al unmarshal de la novedad ", err)
+		logs.Error("Error al unmarshal de la novedad ", err)
 		c.Data["mesaage"] = "Error al unmarshal de la novedad: " + err.Error()
 		c.Abort("404")
 	}
@@ -443,33 +426,32 @@ func (c *NovedadVEController) GenerarAdicion() {
 						c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contratoNuevo}
 					} else {
 						if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato/"+strconv.Itoa(contratoNuevo.Id), &aux); err == nil {
-							fmt.Println("Contrato de adición eliminado")
 						} else {
-							fmt.Println("Error al eliminar contrato nuevo", err)
+							logs.Error("Error al eliminar contrato nuevo", err)
 							c.Data["mesaage"] = "Error al eliminar adición " + err.Error()
 							c.Abort("404")
 						}
-						fmt.Println("Error al agregar adición: ", err)
+						logs.Error("Error al agregar adición: ", err)
 						c.Data["mesaage"] = mensaje + err.Error()
 						c.Abort("404")
 					}
 				} else {
-					fmt.Println("No se encontró el contrato:", err)
+					logs.Error("No se encontró el contrato:", err)
 					c.Data["mesaage"] = "Error, no se encontró el contrato: " + err.Error()
 					c.Abort("404")
 				}
 			} else {
-				fmt.Println("No se encontró el contrato:", err)
+				logs.Error("No se encontró el contrato:", err)
 				c.Data["mesaage"] = "Error, no se encontró el contrato: " + err.Error()
 				c.Abort("404")
 			}
 		} else {
-			fmt.Println("Error al consultar contratos: ", err)
+			logs.Error("Error al consultar contratos: ", err)
 			c.Data["mesaage"] = "Error al consultar contratos: " + err.Error()
 			c.Abort("404")
 		}
 	} else {
-		fmt.Println("Error al unmarshal de la novedad: ", err)
+		logs.Error("Error al unmarshal de la novedad: ", err)
 		c.Data["mesaage"] = "Error, no existe la novedad: " + err.Error()
 		c.Abort("404")
 	}
@@ -489,7 +471,6 @@ func (c *NovedadVEController) AplicarAnulacion() {
 	var mensaje string
 	var codigo string
 	var contratoReturn *models.Contrato
-	fmt.Println(anulacion)
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &anulacion); err == nil {
 
 		//for i := 0; i < len(anulacionRp.ContratosAnulados); i++ {
@@ -498,7 +479,6 @@ func (c *NovedadVEController) AplicarAnulacion() {
 		//anulacion.Documento = anulacionRp.Documento
 		//anulacion.FechaAnulacion = anulacionRp.FechaAnulacion
 		//anulacion.Desagregado = anulacionRp.ContratosAnulados[i].Desagregado
-		fmt.Println("anulacion ", anulacion)
 		if anulacion.NivelAcademico == "PREGRADO" {
 			mensaje, codigo, contratoReturn, err, _, _ = Anulacion(c.Ctx.Request.Context(), anulacion, anulacion.ValorContrato, anulacion.Semanas, 1, false)
 		} else if anulacion.NivelAcademico == "POSGRADO" {
@@ -514,7 +494,7 @@ func (c *NovedadVEController) AplicarAnulacion() {
 			c.Abort(codigo)
 		}
 	} else {
-		fmt.Println("Error al unmarshal del body: ", err)
+		logs.Error("Error al unmarshal del body: ", err)
 		c.Data["mesaage"] = "Error al unmarshal del body:" + err.Error()
 		c.Abort("400")
 
@@ -584,27 +564,25 @@ func (c *NovedadVEController) AplicarAnulacionOld() {
 									}
 								}
 								if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion/"+strconv.Itoa(detalles[j].Id), &aux); err == nil {
-									fmt.Println("Detalle eliminado con éxito")
 								} else {
-									fmt.Println("Error al Eliminar Detalles:", err)
+									logs.Error("Error al Eliminar Detalles:", err)
 									c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
 									c.Abort("400")
 								}
 							}
 							if _, err := request.DeleteWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), &aux); err == nil {
-								fmt.Println("contrato preliquidacion eliminado con éxito")
 							} else {
-								fmt.Println("Error al eliminar contrato preliquidacion: ", err)
+								logs.Error("Error al eliminar contrato preliquidacion: ", err)
 								c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
 								c.Abort("400")
 							}
 						} else {
-							fmt.Println("Error al obtener detalles")
+							logs.Error("Error al obtener detalles")
 							c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
 							c.Abort("400")
 						}
 					} else {
-						fmt.Println("Error al obtener contrato_preliquidacion")
+						logs.Error("Error al obtener contrato_preliquidacion")
 						c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
 						c.Abort("400")
 					}
@@ -620,7 +598,6 @@ func (c *NovedadVEController) AplicarAnulacionOld() {
 						}
 					}
 				}
-				fmt.Println("Valor día: ", valorDia)
 				contrato[0].FechaFin = anulacion.FechaAnulacion
 				//Actualizar fecha de finalización del contrato
 				contratoOriginal.Activo = false
@@ -633,7 +610,6 @@ func (c *NovedadVEController) AplicarAnulacionOld() {
 						contrato[0].FechaInicio = time.Date(anulacion.FechaAnulacion.Year(), anulacion.FechaAnulacion.Month(), 1, 12, 0, 0, 0, time.UTC)
 						contrato[0].ValorContrato = valorDia * float64(semanasContrato)
 					} else {
-						fmt.Println("Anulación el mismo mes de inicio")
 						diaAux := contrato[0].FechaInicio.AddDate(0, 0, 1)
 						semanasContrato = int(calcularSemanasContratoDVE(diaAux, contrato[0].FechaFin))
 						semanasTotales = semanasContrato
@@ -651,11 +627,10 @@ func (c *NovedadVEController) AplicarAnulacionOld() {
 					if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 						LimpiezaRespuestaRefactor(aux, &DetallesAux)
 						for i := 0; i < len(DetallesAux); i++ {
-							fmt.Println(DetallesAux[i].ValorCalculado)
 							sumaContratosTemp += DetallesAux[i].ValorCalculado
 						}
 					} else {
-						fmt.Println("Error al obtener detalles preliquidacion ", err)
+						logs.Error("Error al obtener detalles preliquidacion ", err)
 						c.Data["mesaage"] = "Error al obtener detalles preliquidacion " + err.Error()
 						c.Abort("400")
 					}
@@ -672,8 +647,6 @@ func (c *NovedadVEController) AplicarAnulacionOld() {
 								mensaje, err = liquidarHCHOld(c.Ctx.Request.Context(), contrato[0], false, 0, contrato[0].Vigencia)
 								anularEnGeneralesOld(c.Ctx.Request.Context(), contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
 							} else if contrato[0].TipoNominaId == 410 {
-								fmt.Println("SEMANAS TOTALES ", semanasTotales)
-								fmt.Println("SEMANAS CONTRATO ", semanasContrato)
 								mensaje, err = liquidarHCSOld(c.Ctx.Request.Context(), contrato[0], false, 0, contrato[0].Vigencia, semanasTotales, valorDia, true)
 								anularEnGeneralesOld(c.Ctx.Request.Context(), contratoOriginal, anulacion.FechaAnulacion, anulacion.Vigencia)
 							}
@@ -682,34 +655,34 @@ func (c *NovedadVEController) AplicarAnulacionOld() {
 								c.Ctx.Output.SetStatus(201)
 								c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": contrato[0]}
 							} else {
-								fmt.Println("Error al cancelar contrato: ", err)
+								logs.Error("Error al cancelar contrato: ", err)
 								c.Data["mesaage"] = mensaje + err.Error()
 								c.Abort("400")
 							}
 						}
 					} else {
-						fmt.Println("Error al crear el contrato nuevo ", err)
+						logs.Error("Error al crear el contrato nuevo ", err)
 						c.Data["mesaage"] = "Error al crear el contrato nuevo: " + err.Error()
 						c.Abort("400")
 					}
 
 				} else {
-					fmt.Println("Error al ctualizar el contrato: ", err)
+					logs.Error("Error al ctualizar el contrato: ", err)
 					c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
 					c.Abort("400")
 				}
 			} else {
-				fmt.Println("Error al obtener el contrato: ", err)
+				logs.Error("Error al obtener el contrato: ", err)
 				c.Data["mesaage"] = "Error al obtener el contrato:" + err.Error()
 				c.Abort("400")
 			}
 		} else {
-			fmt.Println("Error al obtener el contrato: ", err)
+			logs.Error("Error al obtener el contrato: ", err)
 			c.Data["mesaage"] = "Error al Eliminar Detalles: " + err.Error()
 			c.Abort("400")
 		}
 	} else {
-		fmt.Println("Error al unmarshal del body: ", err)
+		logs.Error("Error al unmarshal del body: ", err)
 		c.Data["mesaage"] = "Error al unmarshal del body:" + err.Error()
 		c.Abort("400")
 
@@ -735,7 +708,6 @@ func (c *NovedadVEController) AplicarReduccion() {
 	var comp bool
 
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &reduccion); err == nil {
-		fmt.Println(reduccion)
 
 		if reduccion.NivelAcademico == "PREGRADO" {
 			for i := 0; i < len(reduccion.ContratosOriginales); i++ {
@@ -744,7 +716,6 @@ func (c *NovedadVEController) AplicarReduccion() {
 				anulacion.Documento = reduccion.Documento
 				fecha_anulacion = reduccion.FechaReduccion.AddDate(0, 0, -1)
 				anulacion.FechaAnulacion = fecha_anulacion
-				fmt.Println("fecha anulac ", anulacion.FechaAnulacion)
 				if reduccion.ContratosOriginales[i].DesagregadoOriginal != nil {
 					anulacion.Desagregado = reduccion.ContratosOriginales[i].DesagregadoOriginal
 				} else {
@@ -758,7 +729,6 @@ func (c *NovedadVEController) AplicarReduccion() {
 				}
 				contratoAnuladoAux = contratoAnulado
 				if comp {
-					fmt.Println("ANULA GENERAL AFUERA")
 					anularEnGenerales(c.Ctx.Request.Context(), *contratoAnuladoAux, reduccion.FechaReduccion.AddDate(0, -1, 0), reduccion.Vigencia, true)
 				}
 				if err != nil {

@@ -3,6 +3,7 @@ package golog
 import (
 	"context"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"math"
 	"strconv"
 	"time"
@@ -24,7 +25,6 @@ func CalcularDiasNovedades(MesPreliq, AnoPreliq int, AnoDesde float64, MesDesde 
 
 	esActiva := validarNovedades_segSocial(MesPreliq, AnoPreliq, FechaDesde, FechaHasta)
 	if esActiva == 1 {
-		fmt.Println("novedad activa")
 		//Si la fechas de las novedades son del mismo año y del mismo mes se debe calcular los dias entre ambas fechas
 		if FechaHasta.Month() == FechaDesde.Month() && FechaHasta.Year() == FechaDesde.Year() {
 			periodo_liquidacion = CalcularDias(FechaDesde, FechaHasta) + 1
@@ -35,7 +35,6 @@ func CalcularDiasNovedades(MesPreliq, AnoPreliq int, AnoDesde float64, MesDesde 
 			*/
 			if int(FechaDesde.Month()) == MesPreliq && int(FechaDesde.Year()) == AnoPreliq {
 				FechaControl = time.Date(AnoPreliq, time.Month(MesPreliq), 30, 0, 0, 0, 0, time.UTC)
-				fmt.Println("fecha cont", FechaControl, FechaDesde)
 				periodo_liquidacion = CalcularDias(FechaDesde, FechaControl) + 1
 			} else if int(FechaHasta.Month()) == MesPreliq && int(FechaHasta.Year()) == AnoPreliq {
 				/*
@@ -54,7 +53,6 @@ func CalcularDiasNovedades(MesPreliq, AnoPreliq int, AnoDesde float64, MesDesde 
 
 		}
 	} else {
-		fmt.Println("soy inactiva")
 
 		periodo_liquidacion = 0
 	}
@@ -150,7 +148,7 @@ func ConsultarValoresBonServPS(ctx context.Context, mesPreliq, anoPreliq int, nu
 				valor = valor + solution.ValorCalculado
 			}
 		} else {
-			fmt.Println(err)
+			logs.Error(err)
 		}
 
 	}
@@ -163,7 +161,7 @@ func ConsultarValoresBonServPS(ctx context.Context, mesPreliq, anoPreliq int, nu
 				valor = valor + solution.ValorCalculado
 			}
 		} else {
-			fmt.Println(err)
+			logs.Error(err)
 		}
 
 	}
@@ -215,7 +213,6 @@ func ConsultarValoresPriServDic(ctx context.Context, numero_contrato string, vig
 }
 
 func CalcularReteFuentePlanta(tipoPreliquidacionString, reglas, periodo string, listaDescuentos []models.ConceptosResumen) (rest []models.ConceptosResumen) {
-	fmt.Println("retefuente", periodo)
 	var listaRetefuente []models.ConceptosResumen
 
 	var ingresos int
@@ -226,7 +223,6 @@ func CalcularReteFuentePlanta(tipoPreliquidacionString, reglas, periodo string, 
 	var Valor_alivio_vivienda float64
 	var Valor_alivio_salud_prepagada float64
 	var definitivo_deduccion int
-	fmt.Println(listaDescuentos)
 	temp_reglas := reglas
 	temp_reglas = temp_reglas + "beneficiario(no)."
 	temp_reglas = temp_reglas + "intereses_vivienda(0)."
@@ -288,14 +284,7 @@ func CalcularReteFuentePlanta(tipoPreliquidacionString, reglas, periodo string, 
 	}
 
 	/*
-		fmt.Println("ingresos")
-		fmt.Println(ingresos)
-		fmt.Println(deduccion_salud)
-		fmt.Println(deduccion_pen_vol)
-		fmt.Println(Valor_alivio_beneficiario)
-		fmt.Println(Valor_alivio_vivienda)
-		fmt.Println(Valor_alivio_salud_prepagada)
-	*/
+	 */
 	temp_reglas = temp_reglas + "alivio_ben(" + strconv.Itoa(int(Valor_alivio_beneficiario)) + ")."
 	temp_reglas = temp_reglas + "alivio_vin(" + strconv.Itoa(int(Valor_alivio_vivienda)) + ")."
 	temp_reglas = temp_reglas + "alivio_salud(" + strconv.Itoa(int(Valor_alivio_salud_prepagada)) + ")."
@@ -304,7 +293,6 @@ func CalcularReteFuentePlanta(tipoPreliquidacionString, reglas, periodo string, 
 
 	deduccion_def := x.ProveAll("definitivo_deduccion(DD).")
 	for _, solution := range deduccion_def {
-		fmt.Println("deduccion")
 		definitivo_deduccion, _ = strconv.Atoi(fmt.Sprintf("%s", solution.ByName_("DD")))
 	}
 
@@ -314,7 +302,6 @@ func CalcularReteFuentePlanta(tipoPreliquidacionString, reglas, periodo string, 
 
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
 	for _, solution := range valor_retencion {
-		fmt.Println("asdf")
 		val_reten := fmt.Sprintf("%s", solution.ByName_("VR"))
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 			Valor: val_reten,
@@ -366,8 +353,6 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	consultar_conceptos_ingresos_retencion := m.ProveAll("aplica_ingreso_retencion(X).")
 	for _, solution := range consultar_conceptos_ingresos_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
-		fmt.Println("ingresos", codigo_concepto)
-		fmt.Println("lista_descuentos", listaDescuentos)
 		ingresos = ingresos + BuscarValorConcepto(listaDescuentos, codigo_concepto)
 
 		if codigo_concepto == "10" {
@@ -378,7 +363,6 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	}
 
 	consultar_conceptos_deduccion_retencion := m.ProveAll("aplica_deduccion_retencion(X).")
-	fmt.Println(consultar_conceptos_deduccion_retencion)
 	for _, solution := range consultar_conceptos_deduccion_retencion {
 		codigo_concepto := fmt.Sprintf("%s", solution.ByName_("X"))
 		deduccion_salud = deduccion_salud + BuscarValorConcepto(listaDescuentos, codigo_concepto)
@@ -391,21 +375,16 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 	} else {
 		temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos) + ")."
 	}
-	fmt.Println("INGRESOS", ingresos)
-	fmt.Println("DEDUCCIONES", deduccion_salud)
-	fmt.Println("DEPENDIENTES", dependientes)
 	if dependientes {
 		deduccion_salud = deduccion_salud + (ingresos * (10 / 100))
 	}
 	//temp_reglas = temp_reglas + "ingresos(" + strconv.Itoa(ingresos-deduccion_salud) + ")."
-	fmt.Println("DEDUCCIONESSSS", deduccion_salud)
 
 	temp_reglas = temp_reglas + "deducciones(" + strconv.Itoa(deduccion_salud) + ")."
 
 	o := NewMachine().Consult(temp_reglas)
 
 	valor_retencion := o.ProveAll("valor_retencion(VR).")
-	fmt.Println("valorrete", valor_retencion)
 	for _, solution := range valor_retencion {
 		val_reten := fmt.Sprintf("%s", solution.ByName_("VR"))
 		valor_reten, _ := strconv.Atoi(val_reten)
@@ -422,8 +401,6 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		temp_conceptos := models.ConceptosResumen{Nombre: "reteFuente",
 			Valor: val_reten,
 		}
-		fmt.Println("val_reten", val_reten)
-		fmt.Println("temp_conceptos", temp_conceptos)
 		codigo := o.ProveAll("codigo_concepto(" + temp_conceptos.Nombre + ",C,N,D).")
 		for _, cod := range codigo {
 			temp_conceptos.Id, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("C")))
@@ -432,7 +409,6 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 			temp_conceptos.TipoPreliquidacion = tipoPreliquidacionString
 			temp_conceptos.NaturalezaConcepto, _ = strconv.Atoi(fmt.Sprintf("%s", cod.ByName_("N")))
 		}
-		fmt.Println("dias a liq rete", dias_a_liq)
 		listaRetefuente = append(listaRetefuente, temp_conceptos)
 
 	}
@@ -462,7 +438,6 @@ func CalcularReteFuenteSal(tipoPreliquidacionString, reglas string, listaDescuen
 		retenciones = append(retenciones, auxRetenciones)
 
 	}
-	fmt.Println("RETE", retenciones)
 	return retenciones
 }
 
@@ -484,8 +459,6 @@ func CalcularPeriodoLiquidacion(preliquidacion models.Preliquidacion, objeto_dat
 	FechaFin, _ = time.Parse(layout, datos_acta.FechaFinTemp)
 	a, m, d := diff(FechaInicio, FechaFin)
 
-	fmt.Println("Fecha inicio", FechaInicio)
-	fmt.Println("Fecha fin", FechaFin)
 	FechaInicioContrato = time.Date(FechaInicio.Year(), FechaInicio.Month(), FechaInicio.Day(), 0, 0, 0, 0, time.UTC)
 	FechaFinContrato = time.Date(FechaFin.Year(), FechaFin.Month(), FechaFin.Day(), 0, 0, 0, 0, time.UTC)
 

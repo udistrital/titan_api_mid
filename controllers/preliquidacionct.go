@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"strconv"
 	"time"
 
@@ -48,15 +49,12 @@ func liquidarCPS(ctx context.Context, contrato models.Contrato) (mensaje string,
 
 		diasContrato, _ = CalcularDias(contrato.FechaInicio, contrato.FechaFin)
 		diasContrato = diasContrato + 1 //dia inclusive
-		fmt.Println("Días contrato: ", diasContrato)
 
 		predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", diasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
 		reglasbase := cargarReglasBase(ctx, "CT") + reglasAlivios + FormatoReglas(predicados)
 		emergencia = 0
 		for {
-			fmt.Println("mes:", mesIterativo)
-			fmt.Println("ano:", anoIterativo)
 			reglasNuevas = ""
 			query := "Ano:" + strconv.Itoa(anoIterativo) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:414"
 			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
@@ -92,13 +90,13 @@ func liquidarCPS(ctx context.Context, contrato models.Contrato) (mensaje string,
 					emergencia = emergencia + 1
 				}
 			} else {
-				fmt.Println("Error al consultar preliquidaciones")
+				logs.Error("Error al consultar preliquidaciones")
 				return "Error al consultar preliquidaciones", err
 			}
 			preliquidacion[0].Id = 0 //Para evitar errores al obtener la preliquidación del siguiente mes
 		}
 	} else {
-		fmt.Println("ERROR")
+		logs.Error("Error al consultar información en Ágora:", err)
 		return "Error al consultar información en Ágora: ", err
 	}
 	return "", nil

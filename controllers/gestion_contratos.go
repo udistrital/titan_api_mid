@@ -1,9 +1,8 @@
 package controllers
 
 import (
-	"fmt"
-
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"github.com/udistrital/titan_api_mid/models"
 	"github.com/udistrital/utils_oas/request"
 )
@@ -73,7 +72,7 @@ func (c *ContratosController) ObtenerContratosDVE() {
 				}
 
 			} else {
-				fmt.Println("Error al obtener los contratos del docente ", err)
+				logs.Error("Error al obtener los contratos del docente ", err)
 				c.Data["mesaage"] = "Error al generar orden de pago " + err.Error()
 				c.Abort("404")
 			}
@@ -82,7 +81,7 @@ func (c *ContratosController) ObtenerContratosDVE() {
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contratoDVE}
 
 	} else {
-		fmt.Println("Error al obtener contrato preliquidacion: ", err)
+		logs.Error("Error al obtener contrato preliquidacion: ", err)
 		c.Data["mesaage"] = "Error al obtener contratos" + err.Error()
 		c.Abort("404")
 	}

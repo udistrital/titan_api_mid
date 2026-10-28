@@ -61,8 +61,6 @@ func CargarReglasFP(ctx context.Context, dias_a_liq string, MesPreliquidacion in
 
 	for _, solution := range novedades_seg_social {
 
-		fmt.Println("aqui nov")
-
 		novedad := fmt.Sprintf("%s", solution.ByName_("N"))
 		AnoDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("A")), 64)
 		MesDesde, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("M")), 64)
@@ -72,9 +70,8 @@ func CargarReglasFP(ctx context.Context, dias_a_liq string, MesPreliquidacion in
 		DiaHasta, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("DD")), 64)
 
 		afectacion_seg_social := m.ProveAll("afectacion_seguridad(" + novedad + ").")
-		for _, solution := range afectacion_seg_social {
+		for range afectacion_seg_social {
 
-			fmt.Println(solution)
 			dias_novedad := CalcularDiasNovedades(MesPreliquidacion, AnoPreliquidacion, AnoDesde, MesDesde, DiaDesde, AnoHasta, MesHasta, DiaHasta)
 			diasALiquidar = strconv.Itoa(int(30 - dias_novedad))
 			diasNovedadString = strconv.Itoa(int(dias_novedad))
@@ -89,7 +86,6 @@ func CargarReglasFP(ctx context.Context, dias_a_liq string, MesPreliquidacion in
 	// -- PRIMA SEMESTRAL --
 
 	if MesPreliquidacion == 6 {
-		fmt.Println("aqui semestral")
 		dias_liq_ps := m.ProveAll("dias_liq_ps(" + dias_laborados_string + ",V).")
 		for _, solution := range dias_liq_ps {
 			dias_liquidar_prima_semestral = fmt.Sprintf("%s", solution.ByName_("V"))
@@ -105,7 +101,6 @@ func CargarReglasFP(ctx context.Context, dias_a_liq string, MesPreliquidacion in
 
 	//-----NOMINA DE DICIEMBRE ------
 	if MesPreliquidacion == 12 {
-		fmt.Println("aqui dic")
 		dias_liq_dic := m.ProveAll("dias_liq_dic(FP,TLIQ,D).")
 		diasALiquidar = "9"
 		for _, solution := range dias_liq_dic {
@@ -184,9 +179,7 @@ func CalcularConceptos(m Machine, reglas, diasALiquidar, asignacion_basica_strin
 	valor_descuentos := m.ProveAll("desc_obli_planta(CON, " + total_devengado_string + ", " + periodo + "," + tipoPreliquidacionString + ", V).")
 	for _, solution := range valor_descuentos {
 		Valor, _ := strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
-		fmt.Println("valor", Valor)
 		Nom_Concepto := fmt.Sprintf("%s", solution.ByName_("CON"))
-		fmt.Println(Nom_Concepto)
 		temp_conceptos := models.ConceptosResumen{Nombre: Nom_Concepto,
 			Valor: fmt.Sprintf("%.0f", Valor),
 		}
@@ -255,7 +248,6 @@ func GuardarConceptos(reglas string, listaDescuentos []models.ConceptosResumen) 
 
 // Función que gestiona las novedades de la persona
 func ManejarNovedades(reglas string, idProveedor int, tipoPreliquidacion, periodo string) (rest []models.ConceptosResumen) {
-	fmt.Println("novedades")
 	var listaNovedades []models.ConceptosResumen
 
 	f := NewMachine().Consult(reglas)

@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"context"
-	"fmt"
+	"github.com/astaxie/beego/logs"
 	"strconv"
 
 	"github.com/astaxie/beego"
@@ -22,13 +22,12 @@ func cargarReglasBase(ctx context.Context, dominio string) (reglas string) {
 			reglasbase = reglasbase + "codigo_concepto(" + datos.NombreConcepto + "," + strconv.Itoa(datos.Id) + "," + strconv.Itoa(datos.NaturalezaConceptoNominaId) + ")." + "\n"
 		}
 	} else {
-		fmt.Println("error al cargar conceptos como reglas", err)
+		logs.Error("error al cargar conceptos como reglas", err)
 	}
-	fmt.Println(beego.AppConfig.String("UrlRuler") + "/predicado?limit=-1&query=Dominio.Nombre:" + dominio)
 	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlRuler")+"/predicado?limit=-1&query=Dominio.Nombre:"+dominio, &v); err == nil {
 		reglasbase = reglasbase + FormatoReglas(v) //funcion general para dar formato a reglas cargadas desde el ruler
 	} else {
-		fmt.Println("error al cargar reglas base: ", err)
+		logs.Error("error al cargar reglas base: ", err)
 	}
 
 	//-----------------------------
@@ -43,7 +42,7 @@ func cargarReglasSS(ctx context.Context) (reglas string) {
 	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlRuler")+"/predicado?limit=-1&query=Dominio.Nombre:SeguridadSocial", &v); err == nil {
 		reglasSS = FormatoReglas(v) //funcion general para dar formato a reglas cargadas desde el ruler
 	} else {
-		fmt.Println("error al cargar reglas base: ", err)
+		logs.Error("error al cargar reglas base: ", err)
 	}
 
 	//-----------------------------

@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"github.com/astaxie/beego/logs"
 	"strconv"
 
 	"github.com/astaxie/beego"
@@ -34,28 +34,7 @@ func (c *PreliquidacionController) Preliquidar() {
 	//var aux map[string]interface{}
 	//var mensaje string
 	//var codigo string
-	fmt.Println("Hola Mundo producción")
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &contrato); err == nil {
-		fmt.Println(contrato)
-		fmt.Println("Contrato Recibido: ")
-		fmt.Println("Numero de contrato: ", contrato.NumeroContrato)
-		fmt.Println("Documento: ", contrato.Documento)
-		fmt.Println("Dependencia : ", contrato.DependenciaId)
-		fmt.Println("Fecha Inicio: ", contrato.FechaInicio)
-		fmt.Println("Fecha Fin: ", contrato.FechaFin)
-		fmt.Println("Nombre completo: ", contrato.NombreCompleto)
-		fmt.Println("Valor Contrato: ", contrato.ValorContrato)
-		fmt.Println("Vacaciones: ", contrato.Vacaciones)
-		fmt.Println("Unico: ", contrato.Unico)
-		fmt.Println("Cdp: ", contrato.Cdp)
-		fmt.Println("VigenciaCdp: ", contrato.VigenciaCdp)
-		fmt.Println("Rp: ", contrato.Rp)
-		fmt.Println("Vigencia: ", contrato.Vigencia)
-		fmt.Println("Tipo Nomina: ", contrato.TipoNominaId)
-		fmt.Println("Activo: ", contrato.Activo)
-		fmt.Println("Resolucion Id ", contrato.ResolucionId)
-		fmt.Println("Resolucion ", contrato.Resolucion)
-		fmt.Println("Numero Semanas: ", contrato.NumeroSemanas)
 
 		mensaje, codigo, contratoReturn, err := Preliquidacion(c.Ctx.Request.Context(), contrato)
 
@@ -67,7 +46,7 @@ func (c *PreliquidacionController) Preliquidar() {
 			c.Abort(codigo)
 		}
 	} else {
-		fmt.Println("Error al unmarshal del contrato: ", err)
+		logs.Error("Error al unmarshal del contrato: ", err)
 		c.Data["mesaage"] = "Error service POST: The request contains an incorrect data type or an invalid parameter"
 		c.Abort("404")
 	}
@@ -82,7 +61,6 @@ func CargarDatosRetefuente(ctx context.Context, cedula int) (reglas string, dato
 	reglas = ""
 
 	query := strconv.Itoa(cedula)
-	fmt.Println(beego.AppConfig.String("UrlArgoWso2") + "/informacion_persona_natural/" + query)
 	if _, err := request.GetWithContext(context.WithValue(ctx, "Authorization", ""), beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
 
 		jsonPersonaNatural, errorJSON := json.Marshal(aux["informacion_persona_natural"])
@@ -142,11 +120,11 @@ func CargarDatosRetefuente(ctx context.Context, cedula int) (reglas string, dato
 				reglas = reglas + "afc(0)."
 			}
 		} else {
-			fmt.Println("Error al unmarshal del JSON: ", err)
+			logs.Error("Error al unmarshal del JSON: ", err)
 			return "Error al unmarshal del JSON de Ágora: ", alivios, err
 		}
 	} else {
-		fmt.Println("error al consultar en Ágora", err)
+		logs.Error("error al consultar en Ágora", err)
 		return "error al consultar en Ágora: ", alivios, err
 	}
 	/*
@@ -176,7 +154,6 @@ func CargarDatosRetefuenteOld(ctx context.Context, cedula int) (reglas string, d
 	reglas = ""
 
 	query := strconv.Itoa(cedula)
-	fmt.Println(beego.AppConfig.String("UrlArgoWso2") + "/informacion_persona_natural/" + query)
 	if _, err := request.GetWithContext(context.WithValue(ctx, "Authorization", ""), beego.AppConfig.String("UrlArgoWso2")+"/informacion_persona_natural/"+query, &aux); err == nil {
 
 		jsonPersonaNatural, errorJSON := json.Marshal(aux["informacion_persona_natural"])
@@ -236,11 +213,11 @@ func CargarDatosRetefuenteOld(ctx context.Context, cedula int) (reglas string, d
 				reglas = reglas + "afc(0)."
 			}
 		} else {
-			fmt.Println("Error al unmarshal del JSON: ", err)
+			logs.Error("Error al unmarshal del JSON: ", err)
 			return "Error al unmarshal del JSON de Ágora: ", alivios, err
 		}
 	} else {
-		fmt.Println("error al consultar en Ágora", err)
+		logs.Error("error al consultar en Ágora", err)
 		return "error al consultar en Ágora: ", alivios, err
 	}
 	/*
@@ -283,10 +260,8 @@ func (c *PreliquidacionController) ObtenerResumenPreliquidacion() {
 
 	//traer todos los detalles de la preliquidacion correspondientes a ese mes
 	query := "ContratoPreliquidacionId.PreliquidacionId.Mes:" + mes + ",ContratoPreliquidacionId.PreliquidacionId.Ano:" + ano + ",ContratoPreliquidacionId.PreliquidacionId.NominaId:" + nomina
-	fmt.Println(beego.AppConfig.String("UrlTitanCrud") + "/detalle_preliquidacion?limit=-1&query=" + query)
 	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/detalle_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &detalles)
-		fmt.Println(len(detalles))
 		for i := 0; i < len(detalles); i++ {
 			if detalles[i].ConceptoNominaId.Id == 573 {
 				detalleMesual.TotalDescuentos = detalleMesual.TotalDescuentos + detalles[i].ValorCalculado
@@ -314,7 +289,7 @@ func (c *PreliquidacionController) ObtenerResumenPreliquidacion() {
 		}
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detalleMesual}
 	} else {
-		fmt.Println("Error al obtener los detalles")
+		logs.Error("Error al obtener los detalles")
 		c.Data["mesaage"] = "Error, la preliquidación no existe"
 		c.Abort("404")
 	}
