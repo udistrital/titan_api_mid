@@ -70,15 +70,6 @@ func init() {
 			Filters:          nil,
 			Params:           nil})
 
-	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionOpsController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:GestionOpsController"],
-		beego.ControllerComments{
-			Method:           "GenerarOrdenPago",
-			Router:           "/generar_op/:id",
-			AllowHTTPMethods: []string{"get"},
-			MethodParams:     param.Make(),
-			Filters:          nil,
-			Params:           nil})
-
 	beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NotificacionesController"] = append(beego.GlobalControllerRouter["github.com/udistrital/titan_api_mid/controllers:NotificacionesController"],
 		beego.ControllerComments{
 			Method:           "EnviarNotificacion",
