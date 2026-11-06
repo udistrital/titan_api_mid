@@ -14,7 +14,6 @@ func DesagregarContrato(reglas string, categoria string, cedula string, dedicaci
 	var valorCalculado float64
 	var idConcepto int
 	m := NewMachine().Consult(reglas)
-	fmt.Println("desagregado(" + categoria + "," + cedula + "," + dedicacion + "," + ano + ",N,V).")
 	total := m.ProveAll("desagregado(" + categoria + "," + cedula + "," + dedicacion + "," + ano + ",N,V).")
 	for _, solution := range total {
 		valorCalculado, _ = strconv.ParseFloat(fmt.Sprintf("%s", solution.ByName_("V")), 64)
@@ -43,7 +42,6 @@ func DesagregarContrato(reglas string, categoria string, cedula string, dedicaci
 		case 179:
 			desagregado.BonificacionServicios = valorCalculado
 		default:
-			fmt.Println("No evalué nada")
 		}
 	}
 
