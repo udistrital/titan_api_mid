@@ -124,7 +124,7 @@ func (c *CumplidoController) ActualizarPreliquidado() {
 			if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), contrato_preliquidacion[0], &aux); err == nil {
 				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato_preliquidacion}
 				c.ServeJSON()
-			}else{
+			} else {
 				logs.Error("Error al actualizar contrato preliquidacion")
 				c.Data["message"] = "Error al actualizar contrato preliquidacion " + err.Error()
 				c.Abort("404")
