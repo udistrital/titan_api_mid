@@ -2,10 +2,12 @@ package controllers
 
 import (
 	"context"
-	"github.com/astaxie/beego/logs"
+	"errors"
+	"io"
 	"strconv"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"github.com/udistrital/titan_api_mid/models"
 	"github.com/udistrital/utils_oas/request"
 )
@@ -38,8 +40,7 @@ func (c *GestionOpsController) GenerarOrdenPago() {
 	var preliquicion []models.Preliquidacion
 	var contratos []models.ContratoPreliquidacion
 	//Obtener la preliquidación de ese mes
-
-	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/preliquicion?limit=-1&query=Id:"+id, &aux); err == nil {
+	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query=Id:"+id, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &preliquicion)
 		//Verificar si quedan personas pendientes por cumplido
 
@@ -59,30 +60,31 @@ func (c *GestionOpsController) GenerarOrdenPago() {
 			//Actualizar el estado de la preliquidación
 			if _, err := request.PutWithContext(ctx, (beego.AppConfig.String("UrlTitanCrud") + "/preliquidacion/" + strconv.Itoa(preliquicion[0].Id)), preliquicion[0], &aux); err == nil {
 				//Solicitar orden de pago
-
-				if _, err := request.GetWithContext(context.WithValue(ctx, "Authorization", ""), beego.AppConfig.String("UrlArgoColas")+"/liquidacion/"+strconv.Itoa(preliquicion[0].Ano)+"/"+strconv.Itoa(preliquicion[0].Mes), &aux); err == nil {
+				
+				_, err := request.GetWithContext(context.WithValue(ctx, "Authorization", ""), beego.AppConfig.String("UrlArgoColas")+"/liquidacion/"+strconv.Itoa(preliquicion[0].Ano)+"/"+strconv.Itoa(preliquicion[0].Mes), &aux)
+				if err == nil || errors.Is(err, io.EOF) {
 					c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": preliquicion}
 
 				} else {
 					logs.Error("Error al generar orden de pago: ", err)
-					c.Data["mesaage"] = "Error al generar orden de pago " + err.Error()
+					c.Data["message"] = "Error al generar orden de pago " + err.Error()
 					c.Abort("404")
 				}
 			} else {
 				logs.Error("No se pudo actualizar la preliquidacion: ", err)
-				c.Data["mesaage"] = "Error al actualizar la preliquidacion " + err.Error()
+				c.Data["message"] = "Error al actualizar la preliquidacion " + err.Error()
 				c.Abort("404")
 			}
 
 		} else {
 			logs.Error("Error al obtener contratos: ", err)
-			c.Data["mesaage"] = "Error al obtener los cumplidos de los contratos " + err.Error()
+			c.Data["message"] = "Error al obtener los cumplidos de los contratos " + err.Error()
 			c.Abort("404")
 		}
 
 	} else {
 		logs.Error("Error al obtener la preliquidación: ", err)
-		c.Data["mesaage"] = "Error al obtener la preliquidación " + err.Error()
+		c.Data["message"] = "Error al obtener la preliquidación " + err.Error()
 		c.Abort("404")
 	}
 
