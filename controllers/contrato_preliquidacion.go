@@ -42,14 +42,14 @@ func (c *CumplidoController) ActualizarCumplido() {
 		contratoPreliquidacion, mensaje, codigo := CambioCumplido(ctx, ano, mes, numeroContrato, contrato)
 
 		if codigo != "200" {
-			c.Data["message"] = mensaje + err.Error()
+			c.Data["mesaage"] = mensaje + err.Error()
 			c.Abort(codigo)
 		} else {
 			c.Data["json"] = map[string]interface{}{"Success": true, "Status": codigo, "Message": mensaje, "Data": contratoPreliquidacion}
 		}
 	} else {
 		logs.Error("Error al obtener contrato")
-		c.Data["message"] = "Error al obtener contrato " + err.Error()
+		c.Data["mesaage"] = "Error al obtener contrato " + err.Error()
 		c.Abort("404")
 	}
 	c.ServeJSON()
@@ -80,14 +80,14 @@ func (c *CumplidoController) ActualizarCumplidoRp() {
 		LimpiezaRespuestaRefactor(aux, &contrato)
 		contratoPreliquidacion, mensaje, codigo := CambioCumplido(ctx, ano, mes, numeroContrato, contrato)
 		if codigo != "200" {
-			c.Data["message"] = mensaje + err.Error()
+			c.Data["mesaage"] = mensaje + err.Error()
 			c.Abort(codigo)
 		} else {
 			c.Data["json"] = map[string]interface{}{"Success": true, "Status": codigo, "Message": mensaje, "Data": contratoPreliquidacion}
 		}
 	} else {
 		logs.Error("Error al obtener contrato")
-		c.Data["message"] = "Error al obtener contrato " + err.Error()
+		c.Data["mesaage"] = "Error al obtener contrato " + err.Error()
 		c.Abort("404")
 	}
 	c.ServeJSON()
@@ -126,17 +126,17 @@ func (c *CumplidoController) ActualizarPreliquidado() {
 				c.ServeJSON()
 			} else {
 				logs.Error("Error al actualizar contrato preliquidacion")
-				c.Data["message"] = "Error al actualizar contrato preliquidacion " + err.Error()
+				c.Data["mesaage"] = "Error al actualizar contrato preliquidacion " + err.Error()
 				c.Abort("404")
 			}
 		} else {
 			logs.Error("Error al obtener contrato preliquidación")
-			c.Data["message"] = "Error al obtener contrato preliquidacion " + err.Error()
+			c.Data["mesaage"] = "Error al obtener contrato preliquidacion " + err.Error()
 			c.Abort("404")
 		}
 	} else {
 		logs.Error("Error al obtener contrato")
-		c.Data["message"] = "Error al obtener contrato " + err.Error()
+		c.Data["mesaage"] = "Error al obtener contrato " + err.Error()
 		c.Abort("404")
 	}
 	c.ServeJSON()
