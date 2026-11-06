@@ -36,19 +36,20 @@ func (c *CumplidoController) ActualizarCumplido() {
 	mes := c.Ctx.Input.Param(":mes")
 	numeroContrato := c.Ctx.Input.Param(":contrato")
 	vigencia := c.Ctx.Input.Param((":vigencia"))
+	logs.Info("Query: " + beego.AppConfig.String("UrlTitanCrud") + "/contrato?limit=-1&query=NumeroContrato:" + numeroContrato + ",Vigencia:" + vigencia)
 	if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato?limit=-1&query=NumeroContrato:"+numeroContrato+",Vigencia:"+vigencia, &aux); err == nil {
 		LimpiezaRespuestaRefactor(aux, &contrato)
 		contratoPreliquidacion, mensaje, codigo := CambioCumplido(ctx, ano, mes, numeroContrato, contrato)
 
 		if codigo != "200" {
-			c.Data["mesaage"] = mensaje + err.Error()
+			c.Data["message"] = mensaje + err.Error()
 			c.Abort(codigo)
 		} else {
 			c.Data["json"] = map[string]interface{}{"Success": true, "Status": codigo, "Message": mensaje, "Data": contratoPreliquidacion}
 		}
 	} else {
 		logs.Error("Error al obtener contrato")
-		c.Data["mesaage"] = "Error al obtener contrato " + err.Error()
+		c.Data["message"] = "Error al obtener contrato " + err.Error()
 		c.Abort("404")
 	}
 	c.ServeJSON()
@@ -79,14 +80,14 @@ func (c *CumplidoController) ActualizarCumplidoRp() {
 		LimpiezaRespuestaRefactor(aux, &contrato)
 		contratoPreliquidacion, mensaje, codigo := CambioCumplido(ctx, ano, mes, numeroContrato, contrato)
 		if codigo != "200" {
-			c.Data["mesaage"] = mensaje + err.Error()
+			c.Data["message"] = mensaje + err.Error()
 			c.Abort(codigo)
 		} else {
 			c.Data["json"] = map[string]interface{}{"Success": true, "Status": codigo, "Message": mensaje, "Data": contratoPreliquidacion}
 		}
 	} else {
 		logs.Error("Error al obtener contrato")
-		c.Data["mesaage"] = "Error al obtener contrato " + err.Error()
+		c.Data["message"] = "Error al obtener contrato " + err.Error()
 		c.Abort("404")
 	}
 	c.ServeJSON()
@@ -118,20 +119,24 @@ func (c *CumplidoController) ActualizarPreliquidado() {
 		query := "PreliquidacionId.Ano:" + ano + ",PreliquidacionId.Mes:" + mes + ",ContratoId.NumeroContrato:" + numeroContrato
 		if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion?limit=-1&query="+query, &aux); err == nil {
 			LimpiezaRespuestaRefactor(aux, &contrato_preliquidacion)
-			//actualiar preliquidado
+			//actualizar preliquidado
 			contrato_preliquidacion[0].Preliquidado = true
 			if _, err := request.PutWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/contrato_preliquidacion/"+strconv.Itoa(contrato_preliquidacion[0].Id), contrato_preliquidacion[0], &aux); err == nil {
 				c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": contrato_preliquidacion}
 				c.ServeJSON()
+			} else {
+				logs.Error("Error al actualizar contrato preliquidacion")
+				c.Data["message"] = "Error al actualizar contrato preliquidacion " + err.Error()
+				c.Abort("404")
 			}
 		} else {
 			logs.Error("Error al obtener contrato preliquidación")
-			c.Data["mesaage"] = "Error al obtener contrato preliquidacion " + err.Error()
+			c.Data["message"] = "Error al obtener contrato preliquidacion " + err.Error()
 			c.Abort("404")
 		}
 	} else {
 		logs.Error("Error al obtener contrato")
-		c.Data["mesaage"] = "Error al obtener contrato " + err.Error()
+		c.Data["message"] = "Error al obtener contrato " + err.Error()
 		c.Abort("404")
 	}
 	c.ServeJSON()
