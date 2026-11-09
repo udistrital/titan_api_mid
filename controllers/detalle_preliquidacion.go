@@ -46,7 +46,7 @@ func (c *DetallePreliquidacionController) ObtenerDetalleCT() {
 		c.Ctx.Output.SetStatus(201)
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Successful", "Data": detalle}
 	} else {
-		c.Data["message"] = "Error al obtener el detalle, no hay detalle para el contrato en el mes seleccionado"
+		c.Data["mesaage"] = "Error al obtener el detalle, no hay detalle para el contrato en el mes seleccionado"
 		c.Abort("400")
 	}
 
