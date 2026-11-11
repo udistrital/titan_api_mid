@@ -21,12 +21,6 @@ func init() {
 			),
 		),
 
-		beego.NSNamespace("/gestion_ops",
-			beego.NSInclude(
-				&controllers.GestionOpsController{},
-			),
-		),
-
 		beego.NSNamespace("/detalle_preliquidacion",
 			beego.NSInclude(
 				&controllers.DetallePreliquidacionController{},

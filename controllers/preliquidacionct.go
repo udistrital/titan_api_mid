@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"strconv"
 	"time"
 
@@ -16,7 +18,7 @@ type PreliquidacionctController struct {
 	beego.Controller
 }
 
-func liquidarCPS(contrato models.Contrato) (mensaje string, err error) {
+func liquidarCPS(ctx context.Context, contrato models.Contrato) (mensaje string, err error) {
 
 	var mesIterativo int //mes para iterar en el ciclo para liquidar todos los meses de una vez
 	var anoIterativo int
@@ -33,7 +35,7 @@ func liquidarCPS(contrato models.Contrato) (mensaje string, err error) {
 	var emergencia int //Varibale para evitar loop infinito
 	cedula, err := strconv.ParseInt(contrato.Documento, 0, 64)
 	if err == nil {
-		reglasAlivios, contratoPreliquidacion, err = CargarDatosRetefuente(int(cedula))
+		reglasAlivios, contratoPreliquidacion, err = CargarDatosRetefuente(ctx, int(cedula))
 	}
 
 	if contrato.FechaInicio.Day() == 31 {
@@ -47,24 +49,21 @@ func liquidarCPS(contrato models.Contrato) (mensaje string, err error) {
 
 		diasContrato, _ = CalcularDias(contrato.FechaInicio, contrato.FechaFin)
 		diasContrato = diasContrato + 1 //dia inclusive
-		fmt.Println("Días contrato: ", diasContrato)
 
 		predicados = append(predicados, models.Predicado{Nombre: "valor_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", contrato.ValorContrato) + "). "})
 		predicados = append(predicados, models.Predicado{Nombre: "duracion_contrato(" + contrato.Documento + "," + fmt.Sprintf("%f", diasContrato) + "," + strconv.Itoa(contrato.Vigencia) + "). "})
-		reglasbase := cargarReglasBase("CT") + reglasAlivios + FormatoReglas(predicados)
+		reglasbase := cargarReglasBase(ctx, "CT") + reglasAlivios + FormatoReglas(predicados)
 		emergencia = 0
 		for {
-			fmt.Println("mes:", mesIterativo)
-			fmt.Println("ano:", anoIterativo)
 			reglasNuevas = ""
 			query := "Ano:" + strconv.Itoa(anoIterativo) + ",Mes:" + strconv.Itoa(mesIterativo) + ",Nominaid:414"
-			if err := request.GetJson(beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
+			if _, err := request.GetWithContext(ctx, beego.AppConfig.String("UrlTitanCrud")+"/preliquidacion?limit=-1&query="+query, &aux); err == nil {
 				LimpiezaRespuestaRefactor(aux, &preliquidacion)
 				if preliquidacion[0].Id == 0 {
-					preliquidacion[0] = registrarPreliquidacion(anoIterativo, mesIterativo, 476, 414)
-					contratoPreliquidacion = registrarContratoPreliquidacion(preliquidacion[0].Id, contrato.Id, contratoPreliquidacion)
+					preliquidacion[0] = registrarPreliquidacion(ctx, anoIterativo, mesIterativo, 476, 414)
+					contratoPreliquidacion = registrarContratoPreliquidacion(ctx, preliquidacion[0].Id, contrato.Id, contratoPreliquidacion)
 				} else {
-					contratoPreliquidacion = registrarContratoPreliquidacion(preliquidacion[0].Id, contrato.Id, contratoPreliquidacion)
+					contratoPreliquidacion = registrarContratoPreliquidacion(ctx, preliquidacion[0].Id, contrato.Id, contratoPreliquidacion)
 				}
 
 				detallePreliquidacion.ContratoPreliquidacionId = &contratoPreliquidacion
@@ -76,7 +75,7 @@ func liquidarCPS(contrato models.Contrato) (mensaje string, err error) {
 				reglasNuevas = reglasNuevas + reglasbase + "dias_liquidados(" + contrato.Documento + "," + diasALiquidar + ")."
 				auxDetalle = golog.LiquidarMesCPS(reglasNuevas, contrato.Documento, contrato.Vigencia, detallePreliquidacion)
 				for j := 0; j < len(auxDetalle); j++ {
-					registrarDetallePreliquidacion(auxDetalle[j])
+					registrarDetallePreliquidacion(ctx, auxDetalle[j])
 				}
 
 				if mesIterativo == int(contrato.FechaFin.Month()) && anoIterativo == contrato.FechaFin.Year() {
@@ -91,13 +90,13 @@ func liquidarCPS(contrato models.Contrato) (mensaje string, err error) {
 					emergencia = emergencia + 1
 				}
 			} else {
-				fmt.Println("Error al consultar preliquidaciones")
+				logs.Error("Error al consultar preliquidaciones")
 				return "Error al consultar preliquidaciones", err
 			}
 			preliquidacion[0].Id = 0 //Para evitar errores al obtener la preliquidación del siguiente mes
 		}
 	} else {
-		fmt.Println("ERROR")
+		logs.Error("Error al consultar información en Ágora:", err)
 		return "Error al consultar información en Ágora: ", err
 	}
 	return "", nil
